@@ -115,21 +115,22 @@ gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css', 'copy-bowe
 
 
 // P]ackage app into binary
+var packageJSON = require('./package.json');
 
 gulp.task("package-darwin", function(callback) {
     var options = {
         dir: '.',
-        name: "INTO-CPS App",
+        name: packageJSON.name,
         platform: "darwin",
-        arch: "all",
+        arch: "x64",
         version: "0.36.0",
         overwrite:true,
         icon: 'into-cps-logo.png.icns',
-        out: 'package',
-        "app-version": "0.0.1",
+        out: 'pkg',
+        "app-version": packageJSON.version,
         "version-string": {
-            "CompanyName": "into-cps",
-            "ProductName": "app"
+            "CompanyName": packageJSON.author.name,
+            "ProductName": packageJSON.productName
         }
     };
     packager(options, function done (err, appPath) {
@@ -141,17 +142,17 @@ gulp.task("package-darwin", function(callback) {
 gulp.task("package-win32", function(callback) {
     var options = {
         dir: '.',
-        name: "INTO-CPS App",
+        name: packageJSON.name,
         platform: "win32",
         arch: "all",
         version: "0.36.0",
         overwrite:true,
         icon: 'into-cps-logo.png.ico',
-        out: 'package',
-        "app-version": "0.0.1",
+        out: 'pkg',
+        "app-version": packageJSON.version,
         "version-string": {
-            "CompanyName": "into-cps",
-            "ProductName": "app"
+           "CompanyName": packageJSON.author.name,
+            "ProductName": packageJSON.productName
         }
     };
     packager(options, function done (err, appPath) {
@@ -162,16 +163,16 @@ gulp.task("package-win32", function(callback) {
 gulp.task("package-linux", function(callback) {
     var options = {
         dir: '.',
-        name: "INTO-CPS App",
+        name: packageJSON.name,
         platform: "linux",
-        arch: "all",
+        arch: "x64",
         version: "0.36.0",
         overwrite:true,
-        out: 'package',
-        "app-version": "0.0.1",
+        out: 'pkg',
+        "app-version": packageJSON.version,
         "version-string": {
-            "CompanyName": "into-cps",
-            "ProductName": "app"
+           "CompanyName": packageJSON.author.name,
+            "ProductName": packageJSON.productName
         }
     };
     packager(options, function done (err, appPath) {
@@ -180,27 +181,7 @@ gulp.task("package-linux", function(callback) {
     });
 });
 
-gulp.task("package-all", function(callback) {
-    var options = {
-        dir: '.',
-        name: "INTO-CPS App",
-        platform: ["win32","linux","darwin"],
-        arch: "all",
-        version: "0.36.0",
-        icon: 'into-cps-logo.png',
-        overwrite:true,
-        out: 'package',
-        "app-version": "0.0.1",
-        "version-string": {
-            "CompanyName": "into-cps",
-            "ProductName": "app"
-        }
-    };
-    packager(options, function done (err, appPath) {
-        if(err) { return console.log(err); }
-        callback();
-    });
-});
+
 gulp.task('package-all',['package-win32','package-darwin','package-linux']);
 
 // Watch for changes and rebuild on the fly
