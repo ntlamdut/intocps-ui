@@ -30,7 +30,7 @@ let openProjectHandler = new DialogHandler("proj/open-project.html", 300, 200, I
 });
 
 let openDownloadManagerHandler = new DialogHandler("downloadManager/DownloadManager.html", 500, 500, null, null, null);
-
+let coeServerStatusHandler = new DialogHandler("coe-server-status/CoeServerStatus.html", 500, 500, null, null, null);
 
 // Definitions needed for menu construction
 var defaultMenu = require('electron-default-menu')
@@ -94,7 +94,11 @@ function createWindow() {
         click: function (item, focusedWindow) {
           openDownloadManagerHandler.openWindow();
         }
-
+      }, {
+        label: 'COE Server Status',
+        click: function (item, focusedWindow) {
+          coeServerStatusHandler.openWindow();
+        }
       }
     ]
   })
