@@ -41,6 +41,12 @@ export default class IntoCpsApp {
             }
         }
         this.settings.save();
+        
+        //Check for development mode and adjust settings to reflect this
+        if(this.settings.getValue(SettingKeys.DEVELOPMENT_MODE))
+        {
+            this.settings.setValue(SettingKeys.UPDATE_SITE,this.settings.getValue(SettingKeys.DEV_UPDATE_SITE));
+        }
 
         let activeProjectPath = this.settings.getSetting(SettingKeys.ACTIVE_PROJECT);
         try {

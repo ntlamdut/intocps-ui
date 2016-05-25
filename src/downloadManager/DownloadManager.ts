@@ -66,11 +66,13 @@ function setProgress(progress: number) {
 
 function fetchList() {
 
-    var url = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.UPDATE_SITE);
+let settings = IntoCpsApp.getInstance().getSettings();
 
+    var url = settings.getValue(SettingKeys.UPDATE_SITE);
+    
     if (url == null || url == undefined) {
         url = "https://raw.githubusercontent.com/into-cps/release-site/master/download/";
-        IntoCpsApp.getInstance().getSettings().setValue(SettingKeys.UPDATE_SITE, url);
+        settings.setValue(SettingKeys.UPDATE_SITE, url);
 
     }
 

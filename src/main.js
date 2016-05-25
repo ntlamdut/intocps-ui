@@ -4,6 +4,7 @@ const electron = require('electron');
 const fs = require('fs');
 const path = require('path');
 var settings = require("./settings/settings").default;
+var SettingKeys = require("./settings/SettingKeys");
 var IntoCpsApp = require("./IntoCpsApp").default;
 
 var DialogHandler = require("./DialogHandler").default;
@@ -17,16 +18,18 @@ const BrowserWindow = electron.BrowserWindow;
 let intoCpsApp = new IntoCpsApp(app, process.platform);
 
 global.intoCpsApp = intoCpsApp;
+let devMode = intoCpsApp.getSettings().getValue(SettingKeys.SettingKeys.DEVELOPMENT_MODE);
+console.info("Running in development mode: "+devMode);
 
-let createProjectHandler=new DialogHandler("proj/new-project.html",300,200, IntoCpsAppEvents.OPEN_CREATE_PROJECT_WINDOW, "new-project-create", arg => {
+let createProjectHandler = new DialogHandler("proj/new-project.html", 300, 200, IntoCpsAppEvents.OPEN_CREATE_PROJECT_WINDOW, "new-project-create", arg => {
   intoCpsApp.createProject(arg.name, arg.path);
 });
 
-let openProjectHandler =new DialogHandler("proj/open-project.html",300,200, IntoCpsAppEvents.OPEN_OPEN_PROJECT_WINDOW, "open-project-open", arg => {
+let openProjectHandler = new DialogHandler("proj/open-project.html", 300, 200, IntoCpsAppEvents.OPEN_OPEN_PROJECT_WINDOW, "open-project-open", arg => {
   intoCpsApp.setActiveProject(intoCpsApp.loadProject(arg.path));
 });
 
-let openDownloadManagerHandler =new DialogHandler("downloadManager/DownloadManager.html",500,500, null, null, null);
+let openDownloadManagerHandler = new DialogHandler("downloadManager/DownloadManager.html", 500, 500, null, null, null);
 
 
 // Definitions needed for menu construction
@@ -46,7 +49,9 @@ function createWindow() {
   mainWindow.loadURL('file://' + __dirname + '/index.html');
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  if (devMode) {
+    mainWindow.webContents.openDevTools();
+  }
 
   intoCpsApp.setWindow(mainWindow);
 
@@ -68,7 +73,7 @@ function createWindow() {
           openProjectHandler.openWindow();
         }
 
-      },{
+      }, {
         label: 'New Project',
         click: function (item, focusedWindow) {
           createProjectHandler.openWindow();
@@ -84,7 +89,7 @@ function createWindow() {
           settingsWin.show();
         }
 
-      },{
+      }, {
         label: 'Open Download Manager',
         click: function (item, focusedWindow) {
           openDownloadManagerHandler.openWindow();
