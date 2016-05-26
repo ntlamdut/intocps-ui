@@ -52,7 +52,6 @@ export class ProjectBrowserItem {
             this.expanded = true;
         } else {
             this.level = parent.level + 1;
-            parent.nodes.push(this);
         }
     }
     addMenuEntry(text: string, icon: any, callback: (item: ProjectBrowserItem) => void) {
@@ -157,17 +156,15 @@ export class BrowserController {
                 //merge MultiModelConfig and folder
                 parent.img = 'glyphicon glyphicon-copyright-mark';
                 (<any>parent).coeConfig = path;
-                parent.removeNodeWithPath(path);
                 parent.dblClickHandler = function () {
                     self.menuHandler.openCoeView(path);
                 };
-                result = null;
+                return null;
             }
             else if (path.endsWith('.mm.json')) {
                 //merge MultiModelConfig and folder
                 parent.img = 'glyphicon glyphicon-briefcase';
                 (<any>parent).mmConfig = path;
-                parent.removeNodeWithPath(path);
                 parent.dblClickHandler = function () {
                     self.menuHandler.openMultiModel(path);
                 };
@@ -176,7 +173,7 @@ export class BrowserController {
                         console.info("Create new cosim config for: " + item.id);
                         self.menuHandler.createCoSimConfiguration(item.id);
                     });
-                result = null;
+                return null;
             }
             else if (path.endsWith('.fmu')) {
                 result.img = 'icon-page';
@@ -246,7 +243,12 @@ export class BrowserController {
                         });
                     });
             }
-            var children: ProjectBrowserItem[] = this.addFSFolderContent(path, result);
+            if (result) {
+                if (parent) {
+                    parent.nodes.push(result);
+                }
+                this.addFSFolderContent(path, result);
+            }
         }
         return result;
     }
