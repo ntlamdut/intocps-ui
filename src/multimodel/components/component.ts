@@ -18,6 +18,11 @@ export class Component {
             element.removeChild(element.lastChild);
         }
     }
+    
+    static changeId(element: HTMLElement, newId: string){
+        element.id = newId; 
+        return newId;
+    }
 
 
 
