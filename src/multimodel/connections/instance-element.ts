@@ -1,5 +1,5 @@
 import {Instance} from "../../coe/fmi";
-
+import {glyphiconEditButton} from "../components/types";
 export class InstanceElement {
     private element: HTMLDivElement;
     private txt: HTMLInputElement
@@ -7,8 +7,8 @@ export class InstanceElement {
     private but1Span: HTMLSpanElement;
     private removeButton: HTMLButtonElement;
     private instance: Instance;
-    private editGlyphicon: glyphiconEditButton = "glyphicon-edit";
-    private okGlyphicon: glyphiconEditButton = "glyphicon-ok"
+    private editGlyphicon: glyphiconEditButton = "glyphicon-pencil";
+    private okGlyphicon: glyphiconEditButton = "glyphicon-ok";
     private addInstanceHandler: (instanceElement: InstanceElement, text: string) => Boolean;
     private editExisting: boolean = false;
 

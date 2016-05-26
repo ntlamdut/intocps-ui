@@ -1,1 +1,0 @@
-type glyphiconEditButton = "glyphicon-edit" | "glyphicon-ok";

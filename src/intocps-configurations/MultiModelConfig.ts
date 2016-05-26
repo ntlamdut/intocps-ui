@@ -95,12 +95,14 @@ export class MultiModelConfig implements ISerializable {
                         if (err !== null) {
                             return reject(err);
                         }
+                        console.log(data.toString());
                         resolve(data);
                     });
                 })).then((content) => {
 
                     //console.log("Asynchronous read: " + content.toString());
                     var jsonData = JSON.parse(content.toString());
+                    console.log(content.toString());
                     console.log(jsonData);
 
                     self.create(path, fmuRootPath, jsonData).then(mm => { resolveFinal(mm); }).catch(e => reject(e));

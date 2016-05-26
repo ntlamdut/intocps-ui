@@ -10,7 +10,13 @@
     }
 </style>
 
-
+<div class="row">
+    <div class="col-md-12">
+        <button type="button" class="btn btn-default pull-right" aria-label="Left Align" id="coe-save-button">
+                <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save</button>
+    </div>
+</div>
+<br/>
 <div id="coe-status">
     <!-- COE connection information will be added here at runtime -->
     <!--  <div class="alert alert-success" role="alert">...</div>
@@ -27,21 +33,73 @@
     <div class="panel-body">
         <!-- all config items here-->
         <div class="form-group">
-
-            <div class="input-group">
-                <label for="input-sim-time-start">Start time:</label>
-                <input type="text" id="input-sim-time-start" class="form-control bfh-number input-sm" value="0" data-min="0" data-wrap="true">
+            <div>
+                <label for="text">Start time:</label>
+                <div class="input-group" id="startTime">
+                    <input type="text" class="form-control bfh-number input-sm" value="0" data-min="0" data-wrap="true" id="text">
+                    <span class="input-group-btn" id="fmuSpanBts">
+                <button type="button" class="btn btn-default btn-sm" id="editOkButton">
+                        <span id="editOkButton-icon" class="glyphicon"></span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm" id="cancelButton">
+                        <span class="glyphicon glyphicon-remove"></span>
+                </button>
+                    </span>
+                    <!--<input type="text" id="input-sim-time-start" class="form-control bfh-number input-sm" value="0" data-min="0" data-wrap="true">-->
+                </div>
             </div>
-            <div class="input-group">
-                <label for="input-sim-time-end">End time:</label>
-                <input type="text" id="input-sim-time-end" class="form-control bfh-number input-sm" value="10" data-min="0.00000000000001"
-                    data-wrap="true">
+            <div>
+                <label>End time:</label>
+                <div class="input-group" id="endTime">
+                    <input type="text" class="form-control bfh-number input-sm" value="10" data-min="0.00000000000001" data-wrap="true" id="text">
+                    <span class="input-group-btn" id="fmuSpanBts">
+                <button type="button" class="btn btn-default btn-sm" id="editOkButton">
+                        <span id="editOkButton-icon" class="glyphicon"></span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-sm" id="cancelButton">
+                        <span class="glyphicon glyphicon-remove"></span>
+                </button>
+                    </span>
+                    <!--<input type="text" id="input-sim-time-end" class="form-control bfh-number input-sm" value="10" data-min="0.00000000000001"
+                    data-wrap="true">-->
+                </div>
             </div>
         </div>
 
-        <div class="form-group">
-            <label>Algorithm:</label>
-            <div class="input-group">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="dropdownMenu">Algorithm:</label>
+                <div class="form-group">
+                    <div id="dropdown" class="dropdown">
+                        <button class="btn btn-default dropdown-toggle btn-sm" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="true">
+                    <span id="name"></span>
+                    <span class="caret"></span>
+                </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu" id="ulist">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <br/>
+        <div id="algorithm-panel" class="panel panel-default hidden">
+            <div class="panel-heading">
+                <h3 class="panel-title" id="algorithm-panel-title"></h3>
+            </div>
+            <div id="algorithm-panel-body" class="panel-body">
+            </div>
+        </div>
+
+        <div id="livestream-config-panel" class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Livestream Configuration</h3>
+            </div>
+            <div id="livestream-config-panel-body" class="panel-body">
+            </div>
+        </div>
+
+        <!--<div class="input-group">
                 <label>Type:</label>
                 <input type="text" class="form-control bfh-number input-sm" value="fixed">
             </div>
@@ -49,8 +107,7 @@
                 <label>Size:</label>
                 <input type="text" id="input-sim-algorithm-fixed-size" class="form-control bfh-number input-sm" value="0.001" data-min="0.00000000000001"
                     data-wrap="true">
-            </div>
-        </div>
+            </div>-->
 
 
     </div>
@@ -75,13 +132,13 @@
                 0%
             </div>
         </div>
-        
+
         <div id="simulation-info"></div>
-<!-- debug and error messages will be added here at runtime-->
+        <!-- debug and error messages will be added here at runtime-->
         <div>
             <canvas id="liveStreamCanvas"></canvas>
         </div>
-        
+
     </div>
 </div>
 

@@ -11,6 +11,13 @@ export class Component {
             element.classList.remove(this.hidden);
         }
     }
+    
+    static clearContainer(element: HTMLElement){
+        while(element.hasChildNodes())
+        {
+            element.removeChild(element.lastChild);
+        }
+    }
 
 
 

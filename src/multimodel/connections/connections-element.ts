@@ -164,7 +164,6 @@ export class ConnectionsElement {
         allInputVariables.forEach(element => {
             this.addInputVariable(element, connectedInputVariables.indexOf(element) > -1);
         });
-
     }
 
     private addInputVariable(variable: Configs.ScalarVariable, selected: boolean) {

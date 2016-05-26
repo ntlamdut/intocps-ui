@@ -18,6 +18,13 @@ import {IViewController} from "../iViewController"
 
 import {CoSimulationConfig, Serializer} from "../intocps-configurations/intocps-configurations";
 import {eventEmitter} from "../Emitter";
+import {TextInputNonLoad, TextInputIds} from "./components/text-input-non-load";
+import {DropDownNonLoad} from "./components/dropdown-non-load";
+import {Component} from "../multimodel/components/component";
+import {FixedStep} from "./algorithms/fixed-step";
+import * as Configs from "../intocps-configurations/intocps-configurations";
+import {Utilities} from "../utilities";
+import {LivestreamConfiguration} from "./livestream/livestream-config";
 
 export class CoeController extends IViewController {
 
@@ -36,6 +43,24 @@ export class CoeController extends IViewController {
 
     private progressState: number = 0;
 
+    private startTimeContainer: HTMLElement;
+    private startTimeUI: TextInputNonLoad;
+
+    private endTimeContainer: HTMLElement;
+    private endTimeUI: TextInputNonLoad;
+
+    private dropDownContainer: HTMLElement;
+    private algorithmSelectUI: DropDownNonLoad;
+    private algorithmPanel: HTMLElement;
+    private algorithmTitle: HTMLHeadingElement;
+    private algorithmPanelBody: HTMLElement;
+    private algorithmController: Object;
+
+    private saveButton: HTMLButtonElement;
+
+    private livestreamPanelBody: HTMLElement;
+    private livestreamConfiguration: LivestreamConfiguration;
+
     app: IntoCpsApp;
 
     constructor(viewDiv: HTMLDivElement) {
@@ -46,6 +71,17 @@ export class CoeController extends IViewController {
     }
 
     initialize(sourceDom: SourceDom): void {
+        this.startTimeContainer = <HTMLElement>this.viewDiv.querySelector("#startTime");
+        this.endTimeContainer = <HTMLElement>this.viewDiv.querySelector("#endTime");
+        this.dropDownContainer = <HTMLElement>this.viewDiv.querySelector("#dropdown");
+        this.algorithmPanel = <HTMLElement>this.viewDiv.querySelector("#algorithm-panel");
+        this.algorithmTitle = <HTMLHeadingElement>this.algorithmPanel.querySelector("#algorithm-panel-title");
+        this.algorithmPanelBody = <HTMLElement>this.algorithmPanel.querySelector("#algorithm-panel-body");
+        this.saveButton = <HTMLButtonElement>this.viewDiv.querySelector("#coe-save-button");
+        this.saveButton.onclick = this.onSaveClick.bind(this);
+        this.livestreamPanelBody = <HTMLElement>this.viewDiv.querySelector("#livestream-config-panel-body");
+        let self = this;
+
         IntoCpsApp.setTopName("Co-Simulation")
         this.readSettings();
         this.setProgress(0, null);
@@ -61,12 +97,24 @@ export class CoeController extends IViewController {
                 console.info("CC:"); console.info(cc);
                 this.coSimConfig = cc;
                 this.bindData();
-
-            })
-            .catch(e => console.error(e));
+                this.startTimeUI = new TextInputNonLoad(this.startTimeContainer, this.coSimConfig.startTime != null ? this.coSimConfig.startTime + "" : "0", this.startTimeChanged.bind(this), new TextInputIds());
+                this.endTimeUI = new TextInputNonLoad(this.endTimeContainer, this.coSimConfig.endTime != null ? this.coSimConfig.endTime + "" : "1", this.endTimeChanged.bind(this), new TextInputIds());
+                this.algorithmSelectUI = new DropDownNonLoad(this.dropDownContainer, ["Fixed step"], this.coSimConfig.algorithm != null ? "Fixed step" : null);
+                this.algorithmSelectUI.setSelectionChangedHandler(this.algorithmOnChange.bind(this));
+                if (this.coSimConfig.algorithm != null) {
+                    this.algorithmOnChange("Fixed step", this.coSimConfig.algorithm);
+                }
+                $(this.livestreamPanelBody).load("coe/livestream/livestream-config.html", function (event: JQueryEventObject) {
+                    self.livestreamConfiguration = new LivestreamConfiguration(this, self.coSimConfig.multiModel.fmuInstances, self.coSimConfig.livestream);
+                });
+            }).catch(e => console.error(e));
 
 
         this.checkCoeConnection();
+    }
+
+    private onSaveClick(event: MouseEvent) {
+        this.coSimConfig.save();
     }
 
     private readSettings() {
@@ -81,10 +129,33 @@ export class CoeController extends IViewController {
         }
     }
 
+    private startTimeChanged(text: string) {
+        return Utilities.timeStringToNumberConversion(text, (val: number) => { this.coSimConfig.startTime = val; });
+    }
+
+    private endTimeChanged(text: string) {
+        return Utilities.timeStringToNumberConversion(text, (val: number) => { this.coSimConfig.endTime = val; });
+    }
+
+    private algorithmOnChange(text: string, algorithm?: Configs.ICoSimAlgorithm) {
+        Component.show(this.algorithmPanel);
+        this.algorithmTitle.textContent = text;
+        let self = this;
+        if (text == "Fixed step") {
+            $(this.algorithmPanelBody).load("coe/algorithms/fixed-step.html", function (event: JQueryEventObject) {
+                if (algorithm == null) {
+                    algorithm = new Configs.FixedStepAlgorithm();
+                    self.coSimConfig.algorithm = algorithm;
+                }
+
+                this.algorithmController = new FixedStep(this, <Configs.FixedStepAlgorithm>algorithm);
+            });
+        }
+    }
     private bindData() {
         //until bind is implemented we do this manual sync
-        (<HTMLInputElement>document.getElementById("input-sim-time-start")).value = this.coSimConfig.startTime + "";
-        (<HTMLInputElement>document.getElementById("input-sim-time-end")).value = this.coSimConfig.endTime + "";
+        // (<HTMLInputElement>document.getElementById("input-sim-time-start")).value = this.coSimConfig.startTime + "";
+        // (<HTMLInputElement>document.getElementById("input-sim-time-end")).value = this.coSimConfig.endTime + "";
 
         //        (<HTMLInputElement>document.getElementById("input-sim-algorithm-fixed-size")).value = (<Configs.FixedStepAlgorithm>this.coeConfig.algorithm).size + "";
         this.clearInfoMessages();
@@ -256,13 +327,13 @@ export class CoeController extends IViewController {
         });
 
         /* livestreams.forEach((value: Collections.LinkedList<String>, index: String, map: Map<String, Collections.LinkedList<String>>) => {
- 
+     
              value.forEach((id) => {
                  ids.push(index + "." + id);
              });
- 
+     
          });
- */
+    */
 
         var datasets: any[] = [];
         $.each(ids, function (i, id) {

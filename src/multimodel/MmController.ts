@@ -109,7 +109,7 @@ export class MmController extends IViewController {
             });
         }
         if (containers & MmContainers.Connections) {
-            $(this.connectionsDiv).load("multimodel/connections/connections.html", (event: JQueryEventObject) => {
+            $(this.connectionsDiv).load("multimodel/connections/connections-element.html", (event: JQueryEventObject) => {
                 this.connectionsElement = new ConnectionsElement(this.connectionsDiv);
                 this.connectionsElement.addData(this.mm);
             });
