@@ -5,8 +5,6 @@
 
 import {IntoCpsAppEvents} from "../IntoCpsAppEvents";
 import {IntoCpsApp} from  "../IntoCpsApp"
-import {ContentProvider} from "./ContentProvider";
-import {Container, ContainerType} from "./Container";
 import {Project} from "./Project";
 import {IProject} from "./IProject";
 import fs = require('fs');
@@ -15,23 +13,68 @@ import Path = require('path');
 import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
 import {eventEmitter} from "../Emitter";
 
+export class MenuEntry {
+    id: string;
+    text: string;
+    icon: any;
+    item: ProjectBrowserItem;
+    callback: (item: ProjectBrowserItem) => void;
+    constructor(item: ProjectBrowserItem, text: string, icon: any,
+        callback: (item: ProjectBrowserItem) => void = undefined) {
+        this.item = item;
+        this.id = text;
+        this.text = text;
+        this.icon = icon;
+        if (callback != undefined) {
+            this.callback = callback;
+        } else {
+            this.callback = function (item: ProjectBrowserItem) { };
+        }
+    }
+}
+
+export class ProjectBrowserItem {
+    id: string;
+    text: string;
+    level: number;
+    expanded: boolean = false;
+    img: any = null;
+    nodes: ProjectBrowserItem[] = [];
+    parent: ProjectBrowserItem;
+    group: boolean = false;
+
+    clickHandler(): void { }
+    dblClickHandler(): void { }
+    menuEntries: MenuEntry[] = [];
+
+    constructor(path: string, parent: ProjectBrowserItem) {
+        this.id = path;
+        this.text = Path.basename(path);
+        this.parent = parent;
+        if (parent == null) {
+            this.level = 0;
+            this.group = true;
+            this.expanded = true;
+        } else {
+            this.level = parent.level + 1;
+        }
+    }
+    removeFileExtensionFromText(): void {
+        this.text = this.text.substr(0, this.text.indexOf('.'));
+    }
+    removeNodeWithPath(path: string): void {
+        this.nodes = this.nodes.filter(function (n: ProjectBrowserItem) {
+            return n.id != path;
+        });
+    }
+
+}
+
 export class BrowserController {
     private browser: HTMLDivElement;
     private tree: W2UI.W2Sidebar;
-    private clickHandlers: Array<(event: JQueryEventObject) => void> = [];
-    private dblClickHandlers: Array<(event: JQueryEventObject) => void> = [];
 
     private menuHandler: IntoCpsAppMenuHandler = null;
-
-    private CTXT_DUBLICATE_ID: string = "Duplicate";
-    private CTXT_DELETE_ID: string = "Duplicate";
-    private CTXT_CREATE_MULTI_MODEL_ID: string = "create-multi-model";
-    private CTXT_CREATE_CO_SIM_CONFIG_ID: string = "create-co-sim-config";
-    private CTXT_IMPORT_ID: string = "import";
-    private CTXT_EXPORT_ID: string = "export";
-    private CTXT_CREATE_DSE_ID: string = "dse";
-    private CTXT_CREATE_TEST_DATA_GERATION_PROJECT: string = "create test data generation project";
-    private CTXT_CREATE_MODEL_CHECKING_PROJECT: string = "create model checking project";
 
     constructor(menuHandler: IntoCpsAppMenuHandler) {
         this.menuHandler = menuHandler;
@@ -42,144 +85,40 @@ export class BrowserController {
         this.browser = <HTMLDivElement>document.querySelector("#browser");
         let remote = require("remote");
 
-        let DEFAULT_MENU = [
-            // { id: this.CTXT_DUBLICATE_ID, text: "Duplicate", icon: 'glyphicon glyphicon-duplicate' },
-            { id: this.CTXT_DELETE_ID, text: "Delete", icon: 'glyphicon glyphicon-remove' },
-            // { id: this.CTXT_CREATE_MULTI_MODEL_ID, text: "Create Multi-Model", icon: 'glyphicon glyphicon-briefcase' },
-            // { id: this.CTXT_CREATE_CO_SIM_CONFIG_ID, text: "Create Co-Simulation Configuration", icon: 'glyphicon glyphicon-copyright-mark' },
-            { id: this.CTXT_IMPORT_ID, text: "Import", icon: 'glyphicon glyphicon-import' },
-            { id: this.CTXT_EXPORT_ID, text: "Export", icon: 'glyphicon glyphicon-export' },
-        ];
-
         this.tree = $(this.browser).w2sidebar({
             name: 'sidebar',
-            menu: DEFAULT_MENU
+            menu: []
         });
-
-        let MM_MENU = [
-            { id: this.CTXT_DUBLICATE_ID, text: "Duplicate", icon: 'glyphicon glyphicon-duplicate' },
-            { id: this.CTXT_DELETE_ID, text: "Delete", icon: 'glyphicon glyphicon-remove' },
-            { id: this.CTXT_CREATE_CO_SIM_CONFIG_ID, text: "Create Co-Simulation Configuration", icon: 'glyphicon glyphicon-copyright-mark' },
-            { id: this.CTXT_IMPORT_ID, text: "Import", icon: 'glyphicon glyphicon-import' },
-            { id: this.CTXT_EXPORT_ID, text: "Export", icon: 'glyphicon glyphicon-export' },
-        ];
-
-        let COSIM_MENU = [
-            { id: this.CTXT_DUBLICATE_ID, text: "Duplicate", icon: 'glyphicon glyphicon-duplicate' },
-            { id: this.CTXT_DELETE_ID, text: "Delete", icon: 'glyphicon glyphicon-remove' },
-            { id: this.CTXT_IMPORT_ID, text: "Import", icon: 'glyphicon glyphicon-import' },
-            { id: this.CTXT_EXPORT_ID, text: "Export", icon: 'glyphicon glyphicon-export' },
-        ];
-
-        let SYSML_EX_MENU = [
-            { id: this.CTXT_CREATE_MULTI_MODEL_ID, text: "Create Multi-Model", icon: 'glyphicon glyphicon-briefcase' },
-            { id: this.CTXT_DELETE_ID, text: "Delete", icon: 'glyphicon glyphicon-remove' },
-            { id: this.CTXT_IMPORT_ID, text: "Import", icon: 'glyphicon glyphicon-import' },
-            { id: this.CTXT_EXPORT_ID, text: "Export", icon: 'glyphicon glyphicon-export' },
-        ];
-
-        let DSE_MENU = [
-            { id: this.CTXT_CREATE_DSE_ID, text: "Create Design Space Exploration Config", icon: 'glyphicon glyphicon-asterisk' },
-        ];
-
-        let TEST_DATA_GENERATION_MENU = [
-            { id: this.CTXT_CREATE_TEST_DATA_GERATION_PROJECT, text: "Create Test Data Generation Project", icon: 'glyphicon glyphicon-asterisk' },
-        ];
-
-        let MODEL_CHECKING_MENU = [
-            { id: this.CTXT_CREATE_MODEL_CHECKING_PROJECT, text: "Create Model Checking Project", icon: 'glyphicon glyphicon-asterisk' },
-        ];
 
         this.tree.on("contextMenu", (event: any) => {
             console.log(event);
-            let id: String = event.target + "";
-            if (id.indexOf('mm.json') >= 0) {
-                this.tree.menu = MM_MENU;
-            } else if (id.indexOf('coe.json') >= 0) {
-                this.tree.menu = COSIM_MENU;
-            } else if (id.indexOf('sysml.json') >= 0) {
-                this.tree.menu = SYSML_EX_MENU;
-            } else if (Path.basename(id.toString()) == Project.PATH_TEST_DATA_GENERATION) {
-                this.tree.menu = TEST_DATA_GENERATION_MENU;
-            } else if (Path.basename(id.toString()) == Project.PATH_MODEL_CHECKING) {
-                this.tree.menu = MODEL_CHECKING_MENU;
-            } else if (Path.basename(id.toString()) == Project.PATH_DSE) {
-                this.tree.menu = DSE_MENU;
-            } else {
-                this.tree.menu = DEFAULT_MENU;
-            }
+            var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+            var menu: MenuEntry[] = item.menuEntries;
+            this.tree.menu = menu;
         });
 
         this.tree.on("menuClick", (event: any) => {
-
-            var id: string = "";
-
-            if (event.menuItem != undefined) {
-                id = event.menuItem.id;
-            }
-
-            if (id == this.CTXT_CREATE_TEST_DATA_GERATION_PROJECT) {
-                console.info("Create new test data generation project");
-                this.menuHandler.createRTTesterProject(event.target);
-            } else if (id == this.CTXT_CREATE_MODEL_CHECKING_PROJECT) {
-                console.info("Create new model checking project");
-                this.menuHandler.createRTTesterProject(event.target);
-            } else if (id == this.CTXT_CREATE_DSE_ID) {
-                console.info("Create new DSE config ");
-                this.menuHandler.createDse(event.target);
-            } else if (id.indexOf(this.CTXT_CREATE_MULTI_MODEL_ID) == 0) {
-                if (event.target.indexOf('sysml.json') >= 0) {
-                    console.info("Create new multimodel for: " + event.target);
-                    this.menuHandler.createMultiModel(event.target + "");
-                } else {
-                    const { dialog } = require('electron').remote;
-                    dialog.showErrorBox("Cannot create multi-model", "A multi-model cannot be created based on the selected resource.")
-                }
-            } else if (id.indexOf(this.CTXT_CREATE_CO_SIM_CONFIG_ID) == 0) {
-                if (event.target.indexOf('mm.json') >= 0) {
-                    console.info("Create new cosim config for: " + event.target);
-                    this.menuHandler.createCoSimConfiguration(event.target + "");
-                } else {
-                    const { dialog } = require('electron').remote;
-                    dialog.showErrorBox("Cannot create co-simulation configuration", "A co-simulation configuration cannot be created based on the selected resource.")
-                }
-            } else if (id.indexOf(this.CTXT_DELETE_ID) == 0) {
-                let name = Path.basename(event.target);
-                if (name.indexOf('R_') >= 0) {
-                    console.info("Deleting " + event.target);
-                    this.getCustomFs().removeRecursive(event.target, function (err: any, v: any) {
-                        if (err != null) {
-                            console.error(err);
-                        }
-                        self.refreshProjectBrowser();
-                    });
-
-                }
-
-            }
+            var entry: MenuEntry = <MenuEntry>((<any>event).menuItem);
+            entry.callback(entry.item);
         });
 
+        this.tree.on("dblClick", (event: JQueryEventObject) => {
+            //Remove auto expansion on double click
+            event.preventDefault();
+            var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+            item.dblClickHandler();
+        });
 
-        this.addDblClickHandler((event: JQueryEventObject) => {
+        this.tree.on("click", (event: JQueryEventObject) => {
             console.info(event);
             let allowClick = true;
             if (this.menuHandler.deInitialize != null)
             { allowClick = this.menuHandler.deInitialize(); }
             if (allowClick) {
-                let path = Path.normalize(event.target + "");
-                if (path.indexOf('coe.json') >= 0) {
-                    this.menuHandler.openCoeView(path);
-                } else if (path.indexOf('mm.json') >= 0) {
-                    this.menuHandler.openMultiModel(path);
-                } else if (path.indexOf('sysml.json') >= 0) {
-                    this.menuHandler.openSysMlExport(path);
-                } else if (path.indexOf('.fmu') >= 0) {
-                    this.menuHandler.openFmu(path);
-                }
+                var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+                item.clickHandler();
             }
         });
-
-        this.addHandlers();
 
         this.refreshProjectBrowser();
 
@@ -198,132 +137,179 @@ export class BrowserController {
 
         let app: IntoCpsApp = IntoCpsApp.getInstance();
         if (app.getActiveProject() != null) {
-            let root = new Container(app.getActiveProject().getName(), app.getActiveProject().getRootFilePath(), ContainerType.Folder);
             this.clearAll();
-            this.addToplevelNodes(this.buildProjectStructor(app.getActiveProject(), 0, root, 3, []));
+            this.addToplevelNodes(this.addFSFolderContent(app.getActiveProject().getRootFilePath()));
         }
     }
 
-    private buildProjectStructor(project: IProject, level: number, root: Container, expandToLevel: number, skipContainers: Container[]): any {
 
-        let _this = this;
-        var items: any[] = [];
-        let contentProvider: ContentProvider = new ContentProvider();
+    relativeProjectPath(path: string): string {
+        if (!Path.isAbsolute(path)) {
+            return Path.normalize(path);
+        }
+        let app: IntoCpsApp = IntoCpsApp.getInstance();
+        var root: string = app.getActiveProject().getRootFilePath();
+        return Path.relative(root, path);
+    }
 
-        contentProvider.getChildren(root).forEach((value: Container, index: number, array: Container[]) => {
 
-            if (skipContainers.indexOf(value) >= 0) {
-                return;
+    relativePathIsInFolder(path: string, folder: string): boolean {
+        var rPath = this.relativeProjectPath(path);
+        var rFolder = this.relativeProjectPath(folder);
+        var relative = Path.relative(rFolder, rPath);
+        return rPath.endsWith(relative);
+    }
+
+
+    private addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
+        var self = this;
+        var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
+        var stat = fs.statSync(path);
+
+        function menuEntry(text: string, icon: any, callback: (item: ProjectBrowserItem) => void = undefined) {
+            return new MenuEntry(result, text, icon, callback);
+        }
+
+        var menuEntryDuplicate = menuEntry("Duplicate", 'glyphicon glyphicon-duplicate');
+        var menuEntryDelete = menuEntry("Delete", 'glyphicon glyphicon-remove');
+        var menuEntryImport = menuEntry("Import", 'glyphicon glyphicon-import');
+        var menuEntryExport = menuEntry("Export", 'glyphicon glyphicon-export');
+
+        // Default menu entries
+        result.menuEntries = [menuEntryDelete, menuEntryImport, menuEntryExport];
+
+        if (Path.basename(path).startsWith('.')) {
+            return null;
+        }
+        if (stat.isFile()) {
+            if (path.endsWith('.coe.json')) {
+                //merge MultiModelConfig and folder
+                parent.img = 'glyphicon glyphicon-copyright-mark';
+                (<any>parent).coeConfig = path;
+                parent.dblClickHandler = function () {
+                    self.menuHandler.openCoeView(path);
+                };
+                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
+                return null;
             }
-
-            var name = value.name;
-            if (name.indexOf('.') > 0) {
-                name = name.substring(0, name.indexOf('.'));
+            else if (path.endsWith('.mm.json')) {
+                //merge MultiModelConfig and folder
+                parent.img = 'glyphicon glyphicon-briefcase';
+                (<any>parent).mmConfig = path;
+                parent.dblClickHandler = function () {
+                    self.menuHandler.openMultiModel(path);
+                };
+                var menuEntryCreateCoSim = menuEntry("Create Co-Simulation Configuration", 'glyphicon glyphicon-copyright-mark',
+                    function (item: ProjectBrowserItem) {
+                        console.info("Create new cosim config for: " + item.id);
+                        self.menuHandler.createCoSimConfiguration(item.id);
+                    });
+                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport];
+                return null;
             }
-
-            var modifiedExpandLevel = expandToLevel;
-
-            var item: any = new Object();
-            item.id = value.filepath;
-            item.text = name;
-            item.expanded = true
-
-            if (level == 0) {
-                item.group = true;
-
-                if (value.name.toLowerCase().indexOf(project.getSysMlFolderName().toLowerCase() + "") == 0) {
-                    modifiedExpandLevel = 2;//modify expand level for SysML
+            else if (path.endsWith('.fmu')) {
+                result.img = 'icon-page';
+                result.removeFileExtensionFromText();
+                result.dblClickHandler = function () {
+                    self.menuHandler.openFmu(path);
+                };
+            }
+            else if (path.endsWith('.sysml.json')) {
+                result.img = 'glyphicon glyphicon-tasks';
+                result.removeFileExtensionFromText();
+                result.dblClickHandler = function () {
+                    self.menuHandler.openSysMlExport(path);
+                };
+                var menuEntryCreateMM = menuEntry("Create Multi-Model", 'glyphicon glyphicon-briefcase',
+                    function (item: ProjectBrowserItem) {
+                        console.info("Create new multimodel for: " + item.id);
+                        self.menuHandler.createMultiModel(item.id);
+                    });
+                result.menuEntries = [menuEntryCreateMM, menuEntryDelete, menuEntryImport, menuEntryExport];
+            }
+            else if (path.endsWith('.emx')) {
+                result.img = 'glyphicon glyphicon-tree-conifer';
+                result.removeFileExtensionFromText();
+            }
+            else if (path.endsWith('.mo')) {
+                result.img = 'glyphicon glyphicon-tree-deciduous';
+                result.removeFileExtensionFromText();
+            }
+            else if (path.endsWith('.csv')) {
+                result.img = 'glyphicon glyphicon-th-list';
+                result.removeFileExtensionFromText();
+            } else {
+                return null;
+            }
+        } else if (stat.isDirectory()) {
+            result.img = 'icon-folder';
+            if (this.isOvertureProject(path)) {
+                result.img = 'glyphicon glyphicon-leaf';
+                result.expanded = false;
+            }
+            else if (Path.basename(path) == Project.PATH_TEST_DATA_GENERATION) {
+                var menuEntryCreate = menuEntry("Create Test Data Generation Project", 'glyphicon glyphicon-asterisk',
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.createRTTesterProject(item.id);
+                    });
+                result.menuEntries = [menuEntryCreate];
+            }
+            else if (Path.basename(path) == Project.PATH_MODEL_CHECKING) {
+                var menuEntryCreate = menuEntry("Create Model Checking Project", 'glyphicon glyphicon-asterisk',
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.createRTTesterProject(item.id);
+                    });
+                result.menuEntries = [menuEntryCreate];
+            }
+            else if (Path.basename(path) == Project.PATH_DSE) {
+                var menuEntryCreate = menuEntry("Create Design Space Exploration Config", 'glyphicon glyphicon-asterisk',
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.createDse(item.id);
+                    });
+                result.menuEntries = [menuEntryCreate];
+            }
+            else if (Path.basename(path).indexOf("R_") == 0) {
+                result.img = 'glyphicon glyphicon-barcode';
+                var menuEntryDelete = menuEntry("Delete", 'glyphicon glyphicon-remove',
+                    function (item: ProjectBrowserItem) {
+                        console.info("Deleting " + event.target);
+                        this.getCustomFs().removeRecursive(event.target, function (err: any, v: any) {
+                            if (err != null) {
+                                console.error(err);
+                            }
+                            self.refreshProjectBrowser();
+                        });
+                    });
+                result.menuEntries = [menuEntryDelete, menuEntryImport, menuEntryExport];
+            }
+        }
+        if (result != null) {
+            if (parent != null) {
+                parent.nodes.push(result);
+            }
+            if (stat.isDirectory()) {
+                if (this.relativePathIsInFolder(path, <string>Project.PATH_SYSML) && result.level >= 2) {
+                    // Skip: Limit directory depth in SysML folder to 2
+                } else {
+                    this.addFSFolderContent(path, result);
                 }
             }
+        }
+        return result;
+    }
 
-            switch (value.type) {
-                case ContainerType.Folder:
-                    {
-                        item.img = 'icon-folder';
-
-                        //merge MultiModelConfig and folder
-                        var autoRemoveChild = _this.getChildContainer(value, ContainerType.MultiModelConfig);
-                        if (autoRemoveChild != null) {
-                            item.img = 'glyphicon glyphicon-briefcase';
-                            item.id = autoRemoveChild.filepath;
-                        }
-                        //merge CosimConfig
-                        autoRemoveChild = _this.getChildContainer(value, ContainerType.CoeConfig);
-                        if (autoRemoveChild != null) {
-                            item.img = 'glyphicon glyphicon-copyright-mark';
-                            item.id = autoRemoveChild.filepath;
-                        }
-
-                        if (level >= 5) {
-                            //truncate content
-                            item.nodes = [
-                                {
-                                    id: item.id + 'truncated', text: 'content truncated', img: 'glyphicon glyphicon-option-horizontal', group: false
-                                }];
-                        } else {
-                            let autoremoveList: Container[] = autoRemoveChild == null ? [] : [autoRemoveChild];
-                            item.nodes = _this.buildProjectStructor(project, level + 1, value, modifiedExpandLevel, autoremoveList);
-                        }
-
-                        if (level >= modifiedExpandLevel) {
-                            item.expanded = false;
-                        }
-
-                        if (_this.isOvertureProject(value)) {
-                            item.img = 'glyphicon glyphicon-leaf';
-                            item.expanded = false;
-                        } else if (name.indexOf("R_") == 0) {
-                            item.img = 'glyphicon glyphicon-barcode';
-                        }
-                        break;
-                    };
-                case ContainerType.FMU:
-                    {
-                        item.img = 'icon-page';
-                        break;
-                    };
-                case ContainerType.MultiModelConfig:
-                    {
-                        item.img = 'glyphicon glyphicon-briefcase';
-                        break;
-                    };
-                case ContainerType.CoeConfig:
-                    {
-                        item.img = 'glyphicon glyphicon-copyright-mark';
-                        break;
-                    };
-                case ContainerType.SysMLExport:
-                    {
-                        item.img = 'glyphicon glyphicon-tasks';
-                        break;
-                    };
-                case ContainerType.EMX:
-                    {
-                        item.img = 'glyphicon glyphicon-tree-conifer';
-                        break;
-                    };
-                case ContainerType.MO:
-                    {
-                        item.img = 'glyphicon glyphicon-tree-deciduous';
-                        break;
-                    };
-                case ContainerType.CSV:
-                    {
-                        item.img = 'glyphicon glyphicon-th-list';
-                        break;
-                    };
-
-
-
+    private addFSFolderContent(path: string, parent: ProjectBrowserItem = null): ProjectBrowserItem[] {
+        var result: ProjectBrowserItem[] = [];
+        var fs = require('fs');
+        var self = this;
+        fs.readdirSync(path).forEach(function (name: string) {
+            var filePath: string = Path.join(path, name);
+            var ret = self.addFSItem(filePath, parent);
+            if (ret != null) {
+                result.push(ret);
             }
-            if (!(value.type == ContainerType.CoeConfig || value.type == ContainerType.MultiModelConfig)) {
-                item.id = item.id.replace(/\\/g, "/");
-                items.push(item)
-            };
         });
-
-
-        return items;
+        return result;
     }
 
     addToplevelNodes(nodes: Object | Object[]): Object {
@@ -341,30 +327,6 @@ export class BrowserController {
         this.tree.remove.apply(this.tree, ids);
     }
 
-    addClickHandler(clickHandler: (event: JQueryEventObject) => void) {
-        this.clickHandlers.push(clickHandler);
-    }
-
-    addDblClickHandler(clickHandler: (event: JQueryEventObject) => void) {
-        this.dblClickHandlers.push(clickHandler);
-    }
-
-    private addHandlers() {
-        this.tree.on("dblClick", (event: JQueryEventObject) => {
-            //Remove auto expansion on double click
-            event.preventDefault();
-            this.dblClickHandlers.forEach(handler => {
-                handler(event);
-            })
-        });
-
-        this.tree.on("click", (event: JQueryEventObject) => {
-            this.clickHandlers.forEach(handler => {
-                handler(event);
-            })
-        });
-    }
-
     getSelectedId(): string {
         return this.tree.selected;
     }
@@ -373,9 +335,9 @@ export class BrowserController {
     /*
     Utility function to determin if the container holds an Overture Project. TODO: Should this be annotated in the container instead.
      */
-    private isOvertureProject(container: Container): boolean {
+    private isOvertureProject(path: string): boolean {
 
-        let projectFile = Path.normalize(container.getFilePath() + "/" + ".project");
+        let projectFile = Path.normalize(Path.join(path, ".project"));
 
         try {
             if (!fs.accessSync(projectFile, fs.R_OK)) {
@@ -387,18 +349,6 @@ export class BrowserController {
 
         }
         return false;
-    }
-
-    private getChildContainer(root: Container, type: ContainerType) {
-        let contentProvider: ContentProvider = new ContentProvider();
-
-        let children = contentProvider.getChildren(root).filter((value) => { return value.getType() == type });
-
-        if (children.length > 0)
-            return children[0];
-
-        return null;
-
     }
 
     private getCustomFs(): any {

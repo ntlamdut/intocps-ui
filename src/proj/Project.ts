@@ -5,7 +5,6 @@ import fs = require('fs');
 import Path = require('path');
 
 import {IProject} from "./IProject"
-import {Container} from "./Container"
 import {ProjectSettings} from "./ProjectSettings"
 
 export class Project implements IProject {
@@ -13,7 +12,6 @@ export class Project implements IProject {
     name: string;
     rootPath: string;
     configPath: string;
-    containers: Array<Container> = [];
 
 
 
@@ -22,7 +20,7 @@ export class Project implements IProject {
     PATH_MULTI_MODELS: String = "Multi-models";
     static PATH_DSE: String = "Design Space Explorations";
     //PATH_CONNECTIONS: String = "SysML Connections";
-    PATH_SYSML: String = "SysML";
+    static PATH_SYSML: String = "SysML";
     static PATH_TEST_DATA_GENERATION: String = "Test Data Generation";
     static PATH_MODEL_CHECKING: String = "Model Checking";
 
@@ -44,18 +42,14 @@ export class Project implements IProject {
     public getProjectConfigFilePath(): string { return this.configPath }
     public getFmusPath(): string { return Path.normalize(this.getRootFilePath() + "/" + this.PATH_FMUS); }
 
-    public getContainers() {
-        return this.containers;
-    }
-
     public getSysMlFolderName(): String {
-        return this.PATH_SYSML;
+        return Project.PATH_SYSML;
     }
 
     //TODO: replace with proper folder struct
     public save() {
 
-        let folders = [this.PATH_SYSML, Project.PATH_DSE, this.PATH_FMUS, this.PATH_MODELS, this.PATH_MULTI_MODELS,
+        let folders = [Project.PATH_SYSML, Project.PATH_DSE, this.PATH_FMUS, this.PATH_MODELS, this.PATH_MULTI_MODELS,
             Project.PATH_TEST_DATA_GENERATION, Project.PATH_MODEL_CHECKING];
 
         for (var i = 0; folders.length > i; i++) {

@@ -168,7 +168,14 @@ export enum CausalityType { Output, Input, Parameter, CalculatedParameter ,Local
 export function isTypeCompatiple(t1: ScalarVariableType, t2: ScalarVariableType): boolean {
     if (t1 == ScalarVariableType.Unknown || t2 == ScalarVariableType.Unknown) {
         return true;
-    } else {
+    } else if(t1 ==ScalarVariableType.Bool && (t2==ScalarVariableType.Int || t2==ScalarVariableType.Real)) {
+        // bool -> number
+        return true;
+    }else if(t2 ==ScalarVariableType.Bool && (t1==ScalarVariableType.Int || t1==ScalarVariableType.Real)) {
+        //number -> bool
+          return true;
+    }else
+    {
         return t1 == t2;
     }
 }
@@ -193,7 +200,7 @@ export function isTypeCompatipleWithValue(t1: ScalarVariableType, value: any): b
             return true;
 
         case ScalarVariableType.Real:
-            return isFloat(value);
+            return isFloat(value) || isInteger(value);
         case ScalarVariableType.Bool:
             return typeof(value) === "boolean" || isInteger(value);
         case ScalarVariableType.Int:
