@@ -238,10 +238,7 @@ export class CoeSimulationRunner {
 
         let self = this;
 
-        let startTime = +(<HTMLInputElement>document.getElementById("input-sim-time-start")).value;
-        let endTime = +(<HTMLInputElement>document.getElementById("input-sim-time-end")).value;
-
-        var dat = JSON.stringify({ startTime: startTime, endTime: endTime });
+        var dat = JSON.stringify({ startTime: this.coSimConfig.startTime, endTime: this.coSimConfig.endTime });
         let url = self.getHttpUrl() + self.simulateCmd + self.sessionId;
 
         try {
