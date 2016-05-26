@@ -268,7 +268,7 @@ export class BrowserController {
                     });
                 result.menuEntries = [menuEntryCreate];
             }
-            else if (name.indexOf("R_") == 0) {
+            else if (Path.basename(path).indexOf("R_") == 0) {
                 result.img = 'glyphicon glyphicon-barcode';
                 var menuEntryDelete = menuEntry("Delete", 'glyphicon glyphicon-remove',
                     function (item: ProjectBrowserItem) {
