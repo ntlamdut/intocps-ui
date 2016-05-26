@@ -220,6 +220,8 @@ export class BrowserController {
             else if (path.endsWith('.csv')) {
                 result.img = 'glyphicon glyphicon-th-list';
                 result.removeFileExtensionFromText();
+            } else {
+                return null;
             }
         } else if (stat.isDirectory()) {
             result.img = 'icon-folder';
