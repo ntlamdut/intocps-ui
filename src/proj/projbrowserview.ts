@@ -19,12 +19,17 @@ export class MenuEntry {
     icon: any;
     item: ProjectBrowserItem;
     callback: (item: ProjectBrowserItem) => void;
-    constructor(item: ProjectBrowserItem, text: string, icon: any, callback: (item: ProjectBrowserItem) => void) {
+    constructor(item: ProjectBrowserItem, text: string, icon: any,
+        callback: (item: ProjectBrowserItem) => void = undefined) {
         this.item = item;
         this.id = text;
         this.text = text;
         this.icon = icon;
-        this.callback = callback;
+        if (callback != undefined) {
+            this.callback = callback;
+        } else {
+            this.callback = function (item: ProjectBrowserItem) { };
+        }
     }
 }
 
@@ -53,12 +58,6 @@ export class ProjectBrowserItem {
         } else {
             this.level = parent.level + 1;
         }
-    }
-    addMenuEntry(text: string, icon: any, callback: (item: ProjectBrowserItem) => void) {
-        this.menuEntries.push(new MenuEntry(this, text, icon, callback));
-    }
-    addMenuEntryObject(entry: MenuEntry) {
-        this.menuEntries.push(entry);
     }
     removeFileExtensionFromText(): void {
         this.text = this.text.substr(0, this.text.indexOf('.'));
@@ -148,6 +147,19 @@ export class BrowserController {
         var self = this;
         var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
         var stat = fs.statSync(path);
+
+        function menuEntry(text: string, icon: any, callback: (item: ProjectBrowserItem) => void = undefined) {
+            return new MenuEntry(result, text, icon, callback);
+        }
+
+        var menuEntryDuplicate = menuEntry("Duplicate", 'glyphicon glyphicon-duplicate');
+        var menuEntryDelete = menuEntry("Delete", 'glyphicon glyphicon-remove');
+        var menuEntryImport = menuEntry("Import", 'glyphicon glyphicon-import');
+        var menuEntryExport = menuEntry("Export", 'glyphicon glyphicon-export');
+
+        // Default menu entries
+        result.menuEntries = [menuEntryDelete, menuEntryImport, menuEntryExport];
+
         if (Path.basename(path).startsWith('.')) {
             return null;
         }
@@ -159,6 +171,7 @@ export class BrowserController {
                 parent.dblClickHandler = function () {
                     self.menuHandler.openCoeView(path);
                 };
+                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
                 return null;
             }
             else if (path.endsWith('.mm.json')) {
@@ -168,11 +181,12 @@ export class BrowserController {
                 parent.dblClickHandler = function () {
                     self.menuHandler.openMultiModel(path);
                 };
-                parent.addMenuEntry("Create Co-Simulation Configuration", 'glyphicon glyphicon-copyright-mark',
+                var menuEntryCreateCoSim = menuEntry("Create Co-Simulation Configuration", 'glyphicon glyphicon-copyright-mark',
                     function (item: ProjectBrowserItem) {
                         console.info("Create new cosim config for: " + item.id);
                         self.menuHandler.createCoSimConfiguration(item.id);
                     });
+                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport];
                 return null;
             }
             else if (path.endsWith('.fmu')) {
@@ -188,11 +202,12 @@ export class BrowserController {
                 result.dblClickHandler = function () {
                     self.menuHandler.openSysMlExport(path);
                 };
-                result.addMenuEntry("Create Multi-Model", 'glyphicon glyphicon-briefcase',
+                var menuEntryCreateMM = menuEntry("Create Multi-Model", 'glyphicon glyphicon-briefcase',
                     function (item: ProjectBrowserItem) {
                         console.info("Create new multimodel for: " + item.id);
                         self.menuHandler.createMultiModel(item.id);
                     });
+                result.menuEntries = [menuEntryCreateMM, menuEntryDelete, menuEntryImport, menuEntryExport];
             }
             else if (path.endsWith('.emx')) {
                 result.img = 'glyphicon glyphicon-tree-conifer';
@@ -213,26 +228,29 @@ export class BrowserController {
                 result.expanded = false;
             }
             else if (Path.basename(path) == Project.PATH_TEST_DATA_GENERATION) {
-                result.addMenuEntry("Create Test Data Generation Project", 'glyphicon glyphicon-asterisk',
+                var menuEntryCreate = menuEntry("Create Test Data Generation Project", 'glyphicon glyphicon-asterisk',
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.createRTTesterProject(item.id);
                     });
+                result.menuEntries = [menuEntryCreate];
             }
             else if (Path.basename(path) == Project.PATH_MODEL_CHECKING) {
-                result.addMenuEntry("Create Model Checking Project", 'glyphicon glyphicon-asterisk',
+                var menuEntryCreate = menuEntry("Create Model Checking Project", 'glyphicon glyphicon-asterisk',
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.createRTTesterProject(item.id);
                     });
+                result.menuEntries = [menuEntryCreate];
             }
             else if (Path.basename(path) == Project.PATH_DSE) {
-                result.addMenuEntry("Create Design Space Exploration Config", 'glyphicon glyphicon-asterisk',
+                var menuEntryCreate = menuEntry("Create Design Space Exploration Config", 'glyphicon glyphicon-asterisk',
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.createDse(item.id);
                     });
+                result.menuEntries = [menuEntryCreate];
             }
             else if (name.indexOf("R_") == 0) {
                 result.img = 'glyphicon glyphicon-barcode';
-                result.addMenuEntry("Delete", 'glyphicon glyphicon-remove',
+                var menuEntryDelete = menuEntry("Delete", 'glyphicon glyphicon-remove',
                     function (item: ProjectBrowserItem) {
                         console.info("Deleting " + event.target);
                         this.getCustomFs().removeRecursive(event.target, function (err: any, v: any) {
@@ -242,6 +260,7 @@ export class BrowserController {
                             self.refreshProjectBrowser();
                         });
                     });
+                result.menuEntries = [menuEntryDelete, menuEntryImport, menuEntryExport];
             }
         }
         if (result != null) {
