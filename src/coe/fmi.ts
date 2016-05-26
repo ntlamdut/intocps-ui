@@ -126,7 +126,7 @@ export class Fmu {
             sv.type = type;
             sv.causality = causality;
             sv.isConfirmed = true;
-            
+
             thisNode = iterator.iterateNext();
         }
 
@@ -180,6 +180,28 @@ export function isCausalityCompatible(t1: CausalityType, t2: CausalityType): boo
     else {
         return t1 == t2;
     }
+}
+
+function isInteger(x:any) { return typeof x === "number" && isFinite(x) && Math.floor(x) === x; }
+function isFloat(x:any) { return !!(x % 1); }
+function isString(value:any) {return typeof value === 'string';}
+
+export function isTypeCompatipleWithValue(t1: ScalarVariableType, value: any): boolean {
+
+    switch (t1) {
+        case ScalarVariableType.Unknown:
+            return true;
+
+        case ScalarVariableType.Real:
+            return isFloat(value);
+        case ScalarVariableType.Bool:
+            return typeof(value) === "boolean" || isInteger(value);
+        case ScalarVariableType.Int:
+            return isInteger(value);
+        case ScalarVariableType.String:
+            return isString(value);
+    }
+    return false;
 }
 
 // Repersents an instance of an FMU, including initial parameters and a mapping from outputs to InstanceScalarPair

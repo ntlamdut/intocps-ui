@@ -115,21 +115,22 @@ gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css', 'copy-bowe
 
 
 // P]ackage app into binary
+var packageJSON = require('./package.json');
 
-gulp.task("create-package", function(callback) {
+gulp.task("package-darwin", function(callback) {
     var options = {
         dir: '.',
-        name: "blah",
-        platform: "win32",
+        name: packageJSON.name,
+        platform: "darwin",
         arch: "x64",
         version: "0.36.0",
         overwrite:true,
-        icon: 'into-cps-logo.png.ico',
+        icon: 'into-cps-logo.png.icns',
         out: 'pkg',
-        "app-version": "0.4.5",
+        "app-version": packageJSON.version,
         "version-string": {
-            "CompanyName": "blah",
-            "ProductName": "blah"
+            "CompanyName": packageJSON.author.name,
+            "ProductName": packageJSON.productName
         }
     };
     packager(options, function done (err, appPath) {
@@ -138,28 +139,50 @@ gulp.task("create-package", function(callback) {
     });
 });
 
-//gulp.task('package', function () {
-    //gulp.src("")
-    //.pipe(electron({
-        //src: './dist/**',
-        //packageJson: packageJson,
-        //release: './release',
-        //cache: './cache',
-        //version: 'v0.36.11',
-        //packaging: false,
-        //platforms: ['win32'],
-        //platformResources: {
-            //win: {
-                //"version-string": packageJson.version,
-                //"file-version": packageJson.version,
-                //"product-version": packageJson.version,
-                //"icon": 'into-cps-logo.png.ico'
-            //}
-        //}
-    //}))
-    //.pipe(gulp.dest(""));
-//});
+gulp.task("package-win32", function(callback) {
+    var options = {
+        dir: '.',
+        name: packageJSON.name,
+        platform: "win32",
+        arch: "all",
+        version: "0.36.0",
+        overwrite:true,
+        icon: 'into-cps-logo.png.ico',
+        out: 'pkg',
+        "app-version": packageJSON.version,
+        "version-string": {
+           "CompanyName": packageJSON.author.name,
+            "ProductName": packageJSON.productName
+        }
+    };
+    packager(options, function done (err, appPath) {
+        if(err) { return console.log(err); }
+        callback();
+    });
+});
+gulp.task("package-linux", function(callback) {
+    var options = {
+        dir: '.',
+        name: packageJSON.name,
+        platform: "linux",
+        arch: "x64",
+        version: "0.36.0",
+        overwrite:true,
+        out: 'pkg',
+        "app-version": packageJSON.version,
+        "version-string": {
+           "CompanyName": packageJSON.author.name,
+            "ProductName": packageJSON.productName
+        }
+    };
+    packager(options, function done (err, appPath) {
+        if(err) { return console.log(err); }
+        callback();
+    });
+});
 
+
+gulp.task('package-all',['package-win32','package-darwin','package-linux']);
 
 // Watch for changes and rebuild on the fly
 gulp.task('watch', function () {

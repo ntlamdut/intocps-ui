@@ -40,8 +40,12 @@ function getTempDir(): string {
         tempDir = Path.join(IntoCpsApp.getInstance().getActiveProject().getRootFilePath(), "downloads");
     }
     try {
-        fs.mkdirSync(tempDir);
-    } catch (e) { }
+       // fs.mkdirSync(tempDir);
+       var mkdirp = require('mkdirp');
+       mkdirp.sync(tempDir);
+    } catch (e) {
+        console.error(e);
+     }
     return tempDir;
 }
 
@@ -66,11 +70,13 @@ function setProgress(progress: number) {
 
 function fetchList() {
 
-    var url = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.UPDATE_SITE);
+let settings = IntoCpsApp.getInstance().getSettings();
 
+    var url = settings.getValue(SettingKeys.UPDATE_SITE);
+    
     if (url == null || url == undefined) {
         url = "https://raw.githubusercontent.com/into-cps/release-site/master/download/";
-        IntoCpsApp.getInstance().getSettings().setValue(SettingKeys.UPDATE_SITE, url);
+        settings.setValue(SettingKeys.UPDATE_SITE, url);
 
     }
 
