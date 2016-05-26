@@ -116,8 +116,10 @@ export class FixedStepAlgorithm implements ICoSimAlgorithm {
     // fixed - step
     size: number = 0.1;
 
-    constructor(size: number) {
-        this.size = size;
+    constructor(size?: number) {
+        if (size != null) {
+            this.size = size;
+        }
     }
 }
 

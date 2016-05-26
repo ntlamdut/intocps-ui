@@ -112,8 +112,14 @@ export class BrowserController {
         });
 
         this.tree.on("click", (event: JQueryEventObject) => {
-            var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
-            item.clickHandler();
+            console.info(event);
+            let allowClick = true;
+            if (this.menuHandler.deInitialize != null)
+            { allowClick = this.menuHandler.deInitialize(); }
+            if (allowClick) {
+                var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+                item.clickHandler();
+            }
         });
 
         this.refreshProjectBrowser();
