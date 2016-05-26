@@ -243,10 +243,12 @@ export class BrowserController {
                         });
                     });
             }
-            if (result) {
-                if (parent) {
-                    parent.nodes.push(result);
-                }
+        }
+        if (result != null) {
+            if (parent != null) {
+                parent.nodes.push(result);
+            }
+            if (stat.isDirectory()) {
                 this.addFSFolderContent(path, result);
             }
         }
