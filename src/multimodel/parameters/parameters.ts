@@ -1,6 +1,6 @@
 
 import * as Configs from "../../intocps-configurations/intocps-configurations";
-import {Variable} from "./Variable";
+import {Variable} from "./variable";
 import {InstanceListElement} from "../connections/connections-instance-element";
 import {Component} from "../components/component";
 
