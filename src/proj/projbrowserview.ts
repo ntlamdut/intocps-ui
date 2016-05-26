@@ -143,6 +143,24 @@ export class BrowserController {
     }
 
 
+    relativeProjectPath(path: string): string {
+        if (!Path.isAbsolute(path)) {
+            return Path.normalize(path);
+        }
+        let app: IntoCpsApp = IntoCpsApp.getInstance();
+        var root: string = app.getActiveProject().getRootFilePath();
+        return Path.relative(root, path);
+    }
+
+
+    relativePathIsInFolder(path: string, folder: string): boolean {
+        var rPath = this.relativeProjectPath(path);
+        var rFolder = this.relativeProjectPath(folder);
+        var relative = Path.relative(rFolder, rPath);
+        return rPath.endsWith(relative);
+    }
+
+
     private addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
         var self = this;
         var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
@@ -270,7 +288,11 @@ export class BrowserController {
                 parent.nodes.push(result);
             }
             if (stat.isDirectory()) {
-                this.addFSFolderContent(path, result);
+                if (this.relativePathIsInFolder(path, <string>Project.PATH_SYSML) && result.level >= 2) {
+                    // Skip: Limit directory depth in SysML folder to 2
+                } else {
+                    this.addFSFolderContent(path, result);
+                }
             }
         }
         return result;
