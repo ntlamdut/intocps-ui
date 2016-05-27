@@ -43,8 +43,8 @@ export class ProjectBrowserItem {
     parent: ProjectBrowserItem;
     group: boolean = false;
 
-    clickHandler(): void { }
-    dblClickHandler(): void { }
+    clickHandler(item: ProjectBrowserItem): void { }
+    dblClickHandler(item: ProjectBrowserItem): void { }
     menuEntries: MenuEntry[] = [];
 
     constructor(path: string, parent: ProjectBrowserItem) {
@@ -106,7 +106,7 @@ export class BrowserController {
             //Remove auto expansion on double click
             event.preventDefault();
             var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
-            item.dblClickHandler();
+            item.dblClickHandler(item);
         });
 
         this.tree.on("click", (event: JQueryEventObject) => {
@@ -116,7 +116,7 @@ export class BrowserController {
             { allowClick = this.menuHandler.deInitialize(); }
             if (allowClick) {
                 var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
-                item.clickHandler();
+                item.clickHandler(item);
             }
         });
 
@@ -186,8 +186,8 @@ export class BrowserController {
                 //merge MultiModelConfig and folder
                 parent.img = 'glyphicon glyphicon-copyright-mark';
                 (<any>parent).coeConfig = path;
-                parent.dblClickHandler = function () {
-                    self.menuHandler.openCoeView(path);
+                parent.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openCoeView(item.id);
                 };
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
                 return null;
@@ -196,8 +196,8 @@ export class BrowserController {
                 //merge MultiModelConfig and folder
                 parent.img = 'glyphicon glyphicon-briefcase';
                 (<any>parent).mmConfig = path;
-                parent.dblClickHandler = function () {
-                    self.menuHandler.openMultiModel(path);
+                parent.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openMultiModel(item.id);
                 };
                 var menuEntryCreateCoSim = menuEntry("Create Co-Simulation Configuration", 'glyphicon glyphicon-copyright-mark',
                     function (item: ProjectBrowserItem) {
@@ -210,15 +210,15 @@ export class BrowserController {
             else if (path.endsWith('.fmu')) {
                 result.img = 'icon-page';
                 result.removeFileExtensionFromText();
-                result.dblClickHandler = function () {
-                    self.menuHandler.openFmu(path);
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openFmu(item.id);
                 };
             }
             else if (path.endsWith('.sysml.json')) {
                 result.img = 'glyphicon glyphicon-tasks';
                 result.removeFileExtensionFromText();
-                result.dblClickHandler = function () {
-                    self.menuHandler.openSysMlExport(path);
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openSysMlExport(item.id);
                 };
                 var menuEntryCreateMM = menuEntry("Create Multi-Model", 'glyphicon glyphicon-briefcase',
                     function (item: ProjectBrowserItem) {
@@ -272,8 +272,8 @@ export class BrowserController {
                 result.img = 'glyphicon glyphicon-barcode';
                 var menuEntryDelete = menuEntry("Delete", 'glyphicon glyphicon-remove',
                     function (item: ProjectBrowserItem) {
-                        console.info("Deleting " + event.target);
-                        this.getCustomFs().removeRecursive(event.target, function (err: any, v: any) {
+                        console.info("Deleting " + item.id);
+                        this.getCustomFs().removeRecursive(item.id, function (err: any, v: any) {
                             if (err != null) {
                                 console.error(err);
                             }
