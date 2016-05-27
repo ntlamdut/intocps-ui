@@ -9,9 +9,11 @@ import {Project} from "./Project";
 import {IProject} from "./IProject";
 import fs = require('fs');
 import Path = require('path');
-
+import {SettingKeys} from "../settings/SettingKeys";
+import {RTTester} from "../rttester/RTTester";
 import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
 import {eventEmitter} from "../Emitter";
+import {Utilities} from "../utilities";
 
 export class MenuEntry {
     id: string;
@@ -146,25 +148,6 @@ export class BrowserController {
         }
     }
 
-
-    relativeProjectPath(path: string): string {
-        if (!Path.isAbsolute(path)) {
-            return Path.normalize(path);
-        }
-        let app: IntoCpsApp = IntoCpsApp.getInstance();
-        var root: string = app.getActiveProject().getRootFilePath();
-        return Path.relative(root, path);
-    }
-
-
-    relativePathIsInFolder(path: string, folder: string): boolean {
-        var rPath = this.relativeProjectPath(path);
-        var rFolder = this.relativeProjectPath(folder);
-        var relative = Path.relative(rFolder, rPath);
-        return rPath.endsWith(relative);
-    }
-
-
     private addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
         var self = this;
         var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
@@ -186,7 +169,12 @@ export class BrowserController {
             return null;
         }
         if (stat.isFile()) {
-            if (path.endsWith('.coe.json')) {
+            if (Utilities.pathIsInFolder(path, (<string>Project.PATH_TEST_DATA_GENERATION))) {
+                result.dblClickHandler = function () {
+                    RTTester.openFileInGUI(path);
+                }
+            }
+            else if (path.endsWith('.coe.json')) {
                 //merge MultiModelConfig and folder
                 parent.img = 'glyphicon glyphicon-copyright-mark';
                 (<any>parent).coeConfig = path;
@@ -292,7 +280,7 @@ export class BrowserController {
                 parent.nodes.push(result);
             }
             if (stat.isDirectory()) {
-                if (this.relativePathIsInFolder(path, <string>Project.PATH_SYSML) && result.level >= 2) {
+                if (Utilities.pathIsInFolder(path, <string>Project.PATH_SYSML) && result.level >= 2) {
                     // Skip: Limit directory depth in SysML folder to 2
                 } else {
                     this.addFSFolderContent(path, result);
