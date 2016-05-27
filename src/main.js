@@ -34,6 +34,10 @@ let openDownloadManagerHandler = new DialogHandler("downloadManager/DownloadMana
 let coeServerStatusHandler = new DialogHandler("coe-server-status/CoeServerStatus.html", 500, 500, null, null, null);
 let fmuBuilderHandler = new DialogHandler("http://sweng.au.dk/fmubuilder/", 500, 500, null, null, null);
 fmuBuilderHandler.externalUrl = true;
+let reportIssueHandler = new DialogHandler("http://github.com/into-cps/INTO-CPS_Application/issues/new", 600, 600, null, null, null);
+reportIssueHandler.externalUrl = true;
+
+
 let fetchProjectFromGitHandler = new DialogHandler("proj/ProjectFetcher.html", 500, 300, null, null, null);
 
 
@@ -100,9 +104,9 @@ function createWindow() {
       },
       {
         label: 'Open Project from Git',
-        
+
         click: function (item, focusedWindow) {
-         fetchProjectFromGitHandler.openWindow();
+          fetchProjectFromGitHandler.openWindow();
         }
 
       }
@@ -161,7 +165,15 @@ function createWindow() {
 
       });
 
+    } else if (m.label == "Help") {
+      m.submenu.splice(m.submenu.length - 1, 0, {
+        label: 'Report Issue',
+        click: function (item, focusedWindow) {
+          reportIssueHandler.openWindow();
+        }
+      });
     }
+
   });
 
 
