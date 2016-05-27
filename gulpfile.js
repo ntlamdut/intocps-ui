@@ -30,10 +30,8 @@ var gulp = require('gulp'),
     bower = require('gulp-bower'),
     merge = require('merge-stream'),
     electron = require('gulp-electron'),
-    packager = require('electron-packager');
-    //packageJson = require('./package.json');
-
-    
+    packager = require('electron-packager'),
+    packageJSON = require('./package.json');
 
 // Tasks
 
@@ -113,10 +111,7 @@ gulp.task('init', ['install-ts-defs', 'install-bower-components']);
 //Build App
 gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css', 'copy-bower', 'copy-fonts']);
 
-
-// P]ackage app into binary
-var packageJSON = require('./package.json');
-
+// Package app binaries
 gulp.task("package-darwin", function(callback) {
     var options = {
         dir: '.',
@@ -160,6 +155,7 @@ gulp.task("package-win32", function(callback) {
         callback();
     });
 });
+
 gulp.task("package-linux", function(callback) {
     var options = {
         dir: '.',
@@ -181,7 +177,6 @@ gulp.task("package-linux", function(callback) {
     });
 });
 
-
 gulp.task('package-all',['package-win32','package-darwin','package-linux']);
 
 // Watch for changes and rebuild on the fly
@@ -190,7 +185,6 @@ gulp.task('watch', function () {
     gulp.watch(jsSrcs, ['copy-js']);
     gulp.watch(tsSrcs, ['compile-ts']);
 });
-
 
 // Default task 
 gulp.task('default', ['build']);
