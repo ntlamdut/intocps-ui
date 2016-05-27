@@ -72,7 +72,7 @@ function launchCoe() {
         m.innerText = data + "";
         div.appendChild(m);
     });
-    child.stderr.on('data', function (data: any) {
+    child.stderr.on('error', function (data: any) {
         console.log('stderr: ' + data);
         //Here is where the error output goes
         let m = document.createElement("span");
