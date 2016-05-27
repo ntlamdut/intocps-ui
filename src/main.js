@@ -19,7 +19,7 @@ let intoCpsApp = new IntoCpsApp(app, process.platform);
 
 global.intoCpsApp = intoCpsApp;
 let devMode = intoCpsApp.getSettings().getValue(SettingKeys.SettingKeys.DEVELOPMENT_MODE);
-console.info("Running in development mode: "+devMode);
+console.info("Running in development mode: " + devMode);
 
 let createProjectHandler = new DialogHandler("proj/new-project.html", 300, 200, IntoCpsAppEvents.OPEN_CREATE_PROJECT_WINDOW, "new-project-create", arg => {
   intoCpsApp.createProject(arg.name, arg.path);
@@ -62,46 +62,89 @@ function createWindow() {
 
   let mw = mainWindow;
 
+
+  var fileMenuPos = 0;
+
+  if (process.platform === 'darwin') {
+    fileMenuPos = 1;
+  }
+
   // Add custom menu 
-  menu.splice(4, 0, {
-    label: 'Into-Cps-App',
+  menu.splice(fileMenuPos, 0, {
+    label: 'File',
     submenu: [
 
       {
-        label: 'Open Project',
-        click: function (item, focusedWindow) {
-          openProjectHandler.openWindow();
-        }
-
-      }, {
         label: 'New Project',
+        accelerator: 'CmdOrCtrl+N',
         click: function (item, focusedWindow) {
           createProjectHandler.openWindow();
         }
 
       },
       {
+        type: 'separator'
+      },
+      {
+        label: 'Open Project',
+        accelerator: 'CmdOrCtrl+O',
+        click: function (item, focusedWindow) {
+          openProjectHandler.openWindow();
+        }
+
+      }
+    ]
+  })
+
+  var darwinAppMenuInserted = false;
+  menu.forEach(m => {
+
+    if ((m.label == "Electron" && process.platform === 'darwin') || (darwinAppMenuInserted == false && m.label == "View")) {
+      darwinAppMenuInserted = true;
+      m.submenu.splice(0, 0, {
         label: 'Settings',
+        accelerator: 'Alt+S',
         click: function (item, focusedWindow) {
           var settingsWin = new BrowserWindow({ width: 300, height: 600, show: false });
           settingsWin.loadURL('file://' + __dirname + '/settings/settings.html');
           //settingsWin.openDevTools();
           settingsWin.show();
         }
+      });
 
-      }, {
-        label: 'Open Download Manager',
-        click: function (item, focusedWindow) {
-          openDownloadManagerHandler.openWindow();
-        }
-      }, {
+    } else if (m.label == "View") {
+
+
+      m.submenu.splice(m.submenu.length - 1, 0, {
+        type: 'separator'
+
+      });
+
+      m.submenu.splice(m.submenu.length - 1, 0, {
         label: 'COE Server Status',
+        accelerator: 'Alt+O',
         click: function (item, focusedWindow) {
           coeServerStatusHandler.openWindow();
         }
-      }
-    ]
-  })
+      });
+
+
+      m.submenu.splice(m.submenu.length - 1, 0, {
+        label: 'Open Download Manager',
+        accelerator: 'Alt+D',
+        click: function (item, focusedWindow) {
+          openDownloadManagerHandler.openWindow();
+        }
+      });
+      m.submenu.splice(m.submenu.length - 1, 0, {
+        type: 'separator'
+
+      });
+
+    }
+  });
+
+
 
   // Set top-level application menu, using modified template 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
