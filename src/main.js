@@ -9,6 +9,7 @@ var IntoCpsApp = require("./IntoCpsApp").default;
 
 var DialogHandler = require("./DialogHandler").default;
 var IntoCpsAppEvents = require("./IntoCpsAppEvents");
+var ProjectFetcher = require("./proj/ProjectFetcher");
 
 // Module to control application life.
 const app = electron.app;
@@ -33,6 +34,8 @@ let openDownloadManagerHandler = new DialogHandler("downloadManager/DownloadMana
 let coeServerStatusHandler = new DialogHandler("coe-server-status/CoeServerStatus.html", 500, 500, null, null, null);
 let fmuBuilderHandler = new DialogHandler("http://sweng.au.dk/fmubuilder/", 500, 500, null, null, null);
 fmuBuilderHandler.externalUrl = true;
+let fetchProjectFromGitHandler = new DialogHandler("proj/ProjectFetcher.html", 500, 300, null, null, null);
+
 
 // Definitions needed for menu construction
 var defaultMenu = require('electron-default-menu')
@@ -92,6 +95,14 @@ function createWindow() {
         accelerator: 'CmdOrCtrl+O',
         click: function (item, focusedWindow) {
           openProjectHandler.openWindow();
+        }
+
+      },
+      {
+        label: 'Open Project from Git',
+        
+        click: function (item, focusedWindow) {
+         fetchProjectFromGitHandler.openWindow();
         }
 
       }
