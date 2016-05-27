@@ -19,10 +19,11 @@ export class MenuEntry {
     icon: any;
     item: ProjectBrowserItem;
     callback: (item: ProjectBrowserItem) => void;
+    private static idCounter: number = 0;
     constructor(item: ProjectBrowserItem, text: string, icon: any,
         callback: (item: ProjectBrowserItem) => void = undefined) {
+        this.id = "MenuEntry_" + (MenuEntry.idCounter++).toString();
         this.item = item;
-        this.id = text;
         this.text = text;
         this.icon = icon;
         if (callback != undefined) {
@@ -35,6 +36,7 @@ export class MenuEntry {
 
 export class ProjectBrowserItem {
     id: string;
+    path: string;
     text: string;
     level: number;
     expanded: boolean = false;
@@ -47,8 +49,10 @@ export class ProjectBrowserItem {
     dblClickHandler(item: ProjectBrowserItem): void { }
     menuEntries: MenuEntry[] = [];
 
+    private static idCounter: number = 0;
     constructor(path: string, parent: ProjectBrowserItem) {
-        this.id = path;
+        this.id = "ProjectBrowserItem_" + (ProjectBrowserItem.idCounter++).toString();
+        this.path = path;
         this.text = Path.basename(path);
         this.parent = parent;
         if (parent == null) {
@@ -64,7 +68,7 @@ export class ProjectBrowserItem {
     }
     removeNodeWithPath(path: string): void {
         this.nodes = this.nodes.filter(function (n: ProjectBrowserItem) {
-            return n.id != path;
+            return n.path != path;
         });
     }
 
@@ -187,7 +191,7 @@ export class BrowserController {
                 parent.img = 'glyphicon glyphicon-copyright-mark';
                 (<any>parent).coeConfig = path;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
-                    self.menuHandler.openCoeView(item.id);
+                    self.menuHandler.openCoeView(item.path);
                 };
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
                 return null;
@@ -197,12 +201,12 @@ export class BrowserController {
                 parent.img = 'glyphicon glyphicon-briefcase';
                 (<any>parent).mmConfig = path;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
-                    self.menuHandler.openMultiModel(item.id);
+                    self.menuHandler.openMultiModel(item.path);
                 };
                 var menuEntryCreateCoSim = menuEntry("Create Co-Simulation Configuration", 'glyphicon glyphicon-copyright-mark',
                     function (item: ProjectBrowserItem) {
-                        console.info("Create new cosim config for: " + item.id);
-                        self.menuHandler.createCoSimConfiguration(item.id);
+                        console.info("Create new cosim config for: " + item.path);
+                        self.menuHandler.createCoSimConfiguration(item.path);
                     });
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport];
                 return null;
@@ -211,19 +215,19 @@ export class BrowserController {
                 result.img = 'icon-page';
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
-                    self.menuHandler.openFmu(item.id);
+                    self.menuHandler.openFmu(item.path);
                 };
             }
             else if (path.endsWith('.sysml.json')) {
                 result.img = 'glyphicon glyphicon-tasks';
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
-                    self.menuHandler.openSysMlExport(item.id);
+                    self.menuHandler.openSysMlExport(item.path);
                 };
                 var menuEntryCreateMM = menuEntry("Create Multi-Model", 'glyphicon glyphicon-briefcase',
                     function (item: ProjectBrowserItem) {
-                        console.info("Create new multimodel for: " + item.id);
-                        self.menuHandler.createMultiModel(item.id);
+                        console.info("Create new multimodel for: " + item.path);
+                        self.menuHandler.createMultiModel(item.path);
                     });
                 result.menuEntries = [menuEntryCreateMM, menuEntryDelete, menuEntryImport, menuEntryExport];
             }
@@ -250,21 +254,21 @@ export class BrowserController {
             else if (Path.basename(path) == Project.PATH_TEST_DATA_GENERATION) {
                 var menuEntryCreate = menuEntry("Create Test Data Generation Project", 'glyphicon glyphicon-asterisk',
                     function (item: ProjectBrowserItem) {
-                        self.menuHandler.createRTTesterProject(item.id);
+                        self.menuHandler.createRTTesterProject(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
             }
             else if (Path.basename(path) == Project.PATH_MODEL_CHECKING) {
                 var menuEntryCreate = menuEntry("Create Model Checking Project", 'glyphicon glyphicon-asterisk',
                     function (item: ProjectBrowserItem) {
-                        self.menuHandler.createRTTesterProject(item.id);
+                        self.menuHandler.createRTTesterProject(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
             }
             else if (Path.basename(path) == Project.PATH_DSE) {
                 var menuEntryCreate = menuEntry("Create Design Space Exploration Config", 'glyphicon glyphicon-asterisk',
                     function (item: ProjectBrowserItem) {
-                        self.menuHandler.createDse(item.id);
+                        self.menuHandler.createDse(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
             }
@@ -272,8 +276,8 @@ export class BrowserController {
                 result.img = 'glyphicon glyphicon-barcode';
                 var menuEntryDelete = menuEntry("Delete", 'glyphicon glyphicon-remove',
                     function (item: ProjectBrowserItem) {
-                        console.info("Deleting " + item.id);
-                        this.getCustomFs().removeRecursive(item.id, function (err: any, v: any) {
+                        console.info("Deleting " + item.path);
+                        this.getCustomFs().removeRecursive(item.path, function (err: any, v: any) {
                             if (err != null) {
                                 console.error(err);
                             }
