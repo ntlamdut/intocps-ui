@@ -11,6 +11,8 @@ export default class DialogHandler {
     windowWidth: number;
     windowHeight: number;
 
+    externalUrl: boolean = false;
+
     win: any = null;
 
     constructor(htmlPath: string, windowWidth: number,
@@ -62,7 +64,12 @@ export default class DialogHandler {
             this.win = null;
         });
 
-        this.win.loadURL('file://' + __dirname + '/' + this.htmlPath);
+        if (this.externalUrl) {
+            this.win.loadURL(this.htmlPath);
+        } else {
+            this.win.loadURL('file://' + __dirname + '/' + this.htmlPath);
+
+        }
         this.win.show();
     }
 

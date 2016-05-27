@@ -31,6 +31,8 @@ let openProjectHandler = new DialogHandler("proj/open-project.html", 300, 200, I
 
 let openDownloadManagerHandler = new DialogHandler("downloadManager/DownloadManager.html", 500, 500, null, null, null);
 let coeServerStatusHandler = new DialogHandler("coe-server-status/CoeServerStatus.html", 500, 500, null, null, null);
+let fmuBuilderHandler = new DialogHandler("http://sweng.au.dk/fmubuilder/", 500, 500, null, null, null);
+fmuBuilderHandler.externalUrl = true;
 
 // Definitions needed for menu construction
 var defaultMenu = require('electron-default-menu')
@@ -134,6 +136,13 @@ function createWindow() {
         accelerator: 'Alt+D',
         click: function (item, focusedWindow) {
           openDownloadManagerHandler.openWindow();
+        }
+      });
+
+      m.submenu.splice(m.submenu.length - 1, 0, {
+        label: 'Open FMU Builder',
+        click: function (item, focusedWindow) {
+          fmuBuilderHandler.openWindow();
         }
       });
       m.submenu.splice(m.submenu.length - 1, 0, {
