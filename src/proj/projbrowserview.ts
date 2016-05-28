@@ -179,7 +179,7 @@ export class BrowserController {
                 parent.img = 'glyphicon glyphicon-copyright-mark';
                 (<any>parent).coeConfig = path;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
-                    self.menuHandler.openCoeView(item.path);
+                    self.menuHandler.openCoeView((<any>item).coeConfig);
                 };
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
                 return null;
@@ -189,12 +189,12 @@ export class BrowserController {
                 parent.img = 'glyphicon glyphicon-briefcase';
                 (<any>parent).mmConfig = path;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
-                    self.menuHandler.openMultiModel(item.path);
+                    self.menuHandler.openMultiModel((<any>item).mmConfig);
                 };
                 var menuEntryCreateCoSim = menuEntry("Create Co-Simulation Configuration", 'glyphicon glyphicon-copyright-mark',
                     function (item: ProjectBrowserItem) {
                         console.info("Create new cosim config for: " + item.path);
-                        self.menuHandler.createCoSimConfiguration(item.path);
+                        self.menuHandler.createCoSimConfiguration((<any>item).mmConfig);
                     });
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport];
                 return null;
