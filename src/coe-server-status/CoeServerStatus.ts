@@ -72,7 +72,7 @@ function launchCoe() {
         m.innerText = data + "";
         div.appendChild(m);
     });
-    child.stderr.on('error', function (data: any) {
+    child.stderr.on('data', function (data: any) {
         console.log('stderr: ' + data);
         //Here is where the error output goes
         let m = document.createElement("span");
@@ -85,17 +85,11 @@ function launchCoe() {
         console.log('closing code: ' + code);
         //Here you can get the exit code of the script
     });
-
-    //    var fork = require("child_process").fork,
-    //   child = fork(__dirname + "/start-coe.js");
-
-
-
-
+  
 }
 
-function downloadLog(){
-    
+function downloadLog() {
+
 }
 
 function createPanel(title: string, content: HTMLElement): HTMLElement {

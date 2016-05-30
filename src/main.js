@@ -39,7 +39,7 @@ reportIssueHandler.externalUrl = true;
 
 
 let fetchProjectFromGitHandler = new DialogHandler("proj/ProjectFetcher.html", 500, 300, null, null, null);
-
+let openExamplesFromGitHandler = new DialogHandler("examples/examples.html", 500, 400, null, null, null);
 
 // Definitions needed for menu construction
 var defaultMenu = require('electron-default-menu')
@@ -107,6 +107,14 @@ function createWindow() {
 
         click: function (item, focusedWindow) {
           fetchProjectFromGitHandler.openWindow();
+        }
+
+      },
+      {
+        label: 'Open Project Examples',
+
+        click: function (item, focusedWindow) {
+          openExamplesFromGitHandler.openWindow();
         }
 
       }

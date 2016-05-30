@@ -13,7 +13,7 @@ import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {SettingKeys} from "./settings//SettingKeys";
 
 // constants
-let topBarNameId : string = "activeTabTitle";
+let topBarNameId: string = "activeTabTitle";
 
 export default class IntoCpsApp {
     app: Electron.App;
@@ -30,12 +30,12 @@ export default class IntoCpsApp {
 
         const intoCpsAppFolder = this.createAppFolderRoot(app);
         this.createDirectoryStructure(intoCpsAppFolder);
-        
+
         this.settings = new Settings(app, intoCpsAppFolder);
-        
+
         // Set calculated default values
-        SettingKeys.DEFAULT_VALUES[SettingKeys.INSTALL_TMP_DIR]=Path.join(intoCpsAppFolder,"tmp","install_temp");
-        SettingKeys.DEFAULT_VALUES[SettingKeys.INSTALL_TMP_DIR]=Path.join(intoCpsAppFolder,"tmp","install_temp");
+        SettingKeys.DEFAULT_VALUES[SettingKeys.INSTALL_TMP_DIR] = Path.join(intoCpsAppFolder, "tmp", "install_temp");
+        SettingKeys.DEFAULT_VALUES[SettingKeys.INSTALL_TMP_DIR] = Path.join(intoCpsAppFolder, "tmp", "install_temp");
         this.settings.load();
         // fill-in default values for yet unset values
         for (var key in SettingKeys.DEFAULT_VALUES) {
@@ -45,11 +45,11 @@ export default class IntoCpsApp {
             }
         }
         this.settings.save();
-        
+
         //Check for development mode and adjust settings to reflect this
-        if(this.settings.getValue(SettingKeys.DEVELOPMENT_MODE))
-        {
-            this.settings.setValue(SettingKeys.UPDATE_SITE,this.settings.getValue(SettingKeys.DEV_UPDATE_SITE));
+        if (this.settings.getValue(SettingKeys.DEVELOPMENT_MODE)) {
+            this.settings.setValue(SettingKeys.UPDATE_SITE, this.settings.getValue(SettingKeys.DEV_UPDATE_SITE));
+            this.settings.setValue(SettingKeys.EXAMPLE_REPO, this.settings.getValue(SettingKeys.DEV_EXAMPLE_REPO));
         }
 
         let activeProjectPath = this.settings.getSetting(SettingKeys.ACTIVE_PROJECT);
@@ -154,9 +154,9 @@ export default class IntoCpsApp {
     }
 
     // change topbar title
-    public static setTopName(s:string){
-      var mainName = (<HTMLSpanElement>document.getElementById(topBarNameId));
-      mainName.innerText = s;
+    public static setTopName(s: string) {
+        var mainName = (<HTMLSpanElement>document.getElementById(topBarNameId));
+        mainName.innerText = s;
     };
 
 
@@ -172,7 +172,7 @@ class SerializationHelper {
         }
         else {
             for (let propName in jsonObj) {
-                 (<any>obj)[propName] = jsonObj[propName];
+                (<any>obj)[propName] = jsonObj[propName];
             }
         }
 
