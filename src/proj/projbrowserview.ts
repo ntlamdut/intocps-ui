@@ -11,6 +11,7 @@ import fs = require('fs');
 import Path = require('path');
 import {SettingKeys} from "../settings/SettingKeys";
 import {RTTester} from "../rttester/RTTester";
+import * as RTesterModalCommandWindow from "../rttester/GenericModalCommand";
 import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
 import {eventEmitter} from "../Emitter";
 import {Utilities} from "../utilities";
@@ -152,6 +153,7 @@ export class BrowserController {
         var self = this;
         var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
         var stat = fs.statSync(path);
+        var pathComponents = Utilities.relativeProjectPath(path).split(Path.sep);
 
         function menuEntry(text: string, icon: any, callback: (item: ProjectBrowserItem) => void = undefined) {
             return new MenuEntry(result, text, icon, callback);
@@ -169,7 +171,12 @@ export class BrowserController {
             return null;
         }
         if (stat.isFile()) {
-            if (Utilities.pathIsInFolder(path, (<string>Project.PATH_TEST_DATA_GENERATION))) {
+            if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
+                result.dblClickHandler = function () {
+                    RTTester.openFileInGUI(path);
+                }
+            }
+            else if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.dblClickHandler = function () {
                     RTTester.openFileInGUI(path);
                 }
@@ -235,7 +242,29 @@ export class BrowserController {
             }
         } else if (stat.isDirectory()) {
             result.img = 'icon-folder';
-            if (this.isOvertureProject(path)) {
+            if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
+                if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
+                    var menuEntrySolve = menuEntry("Solve", 'glyphicon glyphicon-record',
+                        function (item: ProjectBrowserItem) {
+                            let app: IntoCpsApp = IntoCpsApp.getInstance();
+                            let settings = app.getSettings();
+                            var python = Path.normalize(settings.getSetting(SettingKeys.RTTESTER_PYTHON));
+                            var script = Path.normalize(Path.join(<string>settings.getSetting(SettingKeys.RTTESTER_MBT_INSTALL_DIR), "bin", "rtt-mbt-gen.py"));
+                            var tp = RTTester.getRelativePathInProject(path);
+                            var cxt = RTTester.getProjectOfFile(path);
+                            var cmd: RTesterModalCommandWindow.Command = {
+                                command: [python, script, tp],
+                                title: "Solve",
+                                env: process.env
+                            }
+                            cmd.env["RTT_TESTCONTEXT"] = cxt;
+                            cmd.env["RTTDIR"] = <string>settings.getSetting(SettingKeys.RTTESTER_INSTALL_DIR);
+                            self.menuHandler.runRTTesterCommand(cmd);
+                        });
+                    result.menuEntries = [menuEntrySolve];
+                }
+            }
+            else if (this.isOvertureProject(path)) {
                 result.img = 'glyphicon glyphicon-leaf';
                 result.expanded = false;
             }

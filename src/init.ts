@@ -5,6 +5,7 @@ import {CoeController} from  "./coe/coe";
 import {MmController} from  "./multimodel/MmController";
 import {DseController} from  "./dse/dse";
 import {CreateRTTesterProjectController} from  "./rttester/CreateRTTesterProject";
+import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import {BrowserController} from "./proj/projbrowserview";
 import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
 import {SourceDom} from "./sourceDom";
@@ -22,7 +23,7 @@ class InitializationController {
     layout: W2UI.W2Layout;
     title: HTMLTitleElement;
     mainView: HTMLDivElement;
-    
+
     constructor() {
         $(document).ready(() => this.initialize());
     }
@@ -49,12 +50,12 @@ class InitializationController {
         let app: IntoCpsApp = IntoCpsApp.getInstance();
         let p = app.getActiveProject();
         if (p != null) {
-            this.title.innerText = "Project: " + p.getName() + " - "+p.getRootFilePath();
+            this.title.innerText = "Project: " + p.getName() + " - " + p.getRootFilePath();
         }
         let ipc: Electron.IpcRenderer = require("electron").ipcRenderer;
         ipc.on(IntoCpsAppEvents.PROJECT_CHANGED, (event, arg) => {
             let p = app.getActiveProject();
-            this.title.innerText = "Project: " + p.getName() + " - "+p.getRootFilePath();
+            this.title.innerText = "Project: " + p.getName() + " - " + p.getRootFilePath();
         });
     }
 
@@ -84,20 +85,27 @@ function openViewController(htmlPath: string, path: string, controllerPar: new (
 }
 
 menuHandler.deInitialize = () => {
-    if(controller != null && controller.deInitialize)
-    {return controller.deInitialize();}
+    if (controller != null && controller.deInitialize)
+    { return controller.deInitialize(); }
     else
-    {return true;}
-    
+    { return true; }
+
 }
 
 menuHandler.openCoeView = (path) => {
     openViewController("coe/coe.html", path, CoeController);
-    };
+};
 
 menuHandler.openMultiModel = (path) => {
     openViewController("multimodel/multimodel.html", path, MmController);
 };
+
+menuHandler.runRTTesterCommand = (command: RTesterModalCommandWindow.Command) => {
+    $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
+        RTesterModalCommandWindow.initialize(command);
+        (<any>$('#modalDialog')).modal({ keyboard: false, backdrop: false });
+    });
+}
 
 menuHandler.createRTTesterProject = (path) => {
     $(init.mainView).load("rttester/CreateRTTesterProject.html", (event: JQueryEventObject) => {
@@ -119,10 +127,10 @@ menuHandler.openDseView = (path) => {
     openViewController("dse/dse.html", path, DseController);
 };
 
-menuHandler.createDse = (path) =>{
+menuHandler.createDse = (path) => {
     $(init.mainView).load("dse/dse.html", (event: JQueryEventObject) => {
-      // create empty DSE file and load it.
-       menuHandler.openDseView("")
+        // create empty DSE file and load it.
+        menuHandler.openDseView("")
     });
 };
 

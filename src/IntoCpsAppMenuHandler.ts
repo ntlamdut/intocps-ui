@@ -1,3 +1,6 @@
+
+import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
+
 export class IntoCpsAppMenuHandler {
     openCoeView: (path: string) => void;
     openMultiModel: (path: string) => void;
@@ -10,5 +13,7 @@ export class IntoCpsAppMenuHandler {
     createDse: (path: string) => void;
     createMultiModel: (path: string) => void;
     createCoSimConfiguration: (path: string) => void;
+
     createRTTesterProject: (path: string) => void;
+    runRTTesterCommand: (command: RTesterModalCommandWindow.Command) => void;
 }
