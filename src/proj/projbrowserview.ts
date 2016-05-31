@@ -261,7 +261,8 @@ export class BrowserController {
                             var cmd: any = {
                                 title: "Start License Dongle",
                                 command: RTTester.pythonExecutable(),
-                                arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "start_license.py"))]
+                                arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "start_license.py"))],
+                                background: true
                             }
                             cmd.title = "Start License Dongle";
                             self.menuHandler.runRTTesterCommand(cmd);
@@ -269,9 +270,9 @@ export class BrowserController {
                     result.menuEntries.push(menuEntry("Stop License Dongle", 'glyphicon glyphicon-asterisk',
                         function (item: ProjectBrowserItem) {
                             var cmd: any = {
-                                title: "Start License Dongle",
+                                title: "Stop License Dongle",
                                 command: RTTester.pythonExecutable(),
-                                arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "start_license.py"))]
+                                arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "stop_license.py"))]
                             }
                             cmd.title = "Stop License Dongle";
                             self.menuHandler.runRTTesterCommand(cmd);

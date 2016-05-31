@@ -1,5 +1,14 @@
 
 export function initialize(cmd: any): void {
+    if (cmd.arguments == undefined)
+        cmd.arguments = [];
+    if (cmd.background == undefined)
+        cmd.background = false;
+    if (cmd.options == undefined)
+        cmd.options = {};
+    if (cmd.options.env == undefined)
+        cmd.options.env = process.env;
+
     document.getElementById("modalTitle").innerText = cmd.title;
     var hRunButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById("modalRun");
     var hAbortButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById("modalAbort");
@@ -7,16 +16,11 @@ export function initialize(cmd: any): void {
     var hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("modalOutputText");
 
     hRunButton.addEventListener("click", function (event: Event) {
-        hRunButton.style.display = 'none';
-        hCloseButton.style.display = 'none';
-        hAbortButton.style.display = "initial";
         document.getElementById("modalOutput").style.display = "initial";
-        if (cmd.arguments == undefined)
-            cmd.arguments = [];
-        if (cmd.options == undefined)
-            cmd.options = {};
-        if (cmd.options.env == undefined)
-            cmd.options.env = process.env;
+        hRunButton.style.display = 'none';
+        if (!cmd.background) {
+            hCloseButton.style.display = 'none';
+        }
         const spawn = require('child_process').spawn;
         console.log("starting " + cmd.command + " with arguments " + cmd.arguments);
         const child = spawn(cmd.command, cmd.arguments, cmd.options);
@@ -37,7 +41,9 @@ export function initialize(cmd: any): void {
         hAbortButton.addEventListener("click", function (event: Event) {
             child.kill();
         });
-        hAbortButton.style.display = 'initial';
+        if (!cmd.background) {
+            hAbortButton.style.display = 'initial';
+        }
     });
 }
 
