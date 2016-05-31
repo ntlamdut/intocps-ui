@@ -22,11 +22,9 @@ export class RTTester {
     }
 
     public static genericCommandEnv(path: string) {
-        let app: IntoCpsApp = IntoCpsApp.getInstance();
-        let settings = app.getSettings();
         var env: any = process.env;
         env["RTT_TESTCONTEXT"] = RTTester.getProjectOfFile(path);
-        env["RTTDIR"] = <string>settings.getSetting(SettingKeys.RTTESTER_INSTALL_DIR);
+        env["RTTDIR"] = RTTester.rttInstallDir();
         return env;
     }
 
@@ -46,15 +44,30 @@ export class RTTester {
         const process = spawn(rttui, args, { detached: true, stdio: ['ignore'] });
         process.unref();
     }
-
-    public static genericMBTPythonCommandSpec(path: string, command: string): any {
+    
+    public static pythonExecutable(): string {
         let app: IntoCpsApp = IntoCpsApp.getInstance();
         let settings = app.getSettings();
-        var python = Path.normalize(settings.getSetting(SettingKeys.RTTESTER_PYTHON));
-        var script = Path.normalize(Path.join(<string>settings.getSetting(SettingKeys.RTTESTER_MBT_INSTALL_DIR), "bin", command));
+        return Path.normalize(settings.getSetting(SettingKeys.RTTESTER_PYTHON));
+    }
+
+    public static rttInstallDir(): string {
+        let app: IntoCpsApp = IntoCpsApp.getInstance();
+        let settings = app.getSettings();
+        return Path.normalize(settings.getSetting(SettingKeys.RTTESTER_INSTALL_DIR));
+    }
+
+    public static rttMBTInstallDir(): string {
+        let app: IntoCpsApp = IntoCpsApp.getInstance();
+        let settings = app.getSettings();
+        return Path.normalize(settings.getSetting(SettingKeys.RTTESTER_MBT_INSTALL_DIR));
+    }
+
+    public static genericMBTPythonCommandSpec(path: string, command: string): any {
+        var script = Path.normalize(Path.join(RTTester.rttMBTInstallDir(), "bin", command));
         var tp = RTTester.getRelativePathInProject(path);
         return {
-            command: python,
+            command: RTTester.pythonExecutable(),
             arguments: [script, tp],
             options: { env: RTTester.genericCommandEnv(path) }
         }

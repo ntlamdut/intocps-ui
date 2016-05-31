@@ -255,19 +255,41 @@ export class BrowserController {
             if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION ||
                 pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.menuEntries = [];
-                if (pathComponents.length == 1 && pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
-                    var menuEntryCreate = menuEntry("Create Test Data Generation Project", 'glyphicon glyphicon-asterisk',
+                if (pathComponents.length == 1) {
+                    result.menuEntries.push(menuEntry("Start License Dongle", 'glyphicon glyphicon-asterisk',
                         function (item: ProjectBrowserItem) {
-                            self.menuHandler.createRTTesterProject(item.path);
-                        });
-                    result.menuEntries = [menuEntryCreate];
-                }
-                else if (pathComponents.length == 1 && pathComponents[0] == Project.PATH_MODEL_CHECKING) {
-                    var menuEntryCreate = menuEntry("Create Model Checking Project", 'glyphicon glyphicon-asterisk',
+                            var cmd: any = {
+                                title: "Start License Dongle",
+                                command: RTTester.pythonExecutable(),
+                                arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "start_license.py"))]
+                            }
+                            cmd.title = "Start License Dongle";
+                            self.menuHandler.runRTTesterCommand(cmd);
+                        }));
+                    result.menuEntries.push(menuEntry("Stop License Dongle", 'glyphicon glyphicon-asterisk',
                         function (item: ProjectBrowserItem) {
-                            self.menuHandler.createRTTesterProject(item.path);
-                        });
-                    result.menuEntries = [menuEntryCreate];
+                            var cmd: any = {
+                                title: "Start License Dongle",
+                                command: RTTester.pythonExecutable(),
+                                arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "start_license.py"))]
+                            }
+                            cmd.title = "Stop License Dongle";
+                            self.menuHandler.runRTTesterCommand(cmd);
+                        }));
+                    if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
+                        var menuEntryCreate = menuEntry("Create Test Data Generation Project", 'glyphicon glyphicon-asterisk',
+                            function (item: ProjectBrowserItem) {
+                                self.menuHandler.createRTTesterProject(item.path);
+                            });
+                        result.menuEntries.push(menuEntryCreate);
+                    }
+                    else if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                        var menuEntryCreate = menuEntry("Create Model Checking Project", 'glyphicon glyphicon-asterisk',
+                            function (item: ProjectBrowserItem) {
+                                self.menuHandler.createRTTesterProject(item.path);
+                            });
+                        result.menuEntries.push(menuEntryCreate);
+                    }
                 }
                 if (pathComponents.length == 3 &&
                     (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {

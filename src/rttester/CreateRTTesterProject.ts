@@ -5,6 +5,7 @@ import {IntoCpsApp} from "../IntoCpsApp"
 import * as Settings from  "../settings/settings"
 import {SettingKeys} from "../settings/SettingKeys";
 import Path = require('path');
+import {RTTester} from "../rttester/RTTester";
 
 
 export class CreateRTTesterProjectController extends IViewController {
@@ -38,13 +39,11 @@ export class CreateRTTesterProjectController extends IViewController {
         var hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
         let projectName = (<HTMLInputElement>document.getElementById("ProjectName")).value;
         let app: IntoCpsApp = IntoCpsApp.getInstance();
-        let settings = app.getSettings();
-        let script = Path.normalize(settings.getSetting(SettingKeys.RTTESTER_MBT_INSTALL_DIR));
-        script = Path.join(script, "bin/rtt-mbt-create-fmi2-project.py");
+        var script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
         let targetDir = Path.normalize(Path.join(this.directory, projectName));
 
         const spawn = require('child_process').spawn;
-        var pythonPath = Path.normalize(settings.getSetting(SettingKeys.RTTESTER_PYTHON));
+        var pythonPath = RTTester.pythonExecutable();
         let args: string[] = [
             script,
             "--dir=" + targetDir,
