@@ -25,10 +25,10 @@ export namespace SettingKeys {
     DEFAULT_VALUES[RTTESTER_MBT_INSTALL_DIR] = "C:/opt/rtt-mbt";
     DEFAULT_VALUES[RTTESTER_RTTUI] = "C:/Program Files (x86)/Verified/RTTUI3/rttui3.exe";
     DEFAULT_VALUES[RTTESTER_PYTHON] = "C:/Python27/python.exe";
-    DEFAULT_VALUES[UPDATE_SITE] = "https://raw.githubusercontent.com/into-cps/release-site/master/download/";
-    DEFAULT_VALUES[DEV_UPDATE_SITE] = "https://raw.githubusercontent.com/into-cps/release-site/development/download/";
-    DEFAULT_VALUES[EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/release-site/master/examples/examples.json";
-    DEFAULT_VALUES[DEV_EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/release-site/development/examples/examples.json";
+    DEFAULT_VALUES[UPDATE_SITE] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/master/download/";
+    DEFAULT_VALUES[DEV_UPDATE_SITE] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/development/download/";
+    DEFAULT_VALUES[EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/master/examples/examples.json";
+    DEFAULT_VALUES[DEV_EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/development/examples/examples.json";
     DEFAULT_VALUES[DEVELOPMENT_MODE] = false;
     DEFAULT_VALUES[COE_URL] = "localhost:8082"
 }
