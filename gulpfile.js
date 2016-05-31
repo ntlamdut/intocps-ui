@@ -12,8 +12,9 @@ var outputPath = 'dist/',
     bowerFolder = 'bower_components',
     resourcesFolder = 'src/resources',
     typingsFolder = 'typings',
-    cssSrcs = [bowerFolder + '/bootstrap/dist/css/bootstrap.css',
-    resourcesFolder + '/w2ui-1.5/w2ui.min.css'],
+    cssSrcs = [
+        bowerFolder + '/bootstrap/dist/css/bootstrap.css',
+        resourcesFolder + '/w2ui-1.5/w2ui.min.css'],
     bowerSrcs = "";
 
 // Tools.
@@ -91,6 +92,11 @@ gulp.task('copy-css', function () {
     gulp.src(cssSrcs).pipe(gulp.dest(outputPath + 'css'));
 });
 
+// Copy css to app folder
+gulp.task('copy-into-cps-resources', function () {
+    gulp.src(['src/resources/into-cps/**/*']).pipe(gulp.dest(outputPath + 'resources/into-cps'));
+});
+
 // Copy html to app folder
 gulp.task('copy-html', function () {
     gulp.src(htmlSrcs)
@@ -109,7 +115,7 @@ gulp.task('copy-js', function () {
 gulp.task('init', ['install-ts-defs', 'install-bower-components']);
 
 //Build App
-gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css', 'copy-bower', 'copy-fonts']);
+gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css', 'copy-into-cps-resources', 'copy-bower', 'copy-fonts']);
 
 // Package app binaries
 gulp.task("package-darwin", function(callback) {

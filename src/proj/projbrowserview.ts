@@ -171,14 +171,24 @@ export class BrowserController {
             return null;
         }
         if (stat.isFile()) {
-            if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
+            if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION ||
+                pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                result.menuEntries = [];
                 result.dblClickHandler = function () {
                     RTTester.openFileInGUI(path);
                 }
-            }
-            else if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
-                result.dblClickHandler = function () {
-                    RTTester.openFileInGUI(path);
+                result.img = 'into-cps-icon-rtt-file';
+                if (path.endsWith('.txt')) {
+                    result.img = 'into-cps-icon-rtt-txt';
+                }
+                else if ([".conf", ".confinc", ".rtp", ".mbtconf"].some((e) => path.endsWith(e))) {
+                    result.img = 'into-cps-icon-rtt-conf';
+                }
+                else if (path.endsWith('.log')) {
+                    result.img = 'into-cps-icon-rtt-log';
+                }
+                else if (path.endsWith('.html')) {
+                    result.img = 'into-cps-icon-rtt-html';
                 }
             }
             else if (path.endsWith('.coe.json')) {
@@ -242,9 +252,16 @@ export class BrowserController {
             }
         } else if (stat.isDirectory()) {
             result.img = 'icon-folder';
-            if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
-                if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
-                    var menuEntrySolve = menuEntry("Solve", 'glyphicon glyphicon-record',
+            if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION ||
+                pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                result.menuEntries = [];
+                if (pathComponents.length == 3 &&
+                    (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
+                    result.img = 'into-cps-icon-rtt-tla';
+                }
+                else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
+                    result.img = 'into-cps-icon-rtt-mbt-test-procedure';
+                    var menuEntrySolve = menuEntry("Solve", 'into-cps-icon-mbt-generate',
                         function (item: ProjectBrowserItem) {
                             let app: IntoCpsApp = IntoCpsApp.getInstance();
                             let settings = app.getSettings();
@@ -262,6 +279,8 @@ export class BrowserController {
                             self.menuHandler.runRTTesterCommand(cmd);
                         });
                     result.menuEntries = [menuEntrySolve];
+                } else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
+                    result.img = 'into-cps-icon-rtt-test-procedure';
                 }
             }
             else if (this.isOvertureProject(path)) {
