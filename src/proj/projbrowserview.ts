@@ -203,7 +203,7 @@ export class BrowserController {
             }
             else if (path.endsWith('.mm.json')) {
                 //merge MultiModelConfig and folder
-                parent.img = 'glyphicon glyphicon-briefcase';
+                parent.img = 'into-cps-projbrowser-overture';
                 (<any>parent).mmConfig = path;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openMultiModel((<any>item).mmConfig);
