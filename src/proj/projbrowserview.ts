@@ -275,26 +275,35 @@ export class BrowserController {
                 }
                 else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
                     result.img = 'into-cps-icon-rtt-mbt-test-procedure';
-                    var menuEntrySolve = menuEntry("Solve", 'into-cps-icon-mbt-generate',
-                        function (item: ProjectBrowserItem) {
-                            let app: IntoCpsApp = IntoCpsApp.getInstance();
-                            let settings = app.getSettings();
-                            var python = Path.normalize(settings.getSetting(SettingKeys.RTTESTER_PYTHON));
-                            var script = Path.normalize(Path.join(<string>settings.getSetting(SettingKeys.RTTESTER_MBT_INSTALL_DIR), "bin", "rtt-mbt-gen.py"));
-                            var tp = RTTester.getRelativePathInProject(path);
-                            var cxt = RTTester.getProjectOfFile(path);
-                            var cmd: RTesterModalCommandWindow.Command = {
-                                command: [python, script, tp],
-                                title: "Solve",
-                                env: process.env
-                            }
-                            cmd.env["RTT_TESTCONTEXT"] = cxt;
-                            cmd.env["RTTDIR"] = <string>settings.getSetting(SettingKeys.RTTESTER_INSTALL_DIR);
-                            self.menuHandler.runRTTesterCommand(cmd);
-                        });
-                    result.menuEntries = [menuEntrySolve];
-                } else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
+                    if (pathComponents[3] == "Simulation") {
+                        var menuEntrySolve = menuEntry("Generate Simulation FMU", 'into-cps-icon-mbt-generate',
+                            function (item: ProjectBrowserItem) {
+                                var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen-sim.py");
+                                cmd.title = "Generate Simulation FMU";
+                                self.menuHandler.runRTTesterCommand(cmd);
+                            });
+                        result.menuEntries = [menuEntrySolve];
+                    } else {
+                        var menuEntrySolve = menuEntry("Solve", 'into-cps-icon-mbt-generate',
+                            function (item: ProjectBrowserItem) {
+                                var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
+                                cmd.title = "Solve";
+                                self.menuHandler.runRTTesterCommand(cmd);
+                            });
+                        result.menuEntries = [menuEntrySolve];
+                    }
+                }
+                else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
                     result.img = 'into-cps-icon-rtt-test-procedure';
+                    if (pathComponents[3] != "Simulation") {
+                        var menuGen = menuEntry("Generate Test FMU", 'into-cps-icon-mbt-generate',
+                            function (item: ProjectBrowserItem) {
+                                var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen.py");
+                                cmd.title = "Generate Test FMU";
+                                self.menuHandler.runRTTesterCommand(cmd);
+                            });
+                        result.menuEntries = [menuGen];
+                    }
                 }
             }
             else if (this.isOvertureProject(path)) {

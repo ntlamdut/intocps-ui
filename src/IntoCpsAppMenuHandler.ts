@@ -15,5 +15,5 @@ export class IntoCpsAppMenuHandler {
     createCoSimConfiguration: (path: string) => void;
 
     createRTTesterProject: (path: string) => void;
-    runRTTesterCommand: (command: RTesterModalCommandWindow.Command) => void;
+    runRTTesterCommand: (commandSpec: any) => void;
 }

@@ -100,9 +100,9 @@ menuHandler.openMultiModel = (path) => {
     openViewController("multimodel/multimodel.html", path, MmController);
 };
 
-menuHandler.runRTTesterCommand = (command: RTesterModalCommandWindow.Command) => {
+menuHandler.runRTTesterCommand = (commandSpec: any) => {
     $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
-        RTesterModalCommandWindow.initialize(command);
+        RTesterModalCommandWindow.initialize(commandSpec);
         (<any>$('#modalDialog')).modal({ keyboard: false, backdrop: false });
     });
 }
