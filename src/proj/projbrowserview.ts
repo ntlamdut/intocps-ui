@@ -255,6 +255,20 @@ export class BrowserController {
             if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION ||
                 pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.menuEntries = [];
+                if (pathComponents.length == 1 && pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
+                    var menuEntryCreate = menuEntry("Create Test Data Generation Project", 'glyphicon glyphicon-asterisk',
+                        function (item: ProjectBrowserItem) {
+                            self.menuHandler.createRTTesterProject(item.path);
+                        });
+                    result.menuEntries = [menuEntryCreate];
+                }
+                else if (pathComponents.length == 1 && pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                    var menuEntryCreate = menuEntry("Create Model Checking Project", 'glyphicon glyphicon-asterisk',
+                        function (item: ProjectBrowserItem) {
+                            self.menuHandler.createRTTesterProject(item.path);
+                        });
+                    result.menuEntries = [menuEntryCreate];
+                }
                 if (pathComponents.length == 3 &&
                     (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
                     result.img = 'into-cps-icon-rtt-tla';
@@ -286,20 +300,6 @@ export class BrowserController {
             else if (this.isOvertureProject(path)) {
                 result.img = 'glyphicon glyphicon-leaf';
                 result.expanded = false;
-            }
-            else if (Path.basename(path) == Project.PATH_TEST_DATA_GENERATION) {
-                var menuEntryCreate = menuEntry("Create Test Data Generation Project", 'glyphicon glyphicon-asterisk',
-                    function (item: ProjectBrowserItem) {
-                        self.menuHandler.createRTTesterProject(item.path);
-                    });
-                result.menuEntries = [menuEntryCreate];
-            }
-            else if (Path.basename(path) == Project.PATH_MODEL_CHECKING) {
-                var menuEntryCreate = menuEntry("Create Model Checking Project", 'glyphicon glyphicon-asterisk',
-                    function (item: ProjectBrowserItem) {
-                        self.menuHandler.createRTTesterProject(item.path);
-                    });
-                result.menuEntries = [menuEntryCreate];
             }
             else if (Path.basename(path) == Project.PATH_DSE) {
                 var menuEntryCreate = menuEntry("Create Design Space Exploration Config", 'glyphicon glyphicon-asterisk',
