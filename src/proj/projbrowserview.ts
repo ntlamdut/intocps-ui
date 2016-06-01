@@ -152,7 +152,14 @@ export class BrowserController {
     private addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
         var self = this;
         var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
-        var stat = fs.statSync(path);
+        var stat:any;
+        
+        try{
+            stat= fs.statSync(path);
+        }catch(e){
+            //unable to access path, this happens with emacs json plugin
+            return;
+        }
         var pathComponents = Utilities.relativeProjectPath(path).split(Path.sep);
 
         function menuEntry(text: string, icon: any, callback: (item: ProjectBrowserItem) => void = undefined) {
