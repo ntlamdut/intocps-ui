@@ -346,6 +346,9 @@ export class BrowserController {
                         self.menuHandler.createDse(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
+            }else if (Path.basename(path) == "downloads") {
+                //skip the project download folder
+                return;
             }
             else if (Path.basename(path).indexOf("R_") == 0) {
                 result.img = 'glyphicon glyphicon-barcode';
