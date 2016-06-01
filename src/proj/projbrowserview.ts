@@ -211,7 +211,7 @@ export class BrowserController {
                 var menuEntryCreateCoSim = menuEntry("Create Co-Simulation Configuration", 'glyphicon glyphicon-copyright-mark',
                     function (item: ProjectBrowserItem) {
                         console.info("Create new cosim config for: " + item.path);
-                        self.menuHandler.createCoSimConfiguration((<any>item).mmConfig);
+                        self.menuHandler.createCoSimConfiguration(item.path);
                     });
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport];
                 return null;
