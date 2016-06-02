@@ -98,7 +98,6 @@ export class BrowserController {
         });
 
         this.tree.on("contextMenu", (event: any) => {
-            console.log(event);
             var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
             var menu: MenuEntry[] = item.menuEntries;
             this.tree.menu = menu;
@@ -117,7 +116,6 @@ export class BrowserController {
         });
 
         this.tree.on("click", (event: JQueryEventObject) => {
-            console.info(event);
             let allowClick = true;
             if (this.menuHandler.deInitialize != null)
             { allowClick = this.menuHandler.deInitialize(); }
@@ -263,7 +261,7 @@ export class BrowserController {
                 pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.menuEntries = [];
                 if (pathComponents.length == 1) {
-                    result.menuEntries.push(menuEntry("Start License Dongle", 'glyphicon glyphicon-asterisk',
+                    result.menuEntries.push(menuEntry("Start License Dongle", undefined,
                         function (item: ProjectBrowserItem) {
                             var cmd: any = {
                                 title: "Start License Dongle",
@@ -274,7 +272,7 @@ export class BrowserController {
                             cmd.title = "Start License Dongle";
                             self.menuHandler.runRTTesterCommand(cmd);
                         }));
-                    result.menuEntries.push(menuEntry("Stop License Dongle", 'glyphicon glyphicon-asterisk',
+                    result.menuEntries.push(menuEntry("Stop License Dongle", undefined,
                         function (item: ProjectBrowserItem) {
                             var cmd: any = {
                                 title: "Stop License Dongle",
@@ -314,11 +312,9 @@ export class BrowserController {
                             });
                         result.menuEntries = [menuEntrySolve];
                     } else {
-                        var menuEntrySolve = menuEntry("Solve", 'into-cps-icon-mbt-generate',
+                        var menuEntrySolve = menuEntry("Solve", 'into-cps-icon-rtt-mbt-generate',
                             function (item: ProjectBrowserItem) {
-                                var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
-                                cmd.title = "Solve";
-                                self.menuHandler.runRTTesterCommand(cmd);
+                                self.menuHandler.runTest(item.path);
                             });
                         result.menuEntries = [menuEntrySolve];
                     }
@@ -326,13 +322,16 @@ export class BrowserController {
                 else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
                     result.img = 'into-cps-icon-rtt-test-procedure';
                     if (pathComponents[3] != "Simulation") {
-                        var menuGen = menuEntry("Generate Test FMU", 'into-cps-icon-mbt-generate',
+                        result.menuEntries.push(menuEntry("Generate Test FMU", 'into-cps-icon-rtt-mbt-generate',
                             function (item: ProjectBrowserItem) {
                                 var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen.py");
                                 cmd.title = "Generate Test FMU";
                                 self.menuHandler.runRTTesterCommand(cmd);
-                            });
-                        result.menuEntries = [menuGen];
+                            }));
+                        result.menuEntries.push(menuEntry("Run Test", 'into-cps-icon-rtt-run',
+                            function (item: ProjectBrowserItem) {
+                                self.menuHandler.runTest(item.path);
+                            }));
                     }
                 }
             }

@@ -5,6 +5,7 @@ import {CoeController} from  "./coe/coe";
 import {MmController} from  "./multimodel/MmController";
 import {DseController} from  "./dse/dse";
 import {CreateRTTesterProjectController} from  "./rttester/CreateRTTesterProject";
+import {RunTestController} from  "./rttester/RunTest";
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import {BrowserController} from "./proj/projbrowserview";
 import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
@@ -108,9 +109,15 @@ menuHandler.runRTTesterCommand = (commandSpec: any) => {
     });
 }
 
-menuHandler.createRTTesterProject = (path) => {
+menuHandler.createRTTesterProject = (path: string) => {
     $(init.mainView).load("rttester/CreateRTTesterProject.html", (event: JQueryEventObject) => {
         controller = new CreateRTTesterProjectController(init.mainView, path);
+    });
+};
+
+menuHandler.runTest = (path: string) => {
+    $(init.mainView).load("rttester/RunTest.html", (event: JQueryEventObject) => {
+        controller = new RunTestController(init.mainView, path);
     });
 };
 

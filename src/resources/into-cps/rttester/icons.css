@@ -43,3 +43,8 @@
     background: url("icons/rtt-file.png");
     background-repeat: no-repeat;
 }
+
+.into-cps-icon-rtt-run {
+    background: url("icons/run.png");
+    background-repeat: no-repeat;
+}

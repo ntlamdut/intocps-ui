@@ -16,4 +16,5 @@ export class IntoCpsAppMenuHandler {
 
     createRTTesterProject: (path: string) => void;
     runRTTesterCommand: (commandSpec: any) => void;
+    runTest: (path: string) => void;
 }

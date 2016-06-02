@@ -21,6 +21,11 @@ export class RTTester {
         return pathComp.splice(2).join(Path.sep);
     }
 
+    public static simulationFMU(testCase: string, component: string) {
+        return Path.join(RTTester.getProjectOfFile(testCase),
+            "RTT_TestProcedures", "Simulation", component + "_simulation.fmu");
+    }
+
     public static genericCommandEnv(path: string) {
         var env: any = process.env;
         env["RTT_TESTCONTEXT"] = RTTester.getProjectOfFile(path);
@@ -44,7 +49,7 @@ export class RTTester {
         const process = spawn(rttui, args, { detached: true, stdio: ['ignore'] });
         process.unref();
     }
-    
+
     public static pythonExecutable(): string {
         let app: IntoCpsApp = IntoCpsApp.getInstance();
         let settings = app.getSettings();
