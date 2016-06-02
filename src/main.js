@@ -124,7 +124,7 @@ function createWindow() {
   var darwinAppMenuInserted = false;
   menu.forEach(m => {
 
-    if ((m.label == "Electron" && process.platform === 'darwin') || (darwinAppMenuInserted == false && m.label == "View")) {
+    if (((m.label == "Electron"||m.label == "into-cps-app") && process.platform === 'darwin') || (darwinAppMenuInserted == false && m.label == "View")) {
       darwinAppMenuInserted = true;
       m.submenu.splice(0, 0, {
         label: 'Settings',
