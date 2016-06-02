@@ -45,3 +45,5 @@ downloader-test/*.zip
 
 
 MakeFile
+
+pkg/
