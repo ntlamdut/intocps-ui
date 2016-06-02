@@ -150,11 +150,11 @@ export class BrowserController {
     private addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
         var self = this;
         var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
-        var stat:any;
-        
-        try{
-            stat= fs.statSync(path);
-        }catch(e){
+        var stat: any;
+
+        try {
+            stat = fs.statSync(path);
+        } catch (e) {
             //unable to access path, this happens with emacs json plugin
             return;
         }
@@ -304,19 +304,19 @@ export class BrowserController {
                 else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
                     result.img = 'into-cps-icon-rtt-mbt-test-procedure';
                     if (pathComponents[3] == "Simulation") {
-                        var menuEntrySolve = menuEntry("Generate Simulation FMU", 'into-cps-icon-mbt-generate',
+                        result.menuEntries.push(menuEntry("Generate Simulation FMU", 'into-cps-icon-rtt-mbt-generate',
                             function (item: ProjectBrowserItem) {
                                 var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen-sim.py");
                                 cmd.title = "Generate Simulation FMU";
                                 self.menuHandler.runRTTesterCommand(cmd);
-                            });
-                        result.menuEntries = [menuEntrySolve];
+                            }));
                     } else {
-                        var menuEntrySolve = menuEntry("Solve", 'into-cps-icon-rtt-mbt-generate',
+                        result.menuEntries.push(menuEntry("Solve", 'into-cps-icon-rtt-mbt-generate',
                             function (item: ProjectBrowserItem) {
-                                self.menuHandler.runTest(item.path);
-                            });
-                        result.menuEntries = [menuEntrySolve];
+                                var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
+                                cmd.title = "Solve";
+                                self.menuHandler.runRTTesterCommand(cmd);
+                            }));
                     }
                 }
                 else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
@@ -345,7 +345,7 @@ export class BrowserController {
                         self.menuHandler.createDse(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
-            }else if (Path.basename(path) == "downloads") {
+            } else if (Path.basename(path) == "downloads") {
                 //skip the project download folder
                 return;
             }
