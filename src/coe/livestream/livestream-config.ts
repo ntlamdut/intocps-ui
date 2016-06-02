@@ -62,7 +62,7 @@ export class LivestreamConfiguration {
             // Find all output variables
             let outputVariables = instance.fmu.scalarVariables.filter(element => { return element.causality == Configs.CausalityType.Output });
             outputVariables.forEach(element => {
-                addInputVariable(element, connectedVariables.some(elem => { return elem === element }));
+                addInputVariable(element, connectedVariables != null ? connectedVariables.some(elem => { return elem === element }) : false);
             });
         }
 
@@ -87,13 +87,17 @@ export class LivestreamConfiguration {
             return variablesForInstance;
         }
         let instance = this.selectedInstanceUI.getInstance();
-        let variablesForInstance = this.livestream.get(instance);
+        let variablesForInstance = getVariablesForInstance(instance);
+        
         let variable = element.getInstance();
         if (element.getChecked()) {
             variablesForInstance.push(variable);
         }
         else {
             variablesForInstance.splice(variablesForInstance.indexOf(variable),1);
+            if(variablesForInstance.length == 0){
+                this.livestream.delete(instance);
+            }
         }
     }
 }
