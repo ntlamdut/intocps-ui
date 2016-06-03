@@ -5,6 +5,7 @@ import {CoeController} from  "./coe/coe";
 import {MmController} from  "./multimodel/MmController";
 import {DseController} from  "./dse/dse";
 import {CreateRTTesterProjectController} from  "./rttester/CreateRTTesterProject";
+import {RunTestController} from  "./rttester/RunTest";
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import {BrowserController} from "./proj/projbrowserview";
 import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
@@ -13,6 +14,7 @@ import {IViewController} from "./iViewController";
 import {IProject} from "./proj/IProject";
 
 import fs = require("fs");
+import Path = require('path');
 
 import {eventEmitter} from "./Emitter";
 
@@ -107,9 +109,15 @@ menuHandler.runRTTesterCommand = (commandSpec: any) => {
     });
 }
 
-menuHandler.createRTTesterProject = (path) => {
+menuHandler.createRTTesterProject = (path: string) => {
     $(init.mainView).load("rttester/CreateRTTesterProject.html", (event: JQueryEventObject) => {
         controller = new CreateRTTesterProjectController(init.mainView, path);
+    });
+};
+
+menuHandler.runTest = (path: string) => {
+    $(init.mainView).load("rttester/RunTest.html", (event: JQueryEventObject) => {
+        controller = new RunTestController(init.mainView, path);
     });
 };
 
@@ -138,8 +146,9 @@ menuHandler.createMultiModel = (path) => {
     $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
         let project: IProject = require("remote").getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
+            let name = Path.basename(path,".sysml.json");
             let content = fs.readFileSync(path, "UTF-8");
-            let mmPath = project.createMultiModel("mm-" + Math.floor(Math.random() * 100), content);
+            let mmPath = project.createMultiModel("mm-"+name+" (" + Math.floor(Math.random() * 100)+")", content);
             menuHandler.openMultiModel(mmPath + "");
             eventEmitter.emit(IntoCpsAppEvents.PROJECT_CHANGED);
         }

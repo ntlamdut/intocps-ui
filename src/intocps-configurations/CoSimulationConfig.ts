@@ -38,9 +38,10 @@ export class CoSimulationConfig implements ISerializable {
     }
 
     save(): Promise<void> {
+        let self = this;
         return new Promise<void>(function (resolve, reject) {
             try {
-                fs.writeFile(this.sourcePath, JSON.stringify(this.toObject()), function (err) {
+                fs.writeFile(self.sourcePath, JSON.stringify(self.toObject()), function (err) {
                     if (err !== null) {
                         return reject(err);
                     }
@@ -64,8 +65,8 @@ export class CoSimulationConfig implements ISerializable {
                 cc.projectRoot = projectRoot;
                 cc.multiModel = mm;
                 cc.sourcePath = path;
-                cc.startTime = parser.parseStartTime(jsonData);
-                cc.endTime = parser.parseEndTime(jsonData);
+                cc.startTime = parser.parseStartTime(jsonData) || 0;
+                cc.endTime = parser.parseEndTime(jsonData) || 10;
                 cc.livestream = parser.parseLivestream(jsonData, mm);
                 cc.algorithm = parser.parseAlgorithm(jsonData);
 

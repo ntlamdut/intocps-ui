@@ -23,7 +23,7 @@ export namespace SettingKeys {
     export var DEFAULT_VALUES: { [key: string]: any; } = {};
     DEFAULT_VALUES[RTTESTER_INSTALL_DIR] = 'C:/opt/rt-tester';
     DEFAULT_VALUES[RTTESTER_MBT_INSTALL_DIR] = "C:/opt/rtt-mbt";
-    DEFAULT_VALUES[RTTESTER_RTTUI] = "C:/Program Files (x86)/Verified/RTTUI3/rttui3.exe";
+    DEFAULT_VALUES[RTTESTER_RTTUI] = "C:/Program Files (x86)/Verified/RTTUI3/bin/rttui3.exe";
     DEFAULT_VALUES[RTTESTER_PYTHON] = "C:/Python27/python.exe";
     DEFAULT_VALUES[UPDATE_SITE] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/master/download/";
     DEFAULT_VALUES[DEV_UPDATE_SITE] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/development/download/";

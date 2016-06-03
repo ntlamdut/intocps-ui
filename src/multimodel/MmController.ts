@@ -128,12 +128,6 @@ export class MmController extends IViewController {
 
     public load(path: string) {
 
-
-        //this.coeConfig = new CoeConfig();
-        //this.coeConfig.load(path, activeProject.getRootFilePath());
-        //this.coeConfig.loadFromMultiModel(path,IntoCpsApp.IntoCpsApp.getInstance().getActiveProject().getFmusPath());
-        //until bind is implemented we do this manual sync
-
         MultiModelConfig.parse(path, IntoCpsApp.IntoCpsApp.getInstance().getActiveProject().getFmusPath()).then(mm => {
             this.mm = mm;
             this.loadComponents(this.mm, MmContainers.Keys | MmContainers.Instances | MmContainers.Connections | MmContainers.Parameters);
@@ -162,74 +156,7 @@ export class MmController extends IViewController {
 
     }
 
-    private extractOuputsAndInputs(fmus: any, instances: string[]) {
-        fmus.forEach((value: any, index: any, map: any) => {
-
-            var p = Path.normalize(IntoCpsApp.IntoCpsApp.getInstance().getActiveProject().getFmusPath() + "/" + value.path);
-
-            let fmuInstances: string[] = instances.filter((value: string) => {
-                return value.indexOf(index + "") == 0;
-            });
-
-            this.readModelDescriptionFromFmuAsync(fmuInstances, p);
-        });
-    }
-
-
-    private readModelDescriptionFromFmuAsync(instances: string[], path: string) {
-        let _this = this;
-        //        https://stuk.github.io/jszip/documentation/howto/read_zip.html
-        var JSZip = require("jszip");
-        var fs = require("fs");
-
-        console.info(path);
-        // read a zip file
-        fs.readFile(path, function (err: any, data: any) {
-            if (err) throw err;
-            var zip = new JSZip();
-
-            zip.loadAsync(data).then(function (k: any) {
-                let md = zip.file("modelDescription.xml").async("string")
-                    .then(function (content: string) {
-                        // use content
-                        // console.info(content);
-
-                        var oParser = new DOMParser();
-                        var oDOM = oParser.parseFromString(content, "text/xml");
-                        var iterator = document.evaluate('//ScalarVariable[@causality="output"]/@name', oDOM, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
-
-                        var thisNode = iterator.iterateNext();
-
-                        var outputs: any[] = [];
-
-                        while (thisNode) {
-
-                            instances.forEach((value: string) => {
-                                let id = value + "." + thisNode.textContent
-                                console.info(" ScalarVariable output: " + id);
-                                outputs.push(id);
-                            });
-
-                            thisNode = iterator.iterateNext();
-                        }
-
-
-
-                        var iterator = document.evaluate('//ScalarVariable[@causality="input"]/@name', oDOM, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
-
-                        var thisNode = iterator.iterateNext();
-
-                        while (thisNode) {
-                            instances.forEach((value: string) => {
-                                let id = value + "." + thisNode.textContent
-                                console.info(" ScalarVariable input: " + id);
-                            });
-                            thisNode = iterator.iterateNext();
-                        }
-                    });
-            });
-        });
-    }
+   
 
     private onPathChange(fmu: Configs.Fmu) {
         fmu.updatePath(fmu.path);

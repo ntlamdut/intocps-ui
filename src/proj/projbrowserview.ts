@@ -98,7 +98,6 @@ export class BrowserController {
         });
 
         this.tree.on("contextMenu", (event: any) => {
-            console.log(event);
             var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
             var menu: MenuEntry[] = item.menuEntries;
             this.tree.menu = menu;
@@ -117,7 +116,6 @@ export class BrowserController {
         });
 
         this.tree.on("click", (event: JQueryEventObject) => {
-            console.info(event);
             let allowClick = true;
             if (this.menuHandler.deInitialize != null)
             { allowClick = this.menuHandler.deInitialize(); }
@@ -152,7 +150,14 @@ export class BrowserController {
     private addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
         var self = this;
         var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
-        var stat = fs.statSync(path);
+        var stat: any;
+
+        try {
+            stat = fs.statSync(path);
+        } catch (e) {
+            //unable to access path, this happens with emacs json plugin
+            return;
+        }
         var pathComponents = Utilities.relativeProjectPath(path).split(Path.sep);
 
         function menuEntry(text: string, icon: any, callback: (item: ProjectBrowserItem) => void = undefined) {
@@ -211,7 +216,7 @@ export class BrowserController {
                 var menuEntryCreateCoSim = menuEntry("Create Co-Simulation Configuration", 'glyphicon glyphicon-copyright-mark',
                     function (item: ProjectBrowserItem) {
                         console.info("Create new cosim config for: " + item.path);
-                        self.menuHandler.createCoSimConfiguration((<any>item).mmConfig);
+                        self.menuHandler.createCoSimConfiguration(item.path);
                     });
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport];
                 return null;
@@ -256,7 +261,7 @@ export class BrowserController {
                 pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.menuEntries = [];
                 if (pathComponents.length == 1) {
-                    result.menuEntries.push(menuEntry("Start License Dongle", 'glyphicon glyphicon-asterisk',
+                    result.menuEntries.push(menuEntry("Start License Dongle", undefined,
                         function (item: ProjectBrowserItem) {
                             var cmd: any = {
                                 title: "Start License Dongle",
@@ -267,7 +272,7 @@ export class BrowserController {
                             cmd.title = "Start License Dongle";
                             self.menuHandler.runRTTesterCommand(cmd);
                         }));
-                    result.menuEntries.push(menuEntry("Stop License Dongle", 'glyphicon glyphicon-asterisk',
+                    result.menuEntries.push(menuEntry("Stop License Dongle", undefined,
                         function (item: ProjectBrowserItem) {
                             var cmd: any = {
                                 title: "Stop License Dongle",
@@ -299,33 +304,34 @@ export class BrowserController {
                 else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
                     result.img = 'into-cps-icon-rtt-mbt-test-procedure';
                     if (pathComponents[3] == "Simulation") {
-                        var menuEntrySolve = menuEntry("Generate Simulation FMU", 'into-cps-icon-mbt-generate',
+                        result.menuEntries.push(menuEntry("Generate Simulation FMU", 'into-cps-icon-rtt-mbt-generate',
                             function (item: ProjectBrowserItem) {
                                 var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen-sim.py");
                                 cmd.title = "Generate Simulation FMU";
                                 self.menuHandler.runRTTesterCommand(cmd);
-                            });
-                        result.menuEntries = [menuEntrySolve];
+                            }));
                     } else {
-                        var menuEntrySolve = menuEntry("Solve", 'into-cps-icon-mbt-generate',
+                        result.menuEntries.push(menuEntry("Solve", 'into-cps-icon-rtt-mbt-generate',
                             function (item: ProjectBrowserItem) {
                                 var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
                                 cmd.title = "Solve";
                                 self.menuHandler.runRTTesterCommand(cmd);
-                            });
-                        result.menuEntries = [menuEntrySolve];
+                            }));
                     }
                 }
                 else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
                     result.img = 'into-cps-icon-rtt-test-procedure';
                     if (pathComponents[3] != "Simulation") {
-                        var menuGen = menuEntry("Generate Test FMU", 'into-cps-icon-mbt-generate',
+                        result.menuEntries.push(menuEntry("Generate Test FMU", 'into-cps-icon-rtt-mbt-generate',
                             function (item: ProjectBrowserItem) {
                                 var cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen.py");
                                 cmd.title = "Generate Test FMU";
                                 self.menuHandler.runRTTesterCommand(cmd);
-                            });
-                        result.menuEntries = [menuGen];
+                            }));
+                        result.menuEntries.push(menuEntry("Run Test", 'into-cps-icon-rtt-run',
+                            function (item: ProjectBrowserItem) {
+                                self.menuHandler.runTest(item.path);
+                            }));
                     }
                 }
             }
@@ -339,6 +345,9 @@ export class BrowserController {
                         self.menuHandler.createDse(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
+            } else if (Path.basename(path) == "downloads") {
+                //skip the project download folder
+                return;
             }
             else if (Path.basename(path).indexOf("R_") == 0) {
                 result.img = 'glyphicon glyphicon-barcode';
