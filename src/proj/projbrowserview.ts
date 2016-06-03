@@ -261,25 +261,25 @@ export class BrowserController {
                 pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.menuEntries = [];
                 if (pathComponents.length == 1) {
-                    result.menuEntries.push(menuEntry("Start License Dongle", undefined,
+                    result.menuEntries.push(menuEntry("Start RT-Tester License Dongle", undefined,
                         function (item: ProjectBrowserItem) {
                             var cmd: any = {
-                                title: "Start License Dongle",
+                                title: "Start RT-Tester License Dongle",
                                 command: RTTester.pythonExecutable(),
                                 arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "start_license.py"))],
                                 background: true
                             }
-                            cmd.title = "Start License Dongle";
+                            cmd.title = "Start RT-Tester License Dongle";
                             self.menuHandler.runRTTesterCommand(cmd);
                         }));
-                    result.menuEntries.push(menuEntry("Stop License Dongle", undefined,
+                    result.menuEntries.push(menuEntry("Stop RT-Tester License Dongle", undefined,
                         function (item: ProjectBrowserItem) {
                             var cmd: any = {
-                                title: "Stop License Dongle",
+                                title: "Stop RT-Tester License Dongle",
                                 command: RTTester.pythonExecutable(),
                                 arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "stop_license.py"))]
                             }
-                            cmd.title = "Stop License Dongle";
+                            cmd.title = "Stop RT-Tester License Dongle";
                             self.menuHandler.runRTTesterCommand(cmd);
                         }));
                     if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
