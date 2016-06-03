@@ -19,7 +19,7 @@ export class Variable {
     private loadedCallback: (variable: Variable) => void;
 
     private nameChangedCallback: (variable: Variable, scalar?: Configs.ScalarVariable) => void;
-    private scalarValueChangeCallback: (variable: Variable) => void;
+    private scalarValueChangeCallback: (variable: Variable) => boolean;
 
     constructor(loadedCallback: (variable: Variable) => void, allVariables: Array<Configs.ScalarVariable>, removeCallback: (variable: Variable) => void, selectedVariable?: Configs.ScalarVariable, value?: string) {
         this.loadedCallback = loadedCallback;
@@ -78,15 +78,14 @@ export class Variable {
     }
 
     private onScalarValueChange(value: string) {
-        this.scalarValueChangeCallback(this);
-        return true;
+        return this.scalarValueChangeCallback(this);
     }
 
     setVariableNameChangedCallback(callback: (variable: Variable, scalar?: Configs.ScalarVariable) => void) {
         this.nameChangedCallback = callback;
     }
     
-    setOnScalarValueChangeCallback(callback: (variable: Variable) => void){
+    setOnScalarValueChangeCallback(callback: (variable: Variable) => boolean){
         this.scalarValueChangeCallback = callback;
     }
 
