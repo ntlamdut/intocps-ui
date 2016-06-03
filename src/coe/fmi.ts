@@ -129,12 +129,6 @@ export class Fmu {
 
             thisNode = iterator.iterateNext();
         }
-
-
-
-
-
-
     }
 
     public getScalarVariable(name: string): ScalarVariable {
