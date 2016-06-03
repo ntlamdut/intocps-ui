@@ -45,8 +45,8 @@ export class MmController extends IViewController {
 
     private parametersDiv: HTMLDivElement;
     private parameters: Parameters;
-    
-    private saveButton : HTMLButtonElement;
+
+    private saveButton: HTMLButtonElement;
 
 
     constructor(mainViewDiv: HTMLDivElement) {
@@ -63,7 +63,7 @@ export class MmController extends IViewController {
         this.parametersDiv = <HTMLDivElement>document.getElementById("parameters-div");
         this.saveButton = <HTMLButtonElement>document.getElementById("multimodel-save-button");
         this.saveButton.onclick = this.save.bind(this);
-        
+
 
         var remote = require('remote');
         var Menu = remote.require('menu');
@@ -76,19 +76,29 @@ export class MmController extends IViewController {
     }
 
     deInitialize() {
-        this.mm.save();
+        //this.mm.save();
         return true;
     }
-    private save(ev: MouseEvent){
-        let warningMessages: Messages.WarningMessage[]  = this.mm.validate(); 
-        if(warningMessages.length > 0){
-            alert(warningMessages.map(message => {return message.message}).join("\n"));
+    private save(ev: MouseEvent) {
+        // Remove all outputsTo where the input pairs are empty
+        // Remove all unconfirmed outputs that are not connected to any inputs
+        this.mm.fmuInstances.forEach(element => {
+            element.outputsTo.forEach((val, key) => {
+                if (val == null || val.length == 0) {
+                    element.outputsTo.delete(key);
+                }
+            });
+        });
+
+        let warningMessages: Messages.WarningMessage[] = this.mm.validate();
+        if (warningMessages.length > 0) {
+            alert(warningMessages.map(message => { return message.message }).join("\n"));
         }
-        else{
+        else {
             this.mm.save();
-        }          
+        }
     }
-    
+
     private loadComponents(multiModelConfig: MultiModelConfig, containers: MmContainers) {
         if (containers & MmContainers.Keys) {
             $(this.multiModelFmusDiv).load("multimodel/fmu-keys/fmu-keys.html", (event: JQueryEventObject) => {
@@ -156,28 +166,26 @@ export class MmController extends IViewController {
 
     }
 
-   
-
     private onPathChange(fmu: Configs.Fmu) {
         fmu.updatePath(fmu.path);
         this.cleanAndReload(MmContainers.Instances | MmContainers.Connections | MmContainers.Parameters);
     }
-    private cleanAndReload(containers: number){
+    private cleanAndReload(containers: number) {
         this.clearContainers(containers);
         this.loadComponents(this.mm, containers);
     }
     private onKeyChange(fmu: Configs.Fmu) {
         // Refresh FMU Instances, Connections, and parameters
-            this.cleanAndReload(MmContainers.Instances | MmContainers.Connections | MmContainers.Parameters);
+        this.cleanAndReload(MmContainers.Instances | MmContainers.Connections | MmContainers.Parameters);
     }
-    
-    private onFmuRemove(fmu: Configs.Fmu){
+
+    private onFmuRemove(fmu: Configs.Fmu) {
         // Remove the FMU
         this.mm.removeFmu(fmu);
         // Reload the UI
         let containers = MmContainers.Instances | MmContainers.Connections | MmContainers.Parameters;
         this.cleanAndReload(containers);
-        
+
     }
 
     private onInstancesChanged() {

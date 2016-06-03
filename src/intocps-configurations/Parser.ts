@@ -9,8 +9,8 @@ import * as Fmi from "../coe/fmi";
 
 import {MultiModelConfig} from "./MultiModelConfig";
 import {CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, VariableStepAlgorithm, VarStepConstraint, VarStepConstraintType} from "./CoSimulationConfig";
-
 import Path = require('path');
+import fs = require('fs');
 
 export class Parser {
 
@@ -34,7 +34,14 @@ export class Parser {
     protected ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG: string = "constraints";
 
     constructor() { }
-
+    public static fileExists(filePath: string) {
+        try {
+            return fs.statSync(filePath).isFile();
+        }
+        catch (err) {
+            return false;
+        }
+    }
     //Parse fmus json tag
     parseFmus(data: any, basePath: string): Promise<Fmi.Fmu[]> {
 
@@ -48,8 +55,10 @@ export class Parser {
                     $.each(Object.keys(data[this.FMUS_TAG]), (j, key) => {
                         var description = "";
                         var path = data[this.FMUS_TAG][key];
+                        let correctedPath = Parser.fileExists(path) ? path : Path.normalize(basePath + "/" + path); 
+                        let fmu = new Fmi.Fmu(key, correctedPath);
 
-                        let fmu = new Fmi.Fmu(key, Path.normalize(basePath + "/" + path));
+
                         populates.push(fmu.populate());
                         fmus.push(fmu);
                     });
@@ -354,7 +363,6 @@ export class Serializer extends Parser {
         var data: any = new Object();
 
         fmus.forEach((fmu: Fmi.Fmu) => {
-
             var path = fmu.path;
             if (path.indexOf(fmusRootPath) >= 0) {
                 path = path.substring(fmusRootPath.length + 1);
@@ -433,12 +441,11 @@ export class Serializer extends Parser {
             obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_FIXED;
             obj[this.ALGORITHM_TYPE_FIXED_SIZE_TAG] = algorithm.size;
             return obj;
-        }else if (algorithm instanceof VariableStepAlgorithm)
-        {
-             var obj: any = new Object();
+        } else if (algorithm instanceof VariableStepAlgorithm) {
+            var obj: any = new Object();
             obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_VAR;
             obj[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG] = algorithm.initSize;
-            obj[this.ALGORITHM_TYPE_VAR_SIZE_TAG] = [algorithm.sizeMin,algorithm.sizeMax];
+            obj[this.ALGORITHM_TYPE_VAR_SIZE_TAG] = [algorithm.sizeMin, algorithm.sizeMax];
             obj[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG] = [];//TODO
             return obj;
         }
