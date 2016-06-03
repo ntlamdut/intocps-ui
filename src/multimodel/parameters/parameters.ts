@@ -3,6 +3,7 @@ import * as Configs from "../../intocps-configurations/intocps-configurations";
 import {Variable} from "./variable";
 import {InstanceListElement} from "../connections/connections-instance-element";
 import {Component} from "../components/component";
+import {convertToType} from "../../coe/fmi";
 
 export class Parameters {
     private instanceListUI: HTMLUListElement;
@@ -116,10 +117,10 @@ export class Parameters {
 
     private onScalarNameChange(variable: Variable, prevScalar: Configs.ScalarVariable) {
         let initialValues = this.selectedInstance.getInstance().initialValues;
-        
+
         // Remove the old scalar from initial values
         initialValues.delete(prevScalar);
-        
+
         // If the scalar does not exist in initial values, then add it
         if (initialValues.get(variable.getVariable()) == null) {
             initialValues.set(variable.getVariable(), variable.getValue());
@@ -132,11 +133,18 @@ export class Parameters {
         // Refresh the add button
         this.updateAddButton();
     }
-    
+
     private onScalarValueChange(variable: Variable) {
         // If the scalar value does not exist, then do not set the value. It will be set once a scalar variable is chosen.
         if (this.selectedInstance.getInstance().initialValues.get(variable.getVariable()) != null) {
-            this.selectedInstance.getInstance().initialValues.set(variable.getVariable(), variable.getValue());
+            let scalar = variable.getVariable();
+            let convertedValue = convertToType(scalar.type, variable.getValue());
+            if (convertedValue != null) {
+                this.selectedInstance.getInstance().initialValues.set(variable.getVariable(), convertedValue);
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 

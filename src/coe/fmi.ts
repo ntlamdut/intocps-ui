@@ -189,9 +189,38 @@ export function isCausalityCompatible(t1: CausalityType, t2: CausalityType): boo
     }
 }
 
-function isInteger(x:any) { return typeof x === "number" && isFinite(x) && Math.floor(x) === x; }
+function isInteger(x:any) { return !isNaN(x) && isFinite(x) && Math.floor(x) === x; }
 function isFloat(x:any) { return !!(x % 1); }
 function isString(value:any) {return typeof value === 'string';}
+
+export function convertToType(type: ScalarVariableType, value: any): any{
+    if(type == ScalarVariableType.Bool)
+    {
+        return Boolean(value);
+    }
+    else if(type == ScalarVariableType.Int)
+    {
+        let mValue = Number(value);
+        if(isInteger(mValue)){
+            return mValue;   
+        }
+    }
+    else if(type == ScalarVariableType.Real)
+    {
+        let mValue = Number(value);
+        if(isFloat(mValue) || isInteger(mValue)){
+            return mValue;
+        }
+    }
+    else if(type == ScalarVariableType.String)
+    {
+        let mValue = value.toString();
+        if(isString(mValue)){
+            return mValue;
+        }
+    }
+    return null;
+}
 
 export function isTypeCompatipleWithValue(t1: ScalarVariableType, value: any): boolean {
 
