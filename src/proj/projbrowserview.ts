@@ -285,14 +285,14 @@ export class BrowserController {
                     if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
                         var menuEntryCreate = menuEntry("Create Test Data Generation Project", 'glyphicon glyphicon-asterisk',
                             function (item: ProjectBrowserItem) {
-                                self.menuHandler.createRTTesterProject(item.path);
+                                self.menuHandler.createTDGProject(item.path);
                             });
                         result.menuEntries.push(menuEntryCreate);
                     }
                     else if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                         var menuEntryCreate = menuEntry("Create Model Checking Project", 'glyphicon glyphicon-asterisk',
                             function (item: ProjectBrowserItem) {
-                                self.menuHandler.createRTTesterProject(item.path);
+                                self.menuHandler.createMCProject(item.path);
                             });
                         result.menuEntries.push(menuEntryCreate);
                     }

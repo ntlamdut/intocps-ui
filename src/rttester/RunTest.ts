@@ -8,21 +8,20 @@ import Path = require('path');
 import {RTTester} from "../rttester/RTTester";
 
 class FMUAssignment {
-    controller: RunTestController;
+    assignments: FMUAssignments;
     instanceName: string;
-    fmuFileName: string;
     componentName: string;
+    simulationFMUPath: string;
     hInstanceName: HTMLHeadingElement;
     hFMUPath: HTMLInputElement;
     hBrowseButton: HTMLButtonElement;
     hSimulationButton: HTMLButtonElement;
-    constructor(controller: RunTestController, componentName: string, instanceName: string, fmuFileName: string) {
+    html: HTMLElement;
+    constructor(assignments: FMUAssignments, componentName: string, instanceName: string, fmuFileName: string = null) {
         this.componentName = componentName;
-        this.controller = controller;
+        this.assignments = assignments;
         this.instanceName = instanceName;
-        this.fmuFileName = fmuFileName;
-    }
-    insertToHTMLList(list: HTMLDivElement) {
+        this.simulationFMUPath = RTTester.simulationFMU(this.assignments.controller.testCase, this.componentName);
         var self: FMUAssignment = this;
         $('<div>').load("./rttester/RunTest/SUTSelection.html", function (event: JQueryEventObject) {
             self.hInstanceName = this.querySelector("#instanceName");
@@ -30,6 +29,7 @@ class FMUAssignment {
             self.hBrowseButton = this.querySelector("#browseButton");
             self.hSimulationButton = this.querySelector("#simulationButton");
             self.hSimulationButton.addEventListener("click", () => self.setSimulation());
+            self.hFMUPath.addEventListener("input", () => { self.updateSimulationButton(); });
             self.hBrowseButton.addEventListener("click", () => {
                 let remote = require("remote");
                 let dialog = remote.require("dialog");
@@ -39,22 +39,22 @@ class FMUAssignment {
                 if (dialogResult != undefined) {
                     self.hFMUPath.value = dialogResult[0];
                 }
+                self.updateSimulationButton();
             });
-            self.display();
-            list.appendChild(this);
+            self.hInstanceName.innerText = self.componentName + " - " + self.instanceName;
+            self.hFMUPath.value = fmuFileName != null ? fmuFileName : self.simulationFMUPath;
+            self.assignments.hSUTList.appendChild(this);
+            self.updateSimulationButton();
         });
     }
-    setSimulation() {
-        this.fmuFileName = null;
-        this.display();
+    updateSimulationButton() {
+        console.log("change");
+        this.hSimulationButton.className = (this.hFMUPath.value == this.simulationFMUPath) ?
+            "btn btn-info btn-sm" : "btn btn-default btn-sm";
     }
-    display() {
-        this.hInstanceName.innerText = this.componentName + " - " + this.instanceName;
-        if (this.fmuFileName == null) {
-            this.hFMUPath.value = RTTester.simulationFMU(this.controller.testCase, this.componentName);
-        } else {
-            this.hFMUPath.value = this.fmuFileName;
-        }
+    setSimulation() {
+        this.hFMUPath.value = this.simulationFMUPath;
+        this.updateSimulationButton();
     }
 }
 
@@ -68,17 +68,9 @@ class FMUAssignments {
     }
     load() {
         // Mockup data
-        this.assignments.push(new FMUAssignment(this.controller, "TurnIndicationController", "x1", null));
-        this.assignments.push(new FMUAssignment(this.controller, "Component 2", "x2", "c:\\file2.fmu"));
-        this.assignments.push(new FMUAssignment(this.controller, "Component 3", "x3", "c:\\file5.fmu"));
-        this.display();
-    }
-    display() {
-        var self: FMUAssignments = this;
-        while (this.hSUTList.firstChild)
-            this.hSUTList.removeChild(this.hSUTList.firstChild);
-        this.assignments.forEach((a) =>
-            a.insertToHTMLList(this.hSUTList));
+        this.assignments.push(new FMUAssignment(this, "TurnIndicationController", "x1", null));
+        this.assignments.push(new FMUAssignment(this, "Component 2", "x2", "c:\\file2.fmu"));
+        this.assignments.push(new FMUAssignment(this, "Component 3", "x3", "c:\\file5.fmu"));
     }
 }
 
