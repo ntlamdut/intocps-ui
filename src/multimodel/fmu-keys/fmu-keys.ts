@@ -1,5 +1,6 @@
 import {KeyFmuElement} from "./key-fmu-element"
 import * as Configs from "../../intocps-configurations/intocps-configurations";
+import Path = require('path');
 
 export class FmuKeys {
     private container: HTMLDivElement;
@@ -14,7 +15,8 @@ export class FmuKeys {
         this.container = container;
         this.elementContainer = <HTMLDivElement>this.container.querySelector("#fmu-keys-elements");
     }
-
+    
+    
     addData(multiModelDOM: Configs.MultiModelConfig) {
         this.multiModelDOM = multiModelDOM;
         multiModelDOM.fmus.forEach((element: Configs.Fmu) => {
@@ -29,13 +31,14 @@ export class FmuKeys {
     setOnPathChangeHandler(callback: () => void) {
         this.onPathChangedHandler = callback;
     }
-    
-    setOnRemoveHandler(callback: (fmu: Configs.Fmu) => void){
+
+    setOnRemoveHandler(callback: (fmu: Configs.Fmu) => void) {
         this.onRemoveHandler = callback;
     }
 
     public addFmu(fmu?: Configs.Fmu) {
         let self = this;
+        let fmusRootPath = Path.normalize(this.multiModelDOM.fmusRootPath + "/");
         $('<div>').load("multimodel/fmu-keys/key-fmu-element.html", function (event: JQueryEventObject) {
             let html: HTMLDivElement = <HTMLDivElement>(<HTMLDivElement>this).firstChild;
             let newFmu = false;
@@ -44,6 +47,7 @@ export class FmuKeys {
                 newFmu = true;
             }
             let element = new KeyFmuElement(html, fmu, self.keyChangeCallback.bind(self), self.onPathChanged.bind(self), self.removeCallback.bind(self), newFmu);
+            element.setDefaultFmusPath(fmusRootPath);
             self.fmuKeyElements.push(element);
             self.elementContainer.appendChild(html);
         });
