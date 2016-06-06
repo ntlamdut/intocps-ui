@@ -8,23 +8,22 @@ import Path = require('path');
 import {RTTester} from "../rttester/RTTester";
 
 
-class Abstraction {
-    hAbstractionLink: HTMLLinkElement;
-    hAbstractionPanel: HTMLDivElement;
-    output: Output;
-    htmlFile: string;
-    constructor(output: Output, htmlFile: string) {
-        this.output = output;
-        this.htmlFile = htmlFile;
+class AbstractionSelectorMackop {
+    hLinks: HTMLLinkElement[];
+    constructor(ids: string[]) {
+        this.hLinks = ids.map((id) => <HTMLLinkElement>document.getElementById(id));
+        this.hLinks.forEach((l) => {
+            l.addEventListener("click", () => { this.setActive(l); });
+        });
     }
-    setActive(active: boolean) {
-        if (!active) {
-            this.hAbstractionLink.classList.remove("active");
-            this.hAbstractionLink.classList.remove("aria-expanded");
-        } else {
-            this.hAbstractionLink.classList.add("active");
-            this.hAbstractionLink.classList.add("aria-expanded");
-        }
+    setActive(link: HTMLLinkElement) {
+        link.classList.add("active");
+        link.classList.add("aria-expanded");
+        this.hLinks.forEach((l) => {
+            if (l != link) {
+                l.classList.remove("active");
+            }
+        });
     }
 }
 
@@ -114,6 +113,11 @@ class Abstractions {
     selectedComponent: Component;
 
     constructor(controller: CreateMCProjectController) {
+        new AbstractionSelectorMackop([
+            "headingAbstractionNone",
+            "headingAbstractionRange",
+            "headingAbstractionGradient",
+            "headingAbstractionSimulation"]);
         this.controller = controller;
         let hComponentList: HTMLUListElement = <HTMLUListElement>document.getElementById("componentList");
 
