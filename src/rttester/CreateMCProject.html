@@ -64,6 +64,71 @@
                     </div>
                     <div class="panel-body">
                         <div id="abstractionDiv" class="panel-group" role="tablist" aria-multiselectable="true">
+                            <div class="panel panel-default">
+                                <a class="list-group-item" role="tab" id="headingAbstractionNone" data-toggle="collapse" data-parent="#abstractionDiv" href="#collapseAbstractionNone"
+                                    aria-expanded="false" aria-controls="collapseAbstractionNone">
+                                        No Abstraction
+                                </a>
+                            </div>
+                            <div class="panel panel-default">
+                                <a class="collapsed list-group-item" role="tab" id="headingAbstractionRange" data-toggle="collapse" data-parent="#abstractionDiv"
+                                    href="#collapseAbstractionRange" aria-expanded="false" aria-controls="collapseAbstractionRange">
+                                        Range Based Abstraction
+                                </a>
+                                <div id="collapseAbstractionRange" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingAbstractionRange">
+                                    <div class="panel-body">
+                                        <form class="form-horizontal">
+                                            <div class="form-group">
+                                                <label for="upperBound" class="col-sm-2 control-label">Upper Bound:</label>
+                                                <input type="number" class="col-sm-9" id="upperBound">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="lowerBound" class="col-sm-2 control-label">Lower Bound:</label>
+                                                <input type="number" class="col-sm-9" id="lowerBound">
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <a class="collapsed list-group-item" role="tab" id="headingAbstractionGradient" data-toggle="collapse" data-parent="#abstractionDiv"
+                                    href="#collapseAbstractionGradient" aria-expanded="false" aria-controls="collapseAbstractionGradient">
+                                        Gradient Based Abstraction
+                                </a>
+                                <div id="collapseAbstractionGradient" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingAbstractionGradient">
+                                    <div class="panel-body">
+                                        <form class="form-horizontal">
+                                            <div class="form-group">
+                                                <label for="Gradient" class="col-sm-2 control-label">Gradient:</label>
+                                                <input type="number" step="0.1" class="col-sm-9" id="gradient">
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <a class="collapsed list-group-item" role="tab" id="headingAbstractionSimulation" data-toggle="collapse" data-parent="#abstractionDiv"
+                                    href="#collapseAbstractionSimulation" aria-expanded="false" aria-controls="collapseAbstractionSimulation">
+                                        Simulation Based Abstraction
+                                </a>
+                                <div id="collapseAbstractionSimulation" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingAbstractionSimulation">
+                                    <div class="panel-body">
+                                        <form class="form-horizontal">
+                                            <div class="form-group">
+                                                <label for="simulationData" class="col-sm-2 control-label">Trace file:</label>
+                                                <div id="simulationData" class="input-group col-sm-9">
+                                                    <input type="text" class="form-control input-sm" id="XMIModelPathText">
+                                                    <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-default btn-sm">
+                                                        <span class="glyphicon glyphicon-file"></span>Browse
+                                                    </button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

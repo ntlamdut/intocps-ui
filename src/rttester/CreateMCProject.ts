@@ -26,18 +26,6 @@ class Abstraction {
             this.hAbstractionLink.classList.add("aria-expanded");
         }
     }
-    display(hAbstractionDiv: HTMLDivElement, activate: boolean) {
-        let self: Abstraction = this;
-        $('<div>').load(self.htmlFile, function (event: JQueryEventObject) {
-            let idBase: string = Path.basename(self.htmlFile, ".html");
-            self.hAbstractionLink = <HTMLLinkElement>this.querySelector("#heading" + idBase);
-            self.hAbstractionPanel = <HTMLDivElement>this.querySelector("#collapse" + idBase);
-            self.hAbstractionLink.addEventListener("click", function () { self.output.selectAbstraction(self); });
-            if (activate)
-                self.output.selectAbstraction(self);
-            hAbstractionDiv.appendChild(self.hAbstractionLink);
-        });
-    }
 }
 
 
@@ -45,16 +33,10 @@ class Output {
     component: Component;
     name: string;
     hOutput: HTMLLinkElement;
-    abstractions: Abstraction[] = [];
-    selectedAbstraction: Abstraction;
 
     constructor(component: Component, name: string) {
         this.component = component;
         this.name = name;
-        this.abstractions.push(new Abstraction(this, "./rttester/CreateMCProject/AbstractionNone.html"));
-        //this.abstractions.push(new Abstraction(this, "./rttester/CreateMCProject/AbstractionRange.html"));
-        this.abstractions.push(new Abstraction(this, "./rttester/CreateMCProject/AbstractionSimulation.html"));
-        this.abstractions.push(new Abstraction(this, "./rttester/CreateMCProject/AbstractionGradient.html"));
     }
     display(hOutputList: HTMLUListElement, activate: boolean) {
         let self: Output = this;
@@ -74,21 +56,7 @@ class Output {
             this.hOutput.classList.add("active");
             let hAbstractionHeading: HTMLHeadingElement = <HTMLHeadingElement>document.getElementById("abstractionHeader");
             hAbstractionHeading.innerHTML = "Abstraction for \"" + this.name + "\"";
-            let hAbstractionDiv: HTMLDivElement = <HTMLDivElement>document.getElementById("abstractionDiv");
-            while (hAbstractionDiv.firstChild) {
-                hAbstractionDiv.removeChild(hAbstractionDiv.firstChild);
-            }
-            for (let i = 0; i < this.abstractions.length; ++i)
-                this.abstractions[i].display(hAbstractionDiv, i == 0);
         }
-    }
-    selectAbstraction(abstraction: Abstraction) {
-        if (abstraction == this.selectedAbstraction)
-            return;
-        if (this.selectedAbstraction != null)
-            this.selectedAbstraction.setActive(false);
-        this.selectedAbstraction = abstraction;
-        this.selectedAbstraction.setActive(true);
     }
 }
 
