@@ -80,14 +80,18 @@
                         <div class="panel panel-default">
                             <a class="collapsed list-group-item active" role="tab" id="headingTwo" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo"
                                 aria-expanded="false" aria-controls="collapseTwo">
-                                        Gradient Based Abstraction
+                                        Interval Range Abstraction
                             </a>
                             <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                                 <div class="panel-body">
                                     <form class="form-horizontal">
                                         <div class="form-group">
-                                            <label for="Gradient" class="col-sm-2 control-label">Gradient:</label>
-                                            <input type="number" step="0.1" class="col-sm-9" id="gradient">
+                                            <label for="upperBound" class="col-sm-2 control-label">Upper bound:</label>
+                                            <input type="number" step="0.1" class="col-sm-9" id="upperBound">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="lowerBound" class="col-sm-2 control-label">Lower bound:</label>
+                                            <input type="number" step="0.1" class="col-sm-9" id="lowerBound">
                                         </div>
                                     </form>
                                 </div>
@@ -96,9 +100,25 @@
                         <div class="panel panel-default">
                             <a class="collapsed list-group-item" role="tab" id="headingThree" data-toggle="collapse" data-parent="#accordion" href="#collapseThree"
                                 aria-expanded="false" aria-controls="collapseThree">
-                                        Simulation Based Abstraction
+                                        Gradient Based Abstraction
                             </a>
                             <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                <div class="panel-body">
+                                    <form class="form-horizontal">
+                                        <div class="form-group">
+                                            <label for="gradient" class="col-sm-2 control-label">Gradient:</label>
+                                            <input type="number" step="0.1" class="col-sm-9" id="gradient">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <a class="collapsed list-group-item" role="tab" id="headingFour" data-toggle="collapse" data-parent="#accordion" href="#collapseFour"
+                                aria-expanded="false" aria-controls="collapseFour">
+                                        Simulation Based Abstraction
+                            </a>
+                            <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
                                 <div class="panel-body">
                                     <form class="form-horizontal">
                                         <div class="form-group">
