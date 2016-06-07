@@ -369,7 +369,7 @@ export class BrowserController {
                 parent.nodes.push(result);
             }
             if (stat.isDirectory()) {
-                if (Utilities.pathIsInFolder(path, <string>Project.PATH_SYSML) && result.level >= 2) {
+                if (Utilities.pathIsInFolder(path, <string>Project.PATH_SYSML) && result.level >= 3) {
                     // Skip: Limit directory depth in SysML folder to 2
                 } else {
                     this.addFSFolderContent(path, result);
