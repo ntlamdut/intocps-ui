@@ -1,6 +1,8 @@
 
+
 .into-cps-icon-projbrowser-overture {
-    background: url("icons/overture-logo.svg");
-    background-repeat: no-repeat;
+  background: url("icons/overture-logo.png");
+  background-repeat: no-repeat;
+  background-color: #000;
 }
 
