@@ -14,11 +14,11 @@ var ProjectFetcher = require("./proj/ProjectFetcher");
 const intoCpsApp = IntoCpsApp.getInstance();
 
 
-let createProjectHandler = new DialogHandler("proj/new-project.html", 300, 200, IntoCpsAppEvents.OPEN_CREATE_PROJECT_WINDOW, "new-project-create", arg => {
+let createProjectHandler = new DialogHandler("proj/new-project.html", 300, 200, IntoCpsAppEvents.OPEN_CREATE_PROJECT_WINDOW, "new-project-create", (arg: any) => {
   intoCpsApp.createProject(arg.name, arg.path);
 });
 
-let openProjectHandler = new DialogHandler("proj/open-project.html", 300, 200, IntoCpsAppEvents.OPEN_OPEN_PROJECT_WINDOW, "open-project-open", arg => {
+let openProjectHandler = new DialogHandler("proj/open-project.html", 300, 200, IntoCpsAppEvents.OPEN_OPEN_PROJECT_WINDOW, "open-project-open", (arg: any) => {
   intoCpsApp.setActiveProject(intoCpsApp.loadProject(arg.path));
 });
 
@@ -42,7 +42,7 @@ export function configureIntoCpsMenu() {
   // Definitions needed for menu construction
   var defaultMenu = require('electron-default-menu')
   // Get template for default menu 
-  var menu = defaultMenu()
+  var menu: any[] = defaultMenu();
 
 
   //let mw = mainWindow;
