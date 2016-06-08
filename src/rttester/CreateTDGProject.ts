@@ -8,7 +8,7 @@ import Path = require('path');
 import {RTTester} from "../rttester/RTTester";
 
 
-export class CreateRTTesterProjectController extends IViewController {
+export class CreateTDGProjectController extends IViewController {
 
     directory: string;
 

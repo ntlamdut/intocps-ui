@@ -14,6 +14,7 @@ export class Utilities{
             return true;
         }
     }
+    
 
     public static projectRoot(): string {
         let app: IntoCpsApp = IntoCpsApp.getInstance();

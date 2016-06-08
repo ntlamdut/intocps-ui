@@ -13,6 +13,7 @@ export class KeyFmuElement {
     dialog: Electron.Dialog;
     platform: string;
     removeCallback: (element: KeyFmuElement) => void;
+    defaultFmusPath: string = "";
     constructor(container: HTMLDivElement, fmu: Configs.Fmu, keyChangeCallback: (element: KeyFmuElement, text: string) => boolean, pathChangeCallback: (element: KeyFmuElement, path: string) => void, removeCallback: (element: KeyFmuElement) => void, newFmu: boolean) {
         this.container = container;
 
@@ -30,6 +31,12 @@ export class KeyFmuElement {
 
 
     }
+    
+    public setDefaultFmusPath(path: string){
+        this.defaultFmusPath = path;
+        this.pathTextField.value = this.pathTextField.value.replace(path, "");
+    }
+    
     getFmu() {
         return this.fmu;
     }
@@ -49,7 +56,7 @@ export class KeyFmuElement {
         this.pathTextField = <HTMLInputElement>this.container.querySelector("#fmuPath");
         this.pathTextField.readOnly = true;
         if (fmu.path != null) {
-            this.pathTextField.value = fmu.path;
+            this.pathTextField.value = fmu.path.replace(this.defaultFmusPath,"");
         }
         this.addBrowseButtons();
         let removeButton = <HTMLButtonElement>this.pathContainer.querySelector("#fmuRemoveBut");
@@ -60,9 +67,9 @@ export class KeyFmuElement {
     private addBrowseButtons() {
         let addBrowseClickHandler = (button: HTMLButtonElement, txtField: HTMLInputElement, dialog: Electron.Dialog, props: ('openFile' | 'openDirectory' | 'multiSelections' | 'createDirectory')[]) => {
             button.onclick = (e) => {
-                let dialogResult: string[] = dialog.showOpenDialog({ properties: props });
+                let dialogResult: string[] = dialog.showOpenDialog({defaultPath: this.defaultFmusPath,  properties: props });
                 if (dialogResult != null) {
-                    txtField.value = dialogResult[0];
+                    txtField.value = dialogResult[0].replace(this.defaultFmusPath,"");
                     this.pathChangeCallback(this, dialogResult[0]);
                 }
             }
