@@ -1,8 +1,36 @@
 
-
 .into-cps-icon-projbrowser-overture {
-  background: url("icons/overture-logo.png");
+  background: url("icons/overture-logo.svg");
   background-repeat: no-repeat;
-  background-color: #000;
+  background-size: contain;
 }
 
+.into-cps-icon-projbrowser-openmodelica {
+  background: url("icons/open-modelica-logo.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.into-cps-icon-projbrowser-20sim {
+  background: url("icons/20-sim-logo.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.into-cps-icon-projbrowser-rtt {
+  background: url("icons/verified-rtt-logo.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.into-cps-icon-projbrowser-modelio {
+  background: url("icons/modelio-logo.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.into-cps-icon-projbrowser-multimodel {
+  background: url("icons/multimodel-icon.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
