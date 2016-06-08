@@ -25,7 +25,7 @@ function coeClose() {
     }
 
     let remote = require("electron").remote;
-    let dialog = remote.require("dialog");
+    let dialog = remote.dialog;
     let buttons: string[] = ["No", "Yes"];
     dialog.showMessageBox({ type: 'question', buttons: buttons, message: "Are you sure you want to terminate the COE" }, function (button: any) {
         if (button == 1)//yes

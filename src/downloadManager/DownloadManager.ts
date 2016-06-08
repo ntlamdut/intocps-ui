@@ -33,7 +33,7 @@ function getTempDir(): string {
     if (tempDir == null || tempDir == undefined) {
         if (IntoCpsApp.getInstance().getActiveProject() == null) {
             let remote = require("electron").remote;
-            let dialog = remote.require("dialog");
+            let dialog = remote.dialog;
             dialog.showErrorBox("No active project", "No Active project loaded, please load and try again.");
             return;
         }
@@ -169,7 +169,7 @@ function showVersion(version: string, data: any) {
 
         btn.onclick = function (e) {
             let remote = require("electron").remote;
-            let dialog = remote.require("dialog");
+            let dialog = remote.dialog;
             let buttons: string[] = ["No", "Yes"];
             dialog.showMessageBox({ type: 'question', buttons: buttons, message: "Download: " + tool.name + " (" + tool.version + ")" }, function (button: any) {
                 if (button == 1)//yes

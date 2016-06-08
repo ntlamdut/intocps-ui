@@ -66,7 +66,7 @@ export class CoeController extends IViewController {
     constructor(viewDiv: HTMLDivElement) {
         super(viewDiv);
         this.remote = require("electron").remote;
-        this.dialog = this.remote.require("dialog");
+        this.dialog = this.remote.dialog;
         this.app = IntoCpsApp.getInstance();
     }
 

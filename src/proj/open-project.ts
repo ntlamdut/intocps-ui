@@ -4,7 +4,7 @@ import fs = require('fs');
 
 function launchProjectExplorer() {
     let remote = require("electron").remote;
-    let dialog = remote.require("dialog");
+    let dialog = remote.dialog;
     let dialogResult: string[] = dialog.showOpenDialog({ properties: ["openDirectory"] });
     if (dialogResult != undefined) {
 
@@ -22,7 +22,7 @@ window.onload =function (){
 
 function openProject() {
     let remote = require("electron").remote;
-    let dialog = remote.require("dialog");
+    let dialog = remote.dialog;
 
     var ipc = require('electron').ipcRenderer;
     console.log("Project open");

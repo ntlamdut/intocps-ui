@@ -2,7 +2,7 @@
 
 function launchProjectExplorer() {
     let remote = require("electron").remote;
-    let dialog = remote.require("dialog");
+    let dialog = remote.dialog;
     let dialogResult: string[] = dialog.showOpenDialog({ properties: ["openDirectory","createDirectory"] });
     if (dialogResult != undefined) {
 
