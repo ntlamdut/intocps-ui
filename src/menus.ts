@@ -34,6 +34,10 @@ let fetchProjectFromGitHandler = new DialogHandler("proj/ProjectFetcher.html", 5
 let openExamplesFromGitHandler = new DialogHandler("examples/examples.html", 500, 400, null, null, null);
 let openSettingsHandler = new DialogHandler("settings/settings.html", 300, 600, null, null, null);
 
+createProjectHandler.install();
+openProjectHandler.install();
+openDownloadManagerHandler.install();
+
 
 export function configureIntoCpsMenu() {
   const {remote} = require('electron');
