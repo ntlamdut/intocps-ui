@@ -198,7 +198,7 @@ export class BrowserController {
             }
             else if (path.endsWith('.coe.json')) {
                 //merge MultiModelConfig and folder
-                parent.img = 'glyphicon glyphicon-copyright-mark';
+                parent.img = 'into-cps-icon-projbrowser-multimodel';
                 (<any>parent).coeConfig = path;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openCoeView((<any>item).coeConfig);
@@ -208,7 +208,7 @@ export class BrowserController {
             }
             else if (path.endsWith('.mm.json')) {
                 //merge MultiModelConfig and folder
-                parent.img = 'into-cps-icon-projbrowser-overture';
+                parent.img = 'into-cps-icon-projbrowser-multimodel';
                 (<any>parent).mmConfig = path;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openMultiModel((<any>item).mmConfig);
@@ -222,15 +222,14 @@ export class BrowserController {
                 return null;
             }
             else if (path.endsWith('.fmu')) {
-                result.img = 'into-cps-icon-projbrowser-overture';
-                //result.img = 'icon-page';
+                result.img = 'icon-page';
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openFmu(item.path);
                 };
             }
             else if (path.endsWith('.sysml.json')) {
-                result.img = 'glyphicon glyphicon-tasks';
+                result.img = 'into-cps-icon-projbrowser-modelio';
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openSysMlExport(item.path);
@@ -243,11 +242,11 @@ export class BrowserController {
                 result.menuEntries = [menuEntryCreateMM, menuEntryDelete, menuEntryImport, menuEntryExport];
             }
             else if (path.endsWith('.emx')) {
-                result.img = 'glyphicon glyphicon-tree-conifer';
+                result.img = 'into-cps-icon-projbrowser-20sim';
                 result.removeFileExtensionFromText();
             }
             else if (path.endsWith('.mo')) {
-                result.img = 'glyphicon glyphicon-tree-deciduous';
+                result.img = 'into-cps-icon-projbrowser-openmodelica';
                 result.removeFileExtensionFromText();
             }
             else if (path.endsWith('.csv')) {
@@ -337,7 +336,7 @@ export class BrowserController {
                 }
             }
             else if (this.isOvertureProject(path)) {
-                result.img = 'glyphicon glyphicon-leaf';
+                result.img = 'into-cps-icon-projbrowser-overture';
                 result.expanded = false;
             }
             else if (Path.basename(path) == Project.PATH_DSE) {
