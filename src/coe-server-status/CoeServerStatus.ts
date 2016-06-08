@@ -55,7 +55,7 @@ function launchCoe() {
 
     var child = spawn('java', ['-jar', coePath], {
         detached: true,
-        shell: true,
+        shell: false,
         cwd: childCwd
     });
     child.unref();
