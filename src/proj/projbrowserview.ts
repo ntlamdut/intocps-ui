@@ -38,8 +38,10 @@ export class MenuEntry {
 }
 
 export class ProjectBrowserItem {
+    controller: BrowserController;
     id: string;
     path: string;
+    isDirectory: boolean;
     text: string;
     level: number;
     expanded: boolean = false;
@@ -47,39 +49,118 @@ export class ProjectBrowserItem {
     nodes: ProjectBrowserItem[] = [];
     parent: ProjectBrowserItem;
     group: boolean = false;
+    fsWatch: fs.FSWatcher;
 
     clickHandler(item: ProjectBrowserItem): void { }
     dblClickHandler(item: ProjectBrowserItem): void { }
     menuEntries: MenuEntry[] = [];
 
     private static idCounter: number = 0;
-    constructor(path: string, parent: ProjectBrowserItem) {
+    constructor(controller: BrowserController, path: string, parent: ProjectBrowserItem) {
+        this.controller = controller;
+        let self = this;
         this.id = "ProjectBrowserItem_" + (ProjectBrowserItem.idCounter++).toString();
         this.path = path;
+        this.isDirectory = fs.statSync(path).isDirectory();
         this.text = Path.basename(path);
         this.parent = parent;
         if (parent == null) {
             this.level = 0;
-            this.group = true;
-            this.expanded = true;
         } else {
             this.level = parent.level + 1;
         }
+        if (this.level <= 1) {
+            this.group = true;
+            this.expanded = true;
+        }
     }
+
     removeFileExtensionFromText(): void {
         this.text = this.text.substr(0, this.text.indexOf('.'));
     }
-    removeNodeWithPath(path: string): void {
-        this.nodes = this.nodes.filter(function (n: ProjectBrowserItem) {
-            return n.path != path;
-        });
+
+    getChildByPath(path: string) {
+        return this.nodes.find((n) => { return n.path == path; });
+    }
+
+    activate() {
+        let self = this;
+        console.log("activating node " + this.id + ": " + this.path);
+        let parent = this.parent;
+        if (parent != null) {
+            let i: number = 0;
+            for (; i < parent.nodes.length && parent.nodes[i].path.localeCompare(this.path) < 0; ++i);
+            if (this.level <= 1) {
+                this.controller.tree.insert(null, this);
+            } else {
+                let before = (i + 1) < parent.nodes.length ? parent.nodes[i + 1].id : null;
+                this.controller.tree.insert(parent.id, before, this);
+            }
+        }
+        if (this.expanded || parent.expanded) {
+            this.loadChildren();
+        }
+
+        let exists = (p: string) => { try { let x = fs.statSync(p); return true; } catch (e) { return false; } }
+        if (this.isDirectory) {
+            this.fsWatch = fs.watch(this.path, function (event: string, which: string) {
+                console.log("item: " + self.path, ", who: " + which + ", event: " + event);
+                if (which) {
+                    let p = Path.join(self.path, which);
+                    self.getChildByPath(p).deactivate();
+                    if (exists(p)) {
+                        self.controller.addFSItem(p, self);
+                    }
+                    self.controller.tree.refresh(self.id);
+                }
+            });
+        }
+    }
+
+    deactivate() {
+        console.log("deactivating node " + this.id + ": " + this.path);
+        this.fsWatch.close();
+        this.controller.tree.remove(this.id);
+        if (this.parent != null && this.parent.nodes.find((n) => { return n.id == this.id }) != undefined)
+            throw "node is still a child."
+    }
+
+    releaseChildren(depth: number = 0) {
+        if (depth > 0) {
+            for (var c of this.nodes) {
+                c.releaseChildren(depth - 1);
+            }
+        } else {
+            while (this.nodes.length != 0) {
+                this.nodes[0].deactivate();
+            }
+        }
+    }
+
+    loadChildren(depth: number = 0) {
+        if (depth > 0) {
+            for (var c of this.nodes) {
+                c.loadChildren(depth - 1);
+            }
+        } else if (this.isDirectory) {
+            this.controller.addFSFolderContent(this.path, this);
+        }
+    }
+
+    expand() {
+        this.loadChildren(1);
+    }
+
+    collapse() {
+        this.releaseChildren(1);
     }
 
 }
 
 export class BrowserController {
     private browser: HTMLDivElement;
-    private tree: W2UI.W2Sidebar;
+    public tree: W2UI.W2Sidebar;
+    rootItem: ProjectBrowserItem;
 
     private menuHandler: IntoCpsAppMenuHandler = null;
 
@@ -95,6 +176,16 @@ export class BrowserController {
         this.tree = $(this.browser).w2sidebar({
             name: 'sidebar',
             menu: []
+        });
+
+        this.tree.on("expand", (event: JQueryEventObject) => {
+            var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+            item.expand();
+        });
+
+        this.tree.on("collapse", (event: JQueryEventObject) => {
+            var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+            item.collapse();
         });
 
         this.tree.on("contextMenu", (event: any) => {
@@ -139,17 +230,15 @@ export class BrowserController {
 
     //set and refresh the prowser content
     private refreshProjectBrowser() {
-
         let app: IntoCpsApp = IntoCpsApp.getInstance();
         if (app.getActiveProject() != null) {
-            this.clearAll();
-            this.addToplevelNodes(this.addFSFolderContent(app.getActiveProject().getRootFilePath()));
+            this.rootItem = this.addFSItem(app.getActiveProject().getRootFilePath(), null);
         }
     }
 
-    private addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
+    public addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
         var self = this;
-        var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
+        var result: ProjectBrowserItem = new ProjectBrowserItem(this, path, parent);
         var stat: any;
 
         try {
@@ -337,7 +426,6 @@ export class BrowserController {
             }
             else if (this.isOvertureProject(path)) {
                 result.img = 'glyphicon glyphicon-leaf';
-                result.expanded = false;
             }
             else if (Path.basename(path) == Project.PATH_DSE) {
                 var menuEntryCreate = menuEntry("Create Design Space Exploration Config", 'glyphicon glyphicon-asterisk',
@@ -365,23 +453,13 @@ export class BrowserController {
             }
         }
         if (result != null) {
-            if (parent != null) {
-                parent.nodes.push(result);
-            }
-            if (stat.isDirectory()) {
-                if (Utilities.pathIsInFolder(path, <string>Project.PATH_SYSML) && result.level >= 2) {
-                    // Skip: Limit directory depth in SysML folder to 2
-                } else {
-                    this.addFSFolderContent(path, result);
-                }
-            }
+            result.activate();
         }
         return result;
     }
 
-    private addFSFolderContent(path: string, parent: ProjectBrowserItem = null): ProjectBrowserItem[] {
+    public addFSFolderContent(path: string, parent: ProjectBrowserItem = null): ProjectBrowserItem[] {
         var result: ProjectBrowserItem[] = [];
-        var fs = require('fs');
         var self = this;
         fs.readdirSync(path).forEach(function (name: string) {
             var filePath: string = Path.join(path, name);
@@ -392,26 +470,6 @@ export class BrowserController {
         });
         return result;
     }
-
-    addToplevelNodes(nodes: Object | Object[]): Object {
-        return this.tree.add(nodes);
-    }
-
-    addNodes(parentId: string, nodes: Object | Object[]): Object {
-        return this.tree.add(parentId, nodes);
-    }
-
-    clearAll() {
-        let ids: string[] = this.tree.nodes.map((value: any) => {
-            return value.id
-        });
-        this.tree.remove.apply(this.tree, ids);
-    }
-
-    getSelectedId(): string {
-        return this.tree.selected;
-    }
-
 
     /*
     Utility function to determin if the container holds an Overture Project. TODO: Should this be annotated in the container instead.
