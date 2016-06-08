@@ -41,12 +41,6 @@ reportIssueHandler.externalUrl = true;
 let fetchProjectFromGitHandler = new DialogHandler("proj/ProjectFetcher.html", 500, 300, null, null, null);
 let openExamplesFromGitHandler = new DialogHandler("examples/examples.html", 500, 400, null, null, null);
 
-// Definitions needed for menu construction
-var defaultMenu = require('electron-default-menu')
-//var Menu = require('menu')
-//const remote = require('electron').remote;
-//var Menu = remote.require('menu');
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;

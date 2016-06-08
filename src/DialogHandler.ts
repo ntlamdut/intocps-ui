@@ -53,7 +53,7 @@ export default class DialogHandler {
         const electron = require('electron');
 
         // Module to create native browser window.
-        const BrowserWindow = electron.BrowserWindow;
+        const BrowserWindow = electron.remote.BrowserWindow;
 
         this.win = new BrowserWindow({ width: this.windowWidth, height: this.windowHeight, show: false });
 
