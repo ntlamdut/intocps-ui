@@ -43,8 +43,9 @@ let openExamplesFromGitHandler = new DialogHandler("examples/examples.html", 500
 
 // Definitions needed for menu construction
 var defaultMenu = require('electron-default-menu')
-var Menu = require('menu')
-
+//var Menu = require('menu')
+//const remote = require('electron').remote;
+//var Menu = remote.require('menu');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -65,134 +66,6 @@ function createWindow() {
   intoCpsApp.setWindow(mainWindow);
 
 
-  // Get template for default menu 
-  var menu = defaultMenu()
-
-
-  let mw = mainWindow;
-
-
-  var fileMenuPos = 0;
-
-  if (process.platform === 'darwin') {
-    fileMenuPos = 1;
-  }
-
-  // Add custom menu 
-  menu.splice(fileMenuPos, 0, {
-    label: 'File',
-    submenu: [
-
-      {
-        label: 'New Project',
-        accelerator: 'CmdOrCtrl+N',
-        click: function (item, focusedWindow) {
-          createProjectHandler.openWindow();
-        }
-
-      },
-      {
-        type: 'separator'
-      },
-      {
-        label: 'Open Project',
-        accelerator: 'CmdOrCtrl+O',
-        click: function (item, focusedWindow) {
-          openProjectHandler.openWindow();
-        }
-
-      },
-      {
-        label: 'Open Project from Git',
-
-        click: function (item, focusedWindow) {
-          fetchProjectFromGitHandler.openWindow();
-        }
-
-      },
-      {
-        label: 'Open Project Examples',
-
-        click: function (item, focusedWindow) {
-          openExamplesFromGitHandler.openWindow();
-        }
-
-      }
-    ]
-  })
-
-  var darwinAppMenuInserted = false;
-  menu.forEach(m => {
-
-    if (((m.label == "Electron" || m.label == "into-cps-app") && process.platform === 'darwin') || (darwinAppMenuInserted == false && m.label == "View")) {
-      darwinAppMenuInserted = true;
-      m.submenu.splice(0, 0, {
-        label: 'Settings',
-        accelerator: 'Alt+S',
-        click: function (item, focusedWindow) {
-          var settingsWin = new BrowserWindow({ width: 300, height: 600, show: false });
-          settingsWin.loadURL('file://' + __dirname + '/settings/settings.html');
-          //settingsWin.openDevTools();
-          settingsWin.show();
-        }
-      });
-
-    }
-
-  });
-
-  menu.forEach(m => {
-    if (m.label == "View") {
-
-
-      m.submenu.splice(m.submenu.length - 1, 0, {
-        type: 'separator'
-
-      });
-
-      m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'COE Server Status',
-        accelerator: 'Alt+O',
-        click: function (item, focusedWindow) {
-          coeServerStatusHandler.openWindow();
-        }
-      });
-
-
-      m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'Open Download Manager',
-        accelerator: 'Alt+D',
-        click: function (item, focusedWindow) {
-          openDownloadManagerHandler.openWindow();
-        }
-      });
-
-      m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'Open FMU Builder',
-        click: function (item, focusedWindow) {
-          fmuBuilderHandler.openWindow();
-        }
-      });
-      m.submenu.splice(m.submenu.length - 1, 0, {
-        type: 'separator'
-
-      });
-
-    } else if (m.label == "Help") {
-      m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'Report Issue',
-        click: function (item, focusedWindow) {
-          reportIssueHandler.openWindow();
-        }
-      });
-    }
-
-  });
-
-
-
-  // Set top-level application menu, using modified template 
-  Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {

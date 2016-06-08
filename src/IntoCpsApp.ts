@@ -149,7 +149,7 @@ export default class IntoCpsApp {
 
     //get the global instance
     public static getInstance(): IntoCpsApp {
-        let remote = require("remote");
+        let remote = require("electron").remote;
         return remote.getGlobal("intoCpsApp");
     }
 

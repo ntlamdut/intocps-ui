@@ -32,7 +32,7 @@ function getTempDir(): string {
     let tempDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
     if (tempDir == null || tempDir == undefined) {
         if (IntoCpsApp.getInstance().getActiveProject() == null) {
-            let remote = require("remote");
+            let remote = require("electron").remote;
             let dialog = remote.require("dialog");
             dialog.showErrorBox("No active project", "No Active project loaded, please load and try again.");
             return;
@@ -168,7 +168,7 @@ function showVersion(version: string, data: any) {
         divTool.appendChild(btn);
 
         btn.onclick = function (e) {
-            let remote = require("remote");
+            let remote = require("electron").remote;
             let dialog = remote.require("dialog");
             let buttons: string[] = ["No", "Yes"];
             dialog.showMessageBox({ type: 'question', buttons: buttons, message: "Download: " + tool.name + " (" + tool.version + ")" }, function (button: any) {

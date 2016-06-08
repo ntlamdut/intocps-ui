@@ -14,7 +14,7 @@
     "email": "",
     "url": "http://into-cps.au.dk/"
   },
-  "electronVersion": "0.36.0",
+  "electronVersion": "1.2.1",
   "scripts": {
     "start": "electron dist/main.js"
   },
@@ -34,7 +34,7 @@
     "del": "^2.2.0",
     "electron-default-menu": "^0.1.1",
     "electron-packager": "^7.0.1",
-    "electron-prebuilt": "^0.36.0",
+    "electron-prebuilt": "^1.2.1",
     "gulp": "^3.9.1",
     "gulp-bower": "0.0.13",
     "gulp-concat": "^2.6.0",

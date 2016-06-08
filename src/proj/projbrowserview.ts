@@ -90,7 +90,7 @@ export class BrowserController {
     initialize() {
         let self = this;
         this.browser = <HTMLDivElement>document.querySelector("#browser");
-        let remote = require("remote");
+        let remote = require("electron").remote;
 
         this.tree = $(this.browser).w2sidebar({
             name: 'sidebar',

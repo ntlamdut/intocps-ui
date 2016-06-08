@@ -3,7 +3,7 @@ import Path = require('path');
 import fs = require('fs');
 
 function launchProjectExplorer() {
-    let remote = require("remote");
+    let remote = require("electron").remote;
     let dialog = remote.require("dialog");
     let dialogResult: string[] = dialog.showOpenDialog({ properties: ["openDirectory"] });
     if (dialogResult != undefined) {
@@ -21,7 +21,7 @@ window.onload =function (){
 };
 
 function openProject() {
-    let remote = require("remote");
+    let remote = require("electron").remote;
     let dialog = remote.require("dialog");
 
     var ipc = require('electron').ipcRenderer;

@@ -65,8 +65,8 @@ export class MmController extends IViewController {
         this.saveButton.onclick = this.save.bind(this);
 
 
-        var remote = require('remote');
-        var Menu = remote.require('menu');
+        var remote = require("electron").remote;
+        //var Menu = remote.require('menu');
         var ipc = require('electron').ipcRenderer;
         ipc.on(IntoCpsAppEvents.PROJECT_CHANGED, function (event, arg) {
             console.log("project-changed");  // prints "ping"

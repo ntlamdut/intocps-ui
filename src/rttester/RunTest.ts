@@ -31,7 +31,7 @@ class FMUAssignment {
             self.hSimulationButton.addEventListener("click", () => self.setSimulation());
             self.hFMUPath.addEventListener("input", () => { self.updateSimulationButton(); });
             self.hBrowseButton.addEventListener("click", () => {
-                let remote = require("remote");
+                let remote = require("electron").remote;
                 let dialog = remote.require("dialog");
                 let dialogResult: string[] = dialog.showOpenDialog({
                     filters: [{ name: 'FMU-Files', extensions: ['fmu'] }]

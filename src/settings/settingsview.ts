@@ -12,7 +12,7 @@ class SettingsView {
     private settingsView: HTMLElement;
     constructor() {
         this.keys = SettingKeys.DEFAULT_VALUES;
-        let remote = require("remote");
+        let remote = require("electron").remote;
         let app: IntoCpsApp.IntoCpsApp = remote.getGlobal("intoCpsApp");
         this.settings = app.settings;
         this.settingsView = document.getElementById("settings-div");
