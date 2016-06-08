@@ -13,7 +13,6 @@ import {SettingKeys} from "../settings/SettingKeys";
 import {RTTester} from "../rttester/RTTester";
 import * as RTesterModalCommandWindow from "../rttester/GenericModalCommand";
 import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
-import {eventEmitter} from "../Emitter";
 import {Utilities} from "../utilities";
 
 export class MenuEntry {
@@ -127,12 +126,7 @@ export class BrowserController {
 
         this.refreshProjectBrowser();
 
-        var ipc = require('electron').ipcRenderer;
-        ipc.on(IntoCpsAppEvents.PROJECT_CHANGED, (event, arg) => {
-            this.refreshProjectBrowser();
-        });
-
-        eventEmitter.on(IntoCpsAppEvents.PROJECT_CHANGED, () => {
+        IntoCpsApp.getInstance().on(IntoCpsAppEvents.PROJECT_CHANGED, () => {
             this.refreshProjectBrowser();
         });
     }

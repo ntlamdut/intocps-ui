@@ -1,6 +1,7 @@
 
 import Path = require('path');
 import fs = require('fs');
+import {IntoCpsApp} from  "../IntoCpsApp";
 
 function launchProjectExplorer() {
     let remote = require("electron").remote;
@@ -35,7 +36,7 @@ function openProject() {
         if (fs.accessSync(path, fs.R_OK)) {
             dialog.showErrorBox("Cannot open project", "Unable to find project at path: " + path);
         }
-        ipc.send('open-project-open', { path: path });
+        IntoCpsApp.getInstance().emit('open-project-open', { path: path });
     } catch (e) {
         dialog.showErrorBox("Cannot open project", "Unable to find project at path: " + p.value + " Error: " + e);
     }

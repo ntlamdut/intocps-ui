@@ -17,7 +17,7 @@ import {IProject} from "./proj/IProject";
 import fs = require("fs");
 import Path = require('path');
 
-import {eventEmitter} from "./Emitter";
+
 
 import * as Menus from "./menus";
 
@@ -159,7 +159,7 @@ menuHandler.createMultiModel = (path) => {
             let content = fs.readFileSync(path, "UTF-8");
             let mmPath = project.createMultiModel("mm-"+name+" (" + Math.floor(Math.random() * 100)+")", content);
             menuHandler.openMultiModel(mmPath + "");
-            eventEmitter.emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
         }
     });
 };
@@ -170,7 +170,7 @@ menuHandler.createCoSimConfiguration = (path) => {
         if (project != null) {
             let coePath: string = project.createCoSimConfig(path + "", "co-sim-" + Math.floor(Math.random() * 100), null).toString();
             menuHandler.openCoeView(coePath);
-            eventEmitter.emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
         }
 
 

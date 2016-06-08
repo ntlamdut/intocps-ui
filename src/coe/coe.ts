@@ -17,7 +17,7 @@ import {SourceDom} from "../sourceDom"
 import {IViewController} from "../iViewController"
 
 import {CoSimulationConfig, Serializer} from "../intocps-configurations/intocps-configurations";
-import {eventEmitter} from "../Emitter";
+
 import {TextInputNonLoad, TextInputIds} from "./components/text-input-non-load";
 import {DropDownNonLoad} from "./components/dropdown-non-load";
 import {Component} from "../multimodel/components/component";
@@ -261,7 +261,7 @@ export class CoeController extends IViewController {
             divStatus.className = "alert alert-success";
             divStatus.innerHTML = "Simulation Completed: " + message;
             div.appendChild(divStatus);
-            eventEmitter.emit(IntoCpsAppEvents.PROJECT_CHANGED);//TODO: we could downgrade this to resource added
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);//TODO: we could downgrade this to resource added
         }
     }
 

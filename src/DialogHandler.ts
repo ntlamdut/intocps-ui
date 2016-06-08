@@ -1,6 +1,6 @@
 ///<reference path="../typings/browser/ambient/github-electron/index.d.ts"/>
 ///<reference path="../typings/browser/ambient/node/index.d.ts"/>
-
+import {IntoCpsApp} from  "./IntoCpsApp";
 
 export default class DialogHandler {
 
@@ -27,20 +27,17 @@ export default class DialogHandler {
 
     public install() {
 
-        //IPC handlers
-        var ipcMain = require('electron').ipcMain;
-
         if (this.ipcOpenEventName != null) {
 
-            ipcMain.on(this.ipcOpenEventName, (event, arg) => {
-                console.log(arg);  // prints "ping"
+            IntoCpsApp.getInstance().on(this.ipcOpenEventName, (path: any) => {
+                console.log(path);  // prints "ping"
                 //event.sender.send('asynchronous-reply', 'pong');
                 this.openWindow();
             });
         }
 
         if (this.ipcDoActionEventName != null) {
-            ipcMain.on(this.ipcDoActionEventName, (event, arg) => {
+            IntoCpsApp.getInstance().on(this.ipcDoActionEventName, (arg: any) => {
                 this.doAction(arg);
                 this.win.close();
             });
