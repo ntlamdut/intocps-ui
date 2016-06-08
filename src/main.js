@@ -7,9 +7,6 @@ var settings = require("./settings/settings").default;
 var SettingKeys = require("./settings/SettingKeys");
 var IntoCpsApp = require("./IntoCpsApp").default;
 
-var DialogHandler = require("./DialogHandler").default;
-var IntoCpsAppEvents = require("./IntoCpsAppEvents");
-var ProjectFetcher = require("./proj/ProjectFetcher");
 
 // Module to control application life.
 const app = electron.app;
@@ -22,24 +19,8 @@ global.intoCpsApp = intoCpsApp;
 let devMode = intoCpsApp.getSettings().getValue(SettingKeys.SettingKeys.DEVELOPMENT_MODE);
 console.info("Running in development mode: " + devMode);
 
-let createProjectHandler = new DialogHandler("proj/new-project.html", 300, 200, IntoCpsAppEvents.OPEN_CREATE_PROJECT_WINDOW, "new-project-create", arg => {
-  intoCpsApp.createProject(arg.name, arg.path);
-});
-
-let openProjectHandler = new DialogHandler("proj/open-project.html", 300, 200, IntoCpsAppEvents.OPEN_OPEN_PROJECT_WINDOW, "open-project-open", arg => {
-  intoCpsApp.setActiveProject(intoCpsApp.loadProject(arg.path));
-});
-
-let openDownloadManagerHandler = new DialogHandler("downloadManager/DownloadManager.html", 500, 500, null, null, null);
-let coeServerStatusHandler = new DialogHandler("coe-server-status/CoeServerStatus.html", 500, 500, null, null, null);
-let fmuBuilderHandler = new DialogHandler("http://sweng.au.dk/fmubuilder/", 500, 500, null, null, null);
-fmuBuilderHandler.externalUrl = true;
-let reportIssueHandler = new DialogHandler("http://github.com/into-cps/INTO-CPS_Application/issues/new", 600, 600, null, null, null);
-reportIssueHandler.externalUrl = true;
 
 
-let fetchProjectFromGitHandler = new DialogHandler("proj/ProjectFetcher.html", 500, 300, null, null, null);
-let openExamplesFromGitHandler = new DialogHandler("examples/examples.html", 500, 400, null, null, null);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -103,7 +84,4 @@ app.on('activate', function () {
 
 
 
-createProjectHandler.install();
-openProjectHandler.install();
-openDownloadManagerHandler.install();
 
