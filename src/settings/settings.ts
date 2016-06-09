@@ -22,6 +22,9 @@ export default class Settings implements ISettingsValues {
 
   public save() {
     this.storeSettings();
+    alert("Please restart the application for all settings to take effect.")
+    window.top.close();
+    return false;
   }
 
   storeSettings() {
