@@ -22,9 +22,6 @@ export default class Settings implements ISettingsValues {
 
   public save() {
     this.storeSettings();
-    alert("Please restart the application for all settings to take effect.")
-    window.top.close();
-    return false;
   }
 
   storeSettings() {
@@ -87,19 +84,19 @@ export default class Settings implements ISettingsValues {
        }
      });*/
   }
-  
+
   setValue(key: string, value: any) {
     this.intoCpsDataObject[key] = value;
   }
-  
-  
+
+
   getValue(key: string): any {
     return this.intoCpsDataObject[key];
   }
 
-  
+
   setSetting(key: string, value: any) {
-    this.setValue(key,value);
+    this.setValue(key, value);
   }
 
   getSetting(key: string): any {

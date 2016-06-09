@@ -65,6 +65,13 @@ class SettingsView {
 
     public save() {
         this.settings.save();
+            let remote = require("electron").remote;
+    let dialog = remote.dialog;
+    dialog.showMessageBox({ type: 'warning', buttons: ["ok"], message: "Please restart the application for all settings to take effect." }, function (button: any) {
+      window.top.close();
+    });
+
+    return false;
     }
 }
 
