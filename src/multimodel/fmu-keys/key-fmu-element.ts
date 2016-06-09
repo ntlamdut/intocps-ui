@@ -23,7 +23,7 @@ export class KeyFmuElement {
         this.removeCallback = removeCallback;
 
         let remote: Electron.Remote = require("electron").remote;
-        this.dialog = remote.require("dialog");
+        this.dialog = remote.dialog;
         this.platform = remote.getGlobal("intoCpsApp").platform;
 
         this.initializeKey(newFmu);

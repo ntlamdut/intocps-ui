@@ -12,7 +12,7 @@ class SettingsView {
     private settingsView: HTMLElement;
     constructor() {
         this.keys = SettingKeys.DEFAULT_VALUES;
-        let remote = require("remote");
+        let remote = require("electron").remote;
         let app: IntoCpsApp.IntoCpsApp = remote.getGlobal("intoCpsApp");
         this.settings = app.settings;
         this.settingsView = document.getElementById("settings-div");
@@ -65,6 +65,13 @@ class SettingsView {
 
     public save() {
         this.settings.save();
+            let remote = require("electron").remote;
+    let dialog = remote.dialog;
+    dialog.showMessageBox({ type: 'warning', buttons: ["ok"], message: "Please restart the application for all settings to take effect." }, function (button: any) {
+      window.top.close();
+    });
+
+    return false;
     }
 }
 

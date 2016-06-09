@@ -1,9 +1,11 @@
 
 
+import {IntoCpsApp} from  "../IntoCpsApp";
+
 function launchProjectExplorer() {
-    let remote = require("remote");
-    let dialog = remote.require("dialog");
-    let dialogResult: string[] = dialog.showOpenDialog({ properties: ["openDirectory","createDirectory"] });
+    let remote = require("electron").remote;
+    let dialog = remote.dialog;
+    let dialogResult: string[] = dialog.showOpenDialog({ properties: ["openDirectory", "createDirectory"] });
     if (dialogResult != undefined) {
 
         var p: HTMLInputElement = <HTMLInputElement>document.getElementById("projectRootPathText");
@@ -23,6 +25,7 @@ function createProject() {
     var p: HTMLInputElement = <HTMLInputElement>document.getElementById("projectRootPathText");
     var n: HTMLInputElement = <HTMLInputElement>document.getElementById("name");
 
-    ipc.send('new-project-create', { name: n.value, path: p.value });
+    IntoCpsApp.getInstance().emit('new-project-create', { name: n.value, path: p.value });
+
 }
 

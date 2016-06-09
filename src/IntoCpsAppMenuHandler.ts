@@ -18,4 +18,6 @@ export class IntoCpsAppMenuHandler {
     createMCProject: (path: string) => void;
     runRTTesterCommand: (commandSpec: any) => void;
     runTest: (path: string) => void;
+
+    deletePath: (path: string)=>void;
 }

@@ -12,12 +12,15 @@ import {BrowserController} from "./proj/projbrowserview";
 import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
 import {SourceDom} from "./sourceDom";
 import {IViewController} from "./iViewController";
+import * as CustomFs from "./custom-fs";
 import {IProject} from "./proj/IProject";
 
 import fs = require("fs");
 import Path = require('path');
 
-import {eventEmitter} from "./Emitter";
+
+
+import * as Menus from "./menus";
 
 
 class InitializationController {
@@ -151,26 +154,56 @@ menuHandler.createDse = (path) => {
 
 menuHandler.createMultiModel = (path) => {
     $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
-        let project: IProject = require("remote").getGlobal("intoCpsApp").getActiveProject();
+        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
-            let name = Path.basename(path,".sysml.json");
+            let name = Path.basename(path, ".sysml.json");
             let content = fs.readFileSync(path, "UTF-8");
-            let mmPath = project.createMultiModel("mm-"+name+" (" + Math.floor(Math.random() * 100)+")", content);
+            let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
             menuHandler.openMultiModel(mmPath + "");
-            eventEmitter.emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
         }
     });
 };
 
 menuHandler.createCoSimConfiguration = (path) => {
     $(init.mainView).load("coe/coe.html", function (event: JQueryEventObject) {
-        let project: IProject = require("remote").getGlobal("intoCpsApp").getActiveProject();
+        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let coePath: string = project.createCoSimConfig(path + "", "co-sim-" + Math.floor(Math.random() * 100), null).toString();
             menuHandler.openCoeView(coePath);
-            eventEmitter.emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
         }
 
 
     });
 };
+
+menuHandler.deletePath = (path) => {
+
+    let name = Path.basename(path);
+    if (name.indexOf('R_') >= 0) {
+        console.info("Deleting " + path);
+        CustomFs.getCustomFs().removeRecursive(path, function (err: any, v: any) {
+            if (err != null) {
+                console.error(err);
+            }
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+        });
+
+    } else if (name.endsWith(".coe.json") || name.endsWith(".mm.json")) {
+        let dir = Path.dirname(path);
+        console.info("Deleting " + dir);
+        CustomFs.getCustomFs().removeRecursive(dir, function (err: any, v: any) {
+            if (err != null) {
+                console.error(err);
+            }
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+        });
+    }
+};
+
+
+
+
+Menus.configureIntoCpsMenu();
+

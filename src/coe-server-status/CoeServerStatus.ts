@@ -24,8 +24,8 @@ function coeClose() {
         return realClose();
     }
 
-    let remote = require("remote");
-    let dialog = remote.require("dialog");
+    let remote = require("electron").remote;
+    let dialog = remote.dialog;
     let buttons: string[] = ["No", "Yes"];
     dialog.showMessageBox({ type: 'question', buttons: buttons, message: "Are you sure you want to terminate the COE" }, function (button: any) {
         if (button == 1)//yes
@@ -55,7 +55,7 @@ function launchCoe() {
 
     var child = spawn('java', ['-jar', coePath], {
         detached: true,
-        shell: true,
+        shell: false,
         cwd: childCwd
     });
     child.unref();
