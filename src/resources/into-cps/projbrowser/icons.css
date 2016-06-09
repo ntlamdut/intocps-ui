@@ -34,3 +34,15 @@
   background-repeat: no-repeat;
   background-size: contain;
 }
+
+.into-cps-icon-projbrowser-result {
+  background: url("icons/result-icon.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.into-cps-icon-projbrowser-config {
+  background: url("icons/configuration-icon.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
