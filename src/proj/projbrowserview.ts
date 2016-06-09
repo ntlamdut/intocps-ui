@@ -196,7 +196,7 @@ export class BrowserController {
             }
             else if (path.endsWith('.coe.json')) {
                 //merge MultiModelConfig and folder
-                parent.img = 'into-cps-icon-projbrowser-multimodel';
+                parent.img = 'into-cps-icon-projbrowser-config';
                 (<any>parent).coeConfig = path;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openCoeView((<any>item).coeConfig);
@@ -248,7 +248,7 @@ export class BrowserController {
                 result.removeFileExtensionFromText();
             }
             else if (path.endsWith('.csv')) {
-                result.img = 'glyphicon glyphicon-th-list';
+                result.img = 'into-cps-icon-projbrowser-result';
                 result.removeFileExtensionFromText();
             } else {
                 return null;
@@ -348,7 +348,7 @@ export class BrowserController {
                 return;
             }
             else if (Path.basename(path).indexOf("R_") == 0) {
-                result.img = 'glyphicon glyphicon-barcode';
+                //result.img = 'into-cps-icon-projbrowser-result';
                 result.menuEntries = [menuEntryDelete, menuEntryImport, menuEntryExport];
             }
         }
