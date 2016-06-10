@@ -46,8 +46,8 @@ export class ProjectBrowserItem {
     level: number;
     expanded: boolean = false;
     img: any = null;
-    nodes: ProjectBrowserItem[] = [];
-    parent: ProjectBrowserItem;
+    childNodes: ProjectBrowserItem[] = [];
+    parentNode: ProjectBrowserItem;
     group: boolean = false;
     fsWatch: fs.FSWatcher;
 
@@ -63,7 +63,7 @@ export class ProjectBrowserItem {
         this.path = path;
         this.isDirectory = fs.statSync(path).isDirectory();
         this.text = Path.basename(path);
-        this.parent = parent;
+        this.parentNode = parent;
         if (parent == null) {
             this.level = 0;
         } else {
@@ -80,78 +80,101 @@ export class ProjectBrowserItem {
     }
 
     getChildByPath(path: string) {
-        return this.nodes.find((n) => { return n.path == path; });
+        return this.childNodes.find((n) => { return n.path == path; });
+    }
+
+    getChildByID(id: string) {
+        return this.childNodes.find((n) => { return n.id == id; });
     }
 
     activate() {
-        let self = this;
         console.log("activating node " + this.id + ": " + this.path);
-        let parent = this.parent;
+        let parent = this.parentNode;
         if (parent != null) {
             let i: number = 0;
-            for (; i < parent.nodes.length && parent.nodes[i].path.localeCompare(this.path) < 0; ++i);
+            for (; i < parent.childNodes.length && parent.childNodes[i].path.localeCompare(this.path) < 0; ++i);
             if (this.level <= 1) {
                 this.controller.tree.insert(null, this);
             } else {
-                let before = (i + 1) < parent.nodes.length ? parent.nodes[i + 1].id : null;
+                let before = (i + 1) < parent.childNodes.length ? parent.childNodes[i + 1].id : null;
                 this.controller.tree.insert(parent.id, before, this);
             }
+            parent.childNodes.splice(i, 0, this);
         }
         if (this.expanded || parent.expanded) {
             this.loadChildren();
         }
+    }
 
-        let exists = (p: string) => { try { let x = fs.statSync(p); return true; } catch (e) { return false; } }
+    watch() {
+        let self = this;
         if (this.isDirectory) {
+            let exists = (p: string) => { try { let x = fs.statSync(p); return true; } catch (e) { return false; } }
             this.fsWatch = fs.watch(this.path, function (event: string, which: string) {
                 console.log("item: " + self.path, ", who: " + which + ", event: " + event);
                 if (which) {
-                    let p = Path.join(self.path, which);
-                    self.getChildByPath(p).deactivate();
-                    if (exists(p)) {
+                    let p = Path.join(self.path, Path.basename(which));
+                    let child = self.getChildByPath(p);
+                    if (child)
+                        child.deactivate();
+                    if (exists(p))
                         self.controller.addFSItem(p, self);
-                    }
                     self.controller.tree.refresh(self.id);
                 }
             });
         }
     }
 
+    unwatch() {
+        if (this.fsWatch)
+            this.fsWatch.close();
+    }
+
     deactivate() {
+        for (let c of this.childNodes) {
+            c.deactivate();
+        }
         console.log("deactivating node " + this.id + ": " + this.path);
-        this.fsWatch.close();
+        this.unwatch();
         this.controller.tree.remove(this.id);
-        if (this.parent != null && this.parent.nodes.find((n) => { return n.id == this.id }) != undefined)
+        if (this.parentNode != null) {
+            this.parentNode.childNodes = this.parentNode.childNodes.filter((n) => n != this);
+        }
+        if (this.parentNode != null && this.parentNode.childNodes.find((n) => { return n.id == this.id }) != undefined)
             throw "node is still a child."
     }
 
     releaseChildren(depth: number = 0) {
         if (depth > 0) {
-            for (var c of this.nodes) {
+            for (var c of this.childNodes) {
                 c.releaseChildren(depth - 1);
             }
         } else {
-            while (this.nodes.length != 0) {
-                this.nodes[0].deactivate();
+            while (this.childNodes.length != 0) {
+                this.childNodes[0].deactivate();
+                this.unwatch();
             }
         }
     }
 
     loadChildren(depth: number = 0) {
         if (depth > 0) {
-            for (var c of this.nodes) {
+            for (var c of this.childNodes) {
                 c.loadChildren(depth - 1);
             }
         } else if (this.isDirectory) {
             this.controller.addFSFolderContent(this.path, this);
+            this.watch();
         }
     }
 
     expand() {
+        // load grand-children
         this.loadChildren(1);
     }
 
     collapse() {
+        // discard grand-children
         this.releaseChildren(1);
     }
 
@@ -232,6 +255,8 @@ export class BrowserController {
     private refreshProjectBrowser() {
         let app: IntoCpsApp = IntoCpsApp.getInstance();
         if (app.getActiveProject() != null) {
+            if (this.rootItem)
+                this.rootItem.deactivate();
             this.rootItem = this.addFSItem(app.getActiveProject().getRootFilePath(), null);
         }
     }
