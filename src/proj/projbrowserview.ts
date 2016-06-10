@@ -107,7 +107,9 @@ export class ProjectBrowserItem {
 
     watch() {
         let self = this;
+        //console.log("watching node " + this.path + ": " + this.path);
         if (this.isDirectory) {
+            if (this.fsWatch != undefined) throw "Directory is already being watched";
             let exists = (p: string) => { try { let x = fs.statSync(p); return true; } catch (e) { return false; } }
             this.fsWatch = fs.watch(this.path, function (event: string, which: string) {
                 console.log("item: " + self.path, ", who: " + which + ", event: " + event);
@@ -125,21 +127,24 @@ export class ProjectBrowserItem {
     }
 
     unwatch() {
-        if (this.fsWatch)
+        if (this.fsWatch != undefined) {
+            //console.log("unwatching node " + this.path + ": " + this.path);
             this.fsWatch.close();
+            this.fsWatch = undefined;
+        }
     }
 
     deactivate() {
         for (let c of this.childNodes) {
             c.deactivate();
         }
-        console.log("deactivating node " + this.id + ": " + this.path);
+        console.log("deactivating node " + this.path + ": " + this.path);
         this.unwatch();
         this.controller.tree.remove(this.id);
         if (this.parentNode != null) {
             this.parentNode.childNodes = this.parentNode.childNodes.filter((n) => n != this);
         }
-        if (this.parentNode != null && this.parentNode.childNodes.find((n) => { return n.id == this.id }) != undefined)
+        if (this.parentNode.getChildByID(this.id) != undefined)
             throw "node is still a child."
     }
 
@@ -151,8 +156,10 @@ export class ProjectBrowserItem {
         } else {
             while (this.childNodes.length != 0) {
                 this.childNodes[0].deactivate();
-                this.unwatch();
             }
+            if (this.childNodes.length != 0)
+                throw "node has still children."
+            this.unwatch();
         }
     }
 
@@ -175,6 +182,7 @@ export class ProjectBrowserItem {
     collapse() {
         // discard grand-children
         this.releaseChildren(1);
+        //this.controller.tree.collapseAll(this.id);
     }
 
 }
@@ -274,10 +282,10 @@ export class BrowserController {
 
         var menuEntryDuplicate = menuEntry("Duplicate", 'glyphicon glyphicon-duplicate');
         var menuEntryDelete = menuEntry("Delete", 'glyphicon glyphicon-remove',
-                    function (item: ProjectBrowserItem) {
-                        console.info("Delete path: " + item.path);
-                        self.menuHandler.deletePath(item.path);
-                    });
+            function (item: ProjectBrowserItem) {
+                console.info("Delete path: " + item.path);
+                self.menuHandler.deletePath(item.path);
+            });
         var menuEntryImport = menuEntry("Import", 'glyphicon glyphicon-import');
         var menuEntryExport = menuEntry("Export", 'glyphicon glyphicon-export');
 
