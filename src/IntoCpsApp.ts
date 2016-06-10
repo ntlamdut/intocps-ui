@@ -11,11 +11,13 @@ import {IProject} from "./proj/IProject";
 import {Project} from "./proj/Project";
 import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {SettingKeys} from "./settings//SettingKeys";
+import {EventEmitter} from "events";
+
 
 // constants
 let topBarNameId: string = "activeTabTitle";
 
-export default class IntoCpsApp {
+export default class IntoCpsApp extends EventEmitter{
     app: Electron.App;
     platform: String
     window: Electron.BrowserWindow;
@@ -25,6 +27,7 @@ export default class IntoCpsApp {
     activeProject: IProject = null;
 
     constructor(app: Electron.App, processPlatform: String) {
+        super();
         this.app = app;
         this.platform = processPlatform;
 
@@ -127,6 +130,7 @@ export default class IntoCpsApp {
             this.window.webContents.send(IntoCpsAppEvents.PROJECT_CHANGED);
             console.info("fire event: " + event);
         }
+        this.emit(IntoCpsAppEvents.PROJECT_CHANGED);
     }
 
 
@@ -149,7 +153,7 @@ export default class IntoCpsApp {
 
     //get the global instance
     public static getInstance(): IntoCpsApp {
-        let remote = require("remote");
+        let remote = require("electron").remote;
         return remote.getGlobal("intoCpsApp");
     }
 

@@ -15,7 +15,9 @@ var outputPath = 'dist/',
     cssSrcs = [
         bowerFolder + '/bootstrap/dist/css/bootstrap.css',
         resourcesFolder + '/w2ui-1.5/w2ui.min.css'],
-    bowerSrcs = "";
+    bowerSrcs = "",
+    customResources= [resourcesFolder+'/into-cps/**/*']
+    ;
 
 // Tools.
 var gulp = require('gulp'),
@@ -86,15 +88,15 @@ gulp.task('copy-fonts', function () {
     return gulp.src(bowerFolder + '/bootstrap/fonts/**/*').pipe(gulp.dest(outputPath + 'fonts'))
 });
 
+// Copy custom resources
+gulp.task('copy-custom',function (){
+    return gulp.src(customResources)
+    .pipe(gulp.dest(outputPath+'resources/into-cps'))
+});
 
 // Copy css to app folder
 gulp.task('copy-css', function () {
     gulp.src(cssSrcs).pipe(gulp.dest(outputPath + 'css'));
-});
-
-// Copy css to app folder
-gulp.task('copy-into-cps-resources', function () {
-    gulp.src(['src/resources/into-cps/**/*']).pipe(gulp.dest(outputPath + 'resources/into-cps'));
 });
 
 // Copy html to app folder
@@ -115,7 +117,8 @@ gulp.task('copy-js', function () {
 gulp.task('init', ['install-ts-defs', 'install-bower-components']);
 
 //Build App
-gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css', 'copy-into-cps-resources', 'copy-bower', 'copy-fonts']);
+gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css',
+  'copy-bower', 'copy-fonts','copy-custom']);
 
 // Package app binaries
 gulp.task("package-darwin", function(callback) {
@@ -124,7 +127,7 @@ gulp.task("package-darwin", function(callback) {
         name: packageJSON.name,
         platform: "darwin",
         arch: "x64",
-        version: "0.36.0",
+        version: "1.2.1",
         overwrite:true,
         icon: 'into-cps-logo.png.icns',
         out: 'pkg',
@@ -146,7 +149,7 @@ gulp.task("package-win32", function(callback) {
         name: packageJSON.name,
         platform: "win32",
         arch: "all",
-        version: "0.36.0",
+        version: "1.2.1",
         overwrite:true,
         icon: 'into-cps-logo.png.ico',
         out: 'pkg',
@@ -168,7 +171,7 @@ gulp.task("package-linux", function(callback) {
         name: packageJSON.name,
         platform: "linux",
         arch: "x64",
-        version: "0.36.0",
+        version: "1.2.1",
         overwrite:true,
         out: 'pkg',
         "app-version": packageJSON.version,
@@ -190,6 +193,8 @@ gulp.task('watch', function () {
     gulp.watch(htmlSrcs, ['copy-html']);
     gulp.watch(jsSrcs, ['copy-js']);
     gulp.watch(tsSrcs, ['compile-ts']);
+    gulp.watch(cssSrcs, ['copy-css']);
+    gulp.watch(customResources, ['copy-custom']);
 });
 
 // Default task 

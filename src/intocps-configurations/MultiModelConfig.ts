@@ -169,7 +169,7 @@ export class MultiModelConfig implements ISerializable {
             instance.initialValues.forEach((value, sv) => {
                 if (sv.isConfirmed) {
                     if (!Fmi.isTypeCompatipleWithValue(sv.type, value)) {
-                        let m: ErrorMessage = { message: "Uncompatible types for parameter. ScalarVariable: \"" + sv.name + "\" Value: " + value };
+                        let m: ErrorMessage = { message: "Uncompatible types for parameter. ScalarVariable: \"" + sv.name + "\" "+Fmi.ScalarVariableType[sv.type]+"  Value: " + value +" "+typeof(value)};
                         messages.push(m);
                     }
                 } else {
