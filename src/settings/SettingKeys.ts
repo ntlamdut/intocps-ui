@@ -31,4 +31,6 @@ export namespace SettingKeys {
     DEFAULT_VALUES[DEV_EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/development/examples/examples.json";
     DEFAULT_VALUES[DEVELOPMENT_MODE] = false;
     DEFAULT_VALUES[COE_URL] = "localhost:8082";
+    DEFAULT_VALUES[COE_DEBUG_ENABLED] = false;
+    DEFAULT_VALUES[COE_REMOTE_HOST] = false;
 }
