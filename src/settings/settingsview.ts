@@ -11,14 +11,13 @@ class SettingsView {
     private settings: Settings;
     private settingsView: HTMLElement;
     constructor() {
-        this.keys = SettingKeys.DEFAULT_VALUES;
-        let remote = require("electron").remote;
-        let app: IntoCpsApp.IntoCpsApp = remote.getGlobal("intoCpsApp");
-        this.settings = app.settings;
+        this.settings = IntoCpsApp.IntoCpsApp.getInstance().getSettings();
         this.settingsView = document.getElementById("settings-div");
-        for (let k in this.keys) {
-            this.addSetting(k);
-        }
+        Object.keys(SettingKeys).forEach(k => {
+            if(k != "DEFAULT_VALUES"){
+                this.addSetting((<any>SettingKeys)[k]);
+            }
+        });
     }
 
     private getNextId(id: string) {
@@ -65,13 +64,13 @@ class SettingsView {
 
     public save() {
         this.settings.save();
-            let remote = require("electron").remote;
-    let dialog = remote.dialog;
-    dialog.showMessageBox({ type: 'warning', buttons: ["ok"], message: "Please restart the application for all settings to take effect." }, function (button: any) {
-      window.top.close();
-    });
+        let remote = require("electron").remote;
+        let dialog = remote.dialog;
+        dialog.showMessageBox({ type: 'warning', buttons: ["ok"], message: "Please restart the application for all settings to take effect." }, function (button: any) {
+            window.top.close();
+        });
 
-    return false;
+        return false;
     }
 }
 
