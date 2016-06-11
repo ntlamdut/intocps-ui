@@ -90,6 +90,11 @@ function examples_open() {
 
     var p: HTMLInputElement = <HTMLInputElement>document.getElementById("basic-url");
     var dest: HTMLInputElement = <HTMLInputElement>document.getElementById("projectRootPathText");
-    ProjectFetcher.fetchProjectThroughGit(p.value, dest.value);
+
+    document.getElementById('openSpinner').style.display = "block";
+    document.getElementById('container').style.display = "none";
+
+    ProjectFetcher.fetchProjectThroughGit(p.value, dest.value)
+        .then(code => window.top.close());
 }
 

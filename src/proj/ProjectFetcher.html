@@ -28,6 +28,7 @@
 <body>
 
 
+<div id="container" class="container">
     <label for="basic-url">Git repository URL</label>
     <div class="input-group">
         <span class="input-group-addon" id="basic-addon3">git url</span>
@@ -57,11 +58,16 @@
                 </button>
 
 
-    <button type="button" class="btn btn-default btn-sm" onclick="open()">
+    <button type="button" class="btn btn-default btn-sm" onclick="openFromGit()">
                      <span class="glyphicon glyphicon-cloud-download"></span>Open
                 </button>
 
 
+<div id="openSpinner" style="display: none; text-align: center">
+    <h1>Please have patience...</h1>
+    <img src="../../images/spinner.gif">
+    <h3>This will take a while.</h3>
+</div>
 
 </body>
 
