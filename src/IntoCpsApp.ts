@@ -17,7 +17,7 @@ import {EventEmitter} from "events";
 // constants
 let topBarNameId: string = "activeTabTitle";
 
-export default class IntoCpsApp extends EventEmitter{
+export default class IntoCpsApp extends EventEmitter {
     app: Electron.App;
     platform: String
     window: Electron.BrowserWindow;
@@ -33,15 +33,19 @@ export default class IntoCpsApp extends EventEmitter{
 
         const intoCpsAppFolder = this.createAppFolderRoot(app);
         this.createDirectoryStructure(intoCpsAppFolder);
+        // Set calculated default values
+        let defaultValues = SettingKeys.DEFAULT_VALUES;
+        let defaultProjectFolderPath = Path.join(this.app.getPath('home'), "into-cps-projects");
+        defaultValues[SettingKeys.INSTALL_TMP_DIR] = Path.join(defaultProjectFolderPath, "install_downloads");
+        defaultValues[SettingKeys.INSTALL_DIR] = Path.join(defaultProjectFolderPath, "install");
+        defaultValues[SettingKeys.DEFAULT_PROJECTS_FOLDER_PATH] = defaultProjectFolderPath;
 
         this.settings = new Settings(app, intoCpsAppFolder);
 
-        // Set calculated default values
-        SettingKeys.DEFAULT_VALUES[SettingKeys.INSTALL_TMP_DIR] = Path.join(intoCpsAppFolder, "tmp", "install_temp");
-        SettingKeys.DEFAULT_VALUES[SettingKeys.INSTALL_TMP_DIR] = Path.join(intoCpsAppFolder, "tmp", "install_temp");
+
         this.settings.load();
         // fill-in default values for yet unset values
-        for (var key in SettingKeys.DEFAULT_VALUES) {
+        for (var key in defaultValues) {
             if (this.settings.getSetting(key) == null) {
                 let value: any = SettingKeys.DEFAULT_VALUES[key];
                 this.settings.setSetting(key, value);
@@ -99,7 +103,7 @@ export default class IntoCpsApp extends EventEmitter{
         }
     }
 
-    public getSettings(): ISettingsValues {
+    public getSettings(): Settings {
         return this.settings;
     }
 
