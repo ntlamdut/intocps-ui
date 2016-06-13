@@ -39,7 +39,7 @@ export default class IntoCpsApp extends EventEmitter {
         defaultValues[SettingKeys.INSTALL_TMP_DIR] = Path.join(defaultProjectFolderPath, "install_downloads");
         defaultValues[SettingKeys.INSTALL_DIR] = Path.join(defaultProjectFolderPath, "install");
         defaultValues[SettingKeys.DEFAULT_PROJECTS_FOLDER_PATH] = defaultProjectFolderPath;
-
+        
         this.settings = new Settings(app, intoCpsAppFolder);
 
 

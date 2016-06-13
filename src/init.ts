@@ -159,8 +159,8 @@ menuHandler.createMultiModel = (path) => {
             let name = Path.basename(path, ".sysml.json");
             let content = fs.readFileSync(path, "UTF-8");
             let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-            menuHandler.openMultiModel(mmPath + "");
             IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            menuHandler.openMultiModel(mmPath + "");
         }
     });
 };
@@ -170,8 +170,8 @@ menuHandler.createCoSimConfiguration = (path) => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let coePath: string = project.createCoSimConfig(path + "", "co-sim-" + Math.floor(Math.random() * 100), null).toString();
-            menuHandler.openCoeView(coePath);
             IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            menuHandler.openCoeView(coePath);
         }
 
 
