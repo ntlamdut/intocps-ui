@@ -88,7 +88,7 @@ export function fetchProjectThroughGit(url: string, targetFolder: string) {
         }
         child.unref();
 
-        child.on('message', function (d) {
+        child.on('message', function (d: any) {
             console.log(d);
         });
 
