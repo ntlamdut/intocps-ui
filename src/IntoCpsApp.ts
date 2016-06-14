@@ -39,7 +39,7 @@ export default class IntoCpsApp extends EventEmitter {
         defaultValues[SettingKeys.INSTALL_TMP_DIR] = Path.join(defaultProjectFolderPath, "install_downloads");
         defaultValues[SettingKeys.INSTALL_DIR] = Path.join(defaultProjectFolderPath, "install");
         defaultValues[SettingKeys.DEFAULT_PROJECTS_FOLDER_PATH] = defaultProjectFolderPath;
-        
+
         this.settings = new Settings(app, intoCpsAppFolder);
 
 
@@ -60,16 +60,18 @@ export default class IntoCpsApp extends EventEmitter {
         }
 
         let activeProjectPath = this.settings.getSetting(SettingKeys.ACTIVE_PROJECT);
-        try {
-            if (!fs.accessSync(activeProjectPath, fs.R_OK)) {
+        if (activeProjectPath) {
+            try {
+                if (!fs.accessSync(activeProjectPath, fs.R_OK)) {
 
-                this.activeProject = this.loadProject(activeProjectPath);
-            } else {
-                console.error("Could not read the active project path from settings: " + activeProjectPath);
+                    this.activeProject = this.loadProject(activeProjectPath);
+                } else {
+                    console.error("Could not read the active project path from settings: " + activeProjectPath);
+                }
+            } catch (e) {
+                console.warn(e);
+                console.warn("Unable to set active project from settings: " + activeProjectPath);
             }
-        } catch (e) {
-            console.warn(e);
-            console.warn("Unable to set active project from settings: " + activeProjectPath);
         }
     }
 
