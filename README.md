@@ -3,7 +3,7 @@ intocps-ui
 
 UI app for the INTO-CPS tool chain.
 
-![The INTO-CPS App](screenshot.png?raw=true "The INTO-CPS App")
+![The INTO-CPS App](src/resources/screenshot.png?raw=true "The INTO-CPS App")
 
 
 
@@ -30,9 +30,14 @@ whatever you want.
 
 Further developer info is available in https://github.com/into-cps/intocps-ui/wiki
 
-Development builds
+Latest builds
 ---
-The master branch is build automatically on git push and the output if successfull is uploaded to: http://overture.au.dk/into-cps/into-cps-app/master/latest/
+The master branch is built automatically on git pushes and the output, for
+successful builds, is uploaded to: http://overture.au.dk/into-cps/into-cps-app/master/latest/
+
+These builds represent ongoing work. They have not been fully tested and are
+not guaranteed to work. Normally, you are advised to use one of the
+[releases](https://github.com/into-cps/intocps-ui/releases) .
 
 
 About
