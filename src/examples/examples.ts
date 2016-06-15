@@ -94,7 +94,18 @@ function examples_open() {
     document.getElementById('openSpinner').style.display = "block";
     document.getElementById('container').style.display = "none";
 
-    ProjectFetcher.fetchProjectThroughGit(p.value, dest.value)
+    var progress = document.getElementById('progress');
+    var progressBar = document.getElementById('progress-bar');
+
+    ProjectFetcher.fetchProjectThroughGit(p.value, dest.value, (output:string) => {
+        var percentage = ProjectFetcher.parsePercentage(output);
+
+        if (percentage) {
+            progressBar.style.width = percentage;
+            progressBar.innerHTML = percentage;
+        }
+
+        progress.innerHTML = output.split("\n").pop();
+    })
         .then(code => window.top.close());
 }
-

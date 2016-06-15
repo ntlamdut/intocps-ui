@@ -39,11 +39,34 @@ function openFromGit() {
     document.getElementById('openSpinner').style.display = "block";
     document.getElementById('container').style.display = "none";
 
-    fetchProjectThroughGit(p.value, dest.value)
+    var progress = document.getElementById('progress');
+    var progressBar = document.getElementById('progress-bar');
+
+    fetchProjectThroughGit(p.value, dest.value, (output:string) => {
+        var percentage = parsePercentage(output);
+
+        if (percentage) {
+            progressBar.style.width = percentage;
+            progressBar.innerHTML = percentage;
+        }
+
+        progress.innerHTML = output.split("\n").pop();
+    })
         .then(code => window.top.close());
 }
 
-export function fetchProjectThroughGit(url: string, targetFolder: string) {
+export function parsePercentage(data:string):string {
+    var newest = data.split("\n").pop();
+
+    if (newest.indexOf("Receiving objects:") !== -1) {
+        // example: Receiving objects:   1% (12/834), 1.89 MiB | 609.00 KiB/s
+
+        // Pull out percentage value
+        return newest.split("%")[0].split(" ").pop() + '%';
+    }
+}
+
+export function fetchProjectThroughGit(url: string, targetFolder: string, updates: (data: string) => void) {
     return new Promise((resolve, reject) => {
         var spawn = require('child_process').spawn;
 
@@ -74,33 +97,25 @@ export function fetchProjectThroughGit(url: string, targetFolder: string) {
         var child: any = null;
 
         if (!repoExists) {
-            child = spawn('git', ['clone', url], {
+            child = spawn('git', ['clone', "--progress", url], {
                 detached: false,
-                shell: true,
                 cwd: childCwd
             });
         } else {
-            child = spawn('git', ['pull'], {
+            child = spawn('git', ['pull', "--progress"], {
                 detached: false,
-                shell: true,
                 cwd: repoPath
             });
         }
-        child.unref();
 
-        child.on('message', function (d: any) {
-            console.log(d);
+        child.stdout.on('data', (data: any) => {
+            if (updates) updates(data.toString());
         });
 
-        child.stdout.on('data', function (data: any) {
-            console.log('stdout: ' + data);
-            //Here is where the output goes
-
+        child.stderr.on('data', (data: any) => {
+            if (updates) updates(data.toString());
         });
-        child.stderr.on('error', function (data: any) {
-            console.error('stderr: ' + data);
 
-        });
         child.on('close', function (code: any) {
             console.log('closing code: ' + code);
             //Here you can get the exit code of the script
