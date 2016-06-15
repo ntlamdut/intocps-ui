@@ -32,19 +32,23 @@ export class SimulationCallbackHandler {
     }
 
     onOpen(evt: any) {
-        this.output("CONNECTED");
+        // Callback output text
+        // this.output("CONNECTED");
     }
 
     onClose(evt: any) {
-        this.output('<span style="color: orange;">CLOSE: </span> ')
-        this.output("DISCONNECTED");
+        // Callback output text
+        // this.output('<span style="color: orange;">CLOSE: </span> ')
+        // this.output("DISCONNECTED");
     }
 
     onMessage(evt: any) {
         let _this = this;
         var jsonData = JSON.parse(evt.data);
-        var str = JSON.stringify(jsonData, undefined, 4);
-        this.output(this.syntaxHighlight(str));
+
+        // Callback output text
+        // var str = JSON.stringify(jsonData, undefined, 4);
+        // this.output(this.syntaxHighlight(str));
 
         //calculate id
 
@@ -77,31 +81,33 @@ export class SimulationCallbackHandler {
     }
 
     onError(evt: any) {
-        this.output('<span style="color: red;">ERROR:</span> ' + evt.data);
+        // Callback output text
+        // this.output('<span style="color: red;">ERROR:</span> ' + evt.data);
     }
 
-    output(inp: string) {
+// Callback output text
+    // output(inp: string) {
 
-        let div = <HTMLInputElement>document.getElementById("coe-callback");
+    //     let div = <HTMLInputElement>document.getElementById("coe-callback");
 
-        let pre = document.createElement('pre');
+    //     let pre = document.createElement('pre');
 
-        /* pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
-    .string { color: green; }
-    .number { color: darkorange; }
-    .boolean { color: blue; }
-    .null { color: magenta; }
-    .key { color: red; } */
-        pre.style.outline = "1px solid #ccc";
-        pre.style.padding = "5px";
-        pre.style.margin = "5px";
+    //     /* pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+    // .string { color: green; }
+    // .number { color: darkorange; }
+    // .boolean { color: blue; }
+    // .null { color: magenta; }
+    // .key { color: red; } */
+    //     pre.style.outline = "1px solid #ccc";
+    //     pre.style.padding = "5px";
+    //     pre.style.margin = "5px";
 
 
-        pre.innerHTML = inp;
-        div.appendChild(pre);
+    //     pre.innerHTML = inp;
+    //     div.appendChild(pre);
 
-        //document.body.appendChild(document.createElement('pre')).innerHTML = inp;
-    }
+    //     //document.body.appendChild(document.createElement('pre')).innerHTML = inp;
+    // }
 
     syntaxHighlight(json: string) {
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

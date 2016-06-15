@@ -242,14 +242,23 @@ export class BrowserController {
             else if (path.endsWith('.emx')) {
                 result.img = 'into-cps-icon-projbrowser-20sim';
                 result.removeFileExtensionFromText();
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openWithSystemEditor(item.path);
+                };
             }
             else if (path.endsWith('.mo')) {
                 result.img = 'into-cps-icon-projbrowser-openmodelica';
                 result.removeFileExtensionFromText();
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openWithSystemEditor(item.path);
+                };
             }
             else if (path.endsWith('.csv')) {
                 result.img = 'into-cps-icon-projbrowser-result';
                 result.removeFileExtensionFromText();
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openWithSystemEditor(item.path);
+                };
             } else {
                 return null;
             }

@@ -11,6 +11,13 @@ import fs = require('fs');
 
 import downloader = require("../downloader/Downloader");
 
+function scrollIntoView(eleID: any) {
+    var e = document.getElementById(eleID);
+    if (!!e && e.scrollIntoView) {
+        e.scrollIntoView();
+    }
+}
+
 function createPanel(title: string, content: HTMLElement): HTMLElement {
     var divPanel = document.createElement("div");
     divPanel.className = "panel panel-default";
@@ -40,12 +47,12 @@ function getTempDir(): string {
         tempDir = Path.join(IntoCpsApp.getInstance().getActiveProject().getRootFilePath(), "downloads");
     }
     try {
-       // fs.mkdirSync(tempDir);
-       var mkdirp = require('mkdirp');
-       mkdirp.sync(tempDir);
+        // fs.mkdirSync(tempDir);
+        var mkdirp = require('mkdirp');
+        mkdirp.sync(tempDir);
     } catch (e) {
         console.error(e);
-     }
+    }
     return tempDir;
 }
 
@@ -68,12 +75,16 @@ function setProgress(progress: number) {
     divProgress.innerHTML = tmp;
 }
 
+window.onload = function () {
+    fetchList();
+}
+
 function fetchList() {
 
-let settings = IntoCpsApp.getInstance().getSettings();
+    let settings = IntoCpsApp.getInstance().getSettings();
 
     var url = settings.getValue(SettingKeys.UPDATE_SITE);
-    
+
     if (url == null || url == undefined) {
         url = "https://raw.githubusercontent.com/into-cps/release-site/master/download/";
         settings.setValue(SettingKeys.UPDATE_SITE, url);
@@ -132,8 +143,6 @@ let settings = IntoCpsApp.getInstance().getSettings();
 function showVersion(version: string, data: any) {
 
     var panel: HTMLInputElement = <HTMLInputElement>document.getElementById("tool-versions-panel");
-    // var tool: any;
-    // console.log(JSON.stringify(data) + "\n");
 
     var div = document.createElement("ul");
     div.className = "list-group";
@@ -174,6 +183,8 @@ function showVersion(version: string, data: any) {
             dialog.showMessageBox({ type: 'question', buttons: buttons, message: "Download: " + tool.name + " (" + tool.version + ")" }, function (button: any) {
                 if (button == 1)//yes
                 {
+                    var divProgress = <HTMLInputElement>document.getElementById("coe-progress");
+                    divProgress.scrollIntoView();
                     downloader.downloadTool(tool, getTempDir(), progress).then(function (filePath) {
                         console.log("Download complete: " + filePath);
                         dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
@@ -196,7 +207,7 @@ function showVersion(version: string, data: any) {
     }
 
     divT.appendChild(createPanel("Overview - Release: " + data.version, div));
-
+    divT.scrollIntoView();
     //console.log("Downloading tool: Overture Tool Wrapper");
     // panel.appendChild(createPanel("Downloading: Overture Tool Wrapper", document.createElement("div")));
     // tool = data.tools.overtureToolWrapper;
