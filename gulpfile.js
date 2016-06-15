@@ -105,7 +105,7 @@ gulp.task('copy-css', function () {
 gulp.task('copy-html', function () {
     gulp.src(htmlSrcs)
     .pipe(htmlhint()) // validate html
-   .pipe(htmlhint.failReporter()) // fail on invalid html
+   //.pipe(htmlhint.failReporter()) // fail on invalid html
     .pipe(gulp.dest(outputPath));
 });
 
