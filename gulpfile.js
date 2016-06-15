@@ -34,7 +34,9 @@ var gulp = require('gulp'),
     merge = require('merge-stream'),
     electron = require('gulp-electron'),
     packager = require('electron-packager'),
-    packageJSON = require('./package.json');
+    packageJSON = require('./package.json'),
+    htmlhint = require("gulp-htmlhint");
+
 
 // Tasks
 
@@ -102,8 +104,9 @@ gulp.task('copy-css', function () {
 // Copy html to app folder
 gulp.task('copy-html', function () {
     gulp.src(htmlSrcs)
-        // process html here if needed
-        .pipe(gulp.dest(outputPath));
+    .pipe(htmlhint()) // validate html
+   .pipe(htmlhint.failReporter()) // fail on invalid html
+    .pipe(gulp.dest(outputPath));
 });
 
 // Copy js to app folder
