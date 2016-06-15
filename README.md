@@ -30,6 +30,11 @@ whatever you want.
 
 Further developer info is available in https://github.com/into-cps/intocps-ui/wiki
 
+Development builds
+---
+The master branch is build automatically on git push and the output if successfull is uploaded to: http://overture.au.dk/into-cps/into-cps-app/master/latest/
+
+
 About
 ---
 INTO-CPS is an EU Horizon 2020 research project that is creating an integrated
