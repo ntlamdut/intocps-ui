@@ -46,6 +46,7 @@ export class ProjectBrowserItem {
     nodes: ProjectBrowserItem[] = [];
     parent: ProjectBrowserItem;
     group: boolean = false;
+    opensInMainWindow: boolean = false;
 
     clickHandler(item: ProjectBrowserItem): void { }
     dblClickHandler(item: ProjectBrowserItem): void { }
@@ -111,6 +112,10 @@ export class BrowserController {
             //Remove auto expansion on double click
             event.preventDefault();
             var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+            // Only mark the item as selected if it opens in the main window.
+            if (item.opensInMainWindow) {
+                this.tree.select(item.id);
+            }
             item.dblClickHandler(item);
         });
 
@@ -160,10 +165,10 @@ export class BrowserController {
 
         var menuEntryDuplicate = menuEntry("Duplicate", 'glyphicon glyphicon-duplicate');
         var menuEntryDelete = menuEntry("Delete", 'glyphicon glyphicon-remove',
-                    function (item: ProjectBrowserItem) {
-                        console.info("Delete path: " + item.path);
-                        self.menuHandler.deletePath(item.path);
-                    });
+            function (item: ProjectBrowserItem) {
+                console.info("Delete path: " + item.path);
+                self.menuHandler.deletePath(item.path);
+            });
         var menuEntryImport = menuEntry("Import", 'glyphicon glyphicon-import');
         var menuEntryExport = menuEntry("Export", 'glyphicon glyphicon-export');
 
@@ -198,6 +203,7 @@ export class BrowserController {
                 //merge MultiModelConfig and folder
                 parent.img = 'into-cps-icon-projbrowser-config';
                 (<any>parent).coeConfig = path;
+                parent.opensInMainWindow = true;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openCoeView((<any>item).coeConfig);
                 };
@@ -208,6 +214,7 @@ export class BrowserController {
                 //merge MultiModelConfig and folder
                 parent.img = 'into-cps-icon-projbrowser-multimodel';
                 (<any>parent).mmConfig = path;
+                parent.opensInMainWindow = true;
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openMultiModel((<any>item).mmConfig);
                 };
@@ -221,6 +228,7 @@ export class BrowserController {
             }
             else if (path.endsWith('.fmu')) {
                 result.img = 'icon-page';
+                result.opensInMainWindow = true;
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openFmu(item.path);
@@ -229,6 +237,7 @@ export class BrowserController {
             else if (path.endsWith('.sysml.json')) {
                 result.img = 'into-cps-icon-projbrowser-modelio';
                 result.removeFileExtensionFromText();
+                result.opensInMainWindow = true;
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openSysMlExport(item.path);
                 };
