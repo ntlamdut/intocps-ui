@@ -14,6 +14,7 @@ import {SourceDom} from "./sourceDom";
 import {IViewController} from "./iViewController";
 import * as CustomFs from "./custom-fs";
 import {IProject} from "./proj/IProject";
+import * as SystemUtil from "./SystemUtil";
 
 import fs = require("fs");
 import Path = require('path');
@@ -202,7 +203,10 @@ menuHandler.deletePath = (path) => {
     }
 };
 
+menuHandler.openWithSystemEditor = (path) => {
 
+    SystemUtil.openPath(path);
+};
 
 
 Menus.configureIntoCpsMenu();

@@ -3,7 +3,7 @@ intocps-ui
 
 UI app for the INTO-CPS tool chain.
 
-![The INTO-CPS App](screenshot.png?raw=true "The INTO-CPS App")
+![The INTO-CPS App](src/resources/screenshot.png?raw=true "The INTO-CPS App")
 
 
 
@@ -29,6 +29,16 @@ cross-platform and is actually built on top of Electron. That said, you can use
 whatever you want.
 
 Further developer info is available in https://github.com/into-cps/intocps-ui/wiki
+
+Latest builds
+---
+The master branch is built automatically on git pushes and the output, for
+successful builds, is uploaded to: http://overture.au.dk/into-cps/into-cps-app/master/latest/
+
+These builds represent ongoing work. They have not been fully tested and are
+not guaranteed to work. Normally, you are advised to use one of the
+[releases](https://github.com/into-cps/intocps-ui/releases) .
+
 
 About
 ---
