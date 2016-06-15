@@ -171,6 +171,16 @@ export class CoeController extends IViewController {
 
 
     initializeChart() {
+        var d3 = Plotly.d3;
+
+        var gd3 = d3.select('#graphContainer')
+            .style({
+                width: '100%',
+                height: '80vh'
+            });
+
+        var gd = gd3.node();
+
         var layout = {
             xaxis: {
                 title: 'Time',
@@ -184,10 +194,12 @@ export class CoeController extends IViewController {
         };
 
         Plotly
-            .newPlot(document.getElementById("graphContainer"), [], layout, {showLink: false})
+            .newPlot(gd, [], layout, {showLink: false})
             .then((element:any) => this.liveChart = element);
+
+        window.addEventListener('resize', e => Plotly.Plots.resize(gd));
     }
- 
+
 
     //Set the progress bar 
     setProgress(progress: number, message: string) {
