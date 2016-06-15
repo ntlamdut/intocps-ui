@@ -6,6 +6,7 @@ const path = require('path');
 var settings = require("./settings/settings").default;
 var SettingKeys = require("./settings/SettingKeys");
 var IntoCpsApp = require("./IntoCpsApp").default;
+import * as SystemUtil from "./SystemUtil";
 
 var DialogHandler = require("./DialogHandler").default;
 var IntoCpsAppEvents = require("./IntoCpsAppEvents");
@@ -39,6 +40,9 @@ openProjectHandler.install();
 openDownloadManagerHandler.install();
 
 
+
+
+
 export function configureIntoCpsMenu() {
   const {remote} = require('electron');
   const {Menu, MenuItem} = remote;
@@ -58,9 +62,9 @@ export function configureIntoCpsMenu() {
     fileMenuPos = 1;
 
     menu[0].submenu.splice(1, 0, {
-        type: 'separator'
+      type: 'separator'
 
-      });
+    });
 
     menu[0].submenu.splice(2, 0, {
       label: 'Preferences...',
@@ -70,10 +74,10 @@ export function configureIntoCpsMenu() {
       }
     });
 
-     menu[0].submenu.splice(3, 0, {
-        type: 'separator'
+    menu[0].submenu.splice(3, 0, {
+      type: 'separator'
 
-      });
+    });
   }
 
   // Add custom menu 
@@ -86,6 +90,18 @@ export function configureIntoCpsMenu() {
         accelerator: 'CmdOrCtrl+N',
         click: function (item: any, focusedWindow: any) {
           createProjectHandler.openWindow();
+        }
+
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Show Project Folder',
+        click: function (item: any, focusedWindow: any) {
+          let activeProject = IntoCpsApp.getInstance().getActiveProject();
+          if (activeProject != null)
+            SystemUtil.openPath(activeProject.rootPath);
         }
 
       },
