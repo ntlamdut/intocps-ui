@@ -47,3 +47,6 @@ downloader-test/*.zip
 MakeFile
 
 pkg/
+
+# WebStorm project files
+.idea/

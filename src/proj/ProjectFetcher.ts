@@ -31,81 +31,110 @@ function launchProjectExplorer() {
 
 
 
-function open() {
+function openFromGit() {
 
     var p: HTMLInputElement = <HTMLInputElement>document.getElementById("basic-url");
     var dest: HTMLInputElement = <HTMLInputElement>document.getElementById("projectRootPathText");
-    fetchProjectThroughGit(p.value, dest.value);
+
+    document.getElementById('openSpinner').style.display = "block";
+    document.getElementById('container').style.display = "none";
+
+    var progress = document.getElementById('progress');
+    var progressBar = document.getElementById('progress-bar');
+
+    fetchProjectThroughGit(p.value, dest.value, (output:string) => {
+        var percentage = parsePercentage(output);
+
+        if (percentage) {
+            progressBar.style.width = percentage;
+            progressBar.innerHTML = percentage;
+        }
+
+        progress.innerHTML = output.split("\n").pop();
+    })
+        .then(code => window.top.close());
 }
 
-export function fetchProjectThroughGit(url: string, targetFolder: string) {
-    var spawn = require('child_process').spawn;
+export function parsePercentage(data:string):string {
+    var newest = data.split("\n").pop();
 
-    let childCwd = targetFolder;
+    if (newest.indexOf("Receiving objects:") !== -1) {
+        // example: Receiving objects:   1% (12/834), 1.89 MiB | 609.00 KiB/s
 
-    var name = url.substring(url.lastIndexOf('/') + 1);
-
-    let index = name.lastIndexOf('.git');
-    if (index > 0) {
-        name = name.substring(0, index);
+        // Pull out percentage value
+        return newest.split("%")[0].split(" ").pop() + '%';
     }
+}
 
-    let repoPath = Path.join(childCwd, name);
-    let repoProjectFile = Path.join(repoPath, ".project.json");
+export function fetchProjectThroughGit(url: string, targetFolder: string, updates: (data: string) => void) {
+    return new Promise((resolve, reject) => {
+        var spawn = require('child_process').spawn;
 
-    var repoExists = false;
-    try {
-        fs.accessSync(repoProjectFile, fs.R_OK);
-        repoExists = true;
+        let childCwd = targetFolder;
 
-    } catch (e) {
+        var name = url.substring(url.lastIndexOf('/') + 1);
 
-    }
+        let index = name.lastIndexOf('.git');
+        if (index > 0) {
+            name = name.substring(0, index);
+        }
 
-    var mkdirp = require('mkdirp');
-    mkdirp.sync(childCwd);
+        let repoPath = Path.join(childCwd, name);
+        let repoProjectFile = Path.join(repoPath, ".project.json");
 
-    var child: any = null;
+        var repoExists = false;
+        try {
+            fs.accessSync(repoProjectFile, fs.R_OK);
+            repoExists = true;
 
-    if (!repoExists) {
-        child = spawn('git', ['clone', url], {
-            detached: false,
-            shell: true,
-            cwd: childCwd
+        } catch (e) {
+
+        }
+
+        var mkdirp = require('mkdirp');
+        mkdirp.sync(childCwd);
+
+        var child: any = null;
+
+        if (!repoExists) {
+            child = spawn('git', ['clone', "--progress", url], {
+                detached: false,
+                cwd: childCwd
+            });
+        } else {
+            child = spawn('git', ['pull', "--progress"], {
+                detached: false,
+                cwd: repoPath
+            });
+        }
+
+        child.stdout.on('data', (data: any) => {
+            if (updates) updates(data.toString());
         });
-    } else {
-        child = spawn('git', ['pull'], {
-            detached: false,
-            shell: true,
-            cwd: repoPath
+
+        child.stderr.on('data', (data: any) => {
+            if (updates) updates(data.toString());
         });
-    }
-    child.unref();
+
+        child.on('close', function (code: any) {
+            console.log('closing code: ' + code);
+            //Here you can get the exit code of the script
+        });
+
+        child.on('exit', function (code: any) {
+            console.log('exit code: ' + code);
+            //Here you can get the exit code of the script
 
 
-    child.stdout.on('data', function (data: any) {
-        console.log('stdout: ' + data);
-        //Here is where the output goes
+            let p = IntoCpsApp.getInstance().loadProject(repoProjectFile);
+            IntoCpsApp.getInstance().setActiveProject(p);
 
+            if (code === 0)
+                resolve(code);
+            else
+                reject(code);
+        });
+        //    var fork = require("child_process").fork,
+        //   child = fork(__dirname + "/start-coe.js");
     });
-    child.stderr.on('error', function (data: any) {
-        console.error('stderr: ' + data);
-
-    });
-    child.on('close', function (code: any) {
-        console.log('closing code: ' + code);
-        //Here you can get the exit code of the script
-    });
-
-    child.on('exit', function (code: any) {
-        console.log('exit code: ' + code);
-        //Here you can get the exit code of the script
-
-
-        let p = IntoCpsApp.getInstance().loadProject(repoProjectFile);
-        IntoCpsApp.getInstance().setActiveProject(p);
-    });
-    //    var fork = require("child_process").fork,
-    //   child = fork(__dirname + "/start-coe.js");
-
 }

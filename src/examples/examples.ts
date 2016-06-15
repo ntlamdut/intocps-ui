@@ -88,6 +88,22 @@ function examples_open() {
 
     var p: HTMLInputElement = <HTMLInputElement>document.getElementById("basic-url");
     var dest: HTMLInputElement = <HTMLInputElement>document.getElementById("projectRootPathText");
-    ProjectFetcher.fetchProjectThroughGit(p.value, dest.value);
-}
 
+    document.getElementById('openSpinner').style.display = "block";
+    document.getElementById('container').style.display = "none";
+
+    var progress = document.getElementById('progress');
+    var progressBar = document.getElementById('progress-bar');
+
+    ProjectFetcher.fetchProjectThroughGit(p.value, dest.value, (output:string) => {
+        var percentage = ProjectFetcher.parsePercentage(output);
+
+        if (percentage) {
+            progressBar.style.width = percentage;
+            progressBar.innerHTML = percentage;
+        }
+
+        progress.innerHTML = output.split("\n").pop();
+    })
+        .then(code => window.top.close());
+}
