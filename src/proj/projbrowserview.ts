@@ -142,7 +142,7 @@ export class ProjectBrowserItem {
         this.unwatch();
         this.controller.tree.remove(this.id);
         if (this.parentNode != null) {
-            this.parentNode.childNodes = this.parentNode.childNodes.filter((n) => n != this);
+            this.parentNode.childNodes.splice(this.parentNode.childNodes.indexOf(this),1);
         }
         if (this.parentNode.getChildByID(this.id) != undefined)
             throw "node is still a child."
