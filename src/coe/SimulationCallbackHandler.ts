@@ -1,10 +1,9 @@
-
-// TODO: DUMMY REFERENCE UNTIL CHART MAKES A TYPESCRIPT DEFINITION FILE!
-/// <reference path="Chart.d.ts"/>
 /// <reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
 /// <reference path="../../typings/browser/ambient/node/index.d.ts"/>
 /// <reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
+
+declare var Plotly:any;
 
 import * as Main from  "../settings/settings"
 import * as IntoCpsApp from  "../IntoCpsApp"
@@ -14,7 +13,7 @@ import {CoeConfig} from './CoeConfig'
 
 export class SimulationCallbackHandler {
 
-    public chart: Chart;
+    public chart: any;
     public chartIds: string[] = [];
     connect(url: string) {
 
@@ -65,7 +64,7 @@ export class SimulationCallbackHandler {
                                 else if (value == "false")
                                 { value = 0; }
 
-                                _this.chart.data.datasets[index].data.push(value);
+                                _this.chart.data[index].y.push(value);
 
                             }
                         });
@@ -74,7 +73,7 @@ export class SimulationCallbackHandler {
             }
         });
 
-        this.chart.update();
+        Plotly.redraw(this.chart);
     }
 
     onError(evt: any) {
