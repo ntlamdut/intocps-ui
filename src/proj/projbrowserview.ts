@@ -183,7 +183,7 @@ export class ProjectBrowserItem {
     collapse() {
         // discard grand-children
         this.releaseChildren(1);
-        //this.controller.tree.collapseAll(this.id);
+        this.controller.tree.collapseAll(this.id);
     }
 
 }
