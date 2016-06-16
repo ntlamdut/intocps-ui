@@ -1,10 +1,9 @@
-
-// TODO: DUMMY REFERENCE UNTIL CHART MAKES A TYPESCRIPT DEFINITION FILE!
-/// <reference path="Chart.d.ts"/>
 /// <reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
 /// <reference path="../../typings/browser/ambient/node/index.d.ts"/>
 /// <reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
+
+declare var Plotly:any;
 
 import * as Main from  "../settings/settings"
 import * as IntoCpsApp from  "../IntoCpsApp"
@@ -13,8 +12,8 @@ import * as Collections from 'typescript-collections';
 import {CoeConfig} from './CoeConfig'
 
 export class SimulationCallbackHandler {
-
-    public chart: Chart;
+    private redrawCooldown:boolean = false;
+    public chart: any;
     public chartIds: string[] = [];
     connect(url: string) {
 
@@ -44,7 +43,6 @@ export class SimulationCallbackHandler {
     }
 
     onMessage(evt: any) {
-        let _this = this;
         var jsonData = JSON.parse(evt.data);
 
         // Callback output text
@@ -53,32 +51,34 @@ export class SimulationCallbackHandler {
 
         //calculate id
 
-        $.each(Object.keys(jsonData), function (j, fmukey) {
-            if (fmukey.indexOf("{") == 0) {
-                let preFix = fmukey + ".";
-                $.each(Object.keys(jsonData[fmukey]), function (k, instanceKey) {
-                    let id = preFix + instanceKey + ".";
-                    $.each(Object.keys(jsonData[fmukey][instanceKey]), function (j, outputKey) {
-                        let key = id + outputKey;
-                        var value = jsonData[fmukey][instanceKey][outputKey];
-                        $.each(_this.chartIds, function (index, datasetKey) {
-                            if (datasetKey == key) {
+        $.each(Object.keys(jsonData), (i, fmuKey) => {
+            if (fmuKey.indexOf("{") !== 0) return;
 
-                                if (value == "true")
-                                { value = 1 }
-                                else if (value == "false")
-                                { value = 0; }
+            $.each(Object.keys(jsonData[fmuKey]), (j, instanceKey) => {
+                $.each(Object.keys(jsonData[fmuKey][instanceKey]), (k, outputKey) => {
+                    var value = jsonData[fmuKey][instanceKey][outputKey];
 
-                                _this.chart.data.datasets[index].data.push(value);
+                    $.each(this.chartIds, (index, datasetKey) => {
+                        if (datasetKey !== fmuKey + "." + instanceKey + "." + outputKey) return;
 
-                            }
-                        });
+                        if (value == "true") value = 1;
+                        else if (value == "false") value = 0;
+
+                        this.chart.data[index].y.push(value);
+
+                        // Throttle redrawing to ~60 fps.
+                        if (this.redrawCooldown === false) {
+                            this.redrawCooldown = true;
+
+                            requestAnimationFrame(() => {
+                                Plotly.redraw(this.chart);
+                                this.redrawCooldown = false;
+                            });
+                        }
                     });
                 });
-            }
+            });
         });
-
-        this.chart.update();
     }
 
     onError(evt: any) {
