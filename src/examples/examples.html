@@ -27,6 +27,7 @@
 
 <body>
 
+<div id="container" class="container">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">Examples</h3>
@@ -35,8 +36,6 @@
            
         </div>
     </div>
-
-<div class="container">
 
     <div style="display: none;">
         <label for="basic-url">Git repository URL</label>
@@ -72,7 +71,17 @@
     <button type="button" class="btn btn-default btn-sm" onclick="examples_open()">
                      <span class="glyphicon glyphicon-cloud-download"></span>Open
                 </button>
+</div>
+<div id="openSpinner" style="display: none; text-align: center">
+    <h1>Downloading project...</h1>
 
+    <div class="progress">
+        <div id="progress-bar" class="progress-bar" role="progressbar" style="width:0; min-width: 2em;">
+            0%
+        </div>
+    </div>
+
+    <div id="progress"></div>
 </div>
 
 </body>

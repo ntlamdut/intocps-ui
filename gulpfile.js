@@ -71,7 +71,7 @@ gulp.task("compile-ts", function () {
 
     tsResult.dts.pipe(gulp.dest(outputPath));
 
-    return tsResult.js.pipe(sourcemap.write('.'))
+    return tsResult.js.pipe(sourcemap.write())
         .pipe(gulp.dest(outputPath));
 });
 

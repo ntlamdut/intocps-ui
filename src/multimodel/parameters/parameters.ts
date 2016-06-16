@@ -67,7 +67,7 @@ export class Parameters {
 
     private getUnsetValues(instance: Configs.Instance) {
         return instance.fmu.scalarVariables.filter(value => {
-            return (value.causality == Configs.CausalityType.CalculatedParameter) &&
+            return (value.causality == Configs.CausalityType.Parameter) &&
                 (instance.initialValues.get(value) == null);
         });
     }
