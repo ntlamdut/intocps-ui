@@ -4,6 +4,8 @@ import {IViewController} from "../iViewController"
 
 export class DseController extends IViewController {
 
+    private doNotPressButton: HTMLButtonElement;
+
     public initialize() {
         IntoCpsApp.setTopName("Design Stace Exploration");
     }
@@ -16,6 +18,8 @@ export class DseController extends IViewController {
       // process configuration source here
       // as a first step, we recommend extracting the JSON data into a
       // type-safe map
+      var divProgress = <HTMLInputElement>document.getElementById("message");
+      divProgress.innerText = "Coming even sooner than you think";
     }
 
 }
