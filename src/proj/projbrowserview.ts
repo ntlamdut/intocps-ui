@@ -350,6 +350,12 @@ export class BrowserController {
                             }));
                     }
                 }
+            }else  if (pathComponents[0] == Project.PATH_MULTI_MODELS ){
+                var menuEntryCreate = menuEntry("New Multi-Model", 'glyphicon glyphicon-asterisk',
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.createMultiModelPlain();
+                    });
+                result.menuEntries = [menuEntryCreate];
             }
             else if (this.isOvertureProject(path)) {
                 result.img = 'into-cps-icon-projbrowser-overture';
