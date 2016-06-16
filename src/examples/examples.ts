@@ -12,9 +12,7 @@ import fs = require('fs');
 
 import * as http from "http";
 let request = require("request");
-/*window.onload = function () {
-    
-};*/
+
 
 function launchProjectExplorer() {
     let remote = require("electron").remote;
@@ -33,7 +31,7 @@ function launchProjectExplorer() {
 window.onload = function () {
 
     var dest: HTMLInputElement = <HTMLInputElement>document.getElementById("projectRootPathText");
-    dest.value = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
+    dest.value = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.DEFAULT_PROJECTS_FOLDER_PATH);
 
     fetchExamples(IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.EXAMPLE_REPO)).then(json => {
 
@@ -90,6 +88,22 @@ function examples_open() {
 
     var p: HTMLInputElement = <HTMLInputElement>document.getElementById("basic-url");
     var dest: HTMLInputElement = <HTMLInputElement>document.getElementById("projectRootPathText");
-    ProjectFetcher.fetchProjectThroughGit(p.value, dest.value);
-}
 
+    document.getElementById('openSpinner').style.display = "block";
+    document.getElementById('container').style.display = "none";
+
+    var progress = document.getElementById('progress');
+    var progressBar = document.getElementById('progress-bar');
+
+    ProjectFetcher.fetchProjectThroughGit(p.value, dest.value, (output:string) => {
+        var percentage = ProjectFetcher.parsePercentage(output);
+
+        if (percentage) {
+            progressBar.style.width = percentage;
+            progressBar.innerHTML = percentage;
+        }
+
+        progress.innerHTML = output.split("\n").pop();
+    })
+        .then(code => window.top.close());
+}

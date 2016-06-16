@@ -19,6 +19,7 @@ export namespace SettingKeys {
     export var DEV_UPDATE_SITE = "dev_update_site";
     export var EXAMPLE_REPO = "example_site";
     export var DEV_EXAMPLE_REPO = "example_site";
+    export var DEFAULT_PROJECTS_FOLDER_PATH = "default_projects_folder_path";
 
     export var DEFAULT_VALUES: { [key: string]: any; } = {};
     DEFAULT_VALUES[RTTESTER_INSTALL_DIR] = 'C:/opt/rt-tester';
@@ -31,4 +32,6 @@ export namespace SettingKeys {
     DEFAULT_VALUES[DEV_EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/development/examples/examples.json";
     DEFAULT_VALUES[DEVELOPMENT_MODE] = false;
     DEFAULT_VALUES[COE_URL] = "localhost:8082";
+    DEFAULT_VALUES[COE_DEBUG_ENABLED] = false;
+    DEFAULT_VALUES[COE_REMOTE_HOST] = false;
 }

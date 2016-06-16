@@ -69,7 +69,7 @@ gulp.task("compile-ts", function () {
 
     tsResult.dts.pipe(gulp.dest(outputPath));
 
-    return tsResult.js.pipe(sourcemap.write('.'))
+    return tsResult.js.pipe(sourcemap.write())
         .pipe(gulp.dest(outputPath));
 });
 
@@ -124,12 +124,12 @@ gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css',
 gulp.task("package-darwin", function(callback) {
     var options = {
         dir: '.',
-        name: packageJSON.name,
+        name: packageJSON.name+'-'+packageJSON.version,
         platform: "darwin",
         arch: "x64",
         version: "1.2.1",
         overwrite:true,
-        icon: 'into-cps-logo.png.icns',
+        icon: 'src/resources/into-cps/appicon/into-cps-logo.png.icns',
         out: 'pkg',
         "app-version": packageJSON.version,
         "version-string": {
@@ -146,12 +146,12 @@ gulp.task("package-darwin", function(callback) {
 gulp.task("package-win32", function(callback) {
     var options = {
         dir: '.',
-        name: packageJSON.name,
+        name: packageJSON.name+'-'+packageJSON.version,
         platform: "win32",
         arch: "all",
         version: "1.2.1",
         overwrite:true,
-        icon: 'into-cps-logo.png.ico',
+        icon: 'src/resources/into-cps/appicon/into-cps-logo.png.ico',
         out: 'pkg',
         "app-version": packageJSON.version,
         "version-string": {
@@ -168,7 +168,7 @@ gulp.task("package-win32", function(callback) {
 gulp.task("package-linux", function(callback) {
     var options = {
         dir: '.',
-        name: packageJSON.name,
+        name: packageJSON.name+'-'+packageJSON.version,
         platform: "linux",
         arch: "x64",
         version: "1.2.1",
