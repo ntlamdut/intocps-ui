@@ -45,8 +45,8 @@ export class ProjectBrowserItem {
     level: number;
     expanded: boolean = false;
     img: any = null;
-    childNodes: ProjectBrowserItem[] = [];
-    parentNode: ProjectBrowserItem;
+    nodes: ProjectBrowserItem[] = [];
+    parent: ProjectBrowserItem;
     group: boolean = false;
     fsWatch: fs.FSWatcher;
     opensInMainWindow: boolean = false;
@@ -63,7 +63,6 @@ export class ProjectBrowserItem {
         this.path = path;
         this.isDirectory = fs.statSync(path).isDirectory();
         this.text = Path.basename(path);
-        this.parentNode = parent;
         if (parent == null) {
             this.level = 0;
         } else {
@@ -80,29 +79,29 @@ export class ProjectBrowserItem {
     }
 
     getChildByPath(path: string) {
-        return this.childNodes.find((n) => { return n.path == path; });
+        return this.nodes.find((n) => { return n.path == path; });
     }
 
-    getChildByID(id: string) {
-        return this.childNodes.find((n) => { return n.id == id; });
-    }
-
-    activate() {
+    activate(parent: ProjectBrowserItem) {
         console.log("activating node " + this.id + ": " + this.path);
-        let parent = this.parentNode;
-        if (parent != null) {
-            let i: number = 0;
-            for (; i < parent.childNodes.length && parent.childNodes[i].path.localeCompare(this.path) < 0; ++i);
-            if (this.level <= 1) {
+        let self: ProjectBrowserItem = this;
+        if (this.level == 0) {
+            // root node is not inserted to tree
+        } else {
+            let insertPos: number = 0;
+            for (; insertPos < parent.nodes.length && parent.nodes[insertPos].path.localeCompare(this.path) < 0; ++insertPos);
+            let before = (insertPos + 1) < parent.nodes.length ? parent.nodes[insertPos + 1].id : null;
+            if (this.level == 1) {
                 this.controller.tree.insert(null, this);
+                self = <ProjectBrowserItem>(this.controller.tree.get(this.id));
+                parent.nodes.splice(insertPos, 0, self);
             } else {
-                let before = (i + 1) < parent.childNodes.length ? parent.childNodes[i + 1].id : null;
                 this.controller.tree.insert(parent.id, before, this);
+                self = <ProjectBrowserItem>(this.controller.tree.get(this.id));
             }
-            parent.childNodes.splice(i, 0, this);
         }
-        if (this.expanded || parent.expanded) {
-            this.loadChildren();
+        if (this.expanded || (parent && parent.expanded)) {
+            self.loadChildren();
         }
     }
 
@@ -121,7 +120,7 @@ export class ProjectBrowserItem {
                         child.deactivate();
                     if (exists(p))
                         self.controller.addFSItem(p, self);
-                    self.controller.tree.refresh(self.id);
+                    self.refresh();
                 }
             });
         }
@@ -136,37 +135,35 @@ export class ProjectBrowserItem {
     }
 
     deactivate() {
-        for (let c of this.childNodes) {
+        for (let c of this.nodes) {
             c.deactivate();
         }
         console.log("deactivating node " + this.path + ": " + this.path);
         this.unwatch();
         this.controller.tree.remove(this.id);
-        if (this.parentNode != null) {
-            this.parentNode.childNodes.splice(this.parentNode.childNodes.indexOf(this),1);
+        if (this.level == 1) {
+            let pos: number = 0;
+            for (; pos < this.parent.nodes.length && this.parent.nodes[pos].path.localeCompare(this.path) < 0; ++pos);
+            this.parent.nodes.splice(pos, 0, this);
         }
-        if (this.parentNode.getChildByID(this.id) != undefined)
-            throw "node is still a child."
     }
 
     releaseChildren(depth: number = 0) {
         if (depth > 0) {
-            for (var c of this.childNodes) {
+            for (var c of this.nodes) {
                 c.releaseChildren(depth - 1);
             }
         } else {
-            while (this.childNodes.length != 0) {
-                this.childNodes[0].deactivate();
+            while (this.nodes.length != 0) {
+                this.nodes[0].deactivate();
             }
-            if (this.childNodes.length != 0)
-                throw "node has still children."
             this.unwatch();
         }
     }
 
     loadChildren(depth: number = 0) {
         if (depth > 0) {
-            for (var c of this.childNodes) {
+            for (var c of this.nodes) {
                 c.loadChildren(depth - 1);
             }
         } else if (this.isDirectory) {
@@ -182,8 +179,14 @@ export class ProjectBrowserItem {
 
     collapse() {
         // discard grand-children
+        for (let c of this.nodes) {
+            this.controller.tree.collapse(c.id);
+        }
         this.releaseChildren(1);
-        this.controller.tree.collapseAll(this.id);
+    }
+
+    refresh() {
+        this.controller.tree.refresh(this.id);
     }
 
 }
@@ -330,6 +333,7 @@ export class BrowserController {
                     self.menuHandler.openCoeView((<any>item).coeConfig);
                 };
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
+                parent.refresh();
                 return null;
             }
             else if (path.endsWith('.mm.json')) {
@@ -346,6 +350,7 @@ export class BrowserController {
                         self.menuHandler.createCoSimConfiguration(item.path);
                     });
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport];
+                parent.refresh();
                 return null;
             }
             else if (path.endsWith('.fmu')) {
@@ -493,7 +498,7 @@ export class BrowserController {
             }
         }
         if (result != null) {
-            result.activate();
+            result.activate(parent);
         }
         return result;
     }
