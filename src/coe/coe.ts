@@ -183,12 +183,10 @@ export class CoeController extends IViewController {
 
         var layout = {
             xaxis: {
-                title: 'Time',
                 showgrid: false,
                 zeroline: false
             },
             yaxis: {
-                title: 'Stuff',
                 showline: false
             }
         };
