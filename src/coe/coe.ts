@@ -266,7 +266,7 @@ export class CoeController extends IViewController {
         });
 
         this.liveChart.data = ids.map(id => {
-            return {label: id, y: []};
+            return {name: id, y: []};
         });
 
         Plotly.redraw(this.liveChart);
