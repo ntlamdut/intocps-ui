@@ -37,8 +37,10 @@ export class MenuEntry {
 }
 
 export class ProjectBrowserItem {
+    controller: BrowserController;
     id: string;
     path: string;
+    isDirectory: boolean;
     text: string;
     level: number;
     expanded: boolean = false;
@@ -46,6 +48,7 @@ export class ProjectBrowserItem {
     nodes: ProjectBrowserItem[] = [];
     parent: ProjectBrowserItem;
     group: boolean = false;
+    fsWatch: fs.FSWatcher;
     opensInMainWindow: boolean = false;
 
     clickHandler(item: ProjectBrowserItem): void { }
@@ -53,33 +56,147 @@ export class ProjectBrowserItem {
     menuEntries: MenuEntry[] = [];
 
     private static idCounter: number = 0;
-    constructor(path: string, parent: ProjectBrowserItem) {
+    constructor(controller: BrowserController, path: string, parent: ProjectBrowserItem) {
+        this.controller = controller;
+        let self = this;
         this.id = "ProjectBrowserItem_" + (ProjectBrowserItem.idCounter++).toString();
         this.path = path;
+        this.isDirectory = fs.statSync(path).isDirectory();
         this.text = Path.basename(path);
-        this.parent = parent;
         if (parent == null) {
             this.level = 0;
-            this.group = true;
-            this.expanded = true;
         } else {
             this.level = parent.level + 1;
         }
+        if (this.level <= 1) {
+            this.group = true;
+            this.expanded = true;
+        }
     }
+
     removeFileExtensionFromText(): void {
         this.text = this.text.substr(0, this.text.indexOf('.'));
     }
-    removeNodeWithPath(path: string): void {
-        this.nodes = this.nodes.filter(function (n: ProjectBrowserItem) {
-            return n.path != path;
-        });
+
+    getChildByPath(path: string) {
+        return this.nodes.find((n) => { return n.path == path; });
+    }
+
+    activate(parent: ProjectBrowserItem) {
+        console.log("activating node " + this.id + ": " + this.path);
+        let self: ProjectBrowserItem = this;
+        if (this.level == 0) {
+            // root node is not inserted to tree
+        } else {
+            let insertPos: number = 0;
+            for (; insertPos < parent.nodes.length && parent.nodes[insertPos].path.localeCompare(this.path) < 0; ++insertPos);
+            let before = insertPos < parent.nodes.length ? parent.nodes[insertPos].id : null;
+            if (this.level == 1) {
+                this.controller.tree.insert(before, this);
+                self = <ProjectBrowserItem>(this.controller.tree.get(this.id));
+                parent.nodes.splice(insertPos, 0, self);
+            } else {
+                this.controller.tree.insert(parent.id, before, this);
+                self = <ProjectBrowserItem>(this.controller.tree.get(this.id));
+            }
+        }
+        if (this.expanded || (parent && parent.expanded)) {
+            self.loadChildren();
+        }
+    }
+
+    watch() {
+        let self = this;
+        //console.log("watching node " + this.path + ": " + this.path);
+        if (this.isDirectory) {
+            if (this.fsWatch != undefined) throw "Directory is already being watched";
+            let exists = (p: string) => { try { let x = fs.statSync(p); return true; } catch (e) { return false; } }
+            this.fsWatch = fs.watch(this.path, function (event: string, which: string) {
+                console.log("item: " + self.path, ", who: " + which + ", event: " + event);
+                if (which) {
+                    let p = Path.join(self.path, Path.basename(which));
+                    let child = self.getChildByPath(p);
+                    if (child)
+                        child.deactivate();
+                    if (exists(p))
+                        self.controller.addFSItem(p, self);
+                    self.refresh();
+                }
+            });
+        }
+    }
+
+    unwatch() {
+        if (this.fsWatch != undefined) {
+            //console.log("unwatching node " + this.path + ": " + this.path);
+            this.fsWatch.close();
+            this.fsWatch = undefined;
+        }
+    }
+
+    deactivate() {
+        for (let c of this.nodes) {
+            c.deactivate();
+        }
+        console.log("deactivating node " + this.path + ": " + this.path);
+        this.unwatch();
+        this.controller.tree.remove(this.id);
+        if (this.level == 1) {
+            let parent = this.controller.rootItem;
+            let pos = parent.nodes.findIndex((n) => { return n.id == this.id });
+            if (pos >= 0) {
+                parent.nodes.splice(pos, 1);
+            }
+        }
+    }
+
+    releaseChildren(depth: number = 0) {
+        if (depth > 0) {
+            for (var c of this.nodes) {
+                c.releaseChildren(depth - 1);
+            }
+        } else {
+            while (this.nodes.length != 0) {
+                this.nodes[0].deactivate();
+            }
+            this.unwatch();
+        }
+    }
+
+    loadChildren(depth: number = 0) {
+        if (depth > 0) {
+            for (var c of this.nodes) {
+                c.loadChildren(depth - 1);
+            }
+        } else if (this.isDirectory) {
+            this.controller.addFSFolderContent(this.path, this);
+            this.watch();
+        }
+    }
+
+    expand() {
+        // load grand-children
+        this.loadChildren(1);
+    }
+
+    collapse() {
+        // discard grand-children
+        for (let c of this.nodes) {
+            this.controller.tree.collapse(c.id);
+        }
+        this.releaseChildren(1);
+    }
+
+    refresh() {
+        this.controller.tree.refresh(this.id);
     }
 
 }
 
 export class BrowserController {
     private browser: HTMLDivElement;
-    private tree: W2UI.W2Sidebar;
+    public tree: W2UI.W2Sidebar;
+    rootItem: ProjectBrowserItem;
 
     private menuHandler: IntoCpsAppMenuHandler = null;
 
@@ -95,6 +212,16 @@ export class BrowserController {
         this.tree = $(this.browser).w2sidebar({
             name: 'sidebar',
             menu: []
+        });
+
+        this.tree.on("expand", (event: JQueryEventObject) => {
+            var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+            item.expand();
+        });
+
+        this.tree.on("collapse", (event: JQueryEventObject) => {
+            var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+            item.collapse();
         });
 
         this.tree.on("contextMenu", (event: any) => {
@@ -138,17 +265,17 @@ export class BrowserController {
 
     //set and refresh the prowser content
     private refreshProjectBrowser() {
-
         let app: IntoCpsApp = IntoCpsApp.getInstance();
         if (app.getActiveProject() != null) {
-            this.clearAll();
-            this.addToplevelNodes(this.addFSFolderContent(app.getActiveProject().getRootFilePath()));
+            if (this.rootItem)
+                this.rootItem.deactivate();
+            this.rootItem = this.addFSItem(app.getActiveProject().getRootFilePath(), null);
         }
     }
 
-    private addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
+    public addFSItem(path: string, parent: ProjectBrowserItem): ProjectBrowserItem {
         var self = this;
-        var result: ProjectBrowserItem = new ProjectBrowserItem(path, parent);
+        var result: ProjectBrowserItem = new ProjectBrowserItem(this, path, parent);
         var stat: any;
 
         try {
@@ -208,6 +335,7 @@ export class BrowserController {
                     self.menuHandler.openCoeView((<any>item).coeConfig);
                 };
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
+                parent.refresh();
                 return null;
             }
             else if (path.endsWith('.mm.json')) {
@@ -224,6 +352,7 @@ export class BrowserController {
                         self.menuHandler.createCoSimConfiguration(item.path);
                     });
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport];
+                parent.refresh();
                 return null;
             }
             else if (path.endsWith('.fmu')) {
@@ -350,7 +479,7 @@ export class BrowserController {
                             }));
                     }
                 }
-            }else  if (pathComponents[0] == Project.PATH_MULTI_MODELS ){
+            } else if (pathComponents[0] == Project.PATH_MULTI_MODELS) {
                 var menuEntryCreate = menuEntry("New Multi-Model", 'glyphicon glyphicon-asterisk',
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.createMultiModelPlain();
@@ -377,23 +506,13 @@ export class BrowserController {
             }
         }
         if (result != null) {
-            if (parent != null) {
-                parent.nodes.push(result);
-            }
-            if (stat.isDirectory()) {
-                if (Utilities.pathIsInFolder(path, <string>Project.PATH_SYSML) && result.level >= 3) {
-                    // Skip: Limit directory depth in SysML folder to 2
-                } else {
-                    this.addFSFolderContent(path, result);
-                }
-            }
+            result.activate(parent);
         }
         return result;
     }
 
-    private addFSFolderContent(path: string, parent: ProjectBrowserItem = null): ProjectBrowserItem[] {
+    public addFSFolderContent(path: string, parent: ProjectBrowserItem = null): ProjectBrowserItem[] {
         var result: ProjectBrowserItem[] = [];
-        var fs = require('fs');
         var self = this;
         fs.readdirSync(path).forEach(function (name: string) {
             var filePath: string = Path.join(path, name);
@@ -404,26 +523,6 @@ export class BrowserController {
         });
         return result;
     }
-
-    addToplevelNodes(nodes: Object | Object[]): Object {
-        return this.tree.add(nodes);
-    }
-
-    addNodes(parentId: string, nodes: Object | Object[]): Object {
-        return this.tree.add(parentId, nodes);
-    }
-
-    clearAll() {
-        let ids: string[] = this.tree.nodes.map((value: any) => {
-            return value.id
-        });
-        this.tree.remove.apply(this.tree, ids);
-    }
-
-    getSelectedId(): string {
-        return this.tree.selected;
-    }
-
 
     /*
     Utility function to determin if the container holds an Overture Project. TODO: Should this be annotated in the container instead.
