@@ -90,9 +90,9 @@ export class ProjectBrowserItem {
         } else {
             let insertPos: number = 0;
             for (; insertPos < parent.nodes.length && parent.nodes[insertPos].path.localeCompare(this.path) < 0; ++insertPos);
-            let before = (insertPos + 1) < parent.nodes.length ? parent.nodes[insertPos + 1].id : null;
+            let before = insertPos < parent.nodes.length ? parent.nodes[insertPos].id : null;
             if (this.level == 1) {
-                this.controller.tree.insert(null, this);
+                this.controller.tree.insert(before, this);
                 self = <ProjectBrowserItem>(this.controller.tree.get(this.id));
                 parent.nodes.splice(insertPos, 0, self);
             } else {
@@ -142,9 +142,11 @@ export class ProjectBrowserItem {
         this.unwatch();
         this.controller.tree.remove(this.id);
         if (this.level == 1) {
-            let pos: number = 0;
-            for (; pos < this.parent.nodes.length && this.parent.nodes[pos].path.localeCompare(this.path) < 0; ++pos);
-            this.parent.nodes.splice(pos, 0, this);
+            let parent = this.controller.rootItem;
+            let pos = parent.nodes.findIndex((n) => { return n.id == this.id });
+            if (pos >= 0) {
+                parent.nodes.splice(pos, 1);
+            }
         }
     }
 
@@ -477,7 +479,7 @@ export class BrowserController {
                             }));
                     }
                 }
-            }else  if (pathComponents[0] == Project.PATH_MULTI_MODELS ){
+            } else if (pathComponents[0] == Project.PATH_MULTI_MODELS) {
                 var menuEntryCreate = menuEntry("New Multi-Model", 'glyphicon glyphicon-asterisk',
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.createMultiModelPlain();
