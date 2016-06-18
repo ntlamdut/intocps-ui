@@ -166,6 +166,19 @@ menuHandler.createMultiModel = (path) => {
     });
 };
 
+menuHandler.createMultiModelPlain = () => {
+    $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
+        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
+        if (project != null) {
+            let name = "new";
+            let content = "{}";
+            let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            menuHandler.openMultiModel(mmPath + "");
+        }
+    });
+};
+
 menuHandler.createCoSimConfiguration = (path) => {
     $(init.mainView).load("coe/coe.html", function (event: JQueryEventObject) {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
