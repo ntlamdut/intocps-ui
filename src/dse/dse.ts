@@ -18,8 +18,8 @@ export class DseController extends IViewController {
       // process configuration source here
       // as a first step, we recommend extracting the JSON data into a
       // type-safe map
-      var divProgress = <HTMLInputElement>document.getElementById("blah");
-      divProgress.innerText = "Coming even sooner than you think";
+      //var divProgress = <HTMLInputElement>document.getElementById("blah");
+      //divProgress.innerText = "Coming even sooner than you think";
     }
 
     public doAThing(){
@@ -33,7 +33,7 @@ export class DseController extends IViewController {
 
     public testChildProcess(){
       var spawn = require('child_process').spawn;  
-      var child = spawn("python", ["--version"], {
+      var child = spawn("python", ["C:\\Users\\ken\\Downloads\\pwd.py"], {
             detached: true,
             shell: false,
             // cwd: childCwd
@@ -41,13 +41,25 @@ export class DseController extends IViewController {
       child.unref();
 
       child.stdout.on('data', function (data: any) {
-      console.log('stdout: ' + data);
-      //Here is where the output goes
-      var blah = <HTMLInputElement>document.getElementById("blah");
-      let m = document.createElement("span");
-      m.innerText = data + "";
-      blah.appendChild(m);
-    }); 
-    }
+          console.log('stdout: ' + data);
+          //Here is where the output goes
+      });
+      child.stderr.on('data', function (data: any) {
+          console.log('stderr: ' + data);
+          //Here is where the error output goes
+      });
+      //child.on('close', function (code: any) {
+      //    console.log('closing code: ' + code);
+      //    //Here you can get the exit code of the script
+      //});
 
+      child.stderr.on('data', function (data: any) {
+          console.log('stdout: ' + data);
+          // here is where the output goes
+          var blah = <HTMLInputElement>document.getElementById("blah");
+          let m = document.createElement("span");
+          m.innerText = data + "";
+          blah.appendChild(m);
+      }); 
+  }
 }
