@@ -512,7 +512,7 @@ export class BrowserController {
             else if (Path.basename(path) == Project.PATH_DSE) {
                 var menuEntryCreate = menuEntry("Create Design Space Exploration Config", 'glyphicon glyphicon-asterisk',
                     function (item: ProjectBrowserItem) {
-                        self.menuHandler.createDse(item.path);
+                        self.menuHandler.createDsePlain(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
             } else if (Path.basename(path) == "downloads") {

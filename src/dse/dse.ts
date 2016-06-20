@@ -43,6 +43,10 @@ export class DseController extends IViewController {
       child.stdout.on('data', function (data: any) {
           console.log('stdout: ' + data);
           //Here is where the output goes
+          var blah = <HTMLInputElement>document.getElementById("blah");
+          let m = document.createElement("span");
+          m.innerText = data + "";
+          blah.appendChild(m);          
       });
       child.stderr.on('data', function (data: any) {
           console.log('stderr: ' + data);
