@@ -14,6 +14,8 @@ import {IViewController} from "./iViewController";
 import * as CustomFs from "./custom-fs";
 import {IProject} from "./proj/IProject";
 import * as SystemUtil from "./SystemUtil";
+import { bootstrap }    from '@angular/platform-browser-dynamic';
+import {AppComponent} from './coe/components/app.component';
 
 import fs = require("fs");
 import Path = require('path');
@@ -68,6 +70,8 @@ class InitializationController {
     private loadViews() {
         this.layout.load("main", "main.html", "", () => {
             this.mainView = (<HTMLDivElement>document.getElementById(this.mainViewId));
+
+            bootstrap(AppComponent);
         });
         this.layout.load("left", "proj/projbrowserview.html", "", () => {
             browserController.initialize();
@@ -82,6 +86,8 @@ let init = new InitializationController();
 let controller: IViewController;
 
 function openViewController(htmlPath: string, path: string, controllerPar: new (mainDiv: HTMLDivElement) => IViewController) {
+    window.ng2app.closeAll();
+
     $(init.mainView).load(htmlPath, (event: JQueryEventObject) => {
         controller = new controllerPar(init.mainView);
         if (controller.initialize) {
@@ -99,11 +105,15 @@ menuHandler.deInitialize = () => {
 }
 
 menuHandler.openCoeView = (path) => {
-    openViewController("coe/coe.html", path, () => {});
+    $(init.mainView).empty();
+    $('#activeTabTitle').text("Multi Model > COE");
+    window.ng2app.openCOE(path);
 };
 
 menuHandler.openMultiModel = (path) => {
-    openViewController("multimodel/multimodel.html", path, MmController);
+    $(init.mainView).empty();
+    $('#activeTabTitle').text("Multi Model");
+    window.ng2app.openMultiModel(path);
 };
 
 menuHandler.runRTTesterCommand = (commandSpec: any) => {

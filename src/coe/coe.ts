@@ -26,12 +26,7 @@ import * as Configs from "../intocps-configurations/intocps-configurations";
 import {Utilities} from "../utilities";
 import {LivestreamConfiguration} from "./livestream/livestream-config";
 
-import { bootstrap }    from '@angular/platform-browser-dynamic';
-import { CoeComponent } from './components/coe.component';
 
-console.log(Math.random());
-
-bootstrap(CoeComponent);
 
 //
 // export class CoeController extends IViewController {
