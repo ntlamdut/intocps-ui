@@ -442,7 +442,14 @@ export class BrowserController {
                         result.menuEntries.push(menuEntryCreate);
                     }
                 }
-                if (pathComponents.length == 3 &&
+                if (pathComponents.length == 2) {
+                    if (pathComponents[1] == "utils") {
+                        return null;
+                    } else {
+                        result.img = 'into-cps-icon-rtt-vsi-tick';
+                    }
+                }
+                else if (pathComponents.length == 3 &&
                     (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
                     result.img = 'into-cps-icon-rtt-tla';
                 }
