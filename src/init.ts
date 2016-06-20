@@ -1,7 +1,6 @@
 
 import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {IntoCpsApp} from  "./IntoCpsApp";
-import {CoeController} from  "./coe/coe";
 import {MmController} from  "./multimodel/MmController";
 import {DseController} from  "./dse/dse";
 import {CreateTDGProjectController} from  "./rttester/CreateTDGProject";
@@ -100,7 +99,7 @@ menuHandler.deInitialize = () => {
 }
 
 menuHandler.openCoeView = (path) => {
-    openViewController("coe/coe.html", path, CoeController);
+    openViewController("coe/coe.html", path, () => {});
 };
 
 menuHandler.openMultiModel = (path) => {

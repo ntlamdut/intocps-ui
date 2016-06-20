@@ -34,7 +34,8 @@ var gulp = require('gulp'),
     merge = require('merge-stream'),
     electron = require('gulp-electron'),
     packager = require('electron-packager'),
-    packageJSON = require('./package.json');
+    packageJSON = require('./package.json'),
+    webpack = require('webpack-stream');
 
 // Tasks
 
@@ -71,6 +72,12 @@ gulp.task("compile-ts", function () {
 
     return tsResult.js.pipe(sourcemap.write('.'))
         .pipe(gulp.dest(outputPath));
+});
+
+gulp.task('compile-ng2', function() {
+    return gulp.src('src/coe/coe.ts')
+        .pipe(webpack( require('./webpack.config.js') ))
+        .pipe(gulp.dest('dist/'));
 });
 
 // Copy important bower files to destination
@@ -117,7 +124,7 @@ gulp.task('copy-js', function () {
 gulp.task('init', ['install-ts-defs', 'install-bower-components']);
 
 //Build App
-gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css',
+gulp.task('build', ['compile-ts', 'compile-ng2', 'copy-js', 'copy-html', 'copy-css',
   'copy-bower', 'copy-fonts','copy-custom']);
 
 // Package app binaries
