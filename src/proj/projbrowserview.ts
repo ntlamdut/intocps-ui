@@ -326,6 +326,18 @@ export class BrowserController {
                     result.img = 'into-cps-icon-rtt-html';
                 }
             }
+            else if (path.endsWith('.dse.json')) {
+                //merge DSE and folder
+                parent.img = 'into-cps-icon-projbrowser-dse';
+                (<any>parent).dseConfig = path;
+                parent.opensInMainWindow = true;
+                parent.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openDseView((<any>item).dseConfig);
+                };
+                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
+                parent.refresh();
+                return null;
+            }            
             else if (path.endsWith('.coe.json')) {
                 //merge MultiModelConfig and folder
                 parent.img = 'into-cps-icon-projbrowser-config';
