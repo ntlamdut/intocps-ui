@@ -3,11 +3,10 @@
 
 'use strict';
 
-// Locations 
+// file globs 
 var outputPath = 'dist/',
     htmlSrcs = ['src/**/*.html'],
     jsSrcs = 'src/**/*.js',
-    lintTsSrcs = ['src/**/*.ts'],
     tsSrcs = ['src/**/*.ts', 'typings/browser/**/*.ts'],
     bowerFolder = 'bower_components',
     resourcesFolder = 'src/resources',
@@ -19,12 +18,11 @@ var outputPath = 'dist/',
     customResources= [resourcesFolder+'/into-cps/**/*']
     ;
 
-// Tools.
+// Gulp plugins
 var gulp = require('gulp'),
     ts = require('gulp-typescript'),
     sourcemap = require('gulp-sourcemaps'),
     tsProject = ts.createProject('tsconfig.json'),
-    lint = require('gulp-tslint'),
     del = require('del'),
     mainBowerFiles = require('main-bower-files'),
     filter = require('gulp-filter'),
@@ -56,11 +54,6 @@ gulp.task("clean", function () {
     return del([
     outputPath
     ]);
-});
-
-// Lint TS (check for rule violations)
-gulp.task("lint-ts", function () {
-    return gulp.src(lintTsSrcs).pipe(lint()).pipe(lint.report('prose', { emitError: false }));
 });
 
 // Compile TS->JS with sourcemaps. Also move it into the outputfolder
@@ -104,8 +97,8 @@ gulp.task('copy-css', function () {
 // Copy html to app folder
 gulp.task('copy-html', function () {
     gulp.src(htmlSrcs)
-    .pipe(htmlhint()) // validate html
-   //.pipe(htmlhint.failReporter()) // fail on invalid html
+    .pipe(htmlhint())
+    .pipe(htmlhint.reporter())
     .pipe(gulp.dest(outputPath));
 });
 
