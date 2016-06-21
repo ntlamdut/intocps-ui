@@ -1,9 +1,9 @@
-//TODO: DUMMY REFERENCE UNTIL CHART MAKES A TYPESCRIPT DEFINITION FILE!
-///<reference path="Chart.d.ts"/>
 ///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
+
+declare var Plotly:any;
 
 import * as Main from  "../settings/settings"
 import {IntoCpsApp} from  "../IntoCpsApp"
@@ -34,8 +34,6 @@ export class CoeController extends IViewController {
     remote: Electron.Remote;
     dialog: Electron.Dialog;
 
-    liveStreamCanvas: HTMLCanvasElement;
-    canvasContext: CanvasRenderingContext2D;
     liveChart: any;
 
     enableDebugInfo: boolean = true;
@@ -173,36 +171,31 @@ export class CoeController extends IViewController {
 
 
     initializeChart() {
-        this.liveStreamCanvas = <HTMLCanvasElement>document.getElementById("liveStreamCanvas");
-        this.canvasContext = this.liveStreamCanvas.getContext("2d");
-        var lineData: any = {
-            labels: [],
-            datasets: []
-        };
-        //Creating labels every 10th number
-        for (var i = 1; i <= 100; i++) {
-            if (i % 10 == 0)
-                lineData.labels.push(i);
-            else
-                lineData.labels.push("");
-        }
-        this.liveChart = new Chart(this.canvasContext, {
-            type: "line",
-            data: lineData,
+        var d3 = Plotly.d3;
 
-            options: {
+        var gd3 = d3.select('#graphContainer')
+            .style({
+                width: '100%',
+                height: '80vh'
+            });
 
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            suggestedMin: -3,
-                            suggestedMax: 3
-                        }
-                    }]
-                }
+        var gd = gd3.node();
+
+        var layout = {
+            xaxis: {
+                showgrid: false,
+                zeroline: false
+            },
+            yaxis: {
+                showline: false
             }
-        });
+        };
 
+        Plotly
+            .newPlot(gd, [], layout, {showLink: false})
+            .then((element:any) => this.liveChart = element);
+
+        window.addEventListener('resize', e => Plotly.Plots.resize(gd));
     }
 
 
@@ -265,80 +258,19 @@ export class CoeController extends IViewController {
         }
     }
 
-
-
-    get_random_color() {
-        function c() {
-            var hex = Math.floor(Math.random() * 256).toString(16);
-            return ("0" + String(hex)).substr(-2); // pad with zero
-        }
-        return "#" + c() + c() + c();
-    }
-
-
     initializeChartDatasets(coSimConfig: CoSimulationConfig): string[] {
-        let self = this;
         var ids: string[] = [];
 
         coSimConfig.livestream.forEach((value, index) => {
-            value.forEach(sv => {
-                ids.push(Serializer.getIdSv(index, sv));
-            });
+            value.forEach(sv => ids.push(Serializer.getIdSv(index, sv)));
         });
 
-        /* livestreams.forEach((value: Collections.LinkedList<String>, index: String, map: Map<String, Collections.LinkedList<String>>) => {
-     
-             value.forEach((id) => {
-                 ids.push(index + "." + id);
-             });
-     
-         });
-    */
-
-        var datasets: any[] = [];
-        $.each(ids, function (i, id) {
-            let color = self.get_random_color();
-            datasets.push({
-                label: id,
-                // Boolean - if true fill the area under the line
-                fill: false,
-                // String - the color to fill the area under the line with if fill is true
-                backgroundColor: color/*"rgba(220,220,220,0.2)"*/,
-                // The properties below allow an array to be specified to change the value of the item at the given index
-                // String or array - Line color
-                borderColor: color/*"rgba(220,220,220,1)"*/,
-                // String - cap style of the line. See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap
-                borderCapStyle: 'butt',
-                // Array - Length and spacing of dashes. See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setLineDash
-                borderDash: [],
-                // Number - Offset for line dashes. See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineDashOffset
-                borderDashOffset: 0.0,
-                // String - line join style. See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin
-                borderJoinStyle: 'miter',
-                // String or array - Point stroke color
-                pointBorderColor: "rgba(220,220,220,1)",
-                // String or array - Point fill color
-                pointBackgroundColor: "#fff",
-                // Number or array - Stroke width of point border
-                pointBorderWidth: 1,
-                // Number or array - Radius of point when hovered
-                pointHoverRadius: 5,
-                // String or array - point background color when hovered
-                pointHoverBackgroundColor: "rgba(220,220,220,1)",
-                // Point border color when hovered
-                pointHoverBorderColor: "rgba(220,220,220,1)",
-                // Number or array - border width of point when hovered
-                pointHoverBorderWidth: 2,
-
-                // Tension - bezier curve tension of the line. Set to 0 to draw straight Wlines connecting points
-                tension: 0.1,
-                // The actual data
-                data: [],
-            });
-            //    this.liveChart.data.datasets
+        this.liveChart.data = ids.map(id => {
+            return {name: id, y: []};
         });
 
-        this.liveChart.data.datasets = datasets;
+        Plotly.redraw(this.liveChart);
+
         console.info("Livestream ids:");
         console.info(ids);
         return ids;

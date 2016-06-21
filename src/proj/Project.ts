@@ -111,6 +111,17 @@ export class Project implements IProject {
         return fullpath;
     }
 
+    public createDse(name: String, jsonContent: String): String {
+        let path = Path.normalize(this.rootPath + "/" + Project.PATH_DSE + "/" + name);
+
+        fs.mkdirSync(path);
+
+        let fullpath = Path.normalize(path + "/" + name + ".dse.json");
+
+        fs.writeFileSync(fullpath, jsonContent == null ? "{}" : jsonContent, "UTF-8");
+
+        return fullpath;
+    }
 
     public createCoSimConfig(multimodelConfigPath: string, name: String, jsonContent: String): string {
         let mmDir = Path.dirname(multimodelConfigPath);
