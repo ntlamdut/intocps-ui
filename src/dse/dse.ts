@@ -7,29 +7,22 @@ import Path = require('path');
 
 export class DseController extends IViewController {
 
-    private doNotPressButton: HTMLButtonElement;
+    private jsonPath: String;
 
-    public initialize() {
-        IntoCpsApp.setTopName("Design Stace Exploration");
+    public initialize(source:SourceDom) {
+        IntoCpsApp.setTopName("Design Space Exploration");
+        this.jsonPath = source.getPath();
     }
 
     constructor(div:HTMLDivElement){
       super(div);
     }
 
-    public load(source:SourceDom){
-      // process configuration source here
-      // as a first step, we recommend extracting the JSON data into a
-      // type-safe map
-      //var divProgress = <HTMLInputElement>document.getElementById("blah");
-      //divProgress.innerText = "Coming even sooner than you think";
-    }
-
     public launchDse(){
         var spawn = require('child_process').spawn;
         let installDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
-        let scriptFile = Path.join(installDir, "dse", "scripts", "test.py"); 
-        var child = spawn("python", [scriptFile, "hello", "world"], {
+        let scriptFile = Path.join(installDir, "dse", "test.py"); 
+        var child = spawn("python", [scriptFile, this.jsonPath], {
             detached: true,
             shell: false,
             // cwd: childCwd
