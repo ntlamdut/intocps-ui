@@ -95,8 +95,8 @@ export class CoeController extends IViewController {
                 console.info("CC:"); console.info(cc);
                 this.coSimConfig = cc;
                 this.bindData();
-                this.startTimeUI = new TextInputNonLoad(this.startTimeContainer, this.coSimConfig.startTime != null ? this.coSimConfig.startTime + "" : "0", this.startTimeChanged.bind(this), new TextInputIds());
-                this.endTimeUI = new TextInputNonLoad(this.endTimeContainer, this.coSimConfig.endTime != null ? this.coSimConfig.endTime + "" : "1", this.endTimeChanged.bind(this), new TextInputIds());
+                this.startTimeUI = new TextInputNonLoad(this.startTimeContainer, this.coSimConfig.startTime != null ? this.coSimConfig.startTime + "" : "0", this.startTimeChanged.bind(this), new TextInputIds("start-time-text","start-time-editOkButton","start-time-cancelButton"));
+                this.endTimeUI = new TextInputNonLoad(this.endTimeContainer, this.coSimConfig.endTime != null ? this.coSimConfig.endTime + "" : "1", this.endTimeChanged.bind(this), new TextInputIds("end-time-text","end-time-editOkButton","end-time-cancelButton"));
                 this.algorithmSelectUI = new DropDownNonLoad(this.dropDownContainer, ["Fixed step"], this.coSimConfig.algorithm != null ? "Fixed step" : null);
                 this.algorithmSelectUI.setSelectionChangedHandler(this.algorithmOnChange.bind(this));
                 if (this.coSimConfig.algorithm != null) {
