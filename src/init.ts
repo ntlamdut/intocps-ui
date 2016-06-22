@@ -167,12 +167,38 @@ menuHandler.createDse = (path) => {
     });
 };
 
+menuHandler.createDsePlain = () => {
+    $(init.mainView).load("dse/dse.html", (event: JQueryEventObject) => {
+        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
+        if (project != null) {
+            let name = "new";
+            let content = "{}";
+            let dsePath = project.createDse("dse-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            menuHandler.openDseView(dsePath + "");
+        }
+    });
+};
+
 menuHandler.createMultiModel = (path) => {
     $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = Path.basename(path, ".sysml.json");
             let content = fs.readFileSync(path, "UTF-8");
+            let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
+            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            menuHandler.openMultiModel(mmPath + "");
+        }
+    });
+};
+
+menuHandler.createMultiModelPlain = () => {
+    $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
+        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
+        if (project != null) {
+            let name = "new";
+            let content = "{}";
             let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
             IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
             menuHandler.openMultiModel(mmPath + "");

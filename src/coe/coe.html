@@ -1,8 +1,4 @@
-
-
-
-
-<!--
+<!DOCTYPE html>
 <style>
     /*h3{
         display: flex;
@@ -23,7 +19,11 @@
 </div>
 <br/>
 <div id="coe-status">
-
+    <!-- COE connection information will be added here at runtime -->
+    <!--  <div class="alert alert-success" role="alert">...</div>
+            <div class="alert alert-info" role="alert">...</div>
+            <div class="alert alert-warning" role="alert">...</div>
+            <div class="alert alert-danger" role="alert">...</div> -->
 </div>
 
 
@@ -32,33 +32,37 @@
         <h3 class="panel-title">Configuration</h3>
     </div>
     <div class="panel-body">
+        <!-- all config items here-->
         <div class="form-group">
             <div>
                 <label for="text">Start time:</label>
                 <div class="input-group" id="startTime">
-                    <input type="text" class="form-control bfh-number input-sm" value="0" data-min="0" data-wrap="true" id="text">
-                    <span class="input-group-btn" id="fmuSpanBts">
-                <button type="button" class="btn btn-default btn-sm" id="editOkButton">
-                        <span id="editOkButton-icon" class="glyphicon"></span>
+                    <input type="text" class="form-control bfh-number input-sm" value="0" data-min="0" data-wrap="true" id="start-time-text">
+                    <span class="input-group-btn" id="start-time-fmuSpanBts">
+                <button type="button" class="btn btn-default btn-sm" id="start-time-editOkButton">
+                        <span id="start-time-editOkButton-icon" class="glyphicon"></span>
                     </button>
-                    <button type="button" class="btn btn-default btn-sm" id="cancelButton">
+                    <button type="button" class="btn btn-default btn-sm" id="start-time-cancelButton">
                         <span class="glyphicon glyphicon-remove"></span>
                 </button>
                     </span>
+                    <!--<input type="text" id="input-sim-time-start" class="form-control bfh-number input-sm" value="0" data-min="0" data-wrap="true">-->
                 </div>
             </div>
             <div>
                 <label>End time:</label>
                 <div class="input-group" id="endTime">
-                    <input type="text" class="form-control bfh-number input-sm" value="10" data-min="0.00000000000001" data-wrap="true" id="text">
-                    <span class="input-group-btn" id="fmuSpanBts">
-                <button type="button" class="btn btn-default btn-sm" id="editOkButton">
-                        <span id="editOkButton-icon" class="glyphicon"></span>
+                    <input type="text" class="form-control bfh-number input-sm" value="10" data-min="0.00000000000001" data-wrap="true" id="end-time-text">
+                    <span class="input-group-btn" id="end-time-fmuSpanBts">
+                <button type="button" class="btn btn-default btn-sm" id="end-time-editOkButton">
+                        <span id="end-time-editOkButton-icon" class="glyphicon"></span>
                     </button>
-                    <button type="button" class="btn btn-default btn-sm" id="cancelButton">
+                    <button type="button" class="btn btn-default btn-sm" id="end-time-cancelButton">
                         <span class="glyphicon glyphicon-remove"></span>
                 </button>
                     </span>
+                    <!--<input type="text" id="input-sim-time-end" class="form-control bfh-number input-sm" value="10" data-min="0.00000000000001"
+                    data-wrap="true">-->
                 </div>
             </div>
         </div>
@@ -96,6 +100,17 @@
             </div>
         </div>
 
+        <!--<div class="input-group">
+                <label>Type:</label>
+                <input type="text" class="form-control bfh-number input-sm" value="fixed">
+            </div>
+            <div class="input-group">
+                <label>Size:</label>
+                <input type="text" id="input-sim-algorithm-fixed-size" class="form-control bfh-number input-sm" value="0.001" data-min="0.00000000000001"
+                    data-wrap="true">
+            </div>-->
+
+
     </div>
 </div>
 
@@ -113,20 +128,25 @@
 
         <div class="progress">
 
-            <div id="coe-progress" class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:0%"
-                aria-valuemax="100" style="min-width: 2em;">
+            <div id="coe-progress" class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em;width:0%">
                 0%
             </div>
         </div>
 
         <div id="simulation-info"></div>
-        <div>
-            <canvas id="liveStreamCanvas"></canvas>
-        </div>
+        <!-- debug and error messages will be added here at runtime-->
 
+        <div id="graphContainer"></div>
     </div>
 </div>
 
-<script src="bower_components/Chart.js"></script>
 
--->
+<!--Callback text panel-->
+<!--<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Simulation Callback</h3>
+    </div>
+    <div class="panel-body">
+        <div id="coe-callback"></div>
+    </div>
+</div>-->

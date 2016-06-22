@@ -17,7 +17,7 @@ export class Project implements IProject {
 
     PATH_FMUS: String = "FMUs";
     PATH_MODELS: String = "Models";
-    PATH_MULTI_MODELS: String = "Multi-models";
+    static PATH_MULTI_MODELS: String = "Multi-models";
     static PATH_DSE: String = "Design Space Explorations";
     //PATH_CONNECTIONS: String = "SysML Connections";
     static PATH_SYSML: String = "SysML";
@@ -49,7 +49,7 @@ export class Project implements IProject {
     //TODO: replace with proper folder struct
     public save() {
 
-        let folders = [Project.PATH_SYSML, Project.PATH_DSE, this.PATH_FMUS, this.PATH_MODELS, this.PATH_MULTI_MODELS,
+        let folders = [Project.PATH_SYSML, Project.PATH_DSE, this.PATH_FMUS, this.PATH_MODELS, Project.PATH_MULTI_MODELS,
             Project.PATH_TEST_DATA_GENERATION, Project.PATH_MODEL_CHECKING];
 
         for (var i = 0; folders.length > i; i++) {
@@ -100,7 +100,7 @@ export class Project implements IProject {
     }
 
     public createMultiModel(name: String, jsonContent: String): String {
-        let path = Path.normalize(this.rootPath + "/" + this.PATH_MULTI_MODELS + "/" + name);
+        let path = Path.normalize(this.rootPath + "/" + Project.PATH_MULTI_MODELS + "/" + name);
 
         fs.mkdirSync(path);
 
@@ -111,6 +111,17 @@ export class Project implements IProject {
         return fullpath;
     }
 
+    public createDse(name: String, jsonContent: String): String {
+        let path = Path.normalize(this.rootPath + "/" + Project.PATH_DSE + "/" + name);
+
+        fs.mkdirSync(path);
+
+        let fullpath = Path.normalize(path + "/" + name + ".dse.json");
+
+        fs.writeFileSync(fullpath, jsonContent == null ? "{}" : jsonContent, "UTF-8");
+
+        return fullpath;
+    }
 
     public createCoSimConfig(multimodelConfigPath: string, name: String, jsonContent: String): string {
         let mmDir = Path.dirname(multimodelConfigPath);

@@ -11,6 +11,7 @@ export class IntoCpsAppMenuHandler {
     deInitialize: () => boolean;
     
     createDse: (path: string) => void;
+    createDsePlain: (path: string) => void;
     createMultiModel: (path: string) => void;
     createCoSimConfiguration: (path: string) => void;
 
@@ -21,4 +22,5 @@ export class IntoCpsAppMenuHandler {
 
     deletePath: (path: string)=>void;
     openWithSystemEditor: (path: string)=>void;
+    createMultiModelPlain: () =>void;
 }

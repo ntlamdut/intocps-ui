@@ -35,7 +35,8 @@ var gulp = require('gulp'),
     electron = require('gulp-electron'),
     packager = require('electron-packager'),
     packageJSON = require('./package.json'),
-    webpack = require('webpack-stream');
+    webpack = require('webpack-stream'),
+	htmlhint = require("gulp-htmlhint");
 
 // Tasks
 
