@@ -74,10 +74,9 @@ gulp.task("compile-ts", function () {
         .pipe(gulp.dest(outputPath));
 });
 
+// Compile Angular 2 application
 gulp.task('compile-ng2', function() {
-    return gulp.src('src/coe/coe.ts')
-        .pipe(webpack( require('./webpack.config.js') ))
-        .pipe(gulp.dest('dist/'));
+    return webpack(require('./webpack.config.js'));
 });
 
 // Copy important bower files to destination
@@ -202,6 +201,12 @@ gulp.task('watch', function () {
     gulp.watch(tsSrcs, ['compile-ts']);
     gulp.watch(cssSrcs, ['copy-css']);
     gulp.watch(customResources, ['copy-custom']);
+
+    // Watch Angular 2 application
+    var config = require('./webpack.config.js');
+    config.watch = true;
+
+    return webpack(config);
 });
 
 // Default task 
