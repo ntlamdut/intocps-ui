@@ -1,5 +1,11 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 
+interface MyWindow extends Window {
+    ng2app: AppComponent;
+}
+
+declare var window: MyWindow;
+
 // Main application component.
 // Handles routing between the pages that use Angular 2.
 

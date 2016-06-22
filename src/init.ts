@@ -15,12 +15,16 @@ import * as CustomFs from "./custom-fs";
 import {IProject} from "./proj/IProject";
 import * as SystemUtil from "./SystemUtil";
 import { bootstrap }    from '@angular/platform-browser-dynamic';
-import {AppComponent} from './coe/components/app.component';
+import {AppComponent} from './components/app.component';
 
 import fs = require("fs");
 import Path = require('path');
 
+interface MyWindow extends Window {
+    ng2app: AppComponent;
+}
 
+declare var window: MyWindow;
 
 import * as Menus from "./menus";
 
@@ -71,6 +75,7 @@ class InitializationController {
         this.layout.load("main", "main.html", "", () => {
             this.mainView = (<HTMLDivElement>document.getElementById(this.mainViewId));
 
+            // Start Angular 2 application
             bootstrap(AppComponent);
         });
         this.layout.load("left", "proj/projbrowserview.html", "", () => {
