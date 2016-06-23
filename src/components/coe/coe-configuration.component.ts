@@ -3,11 +3,6 @@ import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfi
 
 @Component({
     selector: "coe-configuration",
-    styles: [`
-    label {
-        width: 100%;
-    }
-    `],
     template: `
     <div class="panel panel-default">
         <div class="panel-heading"><h3 class="panel-title">Configuration</h3></div>
@@ -33,7 +28,6 @@ import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfi
                 <div class="form-group">
                     <label>Livestream Configuration</label>
                 </div>
-                
                 
                 <button type="submit" class="btn btn-default" [disabled]="!configForm.form.valid">Save</button>
             </form>
