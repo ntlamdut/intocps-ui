@@ -15,8 +15,17 @@ import {LineChartComponent} from "../shared/line-chart.component";
     ],
     template: `
     <coe-configuration [config]="config"></coe-configuration>
-    <div>{{coeSimulation.progress}}</div>
-    <line-chart [datasets]="coeSimulation.datasets"></line-chart>
+   
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3 class="panel-title">Simulation</h3></div>
+        <div class="panel-body">
+            <button (click)="runSimulation()" class="btn btn-default btn-sm glyphicon glyphicon-play">Simulate</button>
+
+            <progress [value]="coeSimulation.progress" max="100"></progress>
+    
+            <line-chart [datasets]="coeSimulation.datasets"></line-chart>
+        </div>
+    </div>
 `
 })
 export class CoeComponent implements OnInit {

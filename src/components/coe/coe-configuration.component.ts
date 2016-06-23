@@ -4,9 +4,10 @@ import {FileSystemService} from "../shared/file-system.service";
 @Component({
     selector: "coe-configuration",
     template: `
-    <span *ngIf="!config">Loading ...</span>
-    <div *ngIf="config">
-        <h2>Config</h2>
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3 class="panel-title">Configuration</h3></div>
+        <div class="panel-body">
+        </div>
     </div>
 `
 })
