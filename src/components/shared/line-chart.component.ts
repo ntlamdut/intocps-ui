@@ -12,6 +12,9 @@ export class LineChartComponent implements OnInit {
     private redrawCooldown:boolean = false;
 
     private layout = {
+        legend: {
+            orientation: "h"
+        },
         xaxis: {
             showgrid: false,
             zeroline: false
@@ -19,6 +22,10 @@ export class LineChartComponent implements OnInit {
         yaxis: {
             showline: false
         }
+    };
+
+    private options = {
+        displaylogo: false
     };
 
     @ViewChild('container')
@@ -39,7 +46,7 @@ export class LineChartComponent implements OnInit {
             .node();
 
         Plotly
-            .newPlot(node, [], this.layout)
+            .newPlot(node, [], this.layout, this.options)
             .then(() => this.loading = false);
 
         window.addEventListener('resize', e => Plotly.Plots.resize(node));
