@@ -40,12 +40,12 @@ export class CoeComponent {
         let project = IntoCpsApp.getInstance().getActiveProject();
 
         CoSimulationConfig.parse(path, project.getRootFilePath(), project.getFmusPath())
-            .then(config => this.config = config);
+            .then(config => this.zone.run(() => this.config = config));
     }
 
     config:any;
 
-    constructor(private coeSimulation:CoeSimulationService) {
+    constructor(private coeSimulation:CoeSimulationService, private zone:NgZone) {
 
     }
 
