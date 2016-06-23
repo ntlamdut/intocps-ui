@@ -101,7 +101,7 @@ export class MmController extends IViewController {
 
     private loadComponents(multiModelConfig: MultiModelConfig, containers: MmContainers) {
         if (containers & MmContainers.Keys) {
-            $(this.multiModelFmusDiv).load("multimodel/fmu-keys/fmu-keys.html", (event: JQueryEventObject) => {
+            $(this.multiModelFmusDiv).load("multimodel/fmu-keys/fmu-keys.html #fmu-keys", (event: JQueryEventObject) => {
                 this.fmuKeysElement = new FmuKeys(<HTMLDivElement>this.multiModelFmusDiv.firstChild);
                 this.fmuKeysElement.addData(this.mm);
                 this.fmuKeysElement.setOnChangeHandler(this.onKeyChange.bind(this));

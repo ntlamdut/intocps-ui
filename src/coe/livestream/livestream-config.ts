@@ -29,7 +29,7 @@ export class LivestreamConfiguration {
         this.variablesListUL = <HTMLUListElement>this.container.querySelector("#" + this.variablesULId);
         let self = this;
         this.instances.forEach(element => {
-            $('<div>').load("./multimodel/connections/list-element.html", function (event: JQueryEventObject) {
+            $('<div>').load("./multimodel/connections/list-element.html #list-elem", function (event: JQueryEventObject) {
                 let html: HTMLLinkElement = <HTMLLinkElement>(<HTMLUListElement>this).firstChild;
                 let instanceUI = new InstanceListElement<Configs.Instance>(html,
                     "" + element.fmu.name + "." + element.name,
@@ -44,7 +44,7 @@ export class LivestreamConfiguration {
     private onInstanceSelect(element: InstanceListElement<Configs.Instance>) {       
         let addInputVariable = (variable: Configs.ScalarVariable, selected: boolean) => {
             let self = this;
-            $('<div>').load("multimodel/connections/input.html", function (event: BaseJQueryEventObject) {
+            $('<div>').load("multimodel/connections/input.html #input-elem", function (event: BaseJQueryEventObject) {
                 let html: HTMLLinkElement = <HTMLLinkElement>(<HTMLDivElement>this).firstChild;
                 self.variablesListUL.appendChild(html);
                 let output: CheckboxInstanceListElement<Configs.ScalarVariable> = new CheckboxInstanceListElement(html, variable.name, self.onVariableSelect.bind(self), variable);
