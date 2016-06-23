@@ -1,5 +1,8 @@
 import {Component, Input} from "@angular/core";
-import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
+import {
+    CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm,
+    VariableStepAlgorithm
+} from "../../intocps-configurations/CoSimulationConfig";
 
 @Component({
     selector: "coe-configuration",
@@ -20,9 +23,23 @@ import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfi
         
                 <div class="form-group">
                     <label>Algorithm</label>
-                    <select class="form-control" required>
-                        <option *ngFor="let option of options" [value]="option">{{option}}</option>
+                    <select name="algorithm" [(ngModel)]="config.algorithm" class="form-control" required>
+                        <option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm.name}}</option>
                     </select>
+                </div>
+                
+                <div *ngIf="config.algorithm.name == 'Fixed step'" class="form-group">
+                    <label>Step size</label>
+                    <input name="stepSize" [(ngModel)]="config.algorithm.size" class="form-control" required>
+                </div>
+                
+                <div *ngIf="config.algorithm.name == 'Variable step'" class="form-group">
+                    <label>Initial step size</label>
+                    <input name="initStepSize" [(ngModel)]="config.algorithm.initSize" class="form-control" required>
+                    <label>Minimum step size</label>
+                    <input name="minStepSize" [(ngModel)]="config.algorithm.sizeMin" class="form-control" required>
+                    <label>Maximum step size</label>
+                    <input name="maxStepSize" [(ngModel)]="config.algorithm.sizeMax" class="form-control" required>
                 </div>
                 
                 <div class="form-group">
@@ -36,9 +53,34 @@ import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfi
 `
 })
 export class CoeConfigurationComponent {
-    @Input()
-    config:CoSimulationConfig;
+    private _config:CoSimulationConfig;
 
-    submitted = false;
-    onSubmit() { this.submitted = true; }
+    @Input()
+    set config(config:CoSimulationConfig) {
+        this._config = config;
+
+        if (!config) return;
+
+        let algorithmConstructors = [
+            FixedStepAlgorithm,
+            VariableStepAlgorithm
+        ];
+
+        // Create an array of the algorithm from the coe config and a new instance of all other algorithms
+        this.algorithms = algorithmConstructors
+            .map(Algorithm =>
+                config.algorithm instanceof Algorithm
+                    ? config.algorithm
+                    : new Algorithm()
+            );
+    }
+    get config():CoSimulationConfig {
+        return this._config;
+    }
+
+    algorithms:Array<ICoSimAlgorithm> = [];
+
+    onSubmit() {
+
+    }
 }
