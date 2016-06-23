@@ -27,6 +27,7 @@ interface MyWindow extends Window {
 declare var window: MyWindow;
 
 import * as Menus from "./menus";
+import {provideForms, disableDeprecatedForms} from "@angular/forms";
 
 
 class InitializationController {
@@ -76,7 +77,7 @@ class InitializationController {
             this.mainView = (<HTMLDivElement>document.getElementById(this.mainViewId));
 
             // Start Angular 2 application
-            bootstrap(AppComponent);
+            bootstrap(AppComponent, [disableDeprecatedForms(), provideForms()]);
         });
         this.layout.load("left", "proj/projbrowserview.html", "", () => {
             browserController.initialize();
