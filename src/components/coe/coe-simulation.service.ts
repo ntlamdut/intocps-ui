@@ -144,7 +144,7 @@ export class CoeSimulationService {
                     else if (value == "false") value = 0;
 
                     datasets
-                        .find(dataset => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`)
+                        .find((dataset:any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`)
                         .y.push(value);
                 });
             });

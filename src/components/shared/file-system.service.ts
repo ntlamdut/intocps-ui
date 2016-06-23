@@ -1,5 +1,6 @@
 import {Injectable, NgZone} from "@angular/core";
 import * as fs from "fs";
+import {PromiseCompleter} from "@angular/core/src/facade/promise";
 
 // This service wraps the Node.JS filesystem API.
 
@@ -10,7 +11,7 @@ export class FileSystemService {
     }
 
     // Wrap the filesystem API in a promise and the Angular zone
-    private wrap(fn:Function) {
+    private wrap(fn:(resolve:Function, reject:Function) => void) {
         return new Promise((resolve, reject) => {
             this.zone.run(() => fn(resolve, reject));
         });
