@@ -23,7 +23,11 @@ import IntoCpsApp from "../../IntoCpsApp";
         <div class="panel-body">
             <button (click)="runSimulation()" class="btn btn-default btn-sm glyphicon glyphicon-play">Simulate</button>
 
-            <progress [value]="coeSimulation.progress" max="100"></progress>
+            <div class="progress">
+              <div class="progress-bar" [style.width]="coeSimulation.progress + '%'" style="min-width: 2em">
+                {{coeSimulation.progress}}%
+              </div>
+            </div>
     
             <line-chart [datasets]="coeSimulation.datasets"></line-chart>
         </div>
