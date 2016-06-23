@@ -6,7 +6,7 @@ import {Fmu} from "../../coe/fmi";
 import {CoeConfig} from "../../coe/CoeConfig";
 import * as Path from "path";
 import {BehaviorSubject} from "rxjs/Rx";
-import {Injectable} from "@angular/core";
+import {Injectable, NgZone} from "@angular/core";
 
 @Injectable()
 export class CoeSimulationService {
@@ -22,7 +22,8 @@ export class CoeSimulationService {
 
     constructor(private http:Http,
                 private settings:SettingsService,
-                private fileSystem:FileSystemService) {
+                private fileSystem:FileSystemService,
+                private zone:NgZone) {
 
     }
 
@@ -114,8 +115,8 @@ export class CoeSimulationService {
 
         this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
 
-        this.webSocket.addEventListener("error", (event:ErrorEvent) => console.error(event));
-        this.webSocket.addEventListener("message", (event:MessageEvent) => this.onMessage(event));
+        this.webSocket.addEventListener("error", event => console.error(event));
+        this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
 
         var data = JSON.stringify({ startTime: this.config.startTime, endTime: this.config.endTime });
 
