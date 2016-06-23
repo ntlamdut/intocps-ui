@@ -11,7 +11,7 @@ import {Injectable, NgZone} from "@angular/core";
 @Injectable()
 export class CoeSimulationService {
     progress:number = 0;
-    datasets:BehaviorSubject<any> = new BehaviorSubject([]);
+    datasets:BehaviorSubject<Array<any>> = new BehaviorSubject([]);
 
     private webSocket:WebSocket;
     private sessionId:number;
@@ -41,7 +41,7 @@ export class CoeSimulationService {
     }
 
     private initializeDatasets() {
-        let datasets = this.datasets.getValue();
+        let datasets:Array<any> = [];
 
         this.config.livestream.forEach((value:any, index:any) => {
             value.forEach((sv:any) => {
@@ -155,6 +155,7 @@ export class CoeSimulationService {
 
     private downloadResults() {
         this.progress = 100;
+        this.webSocket.close();
 
         this.http.get(`http://${this.url}/result/${this.sessionId}`)
             .subscribe(
