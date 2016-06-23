@@ -13,6 +13,7 @@ var outputPath = 'dist/',
     resourcesFolder = 'src/resources',
     typingsFolder = 'typings',
     cssSrcs = [
+        'src/styles.css',
         bowerFolder + '/bootstrap/dist/css/bootstrap.css',
         resourcesFolder + '/w2ui-1.5/w2ui.min.css'],
     bowerSrcs = "",
