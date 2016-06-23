@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input, OnInit, NgZone} from "@angular/core";
 import {FileSystemService} from "../shared/file-system.service";
 import {CoeSimulationService} from "./coe-simulation.service";
 import {CoeConfigurationComponent} from "./coe-configuration.component";
