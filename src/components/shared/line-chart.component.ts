@@ -1,6 +1,7 @@
 import {OnInit, Component, ViewChild, ElementRef, Input} from "@angular/core";
+import {BehaviorSubject} from "rxjs/Rx";
 
-declare var Plotly:any;
+declare let Plotly:any;
 
 @Component({
     selector: 'line-chart',
@@ -9,7 +10,6 @@ declare var Plotly:any;
 export class LineChartComponent implements OnInit {
     private loading:boolean = true;
     private redrawCooldown:boolean = false;
-    private _datasets:Array<any> = [];
 
     private layout = {
         xaxis: {
@@ -25,16 +25,12 @@ export class LineChartComponent implements OnInit {
     containerElement:ElementRef;
 
     @Input()
-    set datasets(datasets:Array<any>) {
-        this._datasets = datasets;
-        this.redraw();
-    }
-    get datasets() {
-        return this._datasets;
+    set datasets(datasets:BehaviorSubject<any>) {
+        datasets.subscribe(datasets => this.redraw(datasets));
     }
 
     ngOnInit() {
-        var node = Plotly.d3
+        let node = Plotly.d3
             .select(this.containerElement.nativeElement)
             .style({
                 width: '100%',
@@ -49,14 +45,14 @@ export class LineChartComponent implements OnInit {
         window.addEventListener('resize', e => Plotly.Plots.resize(node));
     }
 
-    private redraw() {
+    private redraw(datasets:Array<any>) {
         if (this.loading) return;
-
-        this.containerElement.nativeElement.data = this.datasets;
 
         // Throttle redrawing to ~60 fps.
         if (this.redrawCooldown === false) {
             this.redrawCooldown = true;
+
+            this.containerElement.nativeElement.data = datasets;
 
             requestAnimationFrame(() => {
                 Plotly.redraw(this.containerElement.nativeElement);

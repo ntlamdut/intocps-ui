@@ -3,6 +3,8 @@ import {FileSystemService} from "../shared/file-system.service";
 import {CoeSimulationService} from "./coe-simulation.service";
 import {CoeConfigurationComponent} from "./coe-configuration.component";
 import {LineChartComponent} from "../shared/line-chart.component";
+import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
+import IntoCpsApp from "../../IntoCpsApp";
 
 @Component({
     selector: "coe",
@@ -28,21 +30,19 @@ import {LineChartComponent} from "../shared/line-chart.component";
     </div>
 `
 })
-export class CoeComponent implements OnInit {
+export class CoeComponent {
     @Input()
-    path:string;
+    set path(path:string) {
+        let project = IntoCpsApp.getInstance().getActiveProject();
+
+        CoSimulationConfig.parse(path, project.getRootFilePath(), project.getFmusPath())
+            .then(config => this.config = config);
+    }
 
     config:any;
 
-    constructor(private fileSystem:FileSystemService,
-                private coeSimulation:CoeSimulationService) {
+    constructor(private coeSimulation:CoeSimulationService) {
 
-    }
-
-    ngOnInit():any {
-        this.fileSystem
-            .readFile(this.path)
-            .then(content => this.config = JSON.parse(content));
     }
 
     runSimulation() {

@@ -11,7 +11,7 @@ import {Injectable, NgZone} from "@angular/core";
 @Injectable()
 export class CoeSimulationService {
     progress:number = 0;
-    datasets:BehaviorSubject<any>;
+    datasets:BehaviorSubject<any> = new BehaviorSubject([]);
 
     private webSocket:WebSocket;
     private sessionId:number;
@@ -32,8 +32,8 @@ export class CoeSimulationService {
         this.remoteCoe = this.settings.get(SettingKeys.COE_REMOTE_HOST);
         this.url = this.settings.get(SettingKeys.COE_URL);
 
-        var currentDir = Path.dirname(this.config.sourcePath);
-        var dateString = new Date().toLocaleString().replace(/\//gi, "-").replace(/,/gi, "").replace(/ /gi, "_").replace(/:/gi, "-");
+        let currentDir = Path.dirname(this.config.sourcePath);
+        let dateString = new Date().toLocaleString().replace(/\//gi, "-").replace(/,/gi, "").replace(/ /gi, "_").replace(/:/gi, "-");
         this.resultDir = Path.normalize(`${currentDir}/R_${dateString}`);
 
         this.initializeDatasets();
@@ -41,7 +41,7 @@ export class CoeSimulationService {
     }
 
     private initializeDatasets() {
-        var datasets: Array<any> = [];
+        let datasets = this.datasets.getValue();
 
         this.config.livestream.forEach((value:any, index:any) => {
             value.forEach((sv:any) => {
@@ -52,7 +52,7 @@ export class CoeSimulationService {
             });
         });
 
-        this.datasets = new BehaviorSubject(datasets);
+        this.datasets.next(datasets);
     }
 
     private createSession() {
@@ -60,9 +60,7 @@ export class CoeSimulationService {
 
         this.http.get(`http://${this.url}/createSession`)
             .subscribe((response:Response) => {
-                var data = response.json();
-
-                this.sessionId = data.sessionId;
+                this.sessionId = response.json().sessionId;
                 this.uploadFmus();
             }, error => console.error(error));
     }
@@ -75,7 +73,7 @@ export class CoeSimulationService {
             return;
         }
 
-        var formData = new FormData();
+        let formData = new FormData();
 
         this.config.multiModel.fmus.forEach((value:Fmu) => {
             this.fileSystem.readFile(value.path).then(content => {
@@ -97,7 +95,7 @@ export class CoeSimulationService {
     private initializeCoe() {
         this.progress = 50;
 
-        var data = new CoeConfig(this.config, this.remoteCoe).toJSON();
+        let data = new CoeConfig(this.config, this.remoteCoe).toJSON();
 
         this.fileSystem.mkdir(this.resultDir)
             .then(() => this.fileSystem.writeFile(Path.join(this.resultDir, "config.json"), data))
@@ -118,7 +116,7 @@ export class CoeSimulationService {
         this.webSocket.addEventListener("error", event => console.error(event));
         this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
 
-        var data = JSON.stringify({ startTime: this.config.startTime, endTime: this.config.endTime });
+        let data = JSON.stringify({ startTime: this.config.startTime, endTime: this.config.endTime });
 
         this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
             .then(() => {
@@ -131,8 +129,8 @@ export class CoeSimulationService {
     }
 
     private onMessage(event:MessageEvent) {
-        var rawData = JSON.parse(event.data);
-        var datasets = this.datasets.getValue();
+        let rawData = JSON.parse(event.data);
+        let datasets = this.datasets.getValue();
 
         Object.keys(rawData).forEach(fmuKey => {
             if (fmuKey.indexOf("{") !== 0) return;
@@ -140,7 +138,7 @@ export class CoeSimulationService {
             Object.keys(rawData[fmuKey]).forEach(instanceKey => {
 
                 Object.keys(rawData[fmuKey][instanceKey]).forEach(outputKey => {
-                    var value = rawData[fmuKey][instanceKey][outputKey];
+                    let value = rawData[fmuKey][instanceKey][outputKey];
 
                     if (value == "true") value = 1;
                     else if (value == "false") value = 0;
@@ -151,6 +149,8 @@ export class CoeSimulationService {
                 });
             });
         });
+
+        this.datasets.next(datasets);
     }
 
     private downloadResults() {
@@ -158,7 +158,7 @@ export class CoeSimulationService {
 
         this.http.get(`http://${this.url}/result/${this.sessionId}`)
             .subscribe(
-                response => this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/log.csv`), response.json()),
+                response => this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/log.csv`), response.text()),
                 error => console.error(error)
             );
     }
