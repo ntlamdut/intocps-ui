@@ -24,13 +24,8 @@ export class CoSimulationConfig implements ISerializable {
 
     //optional livestream outputs
     livestream: Map<Fmi.Instance, Fmi.ScalarVariable[]> = new Map<Fmi.Instance, Fmi.ScalarVariable[]>();
-    //TODO: algorithm
-    algorithm: ICoSimAlgorithm = new FixedStepAlgorithm(0.1);
-
-    //the start time
+    algorithm: ICoSimAlgorithm = new FixedStepAlgorithm();
     startTime: number = 0;
-
-    //the end time
     endTime: number = 10;
 
     toObject(): any {
@@ -110,31 +105,33 @@ export class CoSimulationConfig implements ISerializable {
     }
 }
 
-
-export interface ICoSimAlgorithm { }
+export interface ICoSimAlgorithm {
+    name:string;
+}
 
 export class FixedStepAlgorithm implements ICoSimAlgorithm {
-    // fixed - step
-    size: number = 0.1;
+    name:string = "Fixed step";
 
-    constructor(size?: number) {
-        if (size != null) {
-            this.size = size;
-        }
+    constructor(public size:number = 0.1) {
+
     }
 }
 
 export class VariableStepAlgorithm implements ICoSimAlgorithm {
+    name:string = "Variable step";
 
-    //var - step 
-    sizeMin: number;
-    sizeMax: number;
-    initSize: number;
-    constraints: VarStepConstraint[];
+    constructor(
+        public initSize:number = 0.1,
+        public sizeMin:number = 0.05,
+        public sizeMax:number = 0.2,
+        public constraints: VarStepConstraint[] = []
+    ) {
 
+    }
 }
 
-export enum VarStepConstraintType { ZeroCrossing, BoundedDifference, SamplingRate, FmuRequested };
+export enum VarStepConstraintType { ZeroCrossing, BoundedDifference, SamplingRate, FmuRequested }
+
 export class VarStepConstraint {
 
     type: VarStepConstraintType;
