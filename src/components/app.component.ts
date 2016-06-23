@@ -1,4 +1,9 @@
 import { Component, OnInit, NgZone } from '@angular/core';
+import {CoeConfigurationComponent} from "./coe/coe-configuration.component";
+import {FileSystemService} from "./shared/file-system.service";
+import {CoeComponent} from "./coe/coe.component";
+import {HTTP_PROVIDERS} from "@angular/http";
+import {SettingsService} from "./shared/settings.service";
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -11,13 +16,21 @@ declare var window: MyWindow;
 
 @Component({
     selector: 'app',
+    directives: [
+        CoeComponent
+    ],
+    providers: [
+        HTTP_PROVIDERS,
+        FileSystemService,
+        SettingsService
+    ],
     template: `
-        <h1 *ngIf="show === 'multiModel'">Multi model editor</h1>
-        <h1 *ngIf="show === 'coe'">COE simulation</h1>
-`
+        <div *ngIf="show === 'multiModel'">{{path}}</div>
+        <coe *ngIf="show === 'coe'" [path]="path"></coe>`
 })
 export class AppComponent implements OnInit {
-    private show:string = 'nothing';
+    private show:string;
+    private path:string;
 
     constructor(private zone:NgZone) {
 
@@ -29,14 +42,23 @@ export class AppComponent implements OnInit {
     }
 
     openCOE(path: string):void {
-        this.zone.run(() => this.show = 'coe');
+        this.zone.run(() => {
+            this.path = path;
+            this.show = 'coe';
+        });
     }
 
     openMultiModel(path: string):void {
-        this.zone.run(() => this.show = 'multiModel');
+        this.zone.run(() => {
+            this.path = path;
+            this.show = 'multiModel';
+        });
     }
 
     closeAll():void {
-        this.zone.run(() => this.show = '');
+        this.zone.run(() => {
+            this.path = '';
+            this.show = '';
+        });
     }
 }
