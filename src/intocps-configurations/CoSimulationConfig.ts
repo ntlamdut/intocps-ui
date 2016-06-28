@@ -1,18 +1,12 @@
-
 ///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
-
-import * as Collections from 'typescript-collections'
 import * as Fmi from "../coe/fmi"
 import {MultiModelConfig} from "./MultiModelConfig"
 import {Parser, Serializer} from "./Parser"
-
-import Path = require('path');
-import fs = require('fs');
-
+import * as fs from "fs"
 
 export class CoSimulationConfig implements ISerializable {
 
@@ -33,74 +27,57 @@ export class CoSimulationConfig implements ISerializable {
     }
 
     save(): Promise<void> {
-        let self = this;
-        return new Promise<void>(function (resolve, reject) {
+        return new Promise<void>((resolve, reject) => {
             try {
-                fs.writeFile(self.sourcePath, JSON.stringify(self.toObject()), function (err) {
-                    if (err !== null) {
-                        return reject(err);
-                    }
-                    resolve();
+                fs.writeFile(this.sourcePath, JSON.stringify(this.toObject()), error => {
+                    if (error)
+                        reject(error);
+                    else
+                        resolve();
                 });
-            } catch (e) {
-                reject(e);
+            } catch (error) {
+                reject(error);
             }
         });
     }
 
+    static create(path: string, projectRoot: string, fmuRootPath: string, data: any): Promise<CoSimulationConfig> {
+        return new Promise<CoSimulationConfig>((resolve, reject) => {
+            let parser:Parser = new Parser();
+            let mmPath:string = parser.parseMultiModelPath(data, projectRoot);
 
-    static create(path: string, projectRoot: string, fmuRootPath: string, jsonData: any): Promise<CoSimulationConfig> {
-        return new Promise<CoSimulationConfig>(function (resolveFinal, reject) {
-            let parser = new Parser();
-            var mmPath: string = parser.parseMultiModelPath(jsonData, projectRoot);
+            MultiModelConfig
+                .parse(mmPath, fmuRootPath)
+                .then(multiModel => {
+                    let config = new CoSimulationConfig();
 
-            console.info("Parsing mm from cc with: " + mmPath);
-            MultiModelConfig.parse(mmPath, fmuRootPath).then(mm => {
-                let cc = new CoSimulationConfig();
-                cc.projectRoot = projectRoot;
-                cc.multiModel = mm;
-                cc.sourcePath = path;
-                cc.startTime = parser.parseStartTime(jsonData) || 0;
-                cc.endTime = parser.parseEndTime(jsonData) || 10;
-                cc.livestream = parser.parseLivestream(jsonData, mm);
-                cc.algorithm = parser.parseAlgorithm(jsonData);
+                    config.projectRoot = projectRoot;
+                    config.multiModel = multiModel;
+                    config.sourcePath = path;
+                    config.startTime = parser.parseStartTime(data) || 0;
+                    config.endTime = parser.parseEndTime(data) || 10;
+                    config.livestream = parser.parseLivestream(data, multiModel);
+                    config.algorithm = parser.parseAlgorithm(data);
 
-                resolveFinal(cc);
-            }).catch(e => reject(e));
+                    resolve(config);
+                })
+                .catch(error => reject(error));
         });
     }
 
-    static parse(path: string, rojectRoot: string, fmuRootPath: string): Promise<CoSimulationConfig> {
-        let self = this;
-        return new Promise<CoSimulationConfig>(function (resolveFinal, reject) {
+    static parse(path: string, projectRoot: string, fmuRootPath: string): Promise<CoSimulationConfig> {
+        return new Promise<CoSimulationConfig>((resolve, reject) => {
+            fs.access(path, fs.R_OK, error => {
+                if (error) return reject(error);
 
+                fs.readFile(path, (error, content) => {
+                    if (error) return reject(error);
 
-            let checkFileExists = new Promise<Buffer>(function (resolve, reject) {
-                try {
-                    if (fs.accessSync(path, fs.R_OK)) {
-                        reject();
-                    }
-                    resolve();
-                } catch (e) {
-                    reject(e);
-                }
-            }).then(() =>
-                new Promise<Buffer>(function (resolve, reject) {
-                    fs.readFile(path, function (err, data) {
-                        if (err !== null) {
-                            return reject(err);
-                        }
-                        resolve(data);
-                    });
-                })).then((content) => {
-
-                    //console.log("Asynchronous read: " + content.toString());
-                    var jsonData = JSON.parse(content.toString());
-                    console.log(jsonData);
-
-                    self.create(path, rojectRoot, fmuRootPath, jsonData).then(mm => { resolveFinal(mm); }).catch(e => reject(e));
-
-                })
+                    this.create(path, projectRoot, fmuRootPath, JSON.parse(content.toString()))
+                        .then(multiModel => resolve(multiModel))
+                        .catch(error => reject(error));
+                });
+            });
         });
     }
 }
