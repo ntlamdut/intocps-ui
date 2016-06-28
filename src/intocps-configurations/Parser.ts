@@ -282,19 +282,20 @@ export class Parser {
     }
 
     private parseAlgorithmFixed(data: any): ICoSimAlgorithm {
-        return new FixedStepAlgorithm(this.parseSimpleTag(data, this.ALGORITHM_TYPE_FIXED_SIZE_TAG));
+        return new FixedStepAlgorithm(
+            parseFloat(data[this.ALGORITHM_TYPE_FIXED_SIZE_TAG])
+        );
     }
 
     private parseAlgorithmVar(data: any): ICoSimAlgorithm {
-        let algorithm = new VariableStepAlgorithm();
+        let [minSize, maxSize] = this.parseSimpleTag(data, this.ALGORITHM_TYPE_VAR_SIZE_TAG);
 
-        algorithm.initSize = this.parseSimpleTag(data, this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG);
-        let sizes = this.parseSimpleTag(data, this.ALGORITHM_TYPE_VAR_SIZE_TAG);
-        algorithm.sizeMin = sizes[0];
-        algorithm.sizeMax = sizes[1];
-        algorithm.constraints = this.parseAlgorithmVarConstraints(data);
-
-        return algorithm;
+        return new VariableStepAlgorithm(
+            parseFloat(data[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG]),
+            parseFloat(minSize),
+            parseFloat(maxSize),
+            this.parseAlgorithmVarConstraints(data)
+        );
     }
 
     private parseAlgorithmVarConstraints(data: any): VarStepConstraint[] {
