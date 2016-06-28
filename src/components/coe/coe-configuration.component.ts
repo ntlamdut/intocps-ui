@@ -1,8 +1,10 @@
-import {Component, Input} from "@angular/core";
+import {Component, Input, Output, EventEmitter, NgZone, OnInit, Pipe, PipeTransform} from "@angular/core";
+import IntoCpsApp from "../../IntoCpsApp";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm,
     VariableStepAlgorithm
 } from "../../intocps-configurations/CoSimulationConfig";
+import {ScalarVariable, CausalityType, Instance} from "../../coe/fmi";
 
 @Component({
     selector: "coe-configuration",
@@ -44,6 +46,19 @@ import {
                 
                 <div class="form-group">
                     <label>Livestream Configuration</label>
+                    <div *ngFor="let instance of config.multiModel.fmuInstances">
+                        <label>{{instance.name}}</label>
+                        <div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
+                            <label>
+                                <input type="checkbox"
+                                    [checked]="isLivestreamChecked(instance, output)" 
+                                    (change)="onLivestreamChange($event, instance, output)">
+                                    
+                                {{output.name}}
+                                </label>
+                        </div>
+                        <hr>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn btn-default" [disabled]="!configForm.form.valid">Save</button>
@@ -52,35 +67,72 @@ import {
     </div>
 `
 })
-export class CoeConfigurationComponent {
-    private _config:CoSimulationConfig;
-
+export class CoeConfigurationComponent implements OnInit {
     @Input()
-    set config(config:CoSimulationConfig) {
-        this._config = config;
-
-        if (!config) return;
-
-        let algorithmConstructors = [
-            FixedStepAlgorithm,
-            VariableStepAlgorithm
-        ];
-
-        // Create an array of the algorithm from the coe config and a new instance of all other algorithms
-        this.algorithms = algorithmConstructors
-            .map(Algorithm =>
-                config.algorithm instanceof Algorithm
-                    ? config.algorithm
-                    : new Algorithm()
-            );
-    }
-    get config():CoSimulationConfig {
-        return this._config;
-    }
+    path:string;
 
     algorithms:Array<ICoSimAlgorithm> = [];
 
-    onSubmit() {
+    private config:CoSimulationConfig;
 
+    private algorithmConstructors = [
+        FixedStepAlgorithm,
+        VariableStepAlgorithm
+    ];
+
+    constructor(private zone:NgZone) {
+
+    }
+
+    ngOnInit() {
+        let project = IntoCpsApp.getInstance().getActiveProject();
+
+        CoSimulationConfig
+            .parse(this.path, project.getRootFilePath(), project.getFmusPath())
+            .then(config => {
+                this.zone.run(() => this.config = config);
+
+                // Create an array of the algorithm from the coe config and a new instance of all other algorithms
+                this.algorithms = this.algorithmConstructors
+                    .map(Algorithm =>
+                        config.algorithm instanceof Algorithm
+                            ? config.algorithm
+                            : new Algorithm()
+                    );
+            });
+    }
+
+    onSubmit() {
+        this.config.save();
+    }
+
+    getOutputs(scalarVariables:Array<ScalarVariable>) {
+        return scalarVariables.filter(variable => variable.causality === CausalityType.Output);
+    }
+
+    isLivestreamChecked(instance:Instance, output:ScalarVariable) {
+        let variables = this.config.livestream.get(instance);
+
+        if (!variables) return false;
+
+        return variables.includes(output);
+    }
+
+    onLivestreamChange(event:Event, instance:Instance, output:ScalarVariable) {
+        let variables = this.config.livestream.get(instance);
+
+        if (!variables) {
+            variables = [];
+            this.config.livestream.set(instance, variables);
+        }
+
+        if (event.target.checked)
+            variables.push(output);
+        else {
+            variables.splice(variables.indexOf(output), 1);
+
+            if (variables.length == 0)
+                this.config.livestream.delete(instance);
+        }
     }
 }

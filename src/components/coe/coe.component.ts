@@ -1,5 +1,4 @@
-import {Component, Input, OnInit, NgZone} from "@angular/core";
-import {FileSystemService} from "../shared/file-system.service";
+import {Component, Input, NgZone} from "@angular/core";
 import {CoeSimulationService} from "./coe-simulation.service";
 import {CoeConfigurationComponent} from "./coe-configuration.component";
 import {LineChartComponent} from "../shared/line-chart.component";
@@ -16,7 +15,7 @@ import IntoCpsApp from "../../IntoCpsApp";
         LineChartComponent
     ],
     template: `
-    <coe-configuration [config]="config"></coe-configuration>
+    <coe-configuration [path]="path"></coe-configuration>
    
     <div class="panel panel-default">
         <div class="panel-heading"><h3 class="panel-title">Simulation</h3></div>
@@ -36,20 +35,20 @@ import IntoCpsApp from "../../IntoCpsApp";
 })
 export class CoeComponent {
     @Input()
-    set path(path:string) {
-        let project = IntoCpsApp.getInstance().getActiveProject();
-
-        CoSimulationConfig.parse(path, project.getRootFilePath(), project.getFmusPath())
-            .then(config => this.zone.run(() => this.config = config));
-    }
-
-    config:any;
+    path:string;
 
     constructor(private coeSimulation:CoeSimulationService, private zone:NgZone) {
 
     }
 
     runSimulation() {
-        this.coeSimulation.run(this.config);
+        let project = IntoCpsApp.getInstance().getActiveProject();
+
+        CoSimulationConfig
+            .parse(this.path, project.getRootFilePath(), project.getFmusPath())
+            .then(config => {
+                console.log(config);
+                this.zone.run(() => this.coeSimulation.run(config));
+            });
     }
 }
