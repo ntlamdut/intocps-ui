@@ -13,6 +13,10 @@ import {ScalarVariable, CausalityType, Instance} from "../../coe/fmi";
         <div class="panel-heading"><h3 class="panel-title">Configuration</h3></div>
         <div class="panel-body">
             <form *ngIf="config" (ngSubmit)="onSubmit()" #configForm="ngForm">
+                <button type="submit" class="btn btn-default pull-right" [disabled]="!configForm.form.valid">
+                    <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+                </button>
+                
                 <div class="form-group">
                     <label>Start time</label>
                     <input name="startTime" [(ngModel)]="config.startTime" class="form-control" required>
@@ -60,8 +64,6 @@ import {ScalarVariable, CausalityType, Instance} from "../../coe/fmi";
                         <hr>
                     </div>
                 </div>
-                
-                <button type="submit" class="btn btn-default" [disabled]="!configForm.form.valid">Save</button>
             </form>
         </div>
     </div>
