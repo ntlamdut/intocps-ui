@@ -15,6 +15,9 @@ var globalCoeIsRunning = false;
 
 window.onload = function () {
     COE.checkCoeConnection("coe-status", COE.getCoeUrl()).then(() => { });
+
+    if (window.location.search === "?data=autolaunch")
+        launchCoe();
 };
 
 
