@@ -47,7 +47,7 @@ import {ScalarVariable, CausalityType, Instance} from "../../coe/fmi";
                 <div class="form-group">
                     <label>Livestream Configuration</label>
                     <div *ngFor="let instance of config.multiModel.fmuInstances">
-                        <label>{{instance.name}}</label>
+                        <label>{{instance.fmu.name}}.{{instance.name}}</label>
                         <div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
                             <label>
                                 <input type="checkbox"
