@@ -13,10 +13,6 @@ import {ScalarVariable, CausalityType, Instance} from "../../coe/fmi";
         <div class="panel-heading"><h3 class="panel-title">Configuration</h3></div>
         <div class="panel-body">
             <form *ngIf="config" (ngSubmit)="onSubmit()" #configForm="ngForm">
-                <button type="submit" class="btn btn-default pull-right" [disabled]="!configForm.form.valid">
-                    <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
-                </button>
-                
                 <div class="form-group">
                     <label>Start time</label>
                     <input name="startTime" [(ngModel)]="config.startTime" class="form-control" required>
@@ -26,6 +22,8 @@ import {ScalarVariable, CausalityType, Instance} from "../../coe/fmi";
                     <label>End time</label>
                     <input name="endTime" [(ngModel)]="config.endTime" class="form-control" required>
                 </div>
+                
+                <hr>
         
                 <div class="form-group">
                     <label>Algorithm</label>
@@ -48,6 +46,8 @@ import {ScalarVariable, CausalityType, Instance} from "../../coe/fmi";
                     <input name="maxStepSize" [(ngModel)]="config.algorithm.sizeMax" class="form-control" required>
                 </div>
                 
+                <hr>
+                
                 <div class="form-group">
                     <label>Livestream Configuration</label>
                     <div *ngFor="let instance of config.multiModel.fmuInstances">
@@ -61,9 +61,14 @@ import {ScalarVariable, CausalityType, Instance} from "../../coe/fmi";
                                 {{output.name}}
                                 </label>
                         </div>
-                        <hr>
                     </div>
                 </div>
+                
+                <hr>
+                
+                <button type="submit" class="btn btn-default" [disabled]="!configForm.form.valid">
+                    <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+                </button>
             </form>
         </div>
     </div>
