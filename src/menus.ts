@@ -136,7 +136,7 @@ export function configureIntoCpsMenu() {
   })
 
   menu.forEach(m => {
-    if (m.label == "View") {
+    if (m.label == "Window") {
 
       if (!(process.platform === 'darwin')) {
         m.submenu.splice(0, 0, {
