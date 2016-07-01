@@ -6,7 +6,7 @@
     <div class="panel-body">
         <div *ngIf="!online" class="alert alert-danger">
             Co-Simulation Engine offline. No connection at {{url}}.
-            <button class="btn btn-primary" (click)="onCoeLaunchClick()">Launch</button>
+            <button class="btn btn-sm btn-default" (click)="onCoeLaunchClick()"><span class="glyphicon glyphicon-link"></span> Launch</button>
         </div>
         <div *ngIf="online" class="alert alert-success">
             Co-Simulation Engine, version {{version}}, online at {{url}}.
