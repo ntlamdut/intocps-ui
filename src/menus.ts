@@ -97,18 +97,6 @@ export function configureIntoCpsMenu() {
         type: 'separator'
       },
       {
-        label: 'Show Project Folder',
-        click: function (item: any, focusedWindow: any) {
-          let activeProject = IntoCpsApp.getInstance().getActiveProject();
-          if (activeProject != null)
-            SystemUtil.openPath(activeProject.rootPath);
-        }
-
-      },
-      {
-        type: 'separator'
-      },
-      {
         label: 'Open Project',
         accelerator: 'CmdOrCtrl+O',
         click: function (item: any, focusedWindow: any) {
@@ -117,7 +105,7 @@ export function configureIntoCpsMenu() {
 
       },
       {
-        label: 'Open Project from Git',
+        label: 'Import Project from Git',
 
         click: function (item: any, focusedWindow: any) {
           fetchProjectFromGitHandler.openWindow();
@@ -125,12 +113,23 @@ export function configureIntoCpsMenu() {
 
       },
       {
-        label: 'Open Project Examples',
+        label: 'Import Example Project',
 
         click: function (item: any, focusedWindow: any) {
           openExamplesFromGitHandler.openWindow();
         }
 
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Open Current Project in File Browser',
+        click: function (item: any, focusedWindow: any) {
+          let activeProject = IntoCpsApp.getInstance().getActiveProject();
+          if (activeProject != null)
+            SystemUtil.openPath(activeProject.rootPath);
+        }
       }
     ]
   })
