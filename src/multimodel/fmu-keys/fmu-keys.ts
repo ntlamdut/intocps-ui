@@ -39,7 +39,7 @@ export class FmuKeys {
     public addFmu(fmu?: Configs.Fmu) {
         let self = this;
         let fmusRootPath = Path.normalize(this.multiModelDOM.fmusRootPath + "/");
-        $('<div>').load("multimodel/fmu-keys/key-fmu-element.html", function (event: JQueryEventObject) {
+        $('<div>').load("multimodel/fmu-keys/key-fmu-element.html #key-fmu-elem", function (event: JQueryEventObject) {
             let html: HTMLDivElement = <HTMLDivElement>(<HTMLDivElement>this).firstChild;
             let newFmu = false;
             if (fmu == null) {

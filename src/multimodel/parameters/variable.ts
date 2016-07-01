@@ -31,7 +31,7 @@ export class Variable {
 
     private loadHtml(value?: string) {
         let self = this;
-        $("<div>").load("multimodel/parameters/variable.html", function (event: JQueryEventObject) {
+        $("<div>").load("multimodel/parameters/variable.html #variable", function (event: JQueryEventObject) {
             self.container = <HTMLDivElement>(<HTMLDivElement>this).firstChild;
             self.initializeUI(value);
         });

@@ -67,7 +67,7 @@ export class ConnectionsElement {
     //Used by both output instances and input instances
     private addInstance(instance: Configs.Instance, instanceSelection: InstanceSelection) {
         let self = this;
-        $('<div>').load("multimodel/connections/list-element.html", function (event: BaseJQueryEventObject) {
+        $('<div>').load("multimodel/connections/list-element.html #list-elem", function (event: BaseJQueryEventObject) {
             let html: HTMLLinkElement = <HTMLLinkElement>(<HTMLDivElement>this).firstChild;
 
             if (instanceSelection == InstanceSelection.Output) {
@@ -104,7 +104,7 @@ export class ConnectionsElement {
 
     private addOutputVariable(variable: Configs.ScalarVariable) {
         let self = this;
-        $('<div>').load("multimodel/connections/list-element.html", function (event: BaseJQueryEventObject) {
+        $('<div>').load("multimodel/connections/list-element.html #list-elem", function (event: BaseJQueryEventObject) {
             let html: HTMLLinkElement = <HTMLLinkElement>(<HTMLDivElement>this).firstChild;
             self.outputVariableList.appendChild(html);
             let output: InstanceListElement<Configs.ScalarVariable> = new InstanceListElement(html, variable.name, self.outputVariableSelected.bind(self), variable);
@@ -168,7 +168,7 @@ export class ConnectionsElement {
 
     private addInputVariable(variable: Configs.ScalarVariable, selected: boolean) {
         let self = this;
-        $('<div>').load("multimodel/connections/input.html", function (event: BaseJQueryEventObject) {
+        $('<div>').load("multimodel/connections/input.html #input-elem", function (event: BaseJQueryEventObject) {
             let html: HTMLLinkElement = <HTMLLinkElement>(<HTMLDivElement>this).firstChild;
             self.inputVariableList.appendChild(html);
             let output: CheckboxInstanceListElement<Configs.ScalarVariable> = new CheckboxInstanceListElement(html, variable.name, self.inputVariableSelected.bind(self), variable);

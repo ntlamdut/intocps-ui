@@ -27,7 +27,7 @@ export class Parameters {
     private loadHtml(loadedCallback: (parameters: Parameters) => void) {
         let self = this;
         let promises = new Array<Promise<void>>();
-        $("<div>").load("multimodel/parameters/parameters.html", function (event: JQueryEventObject) {
+        $("<div>").load("multimodel/parameters/parameters.html #parameters", function (event: JQueryEventObject) {
             self.container = <HTMLDivElement>(<HTMLDivElement>this).firstChild;
             self.initializeUI();
             self.multiModelConfig.fmus.forEach((val: Configs.Fmu) => {
@@ -54,7 +54,7 @@ export class Parameters {
     private addInstance(instance: Configs.Instance) {
         let promise = new Promise<void>((resolve, reject) => {
             let self = this;
-            $('<div>').load("multimodel/connections/list-element.html", function (event: BaseJQueryEventObject) {
+            $('<div>').load("multimodel/connections/list-element.html #list-elem", function (event: BaseJQueryEventObject) {
                 let html: HTMLLinkElement = <HTMLLinkElement>(<HTMLDivElement>this).firstChild;
                 let element: InstanceListElement<Configs.Instance> = new InstanceListElement(html, instance.fmu.name + "." + instance.name, self.onInstanceSelect.bind(self), instance);
                 self.instanceListUI.appendChild(html);

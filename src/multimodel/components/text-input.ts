@@ -27,7 +27,7 @@ export class TextInput {
 
     private loadHtml(loadedCB: () => void, state?: TextInputState) {
         let self = this;
-        $("<div>").load("multimodel/components/text-input.html", function (event: JQueryEventObject) {
+        $("<div>").load("multimodel/components/text-input.html #text-input-elem", function (event: JQueryEventObject) {
             self.container = <HTMLDivElement>(<HTMLDivElement>this).firstChild;
             self.initializeUI(state);
             loadedCB();

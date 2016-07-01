@@ -17,7 +17,7 @@ export class DropDown {
 
     private loadHtml(loadedCallback: () => void, name?: string) {
         let self = this;
-        $("<div>").load("multimodel/components/dropdown.html", function (event: JQueryEventObject) {
+        $("<div>").load("multimodel/components/dropdown.html #dropdown", function (event: JQueryEventObject) {
             self.container = <HTMLDivElement>(<HTMLDivElement>this).firstChild;
             self.initializeUI(name);
             loadedCallback();
