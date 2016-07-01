@@ -138,9 +138,16 @@ export function configureIntoCpsMenu() {
   menu.forEach(m => {
     if (m.label == "Window") {
 
+
+
+      m.submenu.splice(m.submenu.length - 1, 0, {
+        type: 'separator'
+
+      });
+
       if (!(process.platform === 'darwin')) {
-        m.submenu.splice(0, 0, {
-          label: 'Settings',
+        m.submenu.splice(-1, 0, {
+          label: 'Show Settings',
           accelerator: 'Alt+S',
           click: function (item: any, focusedWindow: any) {
             openSettingsHandler.openWindow();
@@ -149,14 +156,8 @@ export function configureIntoCpsMenu() {
 
       }
 
-
       m.submenu.splice(m.submenu.length - 1, 0, {
-        type: 'separator'
-
-      });
-
-      m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'COE Server Status',
+        label: 'Show COE Server Status',
         accelerator: 'Alt+O',
         click: function (item: any, focusedWindow: any) {
           coeServerStatusHandler.openWindow();
@@ -165,7 +166,7 @@ export function configureIntoCpsMenu() {
 
 
       m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'Open Download Manager',
+        label: 'Show Download Manager',
         accelerator: 'Alt+D',
         click: function (item: any, focusedWindow: any) {
           openDownloadManagerHandler.openWindow();
@@ -173,7 +174,7 @@ export function configureIntoCpsMenu() {
       });
 
       m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'Open FMU Builder',
+        label: 'Show FMU Builder',
         click: function (item: any, focusedWindow: any) {
           fmuBuilderHandler.openWindow();
         }
