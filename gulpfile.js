@@ -36,7 +36,7 @@ var gulp = require('gulp'),
     electron = require('gulp-electron'),
     packager = require('electron-packager'),
     packageJSON = require('./package.json'),
-    webpack = require('webpack-stream'),
+    webpack = require('webpack'),
 	htmlhint = require("gulp-htmlhint");
 
 // Tasks
@@ -77,8 +77,10 @@ gulp.task("compile-ts", function () {
 });
 
 // Compile Angular 2 application
-gulp.task('compile-ng2', function() {
-    return webpack(require('./webpack.config.js'));
+gulp.task('compile-ng2', function(callback) {
+    webpack(require('./webpack.config.js'), function() {
+        callback();
+    });
 });
 
 // Copy important bower files to destination
@@ -203,12 +205,6 @@ gulp.task('watch', function () {
     gulp.watch(tsSrcs, ['compile-ts']);
     gulp.watch(cssSrcs, ['copy-css']);
     gulp.watch(customResources, ['copy-custom']);
-
-    // Watch Angular 2 application
-    var config = require('./webpack.config.js');
-    config.watch = true;
-
-    return webpack(config);
 });
 
 // Default task 

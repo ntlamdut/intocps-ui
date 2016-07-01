@@ -1,6 +1,5 @@
 var path = require('path');
-var webpack = require('webpack');
-var CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin;
+var CommonsChunkPlugin = require('webpack').optimize.CommonsChunkPlugin;
 
 module.exports = {
     devtool: 'source-map',
@@ -32,7 +31,7 @@ module.exports = {
             {
                 test: /\.ts$/,
                 loader: 'ts',
-                exclude: [ /node_modules/, /releases/ ]
+                exclude: [ /node_modules/, /dist/ ]
             },
             {
                 test: /\.json$/,

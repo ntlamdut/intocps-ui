@@ -69,7 +69,6 @@
     "typescript-collections": "~1.1.2",
     "typings": "^0.8.1",
     "url-loader": "^0.5.7",
-    "webpack": "^1.13.0",
-    "webpack-stream": "^3.2.0"
+    "webpack": "^1.13.0"
   }
 }
