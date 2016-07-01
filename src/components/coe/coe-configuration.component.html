@@ -1,0 +1,63 @@
+<div class="panel panel-default">
+    <div class="panel-heading"><h3 class="panel-title">Configuration</h3></div>
+    <div class="panel-body">
+        <form *ngIf="config" (ngSubmit)="onSubmit()" #configForm="ngForm">
+            <div class="form-group">
+                <label>Start time</label>
+                <input name="startTime" [(ngModel)]="config.startTime" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label>End time</label>
+                <input name="endTime" [(ngModel)]="config.endTime" class="form-control" required>
+            </div>
+
+            <hr>
+
+            <div class="form-group">
+                <label>Algorithm</label>
+                <select name="algorithm" [(ngModel)]="config.algorithm" class="form-control" required>
+                    <option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm.name}}</option>
+                </select>
+            </div>
+
+            <div *ngIf="config.algorithm.name == 'Fixed step'" class="form-group">
+                <label>Step size</label>
+                <input name="stepSize" [(ngModel)]="config.algorithm.size" class="form-control" required>
+            </div>
+
+            <div *ngIf="config.algorithm.name == 'Variable step'" class="form-group">
+                <label>Initial step size</label>
+                <input name="initStepSize" [(ngModel)]="config.algorithm.initSize" class="form-control" required>
+                <label>Minimum step size</label>
+                <input name="minStepSize" [(ngModel)]="config.algorithm.sizeMin" class="form-control" required>
+                <label>Maximum step size</label>
+                <input name="maxStepSize" [(ngModel)]="config.algorithm.sizeMax" class="form-control" required>
+            </div>
+
+            <hr>
+
+            <div class="form-group">
+                <label>Livestream Configuration</label>
+                <div *ngFor="let instance of config.multiModel.fmuInstances">
+                    <label>{{instance.fmu.name}}.{{instance.name}}</label>
+                    <div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
+                        <label>
+                            <input type="checkbox"
+                                   [checked]="isLivestreamChecked(instance, output)"
+                                   (change)="onLivestreamChange($event, instance, output)">
+
+                            {{output.name}}
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <button type="submit" class="btn btn-default" [disabled]="!configForm.form.valid">
+                <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+            </button>
+        </form>
+    </div>
+</div>

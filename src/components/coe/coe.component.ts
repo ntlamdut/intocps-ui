@@ -10,44 +10,14 @@ import {coeServerStatusHandler} from "../../menus";
 
 @Component({
     selector: "coe",
+    templateUrl: "./components/coe/coe.component.html",
     providers: [
         CoeSimulationService
     ],
     directives: [
         CoeConfigurationComponent,
         LineChartComponent
-    ],
-    template: `
-    <coe-configuration [path]="path"></coe-configuration>
-   
-    <div class="panel panel-default">
-        <div class="panel-heading"><h3 class="panel-title">Simulation</h3></div>
-        
-        <div class="panel-body">
-            <div *ngIf="!online" class="alert alert-danger">
-                Co-Simulation Engine offline. No connection at {{url}}.
-                <button class="btn btn-primary" (click)="onCoeLaunchClick()">Launch</button>
-            </div>
-            <div *ngIf="online" class="alert alert-success">
-                Co-Simulation Engine, version {{version}}, online at {{url}}.
-            </div>
-        
-            <div class="form-group">
-                <button [disabled]="!online" (click)="runSimulation()" class="btn btn-default">
-                    <span class="glyphicon glyphicon-play"></span> Simulate
-                </button>
-            </div>
-
-            <div class="progress">
-              <div class="progress-bar" [style.width]="coeSimulation.progress + '%'" style="min-width: 2em">
-                {{coeSimulation.progress}}%
-              </div>
-            </div>
-    
-            <line-chart [datasets]="coeSimulation.datasets"></line-chart>
-        </div>
-    </div>
-`
+    ]
 })
 export class CoeComponent implements OnInit {
     @Input()
@@ -63,7 +33,7 @@ export class CoeComponent implements OnInit {
         private http:Http,
         private settings:SettingsService
     ) {
-
+        console.log(module.id);
     }
 
     ngOnInit() {

@@ -5,7 +5,7 @@ declare let Plotly:any;
 
 @Component({
     selector: 'line-chart',
-    template: '<div #container></div>'
+    template: ''
 })
 export class LineChartComponent implements OnInit {
     private loading:boolean = true;
@@ -28,8 +28,9 @@ export class LineChartComponent implements OnInit {
         displaylogo: false
     };
 
-    @ViewChild('container')
-    containerElement:ElementRef;
+    constructor(private element:ElementRef) {
+
+    }
 
     @Input()
     set datasets(datasets:BehaviorSubject<any>) {
@@ -38,10 +39,11 @@ export class LineChartComponent implements OnInit {
 
     ngOnInit() {
         let node = Plotly.d3
-            .select(this.containerElement.nativeElement)
+            .select(this.element.nativeElement)
             .style({
                 width: '100%',
-                height: '80vh'
+                height: '80vh',
+                display: 'block'
             })
             .node();
 
@@ -59,10 +61,10 @@ export class LineChartComponent implements OnInit {
         if (this.redrawCooldown === false) {
             this.redrawCooldown = true;
 
-            this.containerElement.nativeElement.data = datasets;
+            this.element.nativeElement.data = datasets;
 
             requestAnimationFrame(() => {
-                Plotly.redraw(this.containerElement.nativeElement);
+                Plotly.redraw(this.element.nativeElement);
                 this.redrawCooldown = false;
             });
         }
