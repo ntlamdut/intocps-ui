@@ -9,7 +9,7 @@ interface MyWindow extends Window {
     ng2app: AppComponent;
 }
 
-declare var window: MyWindow;
+declare let window: MyWindow;
 
 // Main application component.
 // Handles routing between the pages that use Angular 2.
@@ -25,11 +25,11 @@ declare var window: MyWindow;
         SettingsService
     ],
     template: `
-        <div *ngIf="show === 'multiModel'">{{path}}</div>
-        <coe *ngIf="show === 'coe'" [path]="path"></coe>`
+        <div *ngIf="page === 'multiModel'">{{path}}</div>
+        <coe *ngIf="page === 'coe'" [path]="path"></coe>`
 })
 export class AppComponent implements OnInit {
-    private show:string;
+    private page:string;
     private path:string;
 
     constructor(private zone:NgZone) {
@@ -44,21 +44,21 @@ export class AppComponent implements OnInit {
     openCOE(path: string):void {
         this.zone.run(() => {
             this.path = path;
-            this.show = 'coe';
+            this.page = 'coe';
         });
     }
 
     openMultiModel(path: string):void {
         this.zone.run(() => {
             this.path = path;
-            this.show = 'multiModel';
+            this.page = 'multiModel';
         });
     }
 
     closeAll():void {
         this.zone.run(() => {
             this.path = '';
-            this.show = '';
+            this.page = '';
         });
     }
 }
