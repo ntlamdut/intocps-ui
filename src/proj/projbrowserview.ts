@@ -264,9 +264,9 @@ export class BrowserController {
     //set and refresh the prowser content
     private refreshProjectBrowser() {
         let app: IntoCpsApp = IntoCpsApp.getInstance();
+        if (this.rootItem)
+            this.rootItem.deactivate();
         if (app.getActiveProject() != null) {
-            if (this.rootItem)
-                this.rootItem.deactivate();
             this.rootItem = this.addFSItem(app.getActiveProject().getRootFilePath(), null);
         }
     }
