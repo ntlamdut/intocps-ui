@@ -135,8 +135,8 @@ export class ProjectBrowserItem {
     }
 
     deactivate() {
-        for (let c of this.nodes) {
-            c.deactivate();
+        while (this.nodes.length != 0) {
+            this.nodes[0].deactivate();
         }
         console.log("deactivating node " + this.path + ": " + this.path);
         this.unwatch();
