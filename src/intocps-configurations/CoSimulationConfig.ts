@@ -110,13 +110,13 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
 export enum VarStepConstraintType { ZeroCrossing, BoundedDifference, SamplingRate, FmuRequested }
 
 export class VarStepConstraint {
+    constructor(
+        public type: VarStepConstraintType,
+        public ports: Fmi.InstanceScalarPair[],
+        order?: number = 2,//can be 1 or 2
+        abstol?: number,
+        safety?: number
+    ) {
 
-    type: VarStepConstraintType;
-    ports: Fmi.InstanceScalarPair[];
-    order: number = 2;//can be 1 or 2
-    abstol: number;
-    safety: number;
+    }
 }
-
-
-
