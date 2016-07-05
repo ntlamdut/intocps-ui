@@ -8,7 +8,9 @@ import * as Collections from 'typescript-collections';
 import * as Fmi from "../coe/fmi";
 
 import {MultiModelConfig} from "./MultiModelConfig";
-import {CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, VariableStepAlgorithm, VarStepConstraint, VarStepConstraintType} from "./CoSimulationConfig";
+import {
+    CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, VariableStepAlgorithm, VariableStepConstraint
+} from "./CoSimulationConfig";
 import Path = require('path');
 import fs = require('fs');
 
@@ -207,12 +209,12 @@ export class Parser {
 
     //parse startTime
     parseStartTime(data: any): number {
-        return this.parseSimpleTag(data, this.START_TIME_TAG);
+        return parseFloat(this.parseSimpleTag(data, this.START_TIME_TAG));
     }
 
     //parse endtime
     parseEndTime(data: any): number {
-        return this.parseSimpleTag(data, this.END_TIME_TAG);
+        return parseFloat(this.parseSimpleTag(data, this.END_TIME_TAG));
     }
 
     parseMultiModelPath(data: any, projectRoot: string): string {
@@ -298,7 +300,7 @@ export class Parser {
         );
     }
 
-    private parseAlgorithmVarConstraints(data: any): VarStepConstraint[] {
+    private parseAlgorithmVarConstraints(data: any): Array<VariableStepConstraint> {
         return [];//TODO
     }
 

@@ -83,7 +83,6 @@ export class CoSimulationConfig implements ISerializable {
 }
 
 export interface ICoSimAlgorithm {
-    name:string;
 }
 
 export class FixedStepAlgorithm implements ICoSimAlgorithm {
@@ -97,13 +96,18 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
         public initSize:number = 0.1,
         public sizeMin:number = 0.05,
         public sizeMax:number = 0.2,
-        public constraints: Array<ZeroCrossingConstraint|BoundedDifferenceConstraint|SamplingRateConstraint> = []
+        public constraints: Array<VariableStepConstraint> = []
     ) {
 
     }
 }
 
-export class ZeroCrossingConstraint {
+export interface VariableStepConstraint {
+    id:string;
+    type:string;
+}
+
+export class ZeroCrossingConstraint implements VariableStepConstraint {
     type:string = "zerocrossing";
 
     constructor(
@@ -116,7 +120,7 @@ export class ZeroCrossingConstraint {
     }
 }
 
-export class BoundedDifferenceConstraint {
+export class BoundedDifferenceConstraint implements VariableStepConstraint {
     type:string = "boundeddifference";
 
     constructor(
@@ -130,7 +134,7 @@ export class BoundedDifferenceConstraint {
     }
 }
 
-export class SamplingRateConstraint {
+export class SamplingRateConstraint implements VariableStepConstraint {
     type:string = "samplingrate";
 
     constructor(

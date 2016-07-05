@@ -1,11 +1,10 @@
-import {Component, Input, Output, EventEmitter, NgZone, OnInit, Pipe, PipeTransform} from "@angular/core";
+import {Component, Input, NgZone, OnInit} from "@angular/core";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm,
-    VariableStepAlgorithm, Constraint, ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint
+    VariableStepAlgorithm, ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint
 } from "../../intocps-configurations/CoSimulationConfig";
 import {ScalarVariable, CausalityType, Instance} from "../../coe/fmi";
-import {ConstraintComponent} from "./inputs/constraint.component";
 import {ZeroCrossingComponent} from "./inputs/zero-crossing.component";
 import {BoundedDifferenceComponent} from "./inputs/bounded-difference.component";
 import {SamplingRateComponent} from "./inputs/sampling-rate.component";
@@ -24,7 +23,7 @@ export class CoeConfigurationComponent implements OnInit {
     path:string;
 
     algorithms:Array<ICoSimAlgorithm> = [];
-    newConstraint;
+    newConstraint:FunctionConstructor;
 
     private config:CoSimulationConfig;
 
