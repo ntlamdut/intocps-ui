@@ -83,7 +83,7 @@ export class ProjectBrowserItem {
     }
 
     activate(parent: ProjectBrowserItem) {
-        console.log("activating node " + this.id + ": " + this.path);
+        //console.log("activating node " + this.id + ": " + this.path);
         let self: ProjectBrowserItem = this;
         if (this.level == 0) {
             // root node is not inserted to tree
@@ -107,12 +107,11 @@ export class ProjectBrowserItem {
 
     watch() {
         let self = this;
-        //console.log("watching node " + this.path + ": " + this.path);
         if (this.isDirectory) {
             if (this.fsWatch != undefined) throw "Directory is already being watched";
             let exists = (p: string) => { try { let x = fs.statSync(p); return true; } catch (e) { return false; } }
             this.fsWatch = fs.watch(this.path, function (event: string, which: string) {
-                console.log("item: " + self.path, ", who: " + which + ", event: " + event);
+                //console.log("While watching folder " + self.path + ": event: " + event + ", which: " + which);
                 if (which) {
                     let p = Path.join(self.path, Path.basename(which));
                     let child = self.getChildByPath(p);
@@ -128,17 +127,16 @@ export class ProjectBrowserItem {
 
     unwatch() {
         if (this.fsWatch != undefined) {
-            //console.log("unwatching node " + this.path + ": " + this.path);
             this.fsWatch.close();
             this.fsWatch = undefined;
         }
     }
 
     deactivate() {
-        for (let c of this.nodes) {
-            c.deactivate();
+        while (this.nodes.length != 0) {
+            this.nodes[0].deactivate();
         }
-        console.log("deactivating node " + this.path + ": " + this.path);
+        //console.log("deactivating node " + this.id + ": " + this.path);
         this.unwatch();
         this.controller.tree.remove(this.id);
         if (this.level == 1) {
@@ -266,9 +264,9 @@ export class BrowserController {
     //set and refresh the prowser content
     private refreshProjectBrowser() {
         let app: IntoCpsApp = IntoCpsApp.getInstance();
+        if (this.rootItem)
+            this.rootItem.deactivate();
         if (app.getActiveProject() != null) {
-            if (this.rootItem)
-                this.rootItem.deactivate();
             this.rootItem = this.addFSItem(app.getActiveProject().getRootFilePath(), null);
         }
     }
@@ -337,7 +335,7 @@ export class BrowserController {
                 parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
                 parent.refresh();
                 return null;
-            }            
+            }
             else if (path.endsWith('.coe.json')) {
                 //merge MultiModelConfig and folder
                 parent.img = 'into-cps-icon-projbrowser-config';
