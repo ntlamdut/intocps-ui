@@ -87,36 +87,58 @@ export interface ICoSimAlgorithm {
 }
 
 export class FixedStepAlgorithm implements ICoSimAlgorithm {
-    name:string = "Fixed step";
-
     constructor(public size:number = 0.1) {
 
     }
 }
 
 export class VariableStepAlgorithm implements ICoSimAlgorithm {
-    name:string = "Variable step";
-
     constructor(
         public initSize:number = 0.1,
         public sizeMin:number = 0.05,
         public sizeMax:number = 0.2,
-        public constraints: VarStepConstraint[] = []
+        public constraints: Array<ZeroCrossingConstraint|BoundedDifferenceConstraint|SamplingRateConstraint> = []
     ) {
 
     }
 }
 
-export enum VarStepConstraintType { ZeroCrossing, BoundedDifference, SamplingRate, FmuRequested }
+export class ZeroCrossingConstraint {
+    type:string = "zerocrossing";
 
-export class VarStepConstraint {
     constructor(
-        public type: VarStepConstraintType,
-        public ports: Fmi.InstanceScalarPair[],
-        order?: number = 2,//can be 1 or 2
-        abstol?: number,
-        safety?: number
+        public id:string,
+        public ports:Array<Fmi.InstanceScalarPair>,
+        order?:number,//can be 1 or 2
+        abstol?:number,
+        safety?:number
     ) {
-
     }
 }
+
+export class BoundedDifferenceConstraint {
+    type:string = "boundeddifference";
+
+    constructor(
+        public id:string,
+        public ports:Array<Fmi.InstanceScalarPair>,
+        public abstol?:number,
+        public reltol?:number,
+        public safety?:number,
+        public skipDiscrete:boolean = true
+    ) {
+    }
+}
+
+export class SamplingRateConstraint {
+    type:string = "samplingrate";
+
+    constructor(
+        public id:string,
+        public base:number,
+        public rate:number,
+        public startTime:number
+    ) {
+    }
+}
+
