@@ -316,6 +316,11 @@ export class BrowserController {
                 }
                 else if ([".conf", ".confinc", ".rtp", ".mbtconf"].some((e) => path.endsWith(e))) {
                     result.img = 'into-cps-icon-rtt-conf';
+                    if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                        result.dblClickHandler = function () {
+                            self.menuHandler.openLTLFile(path);
+                        }
+                    }
                 }
                 else if (path.endsWith('.log')) {
                     result.img = 'into-cps-icon-rtt-log';
