@@ -4,15 +4,14 @@
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
 
-import * as Collections from 'typescript-collections';
 import * as Fmi from "../coe/fmi";
-
 import {MultiModelConfig} from "./MultiModelConfig";
 import {
-    CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, VariableStepAlgorithm, VariableStepConstraint
+    CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, VariableStepAlgorithm, VariableStepConstraint,
+    ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint
 } from "./CoSimulationConfig";
-import Path = require('path');
-import fs = require('fs');
+import * as Path from 'path';
+import * as fs from 'fs';
 
 export class Parser {
 
@@ -197,22 +196,13 @@ export class Parser {
 
 
     parseSimpleTag(data: any, tag: string): any {
-        var value: any = null;
-
-        if (Object.keys(data).indexOf(tag) >= 0) {
-            value = data[tag];
-
-        }
-
-        return value;
+        return data[tag] !== undefined ? data[tag] : null;
     }
 
-    //parse startTime
     parseStartTime(data: any): number {
         return parseFloat(this.parseSimpleTag(data, this.START_TIME_TAG));
     }
 
-    //parse endtime
     parseEndTime(data: any): number {
         return parseFloat(this.parseSimpleTag(data, this.END_TIME_TAG));
     }
@@ -221,66 +211,33 @@ export class Parser {
         return Path.normalize(projectRoot + "/" + this.parseSimpleTag(data, this.MULTIMODEL_PATH_TAG));
     }
 
-
-
-    //parse livestream
     parseLivestream(data: any, multiModel: MultiModelConfig): Map<Fmi.Instance, Fmi.ScalarVariable[]> {
+        let livestream = new Map<Fmi.Instance, Fmi.ScalarVariable[]>();
+        let livestreamEntry = data[this.LIVESTREAM_TAG];
 
-        var livestream: Map<Fmi.Instance, Fmi.ScalarVariable[]> = new Map<Fmi.Instance, Fmi.ScalarVariable[]>();
-
-
-        if (Object.keys(data).indexOf(this.LIVESTREAM_TAG) >= 0) {
-            let livestreamEntry = data[this.LIVESTREAM_TAG];
-            $.each(Object.keys(livestreamEntry), (j, id) => {
-
-                let ids = this.parseIdShort(id);
-
-                let fmuName = ids[0];
-                let instanceName = ids[1];
-
+        if (livestreamEntry) {
+            Object.keys(livestreamEntry).forEach(id => {
+                let [fmuName, instanceName] = this.parseIdShort(id);
                 let instance: Fmi.Instance = multiModel.getInstanceOrCreate(fmuName, instanceName);
 
-                let outputs = livestreamEntry[id];
-
-                var enabledScalars: Fmi.ScalarVariable[] = [];
-                $.each(outputs, (j, input) => {
-                    enabledScalars.push(instance.fmu.getScalarVariable(input));
-                });
-
-                livestream.set(instance, enabledScalars);
+                livestream.set(instance, livestreamEntry[id].map(input => instance.fmu.getScalarVariable(input)));
             });
         }
-
 
         return livestream;
     }
 
-
     parseAlgorithm(data: any): ICoSimAlgorithm {
-        if (Object.keys(data).indexOf(this.ALGORITHM_TAG) >= 0) {
-            let algorithm = data[this.ALGORITHM_TAG];
+        let algorithm = data[this.ALGORITHM_TAG];
+        if (!algorithm) return;
 
-            var isFixed: boolean = true;
+        let type = algorithm[this.ALGORITHM_TYPE];
 
-            if (Object.keys(algorithm).indexOf(this.ALGORITHM_TYPE) >= 0) {
-                let algorithmType = algorithm[this.ALGORITHM_TYPE];
+        if (type === this.ALGORITHM_TYPE_VAR)
+            return this.parseAlgorithmVar(algorithm);
 
-                if (algorithmType.indexOf(this.ALGORITHM_TYPE_VAR) == 0) {
-                    isFixed = false;
-
-                }
-
-            }
-
-            //now type is detected so parse import 
-
-            if (isFixed) {
-                return this.parseAlgorithmFixed(algorithm);
-            } else {
-                return this.parseAlgorithmVar(algorithm);
-            }
-
-        }
+        if (type === this.ALGORITHM_TYPE_FIXED)
+            return this.parseAlgorithmFixed(algorithm);
     }
 
     private parseAlgorithmFixed(data: any): ICoSimAlgorithm {
@@ -296,12 +253,42 @@ export class Parser {
             parseFloat(data[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG]),
             parseFloat(minSize),
             parseFloat(maxSize),
-            this.parseAlgorithmVarConstraints(data)
+            this.parseAlgorithmVarConstraints(data[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG])
         );
     }
 
     private parseAlgorithmVarConstraints(data: any): Array<VariableStepConstraint> {
-        return [];//TODO
+        return data.map(c => {
+            if (c.type === "zerocrossing") {
+                return new ZeroCrossingConstraint(
+                    c.id,
+                    c.ports, // TODO: Map to Fmi.InstanceScalarPair
+                    c.order,
+                    c.abstol,
+                    c.safety
+                )
+            }
+
+            if (c.type === "boundeddifference") {
+                return new BoundedDifferenceConstraint(
+                    c.id,
+                    c.ports, // TODO: Map to Fmi.InstanceScalarPair
+                    c.abstol,
+                    c.reltol,
+                    c.safety,
+                    c.skipDiscrete
+                )
+            }
+
+            if (c.type === "samplingrate") {
+                return new SamplingRateConstraint(
+                    c.id,
+                    c.base,
+                    c.rate,
+                    c.startTime
+                )
+            }
+        })
     }
 
 }
@@ -315,13 +302,13 @@ export class Parser {
 
 
 export class Serializer extends Parser {
-
     constructor() {
         super();
     }
 
     public toObjectMultiModel(multiModel: MultiModelConfig, fmusRootPath: string): any {
-        var obj: any = new Object();
+        let obj:any = {};
+
         //fmus
         obj[this.FMUS_TAG] = this.toObjectFmus(multiModel.fmus, fmusRootPath);
         //connections
@@ -333,10 +320,9 @@ export class Serializer extends Parser {
     }
 
     public toObjectCoSimulationConfig(cc: CoSimulationConfig, projectRoot: string): any {
-        var obj: any = new Object();
+        let obj:any = {};
 
-
-        var path = cc.multiModel.sourcePath;
+        let path = cc.multiModel.sourcePath;
         if (path.indexOf(projectRoot) >= 0) {
             path = path.substring(projectRoot.length + 1);
         }
@@ -363,17 +349,16 @@ export class Serializer extends Parser {
 
     //convert fmus to JSON
     private toObjectFmus(fmus: Fmi.Fmu[], fmusRootPath: string): any {
-        var data: any = new Object();
+        let data:any = {};
 
         fmus.forEach((fmu: Fmi.Fmu) => {
-            var path = fmu.path;
+            let path = fmu.path;
             if (path.indexOf(fmusRootPath) >= 0) {
                 path = path.substring(fmusRootPath.length + 1);
             }
 
             data[fmu.name] = path;
         });
-
 
         return data;
     }
@@ -390,12 +375,12 @@ export class Serializer extends Parser {
 
     //toObjectConnections
     toObjectConnections(fmuInstances: Fmi.Instance[]): any {
-        var cons: any = new Object();
+        let cons:any = {};
 
         fmuInstances.forEach(value => {
             value.outputsTo.forEach((pairs, sv) => {
                 let key = Serializer.getIdSv(value, sv);
-                var inputs: any[] = [];
+                let inputs: any[] = [];
                 pairs.forEach(pair => {
                     let input = Serializer.getIdSv(pair.instance, pair.scalarVariable);
                     inputs.push(input);
@@ -411,7 +396,7 @@ export class Serializer extends Parser {
 
     //to JSON parameters
     toObjectParameters(fmuInstances: Fmi.Instance[]): any {
-        var obj: any = new Object();
+        let obj:any = {};
 
         fmuInstances.forEach(instance => {
             instance.initialValues.forEach((value, sv) => {
@@ -424,35 +409,30 @@ export class Serializer extends Parser {
 
 
     toObjectLivestream(livestream: Map<Fmi.Instance, Fmi.ScalarVariable[]>): any {
-        var obj: any = new Object();
+        let obj:any = {};
 
         livestream.forEach((svs, instance) => {
-
-            var inputs: any[] = [];
-            svs.forEach(sv => {
-                inputs.push(sv.name);
-            });
-            obj[Serializer.getId(instance)] = inputs;
+            obj[Serializer.getId(instance)] = svs.map(sv => sv.name);
         });
 
         return obj;
     }
 
     toObjectAlgorithm(algorithm: ICoSimAlgorithm): any {
+        let obj:any = {};
+
         if (algorithm instanceof FixedStepAlgorithm) {
-            var obj: any = new Object();
             obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_FIXED;
             obj[this.ALGORITHM_TYPE_FIXED_SIZE_TAG] = algorithm.size;
-            return obj;
         } else if (algorithm instanceof VariableStepAlgorithm) {
-            var obj: any = new Object();
             obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_VAR;
             obj[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG] = algorithm.initSize;
             obj[this.ALGORITHM_TYPE_VAR_SIZE_TAG] = [algorithm.sizeMin, algorithm.sizeMax];
-            obj[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG] = [];//TODO
-            return obj;
+            obj[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG] = algorithm.constraints;
+        } else {
+            return null;
         }
 
-        return null;
+        return obj;
     }
 }

@@ -5,17 +5,15 @@
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
 
-import * as Collections from 'typescript-collections';
-import * as Fmi from "../coe/fmi";
 import {Parser, Serializer} from "./Parser";
-import {Message, WarningMessage, ErrorMessage} from "./Messages";
+import {WarningMessage, ErrorMessage} from "./Messages";
+import * as Fmi from "../coe/fmi";
+import * as Path from 'path';
+import * as fs from 'fs';
 
-import Path = require('path');
-import fs = require('fs');
 // Multi-Model
 
 export class MultiModelConfig implements ISerializable {
-
 
     //path to the source from which this DOM is generated
     sourcePath: string;
@@ -24,15 +22,11 @@ export class MultiModelConfig implements ISerializable {
     fmuInstances: Fmi.Instance[] = [];
 
     public getInstance(fmuName: string, instanceName: string) {
-        let res = this.fmuInstances.find(function (v) { return v.fmu.name == fmuName && v.name == instanceName; });
-        if (res == undefined) {
-            return null;
-        }
-        return res;
+        return this.fmuInstances.find(v => v.fmu.name == fmuName && v.name == instanceName) || null;
     }
 
     public getInstanceOrCreate(fmuName: string, instanceName: string) {
-        var instance = this.getInstance(fmuName, instanceName);
+        let instance = this.getInstance(fmuName, instanceName);
 
         if (instance == null) {
             //multimodel does not contain this instance
@@ -50,74 +44,46 @@ export class MultiModelConfig implements ISerializable {
     }
 
     public getFmu(fmuName: string): Fmi.Fmu {
-        let res = this.fmus.find(function (v) { return v.name == fmuName; });
-        if (res == undefined) {
-            return null;
-        }
-        return res;
+        return this.fmus.find(v => v.name == fmuName) || null;
     }
 
-    static create(path: string, fmuRootPath: string, jsonData: any): Promise<MultiModelConfig> {
-        return new Promise<MultiModelConfig>(function (resolveFinal, reject) {
-            let parser = new Parser();
+    static create(path: string, fmuRootPath: string, data: any): Promise<MultiModelConfig> {
+        let parser = new Parser();
 
-            let mm = new MultiModelConfig();
-            mm.sourcePath = path;
-            mm.fmusRootPath = fmuRootPath;
+        let mm = new MultiModelConfig();
+        mm.sourcePath = path;
+        mm.fmusRootPath = fmuRootPath;
 
-            parser.parseFmus(jsonData, Path.normalize(fmuRootPath)).then(fmus => {
+        return parser
+            .parseFmus(data, Path.normalize(fmuRootPath))
+            .then(fmus => {
                 mm.fmus = fmus;
 
-                parser.parseConnections(jsonData, mm);
-                parser.parseParameters(jsonData, mm);
-                console.info(mm);
+                parser.parseConnections(data, mm);
+                parser.parseParameters(data, mm);
 
-                resolveFinal(mm);
-            }).catch(e => reject(e));
-        });
+                return mm;
+            });
     }
 
     static parse(path: string, fmuRootPath: string): Promise<MultiModelConfig> {
-        let self = this;
-        return new Promise<MultiModelConfig>(function (resolveFinal, reject) {
-            let checkFileExists = new Promise<Buffer>(function (resolve, reject) {
-                try {
-                    if (fs.accessSync(path, fs.R_OK)) {
-                        reject();
-                    }
-                    resolve();
-                } catch (e) {
-                    reject(e);
-                }
-            }).then(() =>
-                new Promise<Buffer>(function (resolve, reject) {
-                    fs.readFile(path, function (err, data) {
-                        if (err !== null) {
-                            return reject(err);
-                        }
-                        console.log(data.toString());
+        return new Promise<Buffer>((resolve, reject) => {
+                fs.readFile(path, (error, data) => {
+                    if (error)
+                        reject(error);
+                    else
                         resolve(data);
-                    });
-                })).then((content) => {
-
-                    //console.log("Asynchronous read: " + content.toString());
-                    var jsonData = JSON.parse(content.toString());
-                    console.log(content.toString());
-                    console.log(jsonData);
-
-                    self.create(path, fmuRootPath, jsonData).then(mm => { resolveFinal(mm); }).catch(e => reject(e));
-
-                })
-        });
+                });
+            }).then(content => this.create(path, fmuRootPath, JSON.parse(content.toString())));
     }
 
     public removeFmu(fmu: Fmi.Fmu) {
         this.fmus.splice(this.fmus.indexOf(fmu), 1);
-        this.fmuInstances.filter(element => { return element.fmu == fmu }).forEach(element => {
-            this.removeInstance(element);
-        });
+        
+        this.fmuInstances
+            .filter(element => element.fmu == fmu)
+            .forEach(element => this.removeInstance(element));
     }
-
 
     public removeInstance(instance: Fmi.Instance) {
         // Remove the instance
@@ -125,7 +91,7 @@ export class MultiModelConfig implements ISerializable {
 
         // When removing an instance, all connections to this instance must be removed as well.  
         this.fmuInstances.forEach(element => {
-            element.outputsTo.forEach((value, key) => {
+            element.outputsTo.forEach(value => {
                 for (let i = value.length - 1; i >= 0; i--) {
                     if (value[i].instance == instance) {
                         value.splice(i, 1);
@@ -183,22 +149,18 @@ export class MultiModelConfig implements ISerializable {
     }
 
     save(): Promise<void> {
-        let self = this;
-        return new Promise<void>(function (resolve, reject) {
-            let messages = self.validate();
-            if (messages.length > 0) {
+        return new Promise<void>((resolve, reject) => {
+            let messages = this.validate();
+
+            if (messages.length > 0)
                 reject(messages);
-            }
-            try {
-                fs.writeFile(self.sourcePath, JSON.stringify(self.toObject()), function (err) {
-                    if (err !== null) {
-                        return reject(err);
-                    }
+
+            fs.writeFile(this.sourcePath, JSON.stringify(this.toObject()), error => {
+                if (error)
+                    reject(error);
+                else
                     resolve();
-                });
-            } catch (e) {
-                reject(e);
-            }
+            });
         });
     }
 }
