@@ -74,6 +74,10 @@ export class CoeConfigurationComponent implements OnInit {
         this.config.algorithm.constraints.push(new this.newConstraint());
     }
 
+    removeConstraint(constraint) {
+        this.config.algorithm.constraints.splice(this.config.algorithm.constraints.indexOf(constraint), 1);
+    }
+
     getAlgorithmName(algorithm:any) {
         if (algorithm === FixedStepAlgorithm || algorithm instanceof FixedStepAlgorithm)
             return "Fixed Step";
