@@ -21,8 +21,8 @@ export class Project implements IProject {
     static PATH_DSE: String = "Design Space Explorations";
     //PATH_CONNECTIONS: String = "SysML Connections";
     static PATH_SYSML: String = "SysML";
-    static PATH_TEST_DATA_GENERATION: String = "Test Data Generation";
-    static PATH_MODEL_CHECKING: String = "Model Checking";
+    static PATH_TEST_DATA_GENERATION: String = "Test-Data-Generation";
+    static PATH_MODEL_CHECKING: String = "Model-Checking";
 
     constructor(name: string, rootPath: string, configPath: string) {
         this.name = name;
