@@ -139,12 +139,13 @@ export function configureIntoCpsMenu() {
 
 
 
-      m.submenu.splice(m.submenu.length - 1, 0, {
+
+
+      if (!(process.platform === 'darwin')) {
+              m.submenu.splice(m.submenu.length - 1, 0, {
         type: 'separator'
 
       });
-
-      if (!(process.platform === 'darwin')) {
         m.submenu.splice(-1, 0, {
           label: 'Show Settings',
           accelerator: 'Alt+S',
