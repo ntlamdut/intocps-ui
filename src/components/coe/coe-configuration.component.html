@@ -84,7 +84,7 @@
                 <div class="constraint-container">
                     <div class="panel panel-default constraint-panel" *ngFor="let constraint of config.algorithm.constraints">
                         <div class="panel-heading">
-                            <button (click)="removeConstraint(constraint)" class="btn btn-default btn-xs pull-right"><span class="glyphicon glyphicon-remove"></span></button>
+                            <a (click)="removeConstraint(constraint)" class="pull-right"><span class="glyphicon glyphicon-remove"></span></a>
                             {{getConstraintName(constraint)}}
                         </div>
                         <div class="panel-body">

@@ -25,3 +25,8 @@ coe .constraint-panel {
     margin-left: 2.5%;
     margin-right: 2.5%;
 }
+
+coe a {
+    cursor: pointer;
+    color: black;
+}
