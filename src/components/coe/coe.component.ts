@@ -1,4 +1,4 @@
-import {Component, Input, NgZone, OnInit} from "@angular/core";
+import {Component, Input, NgZone, OnInit, OnDestroy} from "@angular/core";
 import {CoeSimulationService} from "./coe-simulation.service";
 import {CoeConfigurationComponent} from "./coe-configuration.component";
 import {LineChartComponent} from "../shared/line-chart.component";
@@ -19,13 +19,15 @@ import {coeServerStatusHandler} from "../../menus";
         LineChartComponent
     ]
 })
-export class CoeComponent implements OnInit {
+export class CoeComponent implements OnInit, OnDestroy {
     @Input()
     path:string;
 
     online:boolean = false;
     url:string = '';
     version:string = '';
+
+    private onlineInterval:number;
 
     constructor(
         private coeSimulation:CoeSimulationService,
@@ -38,8 +40,12 @@ export class CoeComponent implements OnInit {
 
     ngOnInit() {
         this.url = this.settings.get(SettingKeys.COE_URL) || "localhost:8082";
-        setInterval(() => this.isCoeOnline(), 2000);
+        this.onlineInterval = setInterval(() => this.isCoeOnline(), 2000);
         this.isCoeOnline();
+    }
+
+    ngOnDestroy() {
+        clearInterval(this.onlineInterval);
     }
 
     runSimulation() {
