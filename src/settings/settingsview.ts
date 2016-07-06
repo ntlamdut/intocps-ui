@@ -33,7 +33,7 @@ class SettingsView {
         let value = this.settings.getValue(settingName);
         let self = this;
         if (typeof (value) === "boolean") {
-            $("<div>").load("checkbox-setting.html", function (event: JQueryEventObject) {
+            $("<div>").load("checkbox-setting.html #checkbox-setting-form", function (event: JQueryEventObject) {
                 let html = <HTMLElement>(<HTMLDivElement>this).firstChild;
                 let label = html.querySelector("label");
                 label.textContent = settingName;
@@ -47,7 +47,7 @@ class SettingsView {
             });
         }
         else {
-            $("<div>").load("text-setting.html", function (event: JQueryEventObject) {
+            $("<div>").load("text-setting.html #settings-form", function (event: JQueryEventObject) {
                 let html = <HTMLElement>(<HTMLDivElement>this).firstChild;
                 let label = html.querySelector("label");
                 label.textContent = settingName;
