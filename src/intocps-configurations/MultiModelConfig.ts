@@ -116,18 +116,14 @@ export class MultiModelConfig implements ISerializable {
                     pairs.forEach(pair => {
                         if (pair.scalarVariable.isConfirmed) {
                             if (!Fmi.isTypeCompatiple(sv.type, pair.scalarVariable.type)) {
-                                let m: ErrorMessage = { message: "Uncompatible types in connection. The output scalar variable \"" + sv.name + "\": " + sv.type + " is connected to scalar variable \"" + pair.scalarVariable.name + "\": " + pair.scalarVariable.type };
-                                messages.push(m);
+                                messages.push(new ErrorMessage(`Uncompatible types in connection. The output scalar variable "${sv.name}": ${sv.type} is connected to scalar variable "${pair.scalarVariable.name}": ${pair.scalarVariable.type}`));
                             }
-                        }
-                        else {
-                            let m: WarningMessage = { message: "Use of unconfirmed ScalarVariable: \"" + pair.scalarVariable.name + "\" as connection input" };
-                            messages.push(m);
+                        } else {
+                            messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${pair.scalarVariable.name}" as connection input`));
                         }
                     });
                 } else {
-                    let m: WarningMessage = { message: "Use of unconfirmed ScalarVariable: \"" + sv.name + "\" as connection output" };
-                    messages.push(m);
+                    messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${sv.name}" as connection output`));
                 }
             });
 
@@ -135,12 +131,10 @@ export class MultiModelConfig implements ISerializable {
             instance.initialValues.forEach((value, sv) => {
                 if (sv.isConfirmed) {
                     if (!Fmi.isTypeCompatipleWithValue(sv.type, value)) {
-                        let m: ErrorMessage = { message: "Uncompatible types for parameter. ScalarVariable: \"" + sv.name + "\" "+Fmi.ScalarVariableType[sv.type]+"  Value: " + value +" "+typeof(value)};
-                        messages.push(m);
+                        messages.push(new ErrorMessage(`Uncompatible types for parameter. ScalarVariable: "${sv.name}" ${Fmi.ScalarVariableType[sv.type]}  Value: ${value} ${typeof(value)}`));
                     }
                 } else {
-                    let m: WarningMessage = { message: "Use of unconfirmed ScalarVariable: \"" + sv.name + "\" as parameter" };
-                    messages.push(m);
+                    messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${sv.name}" as parameter`));
                 }
             });
         });
