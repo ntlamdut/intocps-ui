@@ -113,9 +113,9 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
     constructor(
         public id:string,
         public ports:Array<Fmi.InstanceScalarPair>,
-        order?:number,//can be 1 or 2
-        abstol?:number,
-        safety?:number
+        public order?:number,//can be 1 or 2
+        public abstol?:number,
+        public safety?:number
     ) {
     }
 }
