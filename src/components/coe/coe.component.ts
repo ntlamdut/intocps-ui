@@ -39,6 +39,7 @@ export class CoeComponent implements OnInit {
     ngOnInit() {
         this.url = this.settings.get(SettingKeys.COE_URL) || "localhost:8082";
         setInterval(() => this.isCoeOnline(), 2000);
+        this.isCoeOnline();
     }
 
     runSimulation() {
