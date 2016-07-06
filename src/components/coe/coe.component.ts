@@ -33,7 +33,7 @@ export class CoeComponent implements OnInit {
         private http:Http,
         private settings:SettingsService
     ) {
-        console.log(module.id);
+
     }
 
     ngOnInit() {
