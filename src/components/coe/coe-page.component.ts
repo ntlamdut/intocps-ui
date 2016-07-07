@@ -3,7 +3,7 @@ import {CoeConfigurationComponent} from "./coe-configuration.component";
 import {CoeSimulationComponent} from "./coe-simulation.component";
 
 @Component({
-    selector: "coe",
+    selector: "coe-page",
     templateUrl: "./components/coe/coe-page.component.html",
     directives: [
         CoeConfigurationComponent,
