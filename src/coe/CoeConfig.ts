@@ -3,65 +3,38 @@
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
-import * as Main from  "../settings/settings"
-import * as IntoCpsApp from  "../IntoCpsApp"
-import {IntoCpsAppEvents} from "../IntoCpsAppEvents";
-import Path = require('path');
-
-import * as Collections from 'typescript-collections';
-
-import * as Fmi from "./fmi";
-
-import * as Configs from "../intocps-configurations/intocps-configurations";
-
+import * as Path from 'path';
+import {CoSimulationConfig} from "../intocps-configurations/CoSimulationConfig";
 
 export class CoeConfig {
+    private coSimConfig:CoSimulationConfig;
+    private remoteCoe:boolean = false;
 
-    private coSimConfig: Configs.CoSimulationConfig;
-    private remoteCoe: boolean = false;
-
-    constructor(coSimConfig: Configs.CoSimulationConfig, remoteCoe: boolean) {
+    constructor(coSimConfig: CoSimulationConfig, remoteCoe: boolean) {
         this.coSimConfig = coSimConfig;
         this.remoteCoe = remoteCoe;
     }
 
-    public toJSON(): string {
-        let self = this;
+    toJSON():string {
+        let fmus = {};
 
-        var objMm = this.coSimConfig.multiModel.toObject();
-
-        var objCs = this.coSimConfig.toObject();
-
-
-        var objFmus: any = new Object();
         this.coSimConfig.multiModel.fmus.forEach(fmu => {
-
-            var path: string = null;
-
-            if (self.remoteCoe) {
-                path = Path.join("session:", Path.basename(fmu.path));
-            } else {
-                path = fmu.path;
-            }
-
-            objFmus[fmu.name] = path;
+            fmus[fmu.name] = this.remoteCoe ? Path.join("session:", Path.basename(fmu.path)) : fmu.path;
         });
 
-
-        var dto: any = new Object();
+        let data = {};
 
         //FMUS
-        Object.assign(dto,
-            objMm, objCs);
+        Object.assign(data,
+            this.coSimConfig.multiModel.toObject(),
+            this.coSimConfig.toObject());
 
-        delete dto["endTime"];
-        delete dto["startTime"];
-        delete dto["multimodel_path"];
-        dto["fmus"] = objFmus;
+        delete data["endTime"];
+        delete data["startTime"];
+        delete data["multimodel_path"];
+        data["fmus"] = fmus;
 
-        let jsonData = JSON.stringify(dto);
-        console.info(jsonData);
-        return jsonData;
+        return JSON.stringify(data);
     }
 }
 
