@@ -98,6 +98,12 @@ function openViewController(htmlPath: string, path: string, controllerPar: new (
     });
 }
 
+function openView(htmlPath:string, callback?:(event:JQueryEventObject) => void) {
+    window.ng2app.closeAll();
+
+    $(init.mainView).load(htmlPath, callback);
+}
+
 menuHandler.deInitialize = () => {
     if (controller != null && controller.deInitialize)
         return controller.deInitialize();
@@ -105,13 +111,13 @@ menuHandler.deInitialize = () => {
         return true;
 };
 
-menuHandler.openCoeView = (path) => {
+menuHandler.openCoeView = (path:string) => {
     $(init.mainView).empty();
     $('#activeTabTitle').text("Multi Model > COE");
     window.ng2app.openCOE(path);
 };
 
-menuHandler.openMultiModel = (path) => {
+menuHandler.openMultiModel = (path:string) => {
     $(init.mainView).empty();
     $('#activeTabTitle').text("Multi Model");
     window.ng2app.openMultiModel(path);
@@ -125,30 +131,30 @@ menuHandler.runRTTesterCommand = (commandSpec: any) => {
 };
 
 menuHandler.createTDGProject = (path: string) => {
-    $(init.mainView).load("rttester/CreateTDGProject.html", (event: JQueryEventObject) => {
+    openView("rttester/CreateTDGProject.html", (event: JQueryEventObject) => {
         controller = new CreateTDGProjectController(init.mainView, path);
     });
 };
 
 menuHandler.createMCProject = (path: string) => {
-    $(init.mainView).load("rttester/CreateMCProject.html", (event: JQueryEventObject) => {
+    openView("rttester/CreateMCProject.html", (event: JQueryEventObject) => {
         controller = new CreateMCProjectController(init.mainView, path);
     });
 };
 
 menuHandler.runTest = (path: string) => {
-    $(init.mainView).load("rttester/RunTest.html", (event: JQueryEventObject) => {
+    openView("rttester/RunTest.html", (event: JQueryEventObject) => {
         controller = new RunTestController(init.mainView, path);
     });
 };
 
 menuHandler.openSysMlExport = () => {
-    $(init.mainView).load("sysmlexport/sysmlexport.html");
+    openView("sysmlexport/sysmlexport.html");
     IntoCpsApp.setTopName("SysML Export");
 };
 
 menuHandler.openFmu = () => {
-    $(init.mainView).load("fmus/fmus.html");
+    openView("fmus/fmus.html");
     IntoCpsApp.setTopName("FMUs");
 };
 
@@ -157,14 +163,14 @@ menuHandler.openDseView = (path) => {
 };
 
 menuHandler.createDse = (path) => {
-    $(init.mainView).load("dse/dse.html", (event: JQueryEventObject) => {
+    openView("dse/dse.html", (event: JQueryEventObject) => {
         // create empty DSE file and load it.
         menuHandler.openDseView("")
     });
 };
 
 menuHandler.createDsePlain = () => {
-    $(init.mainView).load("dse/dse.html", (event: JQueryEventObject) => {
+    openView("dse/dse.html", (event: JQueryEventObject) => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = "new";
@@ -177,7 +183,7 @@ menuHandler.createDsePlain = () => {
 };
 
 menuHandler.createMultiModel = (path) => {
-    $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
+    openView("multimodel/multimodel.html", (event: JQueryEventObject) => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = Path.basename(path, ".sysml.json");
@@ -190,7 +196,7 @@ menuHandler.createMultiModel = (path) => {
 };
 
 menuHandler.createMultiModelPlain = () => {
-    $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
+    openView("multimodel/multimodel.html", (event: JQueryEventObject) => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = "new";
@@ -203,7 +209,7 @@ menuHandler.createMultiModelPlain = () => {
 };
 
 menuHandler.createCoSimConfiguration = (path) => {
-    $(init.mainView).load("coe/coe.html", function (event: JQueryEventObject) {
+    openView("coe/coe.html", function (event: JQueryEventObject) {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let coePath: string = project.createCoSimConfig(path + "", "co-sim-" + Math.floor(Math.random() * 100), null).toString();
