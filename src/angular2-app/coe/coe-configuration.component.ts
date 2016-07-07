@@ -17,7 +17,7 @@ import {SamplingRateComponent} from "./inputs/sampling-rate.component";
         BoundedDifferenceComponent,
         SamplingRateComponent
     ],
-    templateUrl: "./components/coe/coe-configuration.component.html"
+    templateUrl: "./angular2-app/coe/coe-configuration.component.html"
 })
 export class CoeConfigurationComponent implements OnInit {
     @Input()

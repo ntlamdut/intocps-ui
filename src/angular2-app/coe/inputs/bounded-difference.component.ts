@@ -4,7 +4,7 @@ import {Instance} from "../models/Fmu";
 
 @Component({
     selector: 'bounded-difference',
-    templateUrl: "./components/coe/inputs/bounded-difference.component.html",
+    templateUrl: "./angular2-app/coe/inputs/bounded-difference.component.html",
 })
 export class BoundedDifferenceComponent {
     @Input()

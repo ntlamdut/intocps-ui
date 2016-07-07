@@ -4,7 +4,7 @@ import {CoeSimulationComponent} from "./coe-simulation.component";
 
 @Component({
     selector: "coe-page",
-    templateUrl: "./components/coe/coe-page.component.html",
+    templateUrl: "./angular2-app/coe/coe-page.component.html",
     directives: [
         CoeConfigurationComponent,
         CoeSimulationComponent

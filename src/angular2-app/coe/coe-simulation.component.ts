@@ -15,7 +15,7 @@ import {coeServerStatusHandler} from "../../menus";
     directives: [
         LineChartComponent
     ],
-    templateUrl: "./components/coe/coe-simulation.component.html"
+    templateUrl: "./angular2-app/coe/coe-simulation.component.html"
 })
 export class CoeSimulationComponent implements OnInit, OnDestroy {
     @Input()

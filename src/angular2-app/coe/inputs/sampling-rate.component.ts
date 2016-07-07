@@ -3,7 +3,7 @@ import {SamplingRateConstraint} from "../../../intocps-configurations/CoSimulati
 
 @Component({
     selector: 'sampling-rate',
-    templateUrl: "./components/coe/inputs/sampling-rate.component.html",
+    templateUrl: "./angular2-app/coe/inputs/sampling-rate.component.html",
 })
 export class SamplingRateComponent {
     @Input()
