@@ -53,10 +53,7 @@ export class CoeComponent implements OnInit, OnDestroy {
 
         CoSimulationConfig
             .parse(this.path, project.getRootFilePath(), project.getFmusPath())
-            .then(config => {
-                console.log(config);
-                this.zone.run(() => this.coeSimulation.run(config));
-            });
+            .then(config => this.zone.run(() => this.coeSimulation.run(config)));
     }
 
     isCoeOnline() {
