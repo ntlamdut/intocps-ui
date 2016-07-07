@@ -257,11 +257,13 @@ export class Parser {
         );
     }
 
-    private parseAlgorithmVarConstraints(data: any): Array<VariableStepConstraint> {
-        return data.map(c => {
+    private parseAlgorithmVarConstraints(constraints: Object): Array<VariableStepConstraint> {
+        return Object.keys(constraints).map(id => {
+            let c = constraints[id];
+
             if (c.type === "zerocrossing") {
                 return new ZeroCrossingConstraint(
-                    c.id,
+                    id,
                     c.ports, // TODO: Map to Fmi.InstanceScalarPair
                     c.order,
                     c.abstol,
@@ -271,7 +273,7 @@ export class Parser {
 
             if (c.type === "boundeddifference") {
                 return new BoundedDifferenceConstraint(
-                    c.id,
+                    id,
                     c.ports, // TODO: Map to Fmi.InstanceScalarPair
                     c.abstol,
                     c.reltol,
@@ -282,15 +284,14 @@ export class Parser {
 
             if (c.type === "samplingrate") {
                 return new SamplingRateConstraint(
-                    c.id,
+                    id,
                     c.base,
                     c.rate,
                     c.startTime
                 )
             }
-        })
+        });
     }
-
 }
 
 
@@ -424,15 +425,22 @@ export class Serializer extends Parser {
         if (algorithm instanceof FixedStepAlgorithm) {
             obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_FIXED;
             obj[this.ALGORITHM_TYPE_FIXED_SIZE_TAG] = algorithm.size;
-        } else if (algorithm instanceof VariableStepAlgorithm) {
+
+            return obj;
+        }
+
+        if (algorithm instanceof VariableStepAlgorithm) {
+            let constraints = {};
+            algorithm.constraints.forEach(c => constraints[c.id] = c);
+
             obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_VAR;
             obj[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG] = algorithm.initSize;
             obj[this.ALGORITHM_TYPE_VAR_SIZE_TAG] = [algorithm.sizeMin, algorithm.sizeMax];
-            obj[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG] = algorithm.constraints;
-        } else {
-            return null;
+            obj[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG] = constraints;
+
+            return obj;
         }
 
-        return obj;
+        return null;
     }
 }
