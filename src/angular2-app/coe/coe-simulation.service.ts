@@ -146,14 +146,16 @@ export class CoeSimulationService {
     }
 
     private downloadResults() {
-        this.progress = 100;
         this.webSocket.close();
 
         this.http.get(`http://${this.url}/result/${this.sessionId}`)
             .subscribe(response => {
-                this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/log.csv`), response.text());
-                this.fileSystem.copyFile(this.config.sourcePath, Path.normalize(`${this.resultDir}/coe.json`));
-                this.fileSystem.copyFile(this.config.multiModel.sourcePath, Path.normalize(`${this.resultDir}/mm.json`));
+                // Write results to disk and save a copy of the multi model and coe configs
+                Promise.all([
+                    this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/log.csv`), response.text()),
+                    this.fileSystem.copyFile(this.config.sourcePath, Path.normalize(`${this.resultDir}/coe.json`)),
+                    this.fileSystem.copyFile(this.config.multiModel.sourcePath, Path.normalize(`${this.resultDir}/mm.json`))
+                ]).then(() => this.progress = 100);
             });
     }
 }
