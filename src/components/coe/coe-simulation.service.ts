@@ -7,11 +7,13 @@ import {CoeConfig} from "../../coe/CoeConfig";
 import * as Path from "path";
 import {BehaviorSubject} from "rxjs/Rx";
 import {Injectable, NgZone} from "@angular/core";
+import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
 
 @Injectable()
 export class CoeSimulationService {
     progress:number = 0;
     datasets:BehaviorSubject<Array<any>> = new BehaviorSubject([]);
+    config:CoSimulationConfig;
 
     private webSocket:WebSocket;
     private sessionId:number;
@@ -27,7 +29,7 @@ export class CoeSimulationService {
 
     }
 
-    run(config:any) {
+    run(config:CoSimulationConfig) {
         this.config = config;
         this.remoteCoe = this.settings.get(SettingKeys.COE_REMOTE_HOST);
         this.url = this.settings.get(SettingKeys.COE_URL);
@@ -62,7 +64,7 @@ export class CoeSimulationService {
             .subscribe((response:Response) => {
                 this.sessionId = response.json().sessionId;
                 this.uploadFmus();
-            }, error => console.error(error));
+            });
     }
 
     private uploadFmus() {
@@ -86,10 +88,7 @@ export class CoeSimulationService {
         });
 
         this.http.post(`http://${this.url}/upload/${this.sessionId}`, formData)
-            .subscribe(
-                () => this.initializeCoe(),
-                error => console.error(error)
-            );
+            .subscribe(() => this.initializeCoe());
     }
 
     private initializeCoe() {
@@ -101,10 +100,7 @@ export class CoeSimulationService {
             .then(() => this.fileSystem.writeFile(Path.join(this.resultDir, "config.json"), data))
             .then(() => {
                 this.http.post(`http://${this.url}/initialize/${this.sessionId}`, data)
-                    .subscribe(
-                        () => this.simulate(),
-                        error => console.error(error)
-                    );
+                    .subscribe(() => this.simulate());
             });
     }
 
@@ -121,10 +117,7 @@ export class CoeSimulationService {
         this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
             .then(() => {
                 this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
-                    .subscribe(
-                        () => this.downloadResults(),
-                        error => console.error(error)
-                    );
+                    .subscribe(() => this.downloadResults());
             });
     }
 
