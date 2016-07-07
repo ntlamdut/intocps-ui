@@ -39,6 +39,19 @@ export class FileSystemService {
         });
     }
 
+    copyFile(source:string, target:string) {
+        return this.wrap((resolve, reject) => {
+            let read = fs.createReadStream(source);
+            read.on("error", error => reject(error));
+
+            let write = fs.createWriteStream(target);
+            write.on("error", error => reject(error));
+            write.on("close", () => resolve());
+
+            read.pipe(write);
+        });
+    }
+
     mkdir(path:string) {
         return this.wrap((resolve, reject) => {
             fs.mkdir(path, (error) => {

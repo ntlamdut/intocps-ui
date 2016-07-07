@@ -151,9 +151,10 @@ export class CoeSimulationService {
         this.webSocket.close();
 
         this.http.get(`http://${this.url}/result/${this.sessionId}`)
-            .subscribe(
-                response => this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/log.csv`), response.text()),
-                error => console.error(error)
-            );
+            .subscribe(response => {
+                this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/log.csv`), response.text());
+                this.fileSystem.copyFile(this.config.sourcePath, Path.normalize(`${this.resultDir}/coe.json`));
+                this.fileSystem.copyFile(this.config.multiModel.sourcePath, Path.normalize(`${this.resultDir}/mm.json`));
+            });
     }
 }
