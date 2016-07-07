@@ -26,7 +26,6 @@ declare var window: MyWindow;
 import * as Menus from "./menus";
 import {provideForms, disableDeprecatedForms} from "@angular/forms";
 
-
 class InitializationController {
     // constants
     mainViewId: string = "mainView";
@@ -80,7 +79,7 @@ class InitializationController {
             browserController.initialize();
         });
     }
-};
+}
 
 // Initialise controllers
 let menuHandler: IntoCpsAppMenuHandler = new IntoCpsAppMenuHandler();
@@ -101,11 +100,10 @@ function openViewController(htmlPath: string, path: string, controllerPar: new (
 
 menuHandler.deInitialize = () => {
     if (controller != null && controller.deInitialize)
-    { return controller.deInitialize(); }
+        return controller.deInitialize();
     else
-    { return true; }
-
-}
+        return true;
+};
 
 menuHandler.openCoeView = (path) => {
     $(init.mainView).empty();
@@ -124,7 +122,7 @@ menuHandler.runRTTesterCommand = (commandSpec: any) => {
         RTesterModalCommandWindow.initialize(commandSpec);
         (<any>$('#modalDialog')).modal({ keyboard: false, backdrop: false });
     });
-}
+};
 
 menuHandler.createTDGProject = (path: string) => {
     $(init.mainView).load("rttester/CreateTDGProject.html", (event: JQueryEventObject) => {
@@ -212,13 +210,10 @@ menuHandler.createCoSimConfiguration = (path) => {
             IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
             menuHandler.openCoeView(coePath);
         }
-
-
     });
 };
 
 menuHandler.deletePath = (path) => {
-
     let name = Path.basename(path);
     if (name.indexOf('R_') >= 0) {
         console.info("Deleting " + path);
@@ -242,10 +237,8 @@ menuHandler.deletePath = (path) => {
 };
 
 menuHandler.openWithSystemEditor = (path) => {
-
     SystemUtil.openPath(path);
 };
 
 
 Menus.configureIntoCpsMenu();
-
