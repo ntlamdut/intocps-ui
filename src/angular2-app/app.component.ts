@@ -3,7 +3,7 @@ import {FileSystemService} from "./shared/file-system.service";
 import {CoePageComponent} from "./coe/coe-page.component";
 import {HTTP_PROVIDERS} from "@angular/http";
 import {SettingsService} from "./shared/settings.service";
-import {MultiModelPageComponent} from "./multi-model/multi-model-page.component";
+import {MmPageComponent} from "./mm/mm-page.component";
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -17,7 +17,7 @@ declare let window: MyWindow;
 @Component({
     selector: 'app',
     directives: [
-        MultiModelPageComponent,
+        MmPageComponent,
         CoePageComponent
     ],
     providers: [
@@ -26,7 +26,7 @@ declare let window: MyWindow;
         SettingsService
     ],
     template: `
-        <multi-model-page *ngIf="page === 'multiModel'" [path]="path"></multi-model-page>
+        <mm-page *ngIf="page === 'multiModel'" [path]="path"></mm-page>
         <coe-page *ngIf="page === 'coe'" [path]="path"></coe-page>`
 })
 export class AppComponent implements OnInit {
