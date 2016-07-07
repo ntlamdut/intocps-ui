@@ -1,5 +1,6 @@
 import {Component, Input} from "@angular/core";
 import {BoundedDifferenceConstraint} from "../../../intocps-configurations/CoSimulationConfig";
+import {Instance} from "../../../coe/fmi";
 
 @Component({
     selector: 'bounded-difference',
@@ -8,4 +9,7 @@ import {BoundedDifferenceConstraint} from "../../../intocps-configurations/CoSim
 export class BoundedDifferenceComponent {
     @Input()
     constraint:BoundedDifferenceConstraint;
+
+    @Input()
+    fmuInstances:Array<Instance>;
 }
