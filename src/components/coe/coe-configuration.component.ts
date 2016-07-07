@@ -48,15 +48,17 @@ export class CoeConfigurationComponent implements OnInit {
         CoSimulationConfig
             .parse(this.path, project.getRootFilePath(), project.getFmusPath())
             .then(config => {
-                this.zone.run(() => this.config = config);
+                this.zone.run(() => {
+                    this.config = config;
 
-                // Create an array of the algorithm from the coe config and a new instance of all other algorithms
-                this.algorithms = this.algorithmConstructors
-                    .map(constructor =>
-                        config.algorithm instanceof constructor
-                            ? config.algorithm
-                            : new constructor()
-                    );
+                    // Create an array of the algorithm from the coe config and a new instance of all other algorithms
+                    this.algorithms = this.algorithmConstructors
+                        .map(constructor =>
+                            config.algorithm instanceof constructor
+                                ? config.algorithm
+                                : new constructor()
+                        );
+                });
             });
     }
 
