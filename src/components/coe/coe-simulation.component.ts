@@ -1,25 +1,23 @@
 import {Component, Input, NgZone, OnInit, OnDestroy} from "@angular/core";
-import {CoeSimulationService} from "./coe-simulation.service";
-import {CoeConfigurationComponent} from "./coe-configuration.component";
-import {LineChartComponent} from "../shared/line-chart.component";
-import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
 import IntoCpsApp from "../../IntoCpsApp";
+import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
+import {LineChartComponent} from "../shared/line-chart.component";
+import {CoeSimulationService} from "./coe-simulation.service";
 import {Http} from "@angular/http";
 import {SettingsService, SettingKeys} from "../shared/settings.service";
 import {coeServerStatusHandler} from "../../menus";
 
 @Component({
-    selector: "coe",
-    templateUrl: "./components/coe/coe.component.html",
+    selector: "coe-simulation",
     providers: [
         CoeSimulationService
     ],
     directives: [
-        CoeConfigurationComponent,
         LineChartComponent
-    ]
+    ],
+    templateUrl: "./components/coe/coe-simulation.component.html"
 })
-export class CoeComponent implements OnInit, OnDestroy {
+export class CoeSimulationComponent implements OnInit, OnDestroy {
     @Input()
     path:string;
 

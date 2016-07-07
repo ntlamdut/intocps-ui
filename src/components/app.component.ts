@@ -1,7 +1,6 @@
 import { Component, OnInit, NgZone } from '@angular/core';
-import {CoeConfigurationComponent} from "./coe/coe-configuration.component";
 import {FileSystemService} from "./shared/file-system.service";
-import {CoeComponent} from "./coe/coe.component";
+import {CoePageComponent} from "./coe/coe-page.component";
 import {HTTP_PROVIDERS} from "@angular/http";
 import {SettingsService} from "./shared/settings.service";
 
@@ -17,7 +16,7 @@ declare let window: MyWindow;
 @Component({
     selector: 'app',
     directives: [
-        CoeComponent
+        CoePageComponent
     ],
     providers: [
         HTTP_PROVIDERS,
