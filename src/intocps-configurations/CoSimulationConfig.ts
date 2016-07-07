@@ -3,10 +3,10 @@
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
-import * as Fmi from "../coe/fmi"
 import {MultiModelConfig} from "./MultiModelConfig"
 import {Parser, Serializer} from "./Parser"
 import * as fs from "fs"
+import {Instance, ScalarVariable, InstanceScalarPair} from "../angular2-app/coe/models/Fmu";
 
 export class CoSimulationConfig implements ISerializable {
 
@@ -17,7 +17,7 @@ export class CoSimulationConfig implements ISerializable {
     sourcePath: string;
 
     //optional livestream outputs
-    livestream: Map<Fmi.Instance, Fmi.ScalarVariable[]> = new Map<Fmi.Instance, Fmi.ScalarVariable[]>();
+    livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
     algorithm: ICoSimAlgorithm = new FixedStepAlgorithm();
     startTime: number = 0;
     endTime: number = 10;
@@ -112,7 +112,7 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
 
     constructor(
         public id:string,
-        public ports:Array<Fmi.InstanceScalarPair>,
+        public ports:Array<InstanceScalarPair>,
         public order?:number,//can be 1 or 2
         public abstol?:number,
         public safety?:number
@@ -125,7 +125,7 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
 
     constructor(
         public id:string,
-        public ports:Array<Fmi.InstanceScalarPair>,
+        public ports:Array<InstanceScalarPair>,
         public abstol?:number,
         public reltol?:number,
         public safety?:number,

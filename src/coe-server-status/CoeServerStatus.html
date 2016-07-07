@@ -22,55 +22,24 @@
             margin-right: -10px;
         }
     </style>
-
 </head>
-
 <body>
-
     <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">Overview</h3>
-        </div>
+        <div class="panel-heading"><h3 class="panel-title">Overview</h3></div>
         <div class="panel-body" id="tool-versions-panel">
+            <div id="offline-alert" style="display: none" class="alert alert-danger"></div>
+            <div id="online-alert" style="display: none" class="alert alert-success"></div>
 
-
-            <div id="coe-status">
-                <!-- COE connection information will be added here at runtime -->
-                <!--  <div class="alert alert-success" role="alert">...</div>
-            <div class="alert alert-info" role="alert">...</div>
-            <div class="alert alert-warning" role="alert">...</div>
-            <div class="alert alert-danger" role="alert">...</div> -->
-            </div>
-
-            <div id="coe-console">
-
-            </div>
+            <div id="coe-console"></div>
 
             <button type="button" class="btn btn-default btn-sm" onclick="launchCoe()">
-                     <span class="glyphicon glyphicon-link"></span>Launch
-                </button>
-
-            <!--button type="button" class="btn btn-default btn-sm" onclick="downloadLog()">
-                     <span class="glyphicon glyphicon-download-alt"></span>Download Log
-                </button-->
-
-
+                 <span class="glyphicon glyphicon-link"></span>Launch
+            </button>
         </div>
     </div>
 
-
-
-
-
     <button type="button" class="btn btn-default btn-sm" onclick="coeClose()">
-                     <span class="glyphicon glyphicon-remove"></span> Close
-                </button>
-
-
-
-
-
-
+         <span class="glyphicon glyphicon-remove"></span> Close
+    </button>
 </body>
-
 </html>

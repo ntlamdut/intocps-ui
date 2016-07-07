@@ -1,13 +1,9 @@
-
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
-/// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
-
-
 import {Parser, Serializer} from "./Parser";
 import {WarningMessage, ErrorMessage} from "./Messages";
-import * as Fmi from "../coe/fmi";
+import {
+    Fmu, Instance, ScalarVariableType, isTypeCompatipleWithValue,
+    isTypeCompatiple
+} from "../angular2-app/coe/models/Fmu";
 import * as Path from 'path';
 import * as fs from 'fs';
 
@@ -18,8 +14,8 @@ export class MultiModelConfig implements ISerializable {
     //path to the source from which this DOM is generated
     sourcePath: string;
     fmusRootPath: string;
-    fmus: Fmi.Fmu[] = [];
-    fmuInstances: Fmi.Instance[] = [];
+    fmus: Fmu[] = [];
+    fmuInstances: Instance[] = [];
 
     public getInstance(fmuName: string, instanceName: string) {
         return this.fmuInstances.find(v => v.fmu.name == fmuName && v.name == instanceName) || null;
@@ -36,14 +32,14 @@ export class MultiModelConfig implements ISerializable {
                 throw "Cannot create connection fmu is missing for: " + fmuName;
             }
 
-            instance = new Fmi.Instance(fmu, instanceName);
+            instance = new Instance(fmu, instanceName);
             this.fmuInstances.push(instance);
         }
 
         return instance;
     }
 
-    public getFmu(fmuName: string): Fmi.Fmu {
+    public getFmu(fmuName: string): Fmu {
         return this.fmus.find(v => v.name == fmuName) || null;
     }
 
@@ -77,7 +73,7 @@ export class MultiModelConfig implements ISerializable {
             }).then(content => this.create(path, fmuRootPath, JSON.parse(content.toString())));
     }
 
-    public removeFmu(fmu: Fmi.Fmu) {
+    public removeFmu(fmu: Fmu) {
         this.fmus.splice(this.fmus.indexOf(fmu), 1);
         
         this.fmuInstances
@@ -85,7 +81,7 @@ export class MultiModelConfig implements ISerializable {
             .forEach(element => this.removeInstance(element));
     }
 
-    public removeInstance(instance: Fmi.Instance) {
+    public removeInstance(instance: Instance) {
         // Remove the instance
         this.fmuInstances.splice(this.fmuInstances.indexOf(instance), 1);
 
@@ -115,7 +111,7 @@ export class MultiModelConfig implements ISerializable {
                 if (sv.isConfirmed) {
                     pairs.forEach(pair => {
                         if (pair.scalarVariable.isConfirmed) {
-                            if (!Fmi.isTypeCompatiple(sv.type, pair.scalarVariable.type)) {
+                            if (!isTypeCompatiple(sv.type, pair.scalarVariable.type)) {
                                 messages.push(new ErrorMessage(`Uncompatible types in connection. The output scalar variable "${sv.name}": ${sv.type} is connected to scalar variable "${pair.scalarVariable.name}": ${pair.scalarVariable.type}`));
                             }
                         } else {
@@ -130,8 +126,8 @@ export class MultiModelConfig implements ISerializable {
             //check parameters
             instance.initialValues.forEach((value, sv) => {
                 if (sv.isConfirmed) {
-                    if (!Fmi.isTypeCompatipleWithValue(sv.type, value)) {
-                        messages.push(new ErrorMessage(`Uncompatible types for parameter. ScalarVariable: "${sv.name}" ${Fmi.ScalarVariableType[sv.type]}  Value: ${value} ${typeof(value)}`));
+                    if (!isTypeCompatipleWithValue(sv.type, value)) {
+                        messages.push(new ErrorMessage(`Uncompatible types for parameter. ScalarVariable: "${sv.name}" ${ScalarVariableType[sv.type]}  Value: ${value} ${typeof(value)}`));
                     }
                 } else {
                     messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${sv.name}" as parameter`));

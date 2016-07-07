@@ -1,10 +1,8 @@
 ///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
-/// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
+///<reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
-
-import * as Fmi from "../coe/fmi";
 import {MultiModelConfig} from "./MultiModelConfig";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, VariableStepAlgorithm, VariableStepConstraint,
@@ -12,6 +10,7 @@ import {
 } from "./CoSimulationConfig";
 import * as Path from 'path';
 import * as fs from 'fs';
+import {Fmu, InstanceScalarPair, Instance, ScalarVariable} from "../angular2-app/coe/models/Fmu";
 
 export class Parser {
 
@@ -44,11 +43,11 @@ export class Parser {
         }
     }
     //Parse fmus json tag
-    parseFmus(data: any, basePath: string): Promise<Fmi.Fmu[]> {
+    parseFmus(data: any, basePath: string): Promise<Fmu[]> {
 
-        var fmus: Fmi.Fmu[] = [];
+        var fmus: Fmu[] = [];
 
-        return new Promise<Fmi.Fmu[]>((resolve, reject) => {
+        return new Promise<Fmu[]>((resolve, reject) => {
 
             var populates: Promise<void>[] = [];
             try {
@@ -57,7 +56,7 @@ export class Parser {
                         var description = "";
                         var path = data[this.FMUS_TAG][key];
                         let correctedPath = Parser.fileExists(path) ? path : Path.normalize(basePath + "/" + path); 
-                        let fmu = new Fmi.Fmu(key, correctedPath);
+                        let fmu = new Fmu(key, correctedPath);
 
 
                         populates.push(fmu.populate());
@@ -126,7 +125,7 @@ export class Parser {
     }
 
     //Utility method to obtain an instance from the multimodel by its string id encoding
-    private getInstance(multiModel: MultiModelConfig, id: string): Fmi.Instance {
+    private getInstance(multiModel: MultiModelConfig, id: string): Instance {
         let ids = this.parseId(id);
 
         let fmuName = ids[0];
@@ -163,13 +162,11 @@ export class Parser {
                     var inInstance = multiModel.getInstanceOrCreate(inFmuName, inInstanceName);
 
                     instance.addOutputToInputLink(instance.fmu.getScalarVariable(scalarVariableName),
-                        new Fmi.InstanceScalarPair(inInstance, inInstance.fmu.getScalarVariable(inScalarVariableName)));
+                        new InstanceScalarPair(inInstance, inInstance.fmu.getScalarVariable(inScalarVariableName)));
                 });
             });
         }
     }
-
-
 
     //parse parameters
     parseParameters(data: any, multiModel: MultiModelConfig) {
@@ -211,16 +208,16 @@ export class Parser {
         return Path.normalize(projectRoot + "/" + this.parseSimpleTag(data, this.MULTIMODEL_PATH_TAG));
     }
 
-    parseLivestream(data: any, multiModel: MultiModelConfig): Map<Fmi.Instance, Fmi.ScalarVariable[]> {
-        let livestream = new Map<Fmi.Instance, Fmi.ScalarVariable[]>();
+    parseLivestream(data: any, multiModel: MultiModelConfig): Map<Instance, ScalarVariable[]> {
+        let livestream = new Map<Instance, ScalarVariable[]>();
         let livestreamEntry = data[this.LIVESTREAM_TAG];
 
         if (livestreamEntry) {
             Object.keys(livestreamEntry).forEach(id => {
                 let [fmuName, instanceName] = this.parseIdShort(id);
-                let instance: Fmi.Instance = multiModel.getInstanceOrCreate(fmuName, instanceName);
+                let instance: Instance = multiModel.getInstanceOrCreate(fmuName, instanceName);
 
-                livestream.set(instance, livestreamEntry[id].map(input => instance.fmu.getScalarVariable(input)));
+                livestream.set(instance, livestreamEntry[id].map((input:string) => instance.fmu.getScalarVariable(input)));
             });
         }
 
@@ -257,7 +254,7 @@ export class Parser {
         );
     }
 
-    private parseAlgorithmVarConstraints(constraints: Object): Array<VariableStepConstraint> {
+    private parseAlgorithmVarConstraints(constraints: any): Array<VariableStepConstraint> {
         return Object.keys(constraints).map(id => {
             let c = constraints[id];
 
@@ -349,10 +346,10 @@ export class Serializer extends Parser {
     }
 
     //convert fmus to JSON
-    private toObjectFmus(fmus: Fmi.Fmu[], fmusRootPath: string): any {
+    private toObjectFmus(fmus: Fmu[], fmusRootPath: string): any {
         let data:any = {};
 
-        fmus.forEach((fmu: Fmi.Fmu) => {
+        fmus.forEach((fmu: Fmu) => {
             let path = fmu.path;
             if (path.indexOf(fmusRootPath) >= 0) {
                 path = path.substring(fmusRootPath.length + 1);
@@ -365,17 +362,17 @@ export class Serializer extends Parser {
     }
 
     //util method to obtain id from instance
-    public static getId(value: Fmi.Instance): string {
+    public static getId(value: Instance): string {
         return value.fmu.name + "." + value.name;
     }
 
     //util method to obtain full id from instance and scalarvariable
-    public static getIdSv(value: Fmi.Instance, sv: Fmi.ScalarVariable): string {
+    public static getIdSv(value: Instance, sv: ScalarVariable): string {
         return value.fmu.name + "." + value.name + "." + sv.name;
     }
 
     //toObjectConnections
-    toObjectConnections(fmuInstances: Fmi.Instance[]): any {
+    toObjectConnections(fmuInstances: Instance[]): any {
         let cons:any = {};
 
         fmuInstances.forEach(value => {
@@ -396,7 +393,7 @@ export class Serializer extends Parser {
 
 
     //to JSON parameters
-    toObjectParameters(fmuInstances: Fmi.Instance[]): any {
+    toObjectParameters(fmuInstances: Instance[]): any {
         let obj:any = {};
 
         fmuInstances.forEach(instance => {
@@ -409,7 +406,7 @@ export class Serializer extends Parser {
     }
 
 
-    toObjectLivestream(livestream: Map<Fmi.Instance, Fmi.ScalarVariable[]>): any {
+    toObjectLivestream(livestream: Map<Instance, ScalarVariable[]>): any {
         let obj:any = {};
 
         livestream.forEach((svs, instance) => {
@@ -430,7 +427,8 @@ export class Serializer extends Parser {
         }
 
         if (algorithm instanceof VariableStepAlgorithm) {
-            let constraints = {};
+            let constraints:any = {};
+
             algorithm.constraints.forEach(c => constraints[c.id] = c);
 
             obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_VAR;

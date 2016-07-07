@@ -1,7 +1,5 @@
-
 import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {IntoCpsApp} from  "./IntoCpsApp";
-import {MmController} from  "./multimodel/MmController";
 import {DseController} from  "./dse/dse";
 import {CreateTDGProjectController} from  "./rttester/CreateTDGProject";
 import {CreateMCProjectController} from  "./rttester/CreateMCProject";
@@ -15,10 +13,9 @@ import * as CustomFs from "./custom-fs";
 import {IProject} from "./proj/IProject";
 import * as SystemUtil from "./SystemUtil";
 import { bootstrap }    from '@angular/platform-browser-dynamic';
-import {AppComponent} from './components/app.component';
-
-import fs = require("fs");
-import Path = require('path');
+import {AppComponent} from './angular2-app/app.component';
+import * as fs from 'fs';
+import * as Path from 'path';
 
 interface MyWindow extends Window {
     ng2app: AppComponent;

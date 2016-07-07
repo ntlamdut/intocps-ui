@@ -1,0 +1,44 @@
+<div class="form-horizontal">
+    <div class="form-group">
+        <label class="col-sm-3 control-label">ID</label>
+        <div class="col-sm-9">
+            <input [(ngModel)]="constraint.id" name="id" class="form-control">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">Ports</label>
+        <div class="col-sm-9">
+            <input name="port1" class="form-control">
+            <input name="port2" class="form-control">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">Order</label>
+        <div class="col-sm-9">
+            <label class="radio-inline">
+                <input [(ngModel)]="constraint.order" type="radio" name="order" value="1"> 1
+            </label>
+            <label class="radio-inline">
+                <input [(ngModel)]="constraint.order" type="radio" name="order" value="2"> 2
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">Absolute Tolerance</label>
+        <div class="col-sm-9">
+            <input [(ngModel)]="constraint.abstol" name="abstol" class="form-control" type="number">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">Safety</label>
+        <div class="col-sm-9">
+            <input [(ngModel)]="constraint.safety" name="safety" class="form-control" type="number">
+        </div>
+    </div>
+</div>
+
+<pre>{{fmuInstances | json}}</pre>
