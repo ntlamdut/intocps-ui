@@ -6,27 +6,31 @@
     border-left: 5px solid #a94442; /* red */
 }
 
-coe select {
+mm-configuration a {
+    cursor: pointer;
+}
+
+coe-configuration select {
     width: 200px !important;
 }
 
-coe .input-group {
+coe-configuration .input-group {
     display: block;
 }
 
-coe .constraint-container {
+coe-configuration .constraint-container {
     display: flex;
     flex-wrap: wrap;
 }
 
-coe .constraint-panel {
+coe-configuration .constraint-panel {
     width: 45%;
     min-width: 300px;
     margin-left: 2.5%;
     margin-right: 2.5%;
 }
 
-coe a {
+coe-configuration a {
     cursor: pointer;
     color: black;
 }
