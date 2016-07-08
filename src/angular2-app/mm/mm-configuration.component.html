@@ -29,6 +29,51 @@
 
     <h4>Connections</h4>
 
+    <div class="row">
+        <div class="col-md-3">
+            <h5><label>Output instance</label></h5>
+
+            <ul class="list-group">
+                <a *ngFor="let instance of config.fmuInstances"
+                   (click)="selectOutputInstance(instance)"
+                   [class.active]="selectedOutputInstance === instance"
+                   class="list-group-item">{{instance.name}}</a>
+            </ul>
+        </div>
+
+        <div class="col-md-3">
+            <h5><label>Output</label></h5>
+
+            <ul *ngIf="selectedOutputInstance" class="list-group">
+                <a *ngFor="let output of getOutputs()"
+                   (click)="selectOutput(output)"
+                   [class.active]="selectedOutput === output"
+                   class="list-group-item">{{output.name}}</a>
+            </ul>
+        </div>
+
+        <div class="col-md-3">
+            <h5><label>Input instance</label></h5>
+
+            <ul *ngIf="selectedOutput" class="list-group">
+                <a *ngFor="let instance of config.fmuInstances"
+                   (click)="selectInputInstance(instance)"
+                   [class.active]="selectedInputInstance === instance"
+                   class="list-group-item">{{instance.name}}</a>
+            </ul>
+        </div>
+
+        <div class="col-md-3">
+            <h5><label>Input</label></h5>
+
+            <ul *ngIf="selectedInputInstance" class="list-group">
+                <a *ngFor="let input of getInputs()">{{input.name}}</a>
+            </ul>
+        </div>
+    </div>
+
+    <hr>
+
     <h4>Parameters</h4>
 
     <hr>
