@@ -67,7 +67,11 @@
             <h5><label>Input</label></h5>
 
             <ul *ngIf="selectedInputInstance" class="list-group">
-                <a *ngFor="let input of getInputs()">{{input.name}}</a>
+                <li *ngFor="let input of getInputs()" class="list-group-item">
+                    <input type="checkbox"
+                           [checked]="isInputConnected(input)"
+                           (change)="onConnectionChange($event.target.checked, input)">
+                    {{input.name}}</li>
             </ul>
         </div>
     </div>

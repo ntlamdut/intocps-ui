@@ -7,7 +7,7 @@ import {Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausality
     selector: "mm-configuration",
     templateUrl: "./angular2-app/mm/mm-configuration.component.html"
 })
-export class MmConfigurationComponent extends OnInit {
+export class MmConfigurationComponent implements OnInit {
     @Input()
     path:string;
 
@@ -59,6 +59,29 @@ export class MmConfigurationComponent extends OnInit {
 
     getInputs() {
         return this.selectedInputInstance.fmu.scalarVariables
-            .filter(element => isCausalityCompatible(element.causality, CausalityType.Input) && isTypeCompatiple(element.type, this.selectedOutput.type));
+            .filter(variable => isCausalityCompatible(variable.causality, CausalityType.Input) && isTypeCompatiple(variable.type, this.selectedOutput.type));
+    }
+
+    isInputConnected(input:ScalarVariable) {
+        let pairs = this.selectedOutputInstance.outputsTo.get(this.selectedOutput);
+
+        if (!pairs)
+            return false;
+
+        return pairs.filter(pair => pair.instance === this.selectedInputInstance && pair.scalarVariable === input).length > 0;
+    }
+
+    onConnectionChange(checked:boolean, input:ScalarVariable) {
+        let outputsTo = this.selectedOutputInstance.outputsTo.get(this.selectedOutput);
+
+        if (checked) {
+            if (outputsTo == null) {
+                outputsTo = <Array<InstanceScalarPair>> [];
+                this.selectedOutputInstance.outputsTo.set(this.selectedOutput, outputsTo);
+            }
+            outputsTo.push(new InstanceScalarPair(this.selectedInputInstance, input));
+        } else {
+            outputsTo.splice(outputsTo.findIndex(pair => pair.instance === this.selectedInputInstance && pair.scalarVariable === input), 1);
+        }
     }
 }
