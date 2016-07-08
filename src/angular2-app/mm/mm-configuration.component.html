@@ -1,1 +1,39 @@
-{{path}}
+<form *ngIf="config" (ngSubmit)="onSubmit()" #configForm="ngForm">
+    <h4>FMUs <button (click)="addFmu()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h4>
+
+    <div class="row">
+        <div class="col-md-3"><label>Keys</label></div>
+        <div class="col-md-9"><label>Paths</label></div>
+    </div>
+
+    <div class="row" *ngFor="let fmu of config.fmus; let i=index">
+        <div class="col-md-3 form-group"><input name="key{{i}}" [(ngModel)]="fmu.name" class="form-control"></div>
+        <div class="col-md-9 form-group"><input name="path{{i}}" [(ngModel)]="fmu.path" class="form-control"></div>
+    </div>
+
+    <hr>
+
+    <h4>FMU instances <button class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h4>
+
+    <div class="row">
+        <div class="col-md-6"><label>FMU</label></div>
+        <div class="col-md-6"><label>Instance</label></div>
+    </div>
+
+    <div *ngFor="let instance of config.fmuInstances" class="row">
+        <div class="col-md-6">{{instance.fmu.name}}</div>
+        <div class="col-md-6">{{instance.name}}</div>
+    </div>
+
+    <hr>
+
+    <h4>Connections</h4>
+
+    <h4>Parameters</h4>
+
+    <hr>
+
+    <button type="submit" class="btn btn-default" [disabled]="!configForm.form.valid">
+        <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+    </button>
+</form>
