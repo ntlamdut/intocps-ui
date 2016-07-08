@@ -13,6 +13,7 @@ export class MmConfigurationComponent implements OnInit {
 
     private config:MultiModelConfig;
 
+    private selectedParameterInstance:Instance;
     private selectedOutputInstance:Instance;
     private selectedOutput:ScalarVariable;
     private selectedInputInstance:Instance;
@@ -35,6 +36,10 @@ export class MmConfigurationComponent implements OnInit {
 
     addFmu() {
         throw "not implemented";
+    }
+
+    selectParameterInstance(instance:Instance) {
+        this.selectedParameterInstance = instance;
     }
 
     selectOutputInstance(instance:Instance) {
