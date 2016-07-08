@@ -37,7 +37,7 @@
                 <a *ngFor="let instance of config.fmuInstances"
                    (click)="selectOutputInstance(instance)"
                    [class.active]="selectedOutputInstance === instance"
-                   class="list-group-item">{{instance.name}}</a>
+                   class="list-group-item">{{instance.fmu.name}}.{{instance.name}}</a>
             </ul>
         </div>
 
@@ -59,7 +59,7 @@
                 <a *ngFor="let instance of config.fmuInstances"
                    (click)="selectInputInstance(instance)"
                    [class.active]="selectedInputInstance === instance"
-                   class="list-group-item">{{instance.name}}</a>
+                   class="list-group-item">{{instance.fmu.name}}.{{instance.name}}</a>
             </ul>
         </div>
 
