@@ -42,7 +42,7 @@
         </div>
 
         <div class="col-md-3">
-            <h5><label>Output</label></h5>
+            <h5><label>Output variable</label></h5>
 
             <ul *ngIf="selectedOutputInstance" class="list-group">
                 <a *ngFor="let output of getOutputs()"
@@ -64,7 +64,7 @@
         </div>
 
         <div class="col-md-3">
-            <h5><label>Input</label></h5>
+            <h5><label>Input variable</label></h5>
 
             <ul *ngIf="selectedInputInstance" class="list-group">
                 <li *ngFor="let input of getInputs()" class="list-group-item">
