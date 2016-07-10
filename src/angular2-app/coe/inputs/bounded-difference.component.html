@@ -7,11 +7,23 @@
     </div>
 
     <div class="form-group">
-        <label class="col-sm-3 control-label">Ports <button class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span> Add</button></label>
+        <label class="col-sm-3 control-label">
+            Ports
+            <button (click)="addPort()" class="btn btn-default btn-xs">
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
+        </label>
         <div class="col-sm-9">
-            <input class="form-control">
-            <input class="form-control">
-            ...
+            <div *ngFor="let port of constraint.ports; let i=index" class="input-group">
+                <select [(ngModel)]="constraint.ports[i]" name="port{{i}}" class="form-control">
+                    <option *ngFor="let output of getPorts()" [ngValue]="output">{{output.name}}</option>
+                </select>
+                <span class="input-group-btn">
+                    <button (click)="removePort(port)" class="btn btn-default" type="button">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </span>
+            </div>
         </div>
     </div>
 

@@ -111,9 +111,9 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
     type:string = "zerocrossing";
 
     constructor(
-        public id:string,
-        public ports:Array<InstanceScalarPair>,
-        public order?:number,//can be 1 or 2
+        public id:string = "zc",
+        public ports:Array<InstanceScalarPair> = [],
+        public order:string = "2", // Can be 1 or 2.
         public abstol?:number,
         public safety?:number
     ) {
@@ -124,8 +124,8 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
     type:string = "boundeddifference";
 
     constructor(
-        public id:string,
-        public ports:Array<InstanceScalarPair>,
+        public id:string = "bd",
+        public ports:Array<InstanceScalarPair> = [],
         public abstol?:number,
         public reltol?:number,
         public safety?:number,
@@ -138,7 +138,7 @@ export class SamplingRateConstraint implements VariableStepConstraint {
     type:string = "samplingrate";
 
     constructor(
-        public id:string,
+        public id:string = "sr",
         public base:number,
         public rate:number,
         public startTime:number
