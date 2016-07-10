@@ -19,7 +19,7 @@ export class BoundedDifferenceComponent {
         this.fmuInstances.forEach(instance => {
             instance.fmu.scalarVariables
                 .filter(sv => sv.causality === CausalityType.Output)
-                .forEach(sv => ports.push(sv));
+                .forEach(sv => ports.push(`${instance.fmu.name}.${instance.name}.${sv.name}`));
         });
 
         return ports;

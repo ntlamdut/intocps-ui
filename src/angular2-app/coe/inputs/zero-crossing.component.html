@@ -16,7 +16,7 @@
         <div class="col-sm-9">
             <div *ngFor="let port of constraint.ports; let i=index" class="input-group">
                 <select [(ngModel)]="constraint.ports[i]" name="port{{i}}" class="form-control">
-                    <option *ngFor="let output of getPorts()" [ngValue]="output">{{output.name}}</option>
+                    <option *ngFor="let output of getPorts()" [value]="output">{{output}}</option>
                 </select>
                 <span class="input-group-btn">
                     <button (click)="removePort(port)" class="btn btn-default" type="button">
