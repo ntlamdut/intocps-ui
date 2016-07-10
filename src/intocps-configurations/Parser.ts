@@ -224,14 +224,14 @@ export class Parser {
         return livestream;
     }
 
-    parseAlgorithm(data: any): ICoSimAlgorithm {
+    parseAlgorithm(data: any, multiModel: MultiModelConfig): ICoSimAlgorithm {
         let algorithm = data[this.ALGORITHM_TAG];
         if (!algorithm) return;
 
         let type = algorithm[this.ALGORITHM_TYPE];
 
         if (type === this.ALGORITHM_TYPE_VAR)
-            return this.parseAlgorithmVar(algorithm);
+            return this.parseAlgorithmVar(algorithm, multiModel);
 
         if (type === this.ALGORITHM_TYPE_FIXED)
             return this.parseAlgorithmFixed(algorithm);
@@ -243,25 +243,25 @@ export class Parser {
         );
     }
 
-    private parseAlgorithmVar(data: any): ICoSimAlgorithm {
+    private parseAlgorithmVar(data: any, multiModel: MultiModelConfig): ICoSimAlgorithm {
         let [minSize, maxSize] = this.parseSimpleTag(data, this.ALGORITHM_TYPE_VAR_SIZE_TAG);
 
         return new VariableStepAlgorithm(
             parseFloat(data[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG]),
             parseFloat(minSize),
             parseFloat(maxSize),
-            this.parseAlgorithmVarConstraints(data[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG])
+            this.parseAlgorithmVarConstraints(data[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG], multiModel)
         );
     }
 
-    private parseAlgorithmVarConstraints(constraints: any): Array<VariableStepConstraint> {
+    private parseAlgorithmVarConstraints(constraints: any, multiModel: MultiModelConfig): Array<VariableStepConstraint> {
         return Object.keys(constraints).map(id => {
             let c = constraints[id];
 
             if (c.type === "zerocrossing") {
                 return new ZeroCrossingConstraint(
                     id,
-                    c.ports, // TODO: Map to Fmi.InstanceScalarPair
+                    c.ports.map(port => multiModel.getInstanceScalarPair(port.instance.fmu.name, port.instance.name, port.scalarVariable.name)),
                     c.order,
                     c.abstol,
                     c.safety
@@ -271,7 +271,7 @@ export class Parser {
             if (c.type === "boundeddifference") {
                 return new BoundedDifferenceConstraint(
                     id,
-                    c.ports, // TODO: Map to Fmi.InstanceScalarPair
+                    c.ports.map(port => multiModel.getInstanceScalarPair(port.instance.fmu.name, port.instance.name, port.scalarVariable.name)),
                     c.abstol,
                     c.reltol,
                     c.safety,

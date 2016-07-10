@@ -57,7 +57,7 @@ export class CoSimulationConfig implements ISerializable {
                     config.startTime = parser.parseStartTime(data) || 0;
                     config.endTime = parser.parseEndTime(data) || 10;
                     config.livestream = parser.parseLivestream(data, multiModel);
-                    config.algorithm = parser.parseAlgorithm(data);
+                    config.algorithm = parser.parseAlgorithm(data, multiModel);
 
                     resolve(config);
                 })

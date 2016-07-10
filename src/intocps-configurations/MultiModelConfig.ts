@@ -2,7 +2,7 @@ import {Parser, Serializer} from "./Parser";
 import {WarningMessage, ErrorMessage} from "./Messages";
 import {
     Fmu, Instance, ScalarVariableType, isTypeCompatipleWithValue,
-    isTypeCompatiple
+    isTypeCompatiple, InstanceScalarPair
 } from "../angular2-app/coe/models/Fmu";
 import * as Path from 'path';
 import * as fs from 'fs';
@@ -16,6 +16,7 @@ export class MultiModelConfig implements ISerializable {
     fmusRootPath: string;
     fmus: Fmu[] = [];
     fmuInstances: Instance[] = [];
+    instanceScalarPairs: InstanceScalarPair[] = [];
 
     public getInstance(fmuName: string, instanceName: string) {
         return this.fmuInstances.find(v => v.fmu.name == fmuName && v.name == instanceName) || null;
@@ -41,6 +42,23 @@ export class MultiModelConfig implements ISerializable {
 
     public getFmu(fmuName: string): Fmu {
         return this.fmus.find(v => v.name == fmuName) || null;
+    }
+
+    getInstanceScalarPair(fmuName:string, instanceName:string, scalarName:string):InstanceScalarPair {
+        let pair = this.instanceScalarPairs.find(pair => {
+            return pair.instance.fmu.name === fmuName && pair.instance.name === instanceName && pair.scalarVariable.name === scalarName;
+        });
+
+        if (pair)
+            return pair;
+
+        let instance = this.getInstance(fmuName, instanceName);
+        let scalar = instance.fmu.getScalarVariable(scalarName);
+
+        pair = new InstanceScalarPair(instance, scalar);
+        this.instanceScalarPairs.push(pair);
+
+        return pair;
     }
 
     static create(path: string, fmuRootPath: string, data: any): Promise<MultiModelConfig> {

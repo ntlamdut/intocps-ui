@@ -5,7 +5,7 @@ import {
     VariableStepAlgorithm, ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint,
     VariableStepConstraint
 } from "../../intocps-configurations/CoSimulationConfig";
-import {ScalarVariable, CausalityType, Instance} from "./models/Fmu";
+import {ScalarVariable, CausalityType, Instance, InstanceScalarPair} from "./models/Fmu";
 import {ZeroCrossingComponent} from "./inputs/zero-crossing.component";
 import {BoundedDifferenceComponent} from "./inputs/bounded-difference.component";
 import {SamplingRateComponent} from "./inputs/sampling-rate.component";
@@ -24,6 +24,7 @@ export class CoeConfigurationComponent implements OnInit {
     path:string;
 
     algorithms:Array<ICoSimAlgorithm> = [];
+    outputPorts:Array<InstanceScalarPair> = [];
     newConstraint:FunctionConstructor;
 
     private config:CoSimulationConfig;
@@ -59,6 +60,14 @@ export class CoeConfigurationComponent implements OnInit {
                                 ? config.algorithm
                                 : new constructor()
                         );
+
+                    this.config.multiModel.fmuInstances.forEach(instance => {
+                        instance.fmu.scalarVariables
+                            .filter(sv => sv.causality === CausalityType.Output)
+                            .forEach(sv => {
+                                this.outputPorts.push(this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name))
+                            });
+                    });
                 });
             });
     }

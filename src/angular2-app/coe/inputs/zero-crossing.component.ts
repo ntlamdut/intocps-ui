@@ -1,6 +1,6 @@
 import {Component, Input} from "@angular/core";
 import {ZeroCrossingConstraint} from "../../../intocps-configurations/CoSimulationConfig";
-import {Instance, CausalityType} from "../models/Fmu";
+import {Instance, CausalityType, InstanceScalarPair} from "../models/Fmu";
 
 @Component({
     selector: 'zero-crossing',
@@ -11,24 +11,16 @@ export class ZeroCrossingComponent {
     constraint:ZeroCrossingConstraint;
 
     @Input()
-    fmuInstances:Array<Instance>;
+    ports:Array<InstanceScalarPair>;
 
-    getPorts() {
-        var ports = [];
-
-        this.fmuInstances.forEach(instance => {
-            instance.fmu.scalarVariables
-                .filter(sv => sv.causality === CausalityType.Output)
-                .forEach(sv => ports.push(`${instance.fmu.name}.${instance.name}.${sv.name}`));
-        });
-
-        return ports;
+    customTrackBy(index:number, obj: any):any {
+        return index;
     }
 
     addPort() {
         if (this.constraint.ports.length >= 2) return;
 
-        this.constraint.ports.push(this.getPorts()[0]);
+        this.constraint.ports.push(this.ports[0]);
     }
 
     removePort(port) {

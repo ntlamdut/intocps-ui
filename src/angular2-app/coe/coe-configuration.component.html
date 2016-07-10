@@ -85,8 +85,8 @@
                     {{getConstraintName(constraint)}}
                 </div>
                 <div class="panel-body">
-                    <zero-crossing [fmuInstances]="config.multiModel.fmuInstances" [constraint]="constraint" *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
-                    <bounded-difference [fmuInstances]="config.multiModel.fmuInstances" [constraint]="constraint" *ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
+                    <zero-crossing [ports]="outputPorts" [constraint]="constraint" *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
+                    <bounded-difference [ports]="outputPorts" [constraint]="constraint" *ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
                     <sampling-rate [constraint]="constraint" *ngIf="constraint.type === 'samplingrate'"></sampling-rate>
                 </div>
             </div>
