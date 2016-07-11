@@ -97,18 +97,6 @@ export function configureIntoCpsMenu() {
         type: 'separator'
       },
       {
-        label: 'Show Project Folder',
-        click: function (item: any, focusedWindow: any) {
-          let activeProject = IntoCpsApp.getInstance().getActiveProject();
-          if (activeProject != null)
-            SystemUtil.openPath(activeProject.rootPath);
-        }
-
-      },
-      {
-        type: 'separator'
-      },
-      {
         label: 'Open Project',
         accelerator: 'CmdOrCtrl+O',
         click: function (item: any, focusedWindow: any) {
@@ -117,7 +105,7 @@ export function configureIntoCpsMenu() {
 
       },
       {
-        label: 'Open Project from Git',
+        label: 'Import Project from Git',
 
         click: function (item: any, focusedWindow: any) {
           fetchProjectFromGitHandler.openWindow();
@@ -125,22 +113,41 @@ export function configureIntoCpsMenu() {
 
       },
       {
-        label: 'Open Project Examples',
+        label: 'Import Example Project',
 
         click: function (item: any, focusedWindow: any) {
           openExamplesFromGitHandler.openWindow();
         }
 
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Open Current Project in File Browser',
+        click: function (item: any, focusedWindow: any) {
+          let activeProject = IntoCpsApp.getInstance().getActiveProject();
+          if (activeProject != null)
+            SystemUtil.openPath(activeProject.rootPath);
+        }
       }
     ]
   })
 
   menu.forEach(m => {
-    if (m.label == "View") {
+    if (m.label == "Window") {
+
+
+
+
 
       if (!(process.platform === 'darwin')) {
-        m.submenu.splice(0, 0, {
-          label: 'Settings',
+              m.submenu.splice(m.submenu.length - 1, 0, {
+        type: 'separator'
+
+      });
+        m.submenu.splice(-1, 0, {
+          label: 'Show Settings',
           accelerator: 'Alt+S',
           click: function (item: any, focusedWindow: any) {
             openSettingsHandler.openWindow();
@@ -149,14 +156,8 @@ export function configureIntoCpsMenu() {
 
       }
 
-
       m.submenu.splice(m.submenu.length - 1, 0, {
-        type: 'separator'
-
-      });
-
-      m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'COE Server Status',
+        label: 'Show COE Server Status',
         accelerator: 'Alt+O',
         click: function (item: any, focusedWindow: any) {
           coeServerStatusHandler.openWindow();
@@ -165,7 +166,7 @@ export function configureIntoCpsMenu() {
 
 
       m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'Open Download Manager',
+        label: 'Show Download Manager',
         accelerator: 'Alt+D',
         click: function (item: any, focusedWindow: any) {
           openDownloadManagerHandler.openWindow();
@@ -173,7 +174,7 @@ export function configureIntoCpsMenu() {
       });
 
       m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'Open FMU Builder',
+        label: 'Show FMU Builder',
         click: function (item: any, focusedWindow: any) {
           fmuBuilderHandler.openWindow();
         }
