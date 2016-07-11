@@ -50,16 +50,18 @@ export class CreateTDGProjectController extends IViewController {
             "--skip-rttui",
             hPath.value
         ];
-        const process = spawn(pythonPath, args);
-        process.stdout.on('data', (data: string) => {
+        var env: any = process.env;
+        env["RTTDIR"] = RTTester.rttInstallDir();
+        const p = spawn(pythonPath, args, { env: env });
+        p.stdout.on('data', (data: string) => {
             hOutputText.textContent += data + "\n";
             hOutputText.scrollTop = hOutputText.scrollHeight;
         });
-        process.stderr.on('data', (data: string) => {
+        p.stderr.on('data', (data: string) => {
             hOutputText.textContent += data + "\n";
             hOutputText.scrollTop = hOutputText.scrollHeight;
         });
-        process.on('close', (code: number) => {
+        p.on('close', (code: number) => {
             document.getElementById("scriptRUN").style.display = "none";
             document.getElementById(code == 0 ? "scriptOK" : "scriptFAIL").style.display = "block";
         });
