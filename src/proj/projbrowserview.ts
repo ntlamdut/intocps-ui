@@ -314,7 +314,10 @@ export class BrowserController {
                 if (path.endsWith('.txt')) {
                     result.img = 'into-cps-icon-rtt-txt';
                 }
-                else if ([".conf", ".confinc", ".rtp", ".mbtconf"].some((e) => path.endsWith(e))) {
+                else if ([".conf", ".confinc", ".rtp"].some((e) => path.endsWith(e))) {
+                    result.img = 'into-cps-icon-rtt-conf';
+                }
+                else if (path.endsWith(".mbtconf")) {
                     result.img = 'into-cps-icon-rtt-conf';
                     if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                         result.dblClickHandler = function () {
