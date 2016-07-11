@@ -42,7 +42,7 @@ export class FmuInstancesElement {
         let self = this;
         fmus.forEach((fmu: Configs.Fmu) => {
             $('<div>').load("multimodel/connections/fmu-element.html", function (event: JQueryEventObject) {
-                let html: HTMLLinkElement = <HTMLLinkElement>(<HTMLDivElement>this).firstChild;
+                let html: HTMLLinkElement = <HTMLLinkElement>(<HTMLDivElement>this).firstElementChild;
                 let element: FmuElement = new FmuElement(html, fmu, self.fmuSelectionChanged.bind(self));
                 self.fmuElements.push(element);
                 self.fmuList.appendChild(element.getHtml());
@@ -78,7 +78,7 @@ export class FmuInstancesElement {
         let self = this;
         instances.forEach((instance: Configs.Instance) => {
             $('<div>').load("multimodel/connections/instance-element.html", function (event: JQueryEventObject) {
-                let html: HTMLDivElement = <HTMLDivElement>(<HTMLDivElement>this).firstChild;
+                let html: HTMLDivElement = <HTMLDivElement>(<HTMLDivElement>this).firstElementChild;
                 let element: InstanceElement = new InstanceElement(html, instance, self.removeInstance.bind(self), self.addInstanceHandler.bind(self));
                 self.instanceElements.push(element);
                 self.instanceList.appendChild(element.getHtml());
@@ -89,7 +89,7 @@ export class FmuInstancesElement {
     private addNewInstanceHandler() {
         let self = this;
         $('<div>').load("multimodel/connections/instance-element.html", function (event: JQueryEventObject) {
-            let html: HTMLDivElement = <HTMLDivElement>(<HTMLDivElement>this).firstChild;
+            let html: HTMLDivElement = <HTMLDivElement>(<HTMLDivElement>this).firstElementChild;
             let instance = new Configs.Instance(self.selectedFmuElement.getFmu(), "FMU Instance");
             let element: InstanceElement = new InstanceElement(html, instance, self.removeInstance.bind(self), self.addInstanceHandler.bind(self), true);
             self.instanceList.appendChild(element.getHtml());
