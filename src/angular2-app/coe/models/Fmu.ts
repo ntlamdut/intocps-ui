@@ -256,3 +256,9 @@ export class InstanceScalarPair {
     }
 }
 
+// Represents a parameter-value pair (ScalarVariable, any)
+export class ScalarValuePair {
+    constructor(public scalarVariable: ScalarVariable, public value: any) {
+
+    }
+}

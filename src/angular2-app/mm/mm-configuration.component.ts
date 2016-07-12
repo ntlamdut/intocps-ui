@@ -3,7 +3,7 @@ import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
     Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausalityCompatible, isTypeCompatiple,
-    Fmu
+    Fmu, ScalarValuePair
 } from "../coe/models/Fmu";
 import {FileBrowserComponent} from "./inputs/file-browser.component";
 import {IProject} from "../../proj/IProject";
@@ -24,6 +24,8 @@ export class MmConfigurationComponent implements OnInit {
     private selectedOutput:ScalarVariable;
     private selectedInputInstance:Instance;
     private selectedInstanceFmu:Fmu;
+
+    private newParameter:ScalarVariable;
 
     constructor(private zone:NgZone) {
 
@@ -51,6 +53,7 @@ export class MmConfigurationComponent implements OnInit {
 
     selectParameterInstance(instance:Instance) {
         this.selectedParameterInstance = instance;
+        this.newParameter = this.getParameters()[0];
     }
 
     selectOutputInstance(instance:Instance) {
@@ -66,6 +69,37 @@ export class MmConfigurationComponent implements OnInit {
 
     selectInputInstance(instance:Instance) {
         this.selectedInputInstance = instance;
+    }
+
+    getInitialValues():Array<ScalarValuePair> {
+        let initialValues:Array<ScalarValuePair> = [];
+
+         this.selectedParameterInstance.initialValues.forEach((value, variable) => {
+             initialValues.push(new ScalarValuePair(variable, value));
+        });
+
+        return initialValues;
+    }
+
+    addParameter() {
+        if (!this.newParameter) return;
+
+        this.selectedParameterInstance.initialValues.set(this.newParameter, '');
+        this.newParameter = this.getParameters()[0];
+    }
+
+    setParameter(parameter:ScalarVariable, value:any) {
+        this.selectedParameterInstance.initialValues.set(parameter, value);
+    }
+
+    removeParameter(parameter) {
+        this.selectedParameterInstance.initialValues.delete(parameter);
+        this.newParameter = this.getParameters()[0];
+    }
+
+    getParameters() {
+        return this.selectedParameterInstance.fmu.scalarVariables
+            .filter(variable => isCausalityCompatible(variable.causality, CausalityType.Parameter) && !this.selectedParameterInstance.initialValues.has(variable));
     }
 
     getOutputs() {
