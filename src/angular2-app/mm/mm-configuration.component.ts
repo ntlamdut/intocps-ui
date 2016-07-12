@@ -1,11 +1,17 @@
 import {Component, Input, OnInit, NgZone} from "@angular/core";
 import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
 import IntoCpsApp from "../../IntoCpsApp";
-import {Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausalityCompatible, isTypeCompatiple} from "../coe/models/Fmu";
+import {
+    Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausalityCompatible, isTypeCompatiple,
+    Fmu
+} from "../coe/models/Fmu";
+import {FileBrowserComponent} from "./inputs/file-browser.component";
+import {IProject} from "../../proj/IProject";
 
 @Component({
     selector: "mm-configuration",
-    templateUrl: "./angular2-app/mm/mm-configuration.component.html"
+    templateUrl: "./angular2-app/mm/mm-configuration.component.html",
+    directives: [FileBrowserComponent]
 })
 export class MmConfigurationComponent implements OnInit {
     @Input()
@@ -23,7 +29,7 @@ export class MmConfigurationComponent implements OnInit {
     }
 
     ngOnInit() {
-        let project = IntoCpsApp.getInstance().getActiveProject();
+        let project:IProject = IntoCpsApp.getInstance().getActiveProject();
 
         MultiModelConfig
             .parse(this.path, project.getFmusPath())
@@ -35,7 +41,11 @@ export class MmConfigurationComponent implements OnInit {
     }
 
     addFmu() {
-        throw "not implemented";
+        this.config.fmus.push(new Fmu());
+    }
+
+    removeFmu(fmu:Fmu) {
+        this.config.fmus.splice(this.config.fmus.indexOf(fmu), 1);
     }
 
     selectParameterInstance(instance:Instance) {

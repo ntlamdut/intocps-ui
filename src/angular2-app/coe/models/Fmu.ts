@@ -6,7 +6,7 @@ export class Fmu {
     scalarVariables: ScalarVariable[] = [];
 
     constructor(
-        public name: string = "{}",
+        public name: string = "{FMU}",
         public path: string = ""
     ) {
 
