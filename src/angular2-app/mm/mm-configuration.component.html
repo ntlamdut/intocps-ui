@@ -1,5 +1,5 @@
 <form *ngIf="config" (ngSubmit)="onSubmit()" #configForm="ngForm">
-    <h4>FMUs <button (click)="addFmu()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h4>
+    <h4>FMUs <button type="button" (click)="config.addFmu()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h4>
 
     <div class="row">
         <div class="col-md-3"><label>Keys</label></div>
@@ -14,7 +14,7 @@
             <file-browser [basePath]="config.fmusRootPath" [(path)]="fmu.path"></file-browser>
         </div>
         <div class="col-md-1 form-group">
-            <button (click)="removeFmu(fmu)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+            <button type="button" (click)="config.removeFmu(fmu)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
         </div>
     </div>
 
@@ -105,7 +105,7 @@
 
     <hr>
 
-    <button type="submit" class="btn btn-default" [disabled]="!configForm.form.valid">
+    <button class="btn btn-default" [disabled]="!configForm.form.valid">
         <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
     </button>
 </form>
