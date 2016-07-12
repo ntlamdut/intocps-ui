@@ -26,10 +26,6 @@ export class LTLEditorController extends IViewController {
         IntoCpsApp.setTopName("LTL Formula");
         this.hBMCSteps = <HTMLInputElement>document.getElementById("BMCSteps");
         this.ltlEditor = ace.edit("ltlFormula");
-        this.ltlEditor.setOptions({
-            enableBasicAutocompletion: true,
-            enableLiveAutocompletion: true
-        });
         this.ltlEditor.$blockScrolling = Infinity;
         var langTools: any = ace.require("ace/ext/language_tools");
         this.configureCompleter(langTools);
@@ -68,6 +64,7 @@ export class LTLEditorController extends IViewController {
             let db = new SQL.Database(filebuffer);
             let stmt = db.prepare("SELECT * FROM Symbols WHERE FullName LIKE :pat");
             let completer: any = {
+                identifierRegexps: [/[a-zA-Z_0-9\.]/],
                 getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
                     if (prefix.length === 0) { callback(null, []); return }
                     let completions: any = [];
@@ -105,7 +102,11 @@ export class LTLEditorController extends IViewController {
                     }
                 }
             };
-            langTools.addCompleter(completer);
+            langTools.setCompleters([completer]);
+            this.ltlEditor.setOptions({
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true
+            });
         });
     }
 
