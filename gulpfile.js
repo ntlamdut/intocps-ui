@@ -3,11 +3,10 @@
 
 'use strict';
 
-// Locations 
+// file globs
 var outputPath = 'dist/',
     htmlSrcs = ['src/**/*.html'],
     jsSrcs = 'src/**/*.js',
-    lintTsSrcs = ['src/**/*.ts'],
     tsSrcs = ['src/**/*.ts', 'typings/browser/**/*.ts'],
     bowerFolder = 'bower_components',
     resourcesFolder = 'src/resources',
@@ -20,12 +19,11 @@ var outputPath = 'dist/',
     customResources= [resourcesFolder+'/into-cps/**/*']
     ;
 
-// Tools.
+// Gulp plugins
 var gulp = require('gulp'),
     ts = require('gulp-typescript'),
     sourcemap = require('gulp-sourcemaps'),
     tsProject = ts.createProject('tsconfig.json'),
-    lint = require('gulp-tslint'),
     del = require('del'),
     mainBowerFiles = require('main-bower-files'),
     filter = require('gulp-filter'),
@@ -55,13 +53,8 @@ gulp.task('install-bower-components', function () {
 // Clean everything!
 gulp.task("clean", function () {
     return del([
-    outputPath
+        outputPath
     ]);
-});
-
-// Lint TS (check for rule violations)
-gulp.task("lint-ts", function () {
-    return gulp.src(lintTsSrcs).pipe(lint()).pipe(lint.report('prose', { emitError: false }));
 });
 
 // Compile TS->JS with sourcemaps. Also move it into the outputfolder
@@ -72,7 +65,7 @@ gulp.task("compile-ts", function () {
 
     tsResult.dts.pipe(gulp.dest(outputPath));
 
-    return tsResult.js.pipe(sourcemap.write('.'))
+    return tsResult.js.pipe(sourcemap.write())
         .pipe(gulp.dest(outputPath));
 });
 
@@ -101,7 +94,7 @@ gulp.task('copy-fonts', function () {
 // Copy custom resources
 gulp.task('copy-custom',function (){
     return gulp.src(customResources)
-    .pipe(gulp.dest(outputPath+'resources/into-cps'))
+        .pipe(gulp.dest(outputPath+'resources/into-cps'))
 });
 
 // Copy css to app folder
@@ -112,14 +105,15 @@ gulp.task('copy-css', function () {
 // Copy html to app folder
 gulp.task('copy-html', function () {
     gulp.src(htmlSrcs)
-        // process html here if needed
+        .pipe(htmlhint())
+        .pipe(htmlhint.reporter())
         .pipe(gulp.dest(outputPath));
 });
 
 // Copy js to app folder
 gulp.task('copy-js', function () {
     gulp.src(jsSrcs)
-        // process js here if needed
+    // process js here if needed
         .pipe(gulp.dest(outputPath));
 });
 
@@ -165,7 +159,7 @@ gulp.task("package-win32", function(callback) {
         out: 'pkg',
         "app-version": packageJSON.version,
         "version-string": {
-           "CompanyName": packageJSON.author.name,
+            "CompanyName": packageJSON.author.name,
             "ProductName": packageJSON.productName
         }
     };
@@ -186,7 +180,7 @@ gulp.task("package-linux", function(callback) {
         out: 'pkg',
         "app-version": packageJSON.version,
         "version-string": {
-           "CompanyName": packageJSON.author.name,
+            "CompanyName": packageJSON.author.name,
             "ProductName": packageJSON.productName
         }
     };
@@ -207,5 +201,5 @@ gulp.task('watch', function () {
     gulp.watch(customResources, ['copy-custom']);
 });
 
-// Default task 
+// Default task
 gulp.task('default', ['build']);
