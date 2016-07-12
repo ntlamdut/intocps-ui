@@ -1,4 +1,4 @@
-import * as fs  from 'fs';
+import * as fs from 'fs';
 
 // Holds information about a .fmu container
 export class Fmu {
