@@ -2,12 +2,8 @@ import * as Path from 'path';
 import {CoSimulationConfig} from "../../../intocps-configurations/CoSimulationConfig";
 
 export class CoeConfig {
-    private coSimConfig:CoSimulationConfig;
-    private remoteCoe:boolean = false;
+    constructor(private coSimConfig: CoSimulationConfig, private remoteCoe: boolean = false) {
 
-    constructor(coSimConfig: CoSimulationConfig, remoteCoe: boolean) {
-        this.coSimConfig = coSimConfig;
-        this.remoteCoe = remoteCoe;
     }
 
     toJSON():string {
@@ -20,9 +16,7 @@ export class CoeConfig {
         let data:any = {};
 
         //FMUS
-        Object.assign(data,
-            this.coSimConfig.multiModel.toObject(),
-            this.coSimConfig.toObject());
+        Object.assign(data, this.coSimConfig.multiModel.toObject(), this.coSimConfig.toObject());
 
         delete data["endTime"];
         delete data["startTime"];

@@ -5,10 +5,7 @@ export class Fmu {
     platforms: Platforms[];
     scalarVariables: ScalarVariable[] = [];
 
-    constructor(
-        public name: string = "{FMU}",
-        public path: string = ""
-    ) {
+    constructor(public name: string = "{FMU}", public path: string = "") {
 
     }
 
@@ -208,15 +205,14 @@ export function convertToType(type: ScalarVariableType, value: any): any{
             return mValue;
         }
     }
+
     return null;
 }
 
 export function isTypeCompatipleWithValue(t1: ScalarVariableType, value: any): boolean {
-
     switch (t1) {
         case ScalarVariableType.Unknown:
             return true;
-
         case ScalarVariableType.Real:
             return isFloat(value) || isInteger(value);
         case ScalarVariableType.Bool:
@@ -231,33 +227,22 @@ export function isTypeCompatipleWithValue(t1: ScalarVariableType, value: any): b
 
 // Repersents an instance of an FMU, including initial parameters and a mapping from outputs to InstanceScalarPair
 export class Instance {
-    //the fmu which this is an instance of
-    fmu: Fmu;
-    //the instance name
-    name: string;
-
     //mapping from output to FmuConnection where connection holds an instane and input scalarVariable
     outputsTo: Map<ScalarVariable, InstanceScalarPair[]> = new Map<ScalarVariable, InstanceScalarPair[]>();
 
     // initial parameter values
     initialValues: Map<ScalarVariable, any> = new Map<ScalarVariable, any>();
 
-    constructor(fmu: Fmu, name: string) {
-        this.fmu = fmu;
-        this.name = name;
+    constructor(public fmu: Fmu, public name: string) {
+
     }
 
     public addOutputToInputLink(source: ScalarVariable, target: InstanceScalarPair) {
-
         if (this.outputsTo.has(source)) {
             let list = this.outputsTo.get(source);
+            let match = list.find(pair => pair.instance == target.instance && pair.scalarVariable == target.scalarVariable);
 
-            let match = list.find(function (pair) { return pair.instance == target.instance && pair.scalarVariable == target.scalarVariable });
-
-            if (match == undefined) {
-                list.push(target);
-            }
-
+            if (!match) list.push(target);
         } else {
             this.outputsTo.set(source, [target]);
         }
@@ -266,12 +251,8 @@ export class Instance {
 
 // Represents a link pair (FmuInstances, scalarVariable)
 export class InstanceScalarPair {
-    instance: Instance;
-    scalarVariable: ScalarVariable;
+    constructor(public instance: Instance, public scalarVariable: ScalarVariable) {
 
-    constructor(instance: Instance, scalarVariable: ScalarVariable) {
-        this.instance = instance;
-        this.scalarVariable = scalarVariable;
     }
 }
 
