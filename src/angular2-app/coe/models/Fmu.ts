@@ -152,7 +152,7 @@ export class ScalarVariable {
     public isConfirmed: boolean;
 }
 export enum ScalarVariableType { Real, Bool, Int, String, Unknown }
-export enum CausalityType { Output, Input, Parameter, CalculatedParameter ,Local, Unknown }
+export enum CausalityType { Output, Input, Parameter, CalculatedParameter, Local, Unknown }
 
 export function isTypeCompatiple(t1: ScalarVariableType, t2: ScalarVariableType): boolean {
     if (t1 == ScalarVariableType.Unknown || t2 == ScalarVariableType.Unknown) {
