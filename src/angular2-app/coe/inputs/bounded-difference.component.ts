@@ -4,14 +4,14 @@ import {Instance, CausalityType, InstanceScalarPair} from "../models/Fmu";
 
 @Component({
     selector: 'bounded-difference',
-    templateUrl: "./angular2-app/coe/inputs/bounded-difference.component.html",
+    templateUrl: "./angular2-app/coe/inputs/bounded-difference.component.html"
 })
 export class BoundedDifferenceComponent {
     @Input()
     constraint:BoundedDifferenceConstraint;
 
     @Input()
-    ports:Array<InstanceScalarPair>;
+    ports:Array<InstanceScalarPair> = [];
 
     customTrackBy(index:number, obj: any):any {
         return index;
@@ -21,7 +21,7 @@ export class BoundedDifferenceComponent {
         this.constraint.ports.push(this.ports[0]);
     }
 
-    removePort(port) {
+    removePort(port:InstanceScalarPair) {
         let index = this.constraint.ports.indexOf(port);
 
         if (index > -1)

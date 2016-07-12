@@ -4,14 +4,14 @@ import {Instance, CausalityType, InstanceScalarPair} from "../models/Fmu";
 
 @Component({
     selector: 'zero-crossing',
-    templateUrl: "./angular2-app/coe/inputs/zero-crossing.component.html",
+    templateUrl: "./angular2-app/coe/inputs/zero-crossing.component.html"
 })
 export class ZeroCrossingComponent {
     @Input()
     constraint:ZeroCrossingConstraint;
 
     @Input()
-    ports:Array<InstanceScalarPair>;
+    ports:Array<InstanceScalarPair> = [];
 
     customTrackBy(index:number, obj: any):any {
         return index;
@@ -23,7 +23,7 @@ export class ZeroCrossingComponent {
         this.constraint.ports.push(this.ports[0]);
     }
 
-    removePort(port) {
+    removePort(port:InstanceScalarPair) {
         let index = this.constraint.ports.indexOf(port);
 
         if (index > -1)

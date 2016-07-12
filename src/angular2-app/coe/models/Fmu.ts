@@ -2,14 +2,14 @@ import * as fs  from 'fs';
 
 // Holds information about a .fmu container
 export class Fmu {
-    name: string;
-    path: string;
     platforms: Platforms[];
     scalarVariables: ScalarVariable[] = [];
 
-    constructor(name: string, path: string) {
-        this.name = name;
-        this.path = path;
+    constructor(
+        public name: string = "{}",
+        public path: string = ""
+    ) {
+
     }
 
     public updatePath(path: string): Promise<void> {
