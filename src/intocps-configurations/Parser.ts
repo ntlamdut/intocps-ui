@@ -261,7 +261,7 @@ export class Parser {
             if (c.type === "zerocrossing") {
                 return new ZeroCrossingConstraint(
                     id,
-                    c.ports.map(port => multiModel.getInstanceScalarPair(port.instance.fmu.name, port.instance.name, port.scalarVariable.name)),
+                    c.ports.map((id:string) => multiModel.getInstanceScalarPair(...this.parseId(id))),
                     c.order,
                     c.abstol,
                     c.safety
@@ -271,7 +271,7 @@ export class Parser {
             if (c.type === "boundeddifference") {
                 return new BoundedDifferenceConstraint(
                     id,
-                    c.ports.map(port => multiModel.getInstanceScalarPair(port.instance.fmu.name, port.instance.name, port.scalarVariable.name)),
+                    c.ports.map((id:string) => multiModel.getInstanceScalarPair(...this.parseId(id))),
                     c.abstol,
                     c.reltol,
                     c.safety,
@@ -416,6 +416,24 @@ export class Serializer extends Parser {
         return obj;
     }
 
+    toObjectConstraint(constraint:any) {
+        let object:any = {};
+
+        Object.keys(constraint).forEach(key => {
+            if (key === "id") return;
+
+            if (key === "order")
+                object[key] = parseFloat(constraint[key]);
+            else if (key === "ports") {
+                object[key] = constraint[key].map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable));
+            } else {
+                object[key] = constraint[key];
+            }
+        });
+
+        return object;
+    }
+
     toObjectAlgorithm(algorithm: ICoSimAlgorithm): any {
         let obj:any = {};
 
@@ -429,7 +447,7 @@ export class Serializer extends Parser {
         if (algorithm instanceof VariableStepAlgorithm) {
             let constraints:any = {};
 
-            algorithm.constraints.forEach(c => constraints[c.id] = c);
+            algorithm.constraints.forEach(c => constraints[c.id] = this.toObjectConstraint(c));
 
             obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_VAR;
             obj[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG] = algorithm.initSize;
