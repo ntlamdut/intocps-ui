@@ -23,6 +23,7 @@ export class MmConfigurationComponent implements OnInit {
     private selectedOutputInstance:Instance;
     private selectedOutput:ScalarVariable;
     private selectedInputInstance:Instance;
+    private selectedInstanceFmu:Fmu;
 
     constructor(private zone:NgZone) {
 
@@ -40,12 +41,12 @@ export class MmConfigurationComponent implements OnInit {
         this.config.save();
     }
 
-    addFmu() {
-        this.config.fmus.push(new Fmu());
+    getInstances(fmu:Fmu) {
+        return this.config.fmuInstances.filter(instance => instance.fmu === fmu);
     }
 
-    removeFmu(fmu:Fmu) {
-        this.config.fmus.splice(this.config.fmus.indexOf(fmu), 1);
+    selectInstanceFmu(fmu:Fmu) {
+        this.selectedInstanceFmu = fmu;
     }
 
     selectParameterInstance(instance:Instance) {

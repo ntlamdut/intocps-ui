@@ -8,7 +8,7 @@
 
     <div class="row" *ngFor="let fmu of config.fmus; let i=index">
         <div class="col-md-3 form-group">
-            <input name="key{{i}}" [(ngModel)]="fmu.name" class="form-control input-sm">
+            <input name="fmu{{i}}" [(ngModel)]="fmu.name" class="form-control input-sm">
         </div>
         <div class="col-md-8 form-group">
             <file-browser [basePath]="config.fmusRootPath" [(path)]="fmu.path"></file-browser>
@@ -23,13 +23,28 @@
     <h4>FMU instances</h4>
 
     <div class="row">
-        <div class="col-md-6"><label>FMU</label></div>
-        <div class="col-md-6"><label>Instance</label></div>
-    </div>
+        <div class="col-md-6">
+            <label>FMU</label>
 
-    <div *ngFor="let instance of config.fmuInstances" class="row">
-        <div class="col-md-6">{{instance.fmu.name}}</div>
-        <div class="col-md-6">{{instance.name}}</div>
+            <ul class="list-group">
+                <a *ngFor="let fmu of config.fmus"
+                   (click)="selectInstanceFmu(fmu)"
+                   [class.active]="selectedInstanceFmu === fmu"
+                   class="list-group-item">{{fmu.name}}</a>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <label>Instances <button type="button" [disabled]="!selectedInstanceFmu" (click)="config.addInstance(selectedInstanceFmu)" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></label>
+
+            <div *ngIf="selectedInstanceFmu">
+                <div *ngFor="let instance of getInstances(selectedInstanceFmu); let i=index" class="input-group">
+                    <input name="instance{{i}}" [(ngModel)]="instance.name" class="form-control input-sm">
+                    <span class="input-group-btn">
+                        <button type="button" (click)="config.removeInstance(instance)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <hr>

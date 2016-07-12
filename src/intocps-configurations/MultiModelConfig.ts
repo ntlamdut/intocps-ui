@@ -91,12 +91,23 @@ export class MultiModelConfig implements ISerializable {
             }).then(content => this.create(path, fmuRootPath, JSON.parse(content.toString())));
     }
 
+    public addFmu() {
+        this.fmus.push(new Fmu());
+    }
+
     public removeFmu(fmu: Fmu) {
         this.fmus.splice(this.fmus.indexOf(fmu), 1);
         
         this.fmuInstances
             .filter(element => element.fmu == fmu)
             .forEach(element => this.removeInstance(element));
+    }
+
+    public addInstance(fmu:Fmu, name?:string) {
+        if (!name)
+            name = `${fmu.name.replace(/[{}]/g, "")}Instance`;
+
+        this.fmuInstances.push(new Instance(fmu, name));
     }
 
     public removeInstance(instance: Instance) {
