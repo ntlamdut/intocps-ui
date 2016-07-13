@@ -259,11 +259,12 @@ export class Parser {
             let c = constraints[id];
 
             if (c.type === "zerocrossing") {
-                let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
-
                 return new ZeroCrossingConstraint(
                     id,
-                    c.ports.map((id:string) => multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName)),
+                    c.ports.map((id:string) => {
+                        let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
+                        return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
+                    }),
                     c.order,
                     c.abstol,
                     c.safety
@@ -271,11 +272,12 @@ export class Parser {
             }
 
             if (c.type === "boundeddifference") {
-                let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
-
                 return new BoundedDifferenceConstraint(
                     id,
-                    c.ports.map((id:string) => multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName)),
+                    c.ports.map((id:string) => {
+                        let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
+                        return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
+                    }),
                     c.abstol,
                     c.reltol,
                     c.safety,
