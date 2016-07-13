@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import * as JSZip from "jszip";
+let JSZip = require("jszip");
 
 // Holds information about a .fmu container
 export class Fmu {
@@ -254,6 +254,13 @@ export class InstanceScalarPair {
 // Represents a parameter-value pair (ScalarVariable, any)
 export class ScalarValuePair {
     constructor(public scalarVariable: ScalarVariable, public value: any) {
+
+    }
+}
+
+// Represents an output-connections pair (ScalarVariable, any)
+export class OutputConnectionsPair {
+    constructor(public name:string, public connections:InstanceScalarPair[]) {
 
     }
 }

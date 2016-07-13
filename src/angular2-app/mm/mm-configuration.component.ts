@@ -97,7 +97,7 @@ export class MmConfigurationComponent implements OnInit {
         this.selectedParameterInstance.initialValues.set(parameter, value);
     }
 
-    removeParameter(parameter) {
+    removeParameter(parameter:ScalarVariable) {
         this.selectedParameterInstance.initialValues.delete(parameter);
         this.newParameter = this.getParameters()[0];
     }

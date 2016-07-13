@@ -3,6 +3,7 @@ import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
 import IntoCpsApp from "../../IntoCpsApp";
 import {IProject} from "../../proj/IProject";
 import {Serializer} from "../../intocps-configurations/Parser";
+import {InstanceScalarPair, OutputConnectionsPair} from "../coe/models/Fmu";
 
 @Component({
     selector: "mm-overview",
@@ -27,14 +28,11 @@ export class MmOverviewComponent implements OnInit {
     }
 
     getOutputs() {
-        let outputs = [];
+        let outputs:OutputConnectionsPair[] = [];
 
         this.config.fmuInstances.forEach(instance => {
             instance.outputsTo.forEach((connections, scalarVariable) => {
-                outputs.push({
-                    name: Serializer.getIdSv(instance, scalarVariable),
-                    connections: connections
-                });
+                outputs.push(new OutputConnectionsPair(Serializer.getIdSv(instance, scalarVariable), connections));
             });
         });
 

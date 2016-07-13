@@ -25,7 +25,7 @@ export class CoeConfigurationComponent implements OnInit {
 
     algorithms:Array<ICoSimAlgorithm> = [];
     outputPorts:Array<InstanceScalarPair> = [];
-    newConstraint:FunctionConstructor;
+    newConstraint: new (...args: any[]) => VariableStepConstraint;
 
     private config:CoSimulationConfig;
 
@@ -84,7 +84,7 @@ export class CoeConfigurationComponent implements OnInit {
         if (!this.newConstraint) return;
 
         let algorithm = <VariableStepAlgorithm> this.config.algorithm;
-        let constraint = <VariableStepConstraint> (new this.newConstraint());
+        let constraint = new this.newConstraint();
 
         algorithm.constraints.push(constraint);
     }
