@@ -163,7 +163,7 @@ export class CreateMCProjectController extends IViewController {
             filters: [{ name: 'XMI-Files', extensions: ['xmi', 'xml'] }]
         });
         if (dialogResult != undefined) {
-            var hText: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText_Browser");
+            var hText: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText");
             hText.value = dialogResult[0];
         }
     }
@@ -178,7 +178,7 @@ export class CreateMCProjectController extends IViewController {
     createProject(): void {
         document.getElementById("CreationParameters").style.display = 'none';
         document.getElementById("Output").style.display = "block";
-        var hPath: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText_Create");
+        var hPath: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText");
         var hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
         let projectName = (<HTMLInputElement>document.getElementById("ProjectName")).value;
         let app: IntoCpsApp = IntoCpsApp.getInstance();
@@ -195,16 +195,18 @@ export class CreateMCProjectController extends IViewController {
             "--skip-rttui",
             hPath.value
         ];
-        const process = spawn(pythonPath, args);
-        process.stdout.on('data', (data: string) => {
+        var env: any = process.env;
+        env["RTTDIR"] = RTTester.rttInstallDir();
+        const p = spawn(pythonPath, args, { env: env });
+        p.stdout.on('data', (data: string) => {
             hOutputText.textContent += data + "\n";
             hOutputText.scrollTop = hOutputText.scrollHeight;
         });
-        process.stderr.on('data', (data: string) => {
+        p.stderr.on('data', (data: string) => {
             hOutputText.textContent += data + "\n";
             hOutputText.scrollTop = hOutputText.scrollHeight;
         });
-        process.on('close', (code: number) => {
+        p.on('close', (code: number) => {
             document.getElementById("scriptRUN").style.display = "none";
             document.getElementById(code == 0 ? "scriptOK" : "scriptFAIL").style.display = "block";
         });

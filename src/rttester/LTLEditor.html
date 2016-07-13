@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<script src="bower_components/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="bower_components/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+
+
+<style>
+    .ace_editor.ace_autocomplete {
+        width: 600px;
+    }
+</style>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h1 class="panel-title">LTL Formula</h1>
+    </div>
+    <div class="panel-body">
+        <div id="ltlFormula" style="height: 100px"></div>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h1 class="panel-title">Settings</h1>
+    </div>
+    <div class="panel-body">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label for="BMCSteps" class="col-sm-2 control-label">BMC steps:</label>
+                <input type="number" min="0" step="1" class="col-sm-9" id="BMCSteps">
+            </div>
+        </form>
+    </div>
+</div>
+
+<button type="button" class="btn btn-sm" id="save">Save</button>
+<button type="button" class="btn btn-default btn-sm" id="check">Save &amp; Check</button>

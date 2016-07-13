@@ -1,7 +1,7 @@
 {
   "name": "into-cps-app",
   "productName": "INTO-CPS APP",
-  "version": "1.0.1-dev",
+  "version": "1.1.1-dev",
   "description": "User interface for the INTO-CPS Toolchain",
   "license": "MIT",
   "repository": {
@@ -19,7 +19,6 @@
     "start": "electron dist/main.js"
   },
   "dependencies": {
-    "bower": "~1.7.9",
     "electron-debug": "~0.5.2",
     "jszip": "~3.0.0",
     "md5-promised": "~1.0.1",
@@ -27,11 +26,14 @@
     "promise": "~7.1.1",
     "request": "~2.72.0",
     "request-progress": "~2.0.1",
-    "unzip": "~0.1.11"
+    "sql.js": "~0.3.2",
+    "electron-default-menu": "~0.2.0",
+    "unzip": "~0.1.11",
+    "typescript-collections": "~1.1.2"
   },
   "devDependencies": {
+    "bower": "~1.7.9",
     "del": "~2.2.0",
-    "electron-default-menu": "~0.2.0",
     "electron-packager": "~7.0.3",
     "electron-prebuilt": "~1.2.1",
     "gulp": "~3.9.1",
@@ -43,12 +45,9 @@
     "gulp-htmlhint": "~0.3.1",
     "gulp-inject": "~4.1.0",
     "gulp-sourcemaps": "~1.6.0",
-    "gulp-tslint": "~4.3.5",
     "gulp-typescript": "~2.13.6",
     "gulp-typings": "~1.3.6",
     "main-bower-files": "~2.13.1",
-    "merge-stream": "~1.0.0",
-    "tslint": "~3.10.2",
-    "typescript-collections": "~1.1.2"
+    "merge-stream": "~1.0.0"
   }
 }

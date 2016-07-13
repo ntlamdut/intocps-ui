@@ -30,7 +30,7 @@ export default class Settings implements ISettingsValues {
         "The error: " + err + " happened when attempting to open the file: " + this.settingsFile + " for writing.";
       }
       else {
-        fs.write(fd, JSON.stringify(this.intoCpsDataObject), (err) => {
+        fs.write(fd, JSON.stringify(this.intoCpsDataObject, null, 4), (err) => {
           if (err) {
             console.log("Failed to write settings in : " + this.settingsFile + ".");
           }

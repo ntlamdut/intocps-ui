@@ -7,6 +7,7 @@ import {DseController} from  "./dse/dse";
 import {CreateTDGProjectController} from  "./rttester/CreateTDGProject";
 import {CreateMCProjectController} from  "./rttester/CreateMCProject";
 import {RunTestController} from  "./rttester/RunTest";
+import {LTLEditorController} from "./rttester/LTLEditor"
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import {BrowserController} from "./proj/projbrowserview";
 import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
@@ -129,6 +130,12 @@ menuHandler.createMCProject = (path: string) => {
 menuHandler.runTest = (path: string) => {
     $(init.mainView).load("rttester/RunTest.html", (event: JQueryEventObject) => {
         controller = new RunTestController(init.mainView, path);
+    });
+};
+
+menuHandler.openLTLFile = (fileName: string) => {
+    $(init.mainView).load("rttester/LTLEditor.html", (event: JQueryEventObject) => {
+        controller = new LTLEditorController(init.mainView, fileName);
     });
 };
 

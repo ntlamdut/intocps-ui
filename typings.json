@@ -17,6 +17,8 @@
         "github-electron": "registry:dt/github-electron#1.2.1+20160602155650",
         "jquery": "registry:dt/jquery#2.0.0+20160303223636",
         "node": "registry:dt/node#4.0.0+20160412142033",
-        "w2ui": "registry:dt/w2ui#1.4.3+20160501154442"
+        "w2ui": "registry:dt/w2ui#1.4.3+20160501154442",
+        "ace": "registry:dt/ace#0.0.0+20160630235124",
+        "sql.js": "registry:dt/sql.js#0.0.0+20160316155526"
     }
 }
