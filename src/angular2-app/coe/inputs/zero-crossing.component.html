@@ -1,0 +1,55 @@
+<div class="form-horizontal">
+    <div class="form-group">
+        <label class="col-sm-3 control-label">ID</label>
+        <div class="col-sm-9">
+            <input [(ngModel)]="constraint.id" name="id" class="form-control">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">
+            Ports
+            <button type="button" [disabled]="constraint.ports.length == 2" (click)="addPort()" class="btn btn-default btn-xs">
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
+        </label>
+        <div class="col-sm-9">
+            <div *ngFor="let port of constraint.ports; let i=index; trackBy:customTrackBy" class="input-group">
+                <select [(ngModel)]="constraint.ports[i]" name="port{{i}}" class="form-control">
+                    <option *ngFor="let output of ports" [ngValue]="output">{{output.instance.fmu.name}}.{{output.instance.name}}.{{output.scalarVariable.name}}</option>
+                </select>
+                <span class="input-group-btn">
+                    <button type="button" (click)="removePort(port)" class="btn btn-default" type="button">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">Order</label>
+        <div class="col-sm-9">
+            <label class="radio-inline">
+                <input [(ngModel)]="constraint.order" type="radio" name="order" value="1"> 1
+            </label>
+            <label class="radio-inline">
+                <input [(ngModel)]="constraint.order" type="radio" name="order" value="2"> 2
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">Absolute Tolerance</label>
+        <div class="col-sm-9">
+            <input [(ngModel)]="constraint.abstol" name="abstol" class="form-control" type="number">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label">Safety</label>
+        <div class="col-sm-9">
+            <input [(ngModel)]="constraint.safety" name="safety" class="form-control" type="number">
+        </div>
+    </div>
+</div>

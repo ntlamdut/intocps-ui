@@ -1,8 +1,5 @@
-
 import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {IntoCpsApp} from  "./IntoCpsApp";
-import {CoeController} from  "./coe/coe";
-import {MmController} from  "./multimodel/MmController";
 import {DseController} from  "./dse/dse";
 import {CreateTDGProjectController} from  "./rttester/CreateTDGProject";
 import {CreateMCProjectController} from  "./rttester/CreateMCProject";
@@ -16,14 +13,19 @@ import {IViewController} from "./iViewController";
 import * as CustomFs from "./custom-fs";
 import {IProject} from "./proj/IProject";
 import * as SystemUtil from "./SystemUtil";
+import { bootstrap }    from '@angular/platform-browser-dynamic';
+import {AppComponent} from './angular2-app/app.component';
+import * as fs from 'fs';
+import * as Path from 'path';
 
-import fs = require("fs");
-import Path = require('path');
+interface MyWindow extends Window {
+    ng2app: AppComponent;
+}
 
-
+declare var window: MyWindow;
 
 import * as Menus from "./menus";
-
+import {provideForms, disableDeprecatedForms} from "@angular/forms";
 
 class InitializationController {
     // constants
@@ -70,12 +72,15 @@ class InitializationController {
     private loadViews() {
         this.layout.load("main", "main.html", "", () => {
             this.mainView = (<HTMLDivElement>document.getElementById(this.mainViewId));
+
+            // Start Angular 2 application
+            bootstrap(AppComponent, [disableDeprecatedForms(), provideForms()]);
         });
         this.layout.load("left", "proj/projbrowserview.html", "", () => {
             browserController.initialize();
         });
     }
-};
+}
 
 // Initialise controllers
 let menuHandler: IntoCpsAppMenuHandler = new IntoCpsAppMenuHandler();
@@ -84,6 +89,8 @@ let init = new InitializationController();
 let controller: IViewController;
 
 function openViewController(htmlPath: string, path: string, controllerPar: new (mainDiv: HTMLDivElement) => IViewController) {
+    window.ng2app.closeAll();
+
     $(init.mainView).load(htmlPath, (event: JQueryEventObject) => {
         controller = new controllerPar(init.mainView);
         if (controller.initialize) {
@@ -92,20 +99,29 @@ function openViewController(htmlPath: string, path: string, controllerPar: new (
     });
 }
 
-menuHandler.deInitialize = () => {
-    if (controller != null && controller.deInitialize)
-    { return controller.deInitialize(); }
-    else
-    { return true; }
+function openView(htmlPath:string, callback?:(event:JQueryEventObject) => void) {
+    window.ng2app.closeAll();
 
+    $(init.mainView).load(htmlPath, callback);
 }
 
-menuHandler.openCoeView = (path) => {
-    openViewController("coe/coe.html", path, CoeController);
+menuHandler.deInitialize = () => {
+    if (controller != null && controller.deInitialize)
+        return controller.deInitialize();
+    else
+        return true;
 };
 
-menuHandler.openMultiModel = (path) => {
-    openViewController("multimodel/multimodel.html", path, MmController);
+menuHandler.openCoeView = (path:string) => {
+    $(init.mainView).empty();
+    $('#activeTabTitle').text("Multi Model > COE");
+    window.ng2app.openCOE(path);
+};
+
+menuHandler.openMultiModel = (path:string) => {
+    $(init.mainView).empty();
+    $('#activeTabTitle').text("Multi Model");
+    window.ng2app.openMultiModel(path);
 };
 
 menuHandler.runRTTesterCommand = (commandSpec: any) => {
@@ -113,22 +129,22 @@ menuHandler.runRTTesterCommand = (commandSpec: any) => {
         RTesterModalCommandWindow.initialize(commandSpec);
         (<any>$('#modalDialog')).modal({ keyboard: false, backdrop: false });
     });
-}
+};
 
 menuHandler.createTDGProject = (path: string) => {
-    $(init.mainView).load("rttester/CreateTDGProject.html", (event: JQueryEventObject) => {
+    openView("rttester/CreateTDGProject.html", (event: JQueryEventObject) => {
         controller = new CreateTDGProjectController(init.mainView, path);
     });
 };
 
 menuHandler.createMCProject = (path: string) => {
-    $(init.mainView).load("rttester/CreateMCProject.html", (event: JQueryEventObject) => {
+    openView("rttester/CreateMCProject.html", (event: JQueryEventObject) => {
         controller = new CreateMCProjectController(init.mainView, path);
     });
 };
 
 menuHandler.runTest = (path: string) => {
-    $(init.mainView).load("rttester/RunTest.html", (event: JQueryEventObject) => {
+    openView("rttester/RunTest.html", (event: JQueryEventObject) => {
         controller = new RunTestController(init.mainView, path);
     });
 };
@@ -140,12 +156,12 @@ menuHandler.openLTLFile = (fileName: string) => {
 };
 
 menuHandler.openSysMlExport = () => {
-    $(init.mainView).load("sysmlexport/sysmlexport.html");
+    openView("sysmlexport/sysmlexport.html");
     IntoCpsApp.setTopName("SysML Export");
 };
 
 menuHandler.openFmu = () => {
-    $(init.mainView).load("fmus/fmus.html");
+    openView("fmus/fmus.html");
     IntoCpsApp.setTopName("FMUs");
 };
 
@@ -154,14 +170,14 @@ menuHandler.openDseView = (path) => {
 };
 
 menuHandler.createDse = (path) => {
-    $(init.mainView).load("dse/dse.html", (event: JQueryEventObject) => {
+    openView("dse/dse.html", (event: JQueryEventObject) => {
         // create empty DSE file and load it.
         menuHandler.openDseView("")
     });
 };
 
 menuHandler.createDsePlain = () => {
-    $(init.mainView).load("dse/dse.html", (event: JQueryEventObject) => {
+    openView("dse/dse.html", (event: JQueryEventObject) => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = "new";
@@ -174,7 +190,7 @@ menuHandler.createDsePlain = () => {
 };
 
 menuHandler.createMultiModel = (path) => {
-    $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
+    openView("multimodel/multimodel.html", (event: JQueryEventObject) => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = Path.basename(path, ".sysml.json");
@@ -187,7 +203,7 @@ menuHandler.createMultiModel = (path) => {
 };
 
 menuHandler.createMultiModelPlain = () => {
-    $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
+    openView("multimodel/multimodel.html", (event: JQueryEventObject) => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = "new";
@@ -200,20 +216,17 @@ menuHandler.createMultiModelPlain = () => {
 };
 
 menuHandler.createCoSimConfiguration = (path) => {
-    $(init.mainView).load("coe/coe.html", function (event: JQueryEventObject) {
+    openView("coe/coe.html", function (event: JQueryEventObject) {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let coePath: string = project.createCoSimConfig(path + "", "co-sim-" + Math.floor(Math.random() * 100), null).toString();
             IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
             menuHandler.openCoeView(coePath);
         }
-
-
     });
 };
 
 menuHandler.deletePath = (path) => {
-
     let name = Path.basename(path);
     if (name.indexOf('R_') >= 0) {
         console.info("Deleting " + path);
@@ -237,10 +250,8 @@ menuHandler.deletePath = (path) => {
 };
 
 menuHandler.openWithSystemEditor = (path) => {
-
     SystemUtil.openPath(path);
 };
 
 
 Menus.configureIntoCpsMenu();
-

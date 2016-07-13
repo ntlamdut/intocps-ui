@@ -19,16 +19,27 @@
     "start": "electron dist/main.js"
   },
   "dependencies": {
+    "@angular/common": "^2.0.0-rc.4",
+    "@angular/compiler": "2.0.0-rc.4",
+    "@angular/core": "2.0.0-rc.4",
+    "@angular/forms": "0.2.0",
+    "@angular/http": "2.0.0-rc.4",
+    "@angular/platform-browser": "2.0.0-rc.4",
+    "@angular/platform-browser-dynamic": "2.0.0-rc.4",
     "electron-debug": "~0.5.2",
+    "es6-shim": "^0.35.1",
     "jszip": "~3.0.0",
     "md5-promised": "~1.0.1",
     "mkdirp": "~0.5.1",
     "promise": "~7.1.1",
+    "reflect-metadata": "^0.1.3",
     "request": "~2.72.0",
     "request-progress": "~2.0.1",
+    "rxjs": "5.0.0-beta.6",
+    "unzip": "~0.1.11",
+    "zone.js": "^0.6.12",
     "sql.js": "~0.3.2",
     "electron-default-menu": "~0.2.0",
-    "unzip": "~0.1.11",
     "typescript-collections": "~1.1.2"
   },
   "devDependencies": {
@@ -48,6 +59,7 @@
     "gulp-typescript": "~2.13.6",
     "gulp-typings": "~1.3.6",
     "main-bower-files": "~2.13.1",
-    "merge-stream": "~1.0.0"
+    "merge-stream": "~1.0.0",
+    "webpack": "^1.13.0"
   }
 }

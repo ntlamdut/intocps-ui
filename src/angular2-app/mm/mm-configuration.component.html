@@ -1,0 +1,156 @@
+<form *ngIf="config" (ngSubmit)="onSubmit()" #configForm="ngForm">
+    <h4>FMUs <button type="button" (click)="config.addFmu()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h4>
+
+    <div class="row">
+        <div class="col-md-3"><label>Keys</label></div>
+        <div class="col-md-8"><label>Paths</label></div>
+    </div>
+
+    <div class="row" *ngFor="let fmu of config.fmus; let i=index">
+        <div class="col-md-3 form-group">
+            <input name="fmu{{i}}" [(ngModel)]="fmu.name" class="form-control input-sm">
+        </div>
+        <div class="col-md-8 form-group">
+            <file-browser [basePath]="config.fmusRootPath" [path]="fmu.path" (pathChange)="fmu.updatePath($event)"></file-browser>
+        </div>
+        <div class="col-md-1 form-group">
+            <button type="button" (click)="config.removeFmu(fmu)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4>FMU instances</h4>
+
+    <div class="row">
+        <div class="col-md-6">
+            <label>FMU</label>
+
+            <ul class="list-group">
+                <a *ngFor="let fmu of config.fmus"
+                   (click)="selectInstanceFmu(fmu)"
+                   [class.active]="selectedInstanceFmu === fmu"
+                   class="list-group-item">{{fmu.name}}</a>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <label>Instances <button type="button" [disabled]="!selectedInstanceFmu" (click)="config.addInstance(selectedInstanceFmu)" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></label>
+
+            <div *ngIf="selectedInstanceFmu">
+                <div *ngFor="let instance of getInstances(selectedInstanceFmu); let i=index" class="input-group">
+                    <input name="instance{{i}}" [(ngModel)]="instance.name" class="form-control input-sm">
+                    <span class="input-group-btn">
+                        <button type="button" (click)="config.removeInstance(instance)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4>Connections</h4>
+
+    <div class="row">
+        <div class="col-md-3">
+            <h5><label>Output instance</label></h5>
+
+            <ul class="list-group">
+                <a *ngFor="let instance of config.fmuInstances"
+                   (click)="selectOutputInstance(instance)"
+                   [class.active]="selectedOutputInstance === instance"
+                   class="list-group-item">{{instance.fmu.name}}.{{instance.name}}</a>
+            </ul>
+        </div>
+
+        <div class="col-md-3">
+            <h5><label>Output variable</label></h5>
+
+            <ul *ngIf="selectedOutputInstance" class="list-group">
+                <a *ngFor="let output of getOutputs()"
+                   (click)="selectOutput(output)"
+                   [class.active]="selectedOutput === output"
+                   class="list-group-item">{{output.name}}</a>
+            </ul>
+        </div>
+
+        <div class="col-md-3">
+            <h5><label>Input instance</label></h5>
+
+            <ul *ngIf="selectedOutput" class="list-group">
+                <a *ngFor="let instance of config.fmuInstances"
+                   (click)="selectInputInstance(instance)"
+                   [class.active]="selectedInputInstance === instance"
+                   class="list-group-item">{{instance.fmu.name}}.{{instance.name}}</a>
+            </ul>
+        </div>
+
+        <div class="col-md-3">
+            <h5><label>Input variable</label></h5>
+
+            <ul *ngIf="selectedInputInstance" class="list-group">
+                <label *ngFor="let input of getInputs()" class="list-group-item">
+                    <input type="checkbox"
+                           [checked]="isInputConnected(input)"
+                           (change)="onConnectionChange($event.target.checked, input)">
+                    {{input.name}}</label>
+            </ul>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4>Initial values of parameters</h4>
+
+    <div class="row">
+        <div class="col-md-3">
+            <h5><label>Instance</label></h5>
+
+            <ul class="list-group">
+                <a *ngFor="let instance of config.fmuInstances"
+                   (click)="selectParameterInstance(instance)"
+                   [class.active]="selectedParameterInstance === instance"
+                   class="list-group-item">{{instance.fmu.name}}.{{instance.name}}</a>
+            </ul>
+        </div>
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><label>Parameters</label></h5>
+                </div>
+                <div  *ngIf="selectedParameterInstance" class="input-group col-md-6">
+                    <div *ngIf="selectedParameterInstance" class="input-group">
+                        <select class="form-control input-sm" [(ngModel)]="newParameter" name="parameterVariable">
+                            <option *ngFor="let parameter of getParameters(); let i=index" [ngValue]="parameter">{{parameter.name}}</option>
+                        </select>
+                        <span class="input-group-btn">
+                        <button type="button" (click)="addParameter()" class="btn btn-default btn-sm">
+                            <span class="glyphicon glyphicon-plus"></span> Add
+                        </button>
+                    </span>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="selectedParameterInstance">
+                <div *ngFor="let initialValue of getInitialValues(); let i=index" class="row">
+                    <div class="col-md-2">
+                        {{initialValue.scalarVariable.name}}
+                    </div>
+                    <div class="input-group col-md-10">
+                        <input [value]="initialValue.value" (change)="setParameter(initialValue.scalarVariable, $event.target.value)" class="form-control input-sm">
+                        <span class="input-group-btn">
+                            <button type="button" (click)="removeParameter(initialValue.scalarVariable)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <button class="btn btn-default" [disabled]="!configForm.form.valid">
+        <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+    </button>
+</form>

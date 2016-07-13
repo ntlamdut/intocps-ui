@@ -3,7 +3,7 @@
 
 'use strict';
 
-// file globs 
+// file globs
 var outputPath = 'dist/',
     htmlSrcs = ['src/**/*.html'],
     jsSrcs = 'src/**/*.js',
@@ -12,6 +12,7 @@ var outputPath = 'dist/',
     resourcesFolder = 'src/resources',
     typingsFolder = 'typings',
     cssSrcs = [
+        'src/styles.css',
         bowerFolder + '/bootstrap/dist/css/bootstrap.css',
         resourcesFolder + '/w2ui-1.5/w2ui.min.css'],
     bowerSrcs = "",
@@ -33,8 +34,8 @@ var gulp = require('gulp'),
     electron = require('gulp-electron'),
     packager = require('electron-packager'),
     packageJSON = require('./package.json'),
-    htmlhint = require("gulp-htmlhint");
-
+    webpack = require('webpack'),
+	htmlhint = require("gulp-htmlhint");
 
 // Tasks
 
@@ -52,7 +53,7 @@ gulp.task('install-bower-components', function () {
 // Clean everything!
 gulp.task("clean", function () {
     return del([
-    outputPath
+        outputPath
     ]);
 });
 
@@ -66,6 +67,13 @@ gulp.task("compile-ts", function () {
 
     return tsResult.js.pipe(sourcemap.write())
         .pipe(gulp.dest(outputPath));
+});
+
+// Compile Angular 2 application
+gulp.task('compile-ng2', function(callback) {
+    webpack(require('./webpack.config.js'), function() {
+        callback();
+    });
 });
 
 // Copy important bower files to destination
@@ -86,7 +94,7 @@ gulp.task('copy-fonts', function () {
 // Copy custom resources
 gulp.task('copy-custom',function (){
     return gulp.src(customResources)
-    .pipe(gulp.dest(outputPath+'resources/into-cps'))
+        .pipe(gulp.dest(outputPath+'resources/into-cps'))
 });
 
 // Copy css to app folder
@@ -97,15 +105,15 @@ gulp.task('copy-css', function () {
 // Copy html to app folder
 gulp.task('copy-html', function () {
     gulp.src(htmlSrcs)
-    .pipe(htmlhint())
-    .pipe(htmlhint.reporter())
-    .pipe(gulp.dest(outputPath));
+        .pipe(htmlhint())
+        .pipe(htmlhint.reporter())
+        .pipe(gulp.dest(outputPath));
 });
 
 // Copy js to app folder
 gulp.task('copy-js', function () {
     gulp.src(jsSrcs)
-        // process js here if needed
+    // process js here if needed
         .pipe(gulp.dest(outputPath));
 });
 
@@ -113,7 +121,7 @@ gulp.task('copy-js', function () {
 gulp.task('init', ['install-ts-defs', 'install-bower-components']);
 
 //Build App
-gulp.task('build', ['compile-ts', 'copy-js', 'copy-html', 'copy-css',
+gulp.task('build', ['compile-ts', 'compile-ng2', 'copy-js', 'copy-html', 'copy-css',
   'copy-bower', 'copy-fonts','copy-custom']);
 
 // Package app binaries
@@ -151,7 +159,7 @@ gulp.task("package-win32", function(callback) {
         out: 'pkg',
         "app-version": packageJSON.version,
         "version-string": {
-           "CompanyName": packageJSON.author.name,
+            "CompanyName": packageJSON.author.name,
             "ProductName": packageJSON.productName
         }
     };
@@ -172,7 +180,7 @@ gulp.task("package-linux", function(callback) {
         out: 'pkg',
         "app-version": packageJSON.version,
         "version-string": {
-           "CompanyName": packageJSON.author.name,
+            "CompanyName": packageJSON.author.name,
             "ProductName": packageJSON.productName
         }
     };
@@ -193,5 +201,5 @@ gulp.task('watch', function () {
     gulp.watch(customResources, ['copy-custom']);
 });
 
-// Default task 
+// Default task
 gulp.task('default', ['build']);

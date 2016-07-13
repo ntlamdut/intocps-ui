@@ -1,9 +1,8 @@
-import * as Main from  "./Settings"
 import * as IntoCpsApp from  "../IntoCpsApp"
 import {SettingKeys} from "./SettingKeys";
-import {TextInputNonLoad, TextInputIds} from "../coe/components/text-input-non-load";
+import {TextInputNonLoad, TextInputIds} from "../components/text-input-non-load";
 import {Settings} from "./settings";
-import {Component} from "../multimodel/components/component";
+import {Component} from "../components/component";
 
 class SettingsView {
     private keys: { [key: string]: any };

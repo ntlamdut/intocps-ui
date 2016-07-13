@@ -1,0 +1,45 @@
+.ng-valid[required] {
+    border-left: 5px solid #42A948; /* green */
+}
+
+.ng-invalid {
+    border-left: 5px solid #a94442; /* red */
+}
+
+mm-configuration a {
+    cursor: pointer;
+}
+
+mm-configuration label.list-group-item {
+    font-weight: normal;
+}
+
+mm-configuration label.list-group-item:hover {
+    cursor: pointer;
+    background-color: #f5f5f5;
+}
+
+coe-configuration select {
+    width: 200px !important;
+}
+
+coe-configuration .input-group {
+    display: block;
+}
+
+coe-configuration .constraint-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+coe-configuration .constraint-panel {
+    width: 45%;
+    min-width: 300px;
+    margin-left: 2.5%;
+    margin-right: 2.5%;
+}
+
+coe-configuration a {
+    cursor: pointer;
+    color: black;
+}
