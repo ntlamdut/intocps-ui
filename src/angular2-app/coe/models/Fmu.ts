@@ -1,8 +1,9 @@
-import * as fs from 'fs';
+import * as fs from "fs";
+import * as JSZip from "jszip";
 
 // Holds information about a .fmu container
 export class Fmu {
-    platforms: Platforms[];
+    platforms: Platforms[] = [];
     scalarVariables: ScalarVariable[] = [];
 
     constructor(public name: string = "{FMU}", public path: string = "") {
@@ -11,47 +12,41 @@ export class Fmu {
 
     public updatePath(path: string): Promise<void> {
         this.path = path;
-        this.scalarVariables.forEach(sv => {
-            sv.isConfirmed = false;
-        });
+        this.scalarVariables.forEach(sv => sv.isConfirmed = false);
         this.platforms = [];
         return this.populate();
     }
 
     public populate(): Promise<void> {
-        let self = this;
-        let checkFileExists = new Promise<Buffer>(function (resolve, reject) {
+        let checkFileExists = new Promise<Buffer>((resolve, reject) => {
             try {
-                if (fs.accessSync(self.path, fs.R_OK)) {
+                if (fs.accessSync(this.path, fs.R_OK))
                     reject();
-                }
-                resolve();
+                else
+                    resolve();
             } catch (e) {
                 reject(e);
             }
         });
 
         //wrap readFile in a promise
-        let fileReadPromise = new Promise<Buffer>(function (resolve, reject) {
-            fs.readFile(self.path, function (err, data) {
-                if (err !== null) {
-                    return reject(err);
-                }
-                resolve(data);
+        let fileReadPromise = new Promise<Buffer>((resolve, reject) => {
+            fs.readFile(this.path, (err, data) => {
+                if (err)
+                    reject(err);
+                else
+                    resolve(data);
             });
         });
 
         return checkFileExists.then(() => {
-            var JSZip = require("jszip");
             var zip = new JSZip();
+
             // read a zip file
-            return fileReadPromise.then(data => {
-                return zip.loadAsync(data);
-            }).then(function (k: any) {
-                return zip.file("modelDescription.xml").async("string")
-            }).then(function (content: string) {
-                self.populateFromModelDescription(content);
-            });
+            return fileReadPromise
+                .then(data => zip.loadAsync(data))
+                .then(() => zip.file("modelDescription.xml").async("string"))
+                .then((content: string) => this.populateFromModelDescription(content));
         });
     }
 
@@ -65,8 +60,6 @@ export class Fmu {
         var thisNode = iterator.iterateNext();
 
         while (thisNode) {
-
-
             let causalityNode = thisNode.attributes.getNamedItem("causality");
             let nameNode = thisNode.attributes.getNamedItem("name");
             var type: ScalarVariableType;
