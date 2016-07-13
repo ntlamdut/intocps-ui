@@ -131,7 +131,6 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
     sizeMax: number;
     initSize: number;
     constraints: VarStepConstraint[];
-
 }
 
 export enum VarStepConstraintType { ZeroCrossing, BoundedDifference, SamplingRate, FmuRequested };
