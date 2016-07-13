@@ -265,7 +265,7 @@ export class Parser {
                         let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
                         return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
                     }),
-                    c.order,
+                    c.order.toString(),
                     c.abstol,
                     c.safety
                 )
