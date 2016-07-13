@@ -11,7 +11,7 @@
             <input name="fmu{{i}}" [(ngModel)]="fmu.name" class="form-control input-sm">
         </div>
         <div class="col-md-8 form-group">
-            <file-browser [basePath]="config.fmusRootPath" [(path)]="fmu.path"></file-browser>
+            <file-browser [basePath]="config.fmusRootPath" [path]="fmu.path" (pathChange)="fmu.updatePath($event)"></file-browser>
         </div>
         <div class="col-md-1 form-group">
             <button type="button" (click)="config.removeFmu(fmu)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
