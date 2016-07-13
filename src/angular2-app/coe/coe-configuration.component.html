@@ -4,21 +4,24 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">Start time</label>
             <div class="col-sm-10">
-                <input name="startTime" [(ngModel)]="config.startTime" class="form-control" required>
+                <p *ngIf="!editing" class="form-control-static">{{config.startTime}}</p>
+                <input *ngIf="editing" name="startTime" [(ngModel)]="config.startTime" class="form-control" required>
             </div>
         </div>
 
         <div class="form-group">
             <label class="col-sm-2 control-label">End time</label>
             <div class="col-sm-10">
-                <input name="endTime" [(ngModel)]="config.endTime" class="form-control" required>
+                <p *ngIf="!editing" class="form-control-static">{{config.endTime}}</p>
+                <input *ngIf="editing" name="endTime" [(ngModel)]="config.endTime" class="form-control" required>
             </div>
         </div>
 
         <div class="form-group">
             <label class="col-sm-2 control-label">Algorithm</label>
             <div class="col-sm-10">
-                <select name="algorithm" [(ngModel)]="config.algorithm" class="form-control" required>
+                <p *ngIf="!editing" class="form-control-static">{{getAlgorithmName(config.algorithm)}}</p>
+                <select *ngIf="editing" name="algorithm" [(ngModel)]="config.algorithm" class="form-control" required>
                     <option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{getAlgorithmName(algorithm)}}</option>
                 </select>
             </div>
@@ -32,7 +35,8 @@
             <div class="form-group">
                 <label class="col-sm-2 control-label">Step size</label>
                 <div class="col-sm-10">
-                    <input name="stepSize" [(ngModel)]="config.algorithm.size" class="form-control" required>
+                    <p *ngIf="!editing" class="form-control-static">{{config.algorithm.size}}</p>
+                    <input *ngIf="editing" name="stepSize" [(ngModel)]="config.algorithm.size" class="form-control" required>
                 </div>
             </div>
         </div>
@@ -43,28 +47,31 @@
             <div class="form-group">
                 <label class="col-sm-2 control-label">Initial step size</label>
                 <div class="col-sm-10">
-                    <input name="initStepSize" [(ngModel)]="config.algorithm.initSize" class="form-control" required>
+                    <p *ngIf="!editing" class="form-control-static">{{config.algorithm.initSize}}</p>
+                    <input *ngIf="editing" name="initStepSize" [(ngModel)]="config.algorithm.initSize" class="form-control" required>
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-2 control-label">Minimum step size</label>
                 <div class="col-sm-10">
-                    <input name="minStepSize" [(ngModel)]="config.algorithm.sizeMin" class="form-control" required>
+                    <p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMin}}</p>
+                    <input *ngIf="editing" name="minStepSize" [(ngModel)]="config.algorithm.sizeMin" class="form-control" required>
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-2 control-label">Maximum step size</label>
                 <div class="col-sm-10">
-                    <input name="maxStepSize" [(ngModel)]="config.algorithm.sizeMax" class="form-control" required>
+                    <p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMax}}</p>
+                    <input *ngIf="editing" name="maxStepSize" [(ngModel)]="config.algorithm.sizeMax" class="form-control" required>
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-2 control-label">Constraints</label>
                 <div class="col-sm-10">
-                    <div class="input-group">
+                    <div *ngIf="editing" class="input-group">
                         <select [(ngModel)]="newConstraint" name="newConstraint" class="form-control">
                             <option *ngFor="let constraint of constraintConstructors" [ngValue]="constraint">{{getConstraintName(constraint)}}</option>
                         </select>
@@ -81,13 +88,13 @@
         <div class="constraint-container">
             <div class="panel panel-default constraint-panel" *ngFor="let constraint of config.algorithm.constraints">
                 <div class="panel-heading">
-                    <a (click)="removeConstraint(constraint)" class="pull-right"><span class="glyphicon glyphicon-remove"></span></a>
+                    <a *ngIf="editing" (click)="removeConstraint(constraint)" class="pull-right"><span class="glyphicon glyphicon-remove"></span></a>
                     {{getConstraintName(constraint)}}
                 </div>
                 <div class="panel-body">
-                    <zero-crossing [ports]="outputPorts" [constraint]="constraint" *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
-                    <bounded-difference [ports]="outputPorts" [constraint]="constraint" *ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
-                    <sampling-rate [constraint]="constraint" *ngIf="constraint.type === 'samplingrate'"></sampling-rate>
+                    <zero-crossing [editing]="editing" [ports]="outputPorts" [constraint]="constraint" *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
+                    <bounded-difference [editing]="editing" [ports]="outputPorts" [constraint]="constraint" *ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
+                    <sampling-rate [editing]="editing" [constraint]="constraint" *ngIf="constraint.type === 'samplingrate'"></sampling-rate>
                 </div>
             </div>
 
@@ -104,7 +111,7 @@
             <div class="col-sm-10">
                 <div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
                     <label>
-                        <input type="checkbox"
+                        <input [disabled]="!editing" type="checkbox"
                                [checked]="isLivestreamChecked(instance, output)"
                                (change)="onLivestreamChange($event.target.checked, instance, output)">
 
@@ -117,7 +124,10 @@
 
     <hr>
 
-    <button class="btn btn-default" [disabled]="!configForm.form.valid">
+    <button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+    </button>
+    <button *ngIf="editing" class="btn btn-default" [disabled]="!configForm.form.valid">
         <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
     </button>
 </form>

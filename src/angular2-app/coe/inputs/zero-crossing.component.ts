@@ -13,6 +13,9 @@ export class ZeroCrossingComponent {
     @Input()
     ports:Array<InstanceScalarPair> = [];
 
+    @Input()
+    editing:boolean = false;
+
     customTrackBy(index:number, obj: any):any {
         return index;
     }

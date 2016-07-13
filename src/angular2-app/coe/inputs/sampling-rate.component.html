@@ -2,28 +2,32 @@
     <div class="form-group">
         <label class="col-sm-3 control-label">ID</label>
         <div class="col-sm-9">
-            <input [(ngModel)]="constraint.id" name="id" class="form-control">
+            <p *ngIf="!editing" class="form-control-static">{{constraint.id}}</p>
+            <input *ngIf="editing" [(ngModel)]="constraint.id" name="id" class="form-control">
         </div>
     </div>
 
     <div class="form-group">
         <label class="col-sm-3 control-label">Base</label>
         <div class="col-sm-9">
-            <input [(ngModel)]="constraint.base" name="base" class="form-control" type="number">
+            <p *ngIf="!editing" class="form-control-static">{{constraint.base}}</p>
+            <input *ngIf="editing" [(ngModel)]="constraint.base" name="base" class="form-control" type="number">
         </div>
     </div>
 
     <div class="form-group">
         <label class="col-sm-3 control-label">Rate</label>
         <div class="col-sm-9">
-            <input [(ngModel)]="constraint.rate" name="rate" class="form-control" type="number">
+            <p *ngIf="!editing" class="form-control-static">{{constraint.rate}}</p>
+            <input *ngIf="editing" [(ngModel)]="constraint.rate" name="rate" class="form-control" type="number">
         </div>
     </div>
 
     <div class="form-group">
         <label class="col-sm-3 control-label">Start Time</label>
         <div class="col-sm-9">
-            <input [(ngModel)]="constraint.startTime" name="startTime" class="form-control" type="number">
+            <p *ngIf="!editing" class="form-control-static">{{constraint.startTime}}</p>
+            <input *ngIf="editing" [(ngModel)]="constraint.startTime" name="startTime" class="form-control" type="number">
         </div>
     </div>
 </div>

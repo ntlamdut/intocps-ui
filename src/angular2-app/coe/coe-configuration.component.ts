@@ -26,6 +26,7 @@ export class CoeConfigurationComponent implements OnInit {
     algorithms:Array<ICoSimAlgorithm> = [];
     outputPorts:Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
+    editing:boolean = false;
 
     private config:CoSimulationConfig;
 
@@ -73,7 +74,10 @@ export class CoeConfigurationComponent implements OnInit {
     }
 
     onSubmit() {
+        if (!this.editing) return;
+
         this.config.save();
+        this.editing = false;
     }
 
     getOutputs(scalarVariables:Array<ScalarVariable>) {

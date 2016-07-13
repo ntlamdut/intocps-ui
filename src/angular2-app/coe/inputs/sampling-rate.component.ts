@@ -8,4 +8,7 @@ import {SamplingRateConstraint} from "../../../intocps-configurations/CoSimulati
 export class SamplingRateComponent {
     @Input()
     constraint:SamplingRateConstraint;
+
+    @Input()
+    editing:boolean = false;
 }
