@@ -19,12 +19,18 @@ mm-configuration label.list-group-item:hover {
     background-color: #f5f5f5;
 }
 
+coe-configuration .input-group {
+    display: block;
+}
+
 coe-configuration select {
     width: 200px !important;
 }
 
-coe-configuration .input-group {
-    display: block;
+zero-crossing select,
+bounded-difference select {
+    width: auto !important;
+    min-width: 200px;
 }
 
 coe-configuration .constraint-container {
