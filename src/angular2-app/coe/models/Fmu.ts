@@ -51,7 +51,7 @@ export class Fmu {
                 return zip.file("modelDescription.xml").async("string")
             }).then(function (content: string) {
                 self.populateFromModelDescription(content);
-            });;
+            });
         });
     }
 
@@ -124,14 +124,14 @@ export class Fmu {
     }
 
     public getScalarVariable(name: string): ScalarVariable {
-        let res = this.scalarVariables.find(function (s) { return s.name == name; });
-        if (res == undefined) {
-            // scalar variable does not exist so make new unlinked variable
-            let sv : ScalarVariable = { name: name, type: ScalarVariableType.Unknown, causality: CausalityType.Unknown, isConfirmed: false };
-            this.scalarVariables.push(sv);
-            return sv;
+        let scalar = this.scalarVariables.find(s => s.name == name);
+
+        if (!scalar) {
+            scalar = new ScalarVariable(name);
+            this.scalarVariables.push(scalar);
         }
-        return res;
+
+        return scalar;
     }
 }
 
@@ -140,14 +140,16 @@ export enum Platforms { Mac64, Linux32, Linux64, Win32, Win64 }
 
 // Represents a FMI ScalarVariable
 export class ScalarVariable {
-    public name: string;
+    constructor(
+        public name: string = "",
+        public type: ScalarVariableType = ScalarVariableType.Unknown,
+        public causality: CausalityType = CausalityType.Unknown,
+        public isConfirmed: boolean = false // none FMI specific
+    ) {
 
-    public type: ScalarVariableType;
-    public causality: CausalityType;
-
-    //none FMI specific
-    public isConfirmed: boolean;
+    }
 }
+
 export enum ScalarVariableType { Real, Bool, Int, String, Unknown }
 export enum CausalityType { Output, Input, Parameter, CalculatedParameter, Local, Unknown }
 
