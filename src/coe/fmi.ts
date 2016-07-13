@@ -74,7 +74,6 @@ export class Fmu {
 
         while (thisNode) {
 
-
             let causalityNode = thisNode.attributes.getNamedItem("causality");
             let nameNode = thisNode.attributes.getNamedItem("name");
             var type: ScalarVariableType;
