@@ -170,9 +170,9 @@ export function isCausalityCompatible(t1: CausalityType, t2: CausalityType): boo
     }
 }
 
-function isInteger(x:any) { return !isNaN(x) && isFinite(x) && Math.floor(x) === x; }
-function isFloat(x:any) { return !!(x % 1); }
-function isString(value:any) {return typeof value === 'string';}
+export function isInteger(x:any) { return !isNaN(x) && isFinite(x) && Math.floor(x) === x; }
+export function isFloat(x:any) { return !!(x % 1); }
+export function isString(value:any) {return typeof value === 'string';}
 
 export function convertToType(type: ScalarVariableType, value: any): any{
     if(type == ScalarVariableType.Bool)
