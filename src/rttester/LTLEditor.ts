@@ -4,7 +4,7 @@
 
 
 import {SourceDom} from "../sourceDom";
-import {IViewController} from "../iViewController";
+import {ViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp"
 import * as Settings from  "../settings/settings"
 import {SettingKeys} from "../settings/SettingKeys";
@@ -13,7 +13,7 @@ import {RTTester} from "../rttester/RTTester";
 import fs = require("fs");
 
 
-export class LTLEditorController extends IViewController {
+export class LTLEditorController extends ViewController {
 
     fileName: string;
     json: any = {};
