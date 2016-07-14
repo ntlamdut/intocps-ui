@@ -18,4 +18,4 @@
     </div>
 </div>
 
-<line-chart [datasets]="coeSimulation.datasets"></line-chart>
+<line-chart *ngIf="coeSimulation.datasets.getValue().length > 0" [datasets]="coeSimulation.datasets"></line-chart>
