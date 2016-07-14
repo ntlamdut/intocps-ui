@@ -1,5 +1,4 @@
 import {Component, Input, NgZone, OnInit, OnDestroy} from "@angular/core";
-import IntoCpsApp from "../../IntoCpsApp";
 import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
 import {LineChartComponent} from "../shared/line-chart.component";
 import {CoeSimulationService} from "./coe-simulation.service";
@@ -19,7 +18,7 @@ import {coeServerStatusHandler} from "../../menus";
 })
 export class CoeSimulationComponent implements OnInit, OnDestroy {
     @Input()
-    path:string;
+    config:CoSimulationConfig;
 
     online:boolean = false;
     url:string = '';
@@ -29,7 +28,6 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
     constructor(
         private coeSimulation:CoeSimulationService,
-        private zone:NgZone,
         private http:Http,
         private settings:SettingsService
     ) {
@@ -47,11 +45,7 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     }
 
     runSimulation() {
-        let project = IntoCpsApp.getInstance().getActiveProject();
-
-        CoSimulationConfig
-            .parse(this.path, project.getRootFilePath(), project.getFmusPath())
-            .then(config => this.zone.run(() => this.coeSimulation.run(config)));
+        this.coeSimulation.run(this.config);
     }
 
     isCoeOnline() {

@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, NgZone} from "@angular/core";
+import {Component, Input, NgZone} from "@angular/core";
 import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
@@ -13,9 +13,19 @@ import {IProject} from "../../proj/IProject";
     templateUrl: "./angular2-app/mm/mm-configuration.component.html",
     directives: [FileBrowserComponent]
 })
-export class MmConfigurationComponent implements OnInit {
+export class MmConfigurationComponent {
+    private _path:string;
+
     @Input()
-    path:string;
+    set path(path:string) {
+        this._path = path;
+
+        if (path)
+            this.parseConfig();
+    }
+    get path():string {
+        return this._path;
+    }
 
     private config:MultiModelConfig;
 
@@ -31,7 +41,7 @@ export class MmConfigurationComponent implements OnInit {
 
     }
 
-    ngOnInit() {
+    parseConfig() {
         let project:IProject = IntoCpsApp.getInstance().getActiveProject();
 
         MultiModelConfig

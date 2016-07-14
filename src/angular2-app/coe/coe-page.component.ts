@@ -1,6 +1,8 @@
 import {Component, Input} from "@angular/core";
 import {CoeConfigurationComponent} from "./coe-configuration.component";
 import {CoeSimulationComponent} from "./coe-simulation.component";
+import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
+import IntoCpsApp from "../../IntoCpsApp";
 
 @Component({
     selector: "coe-page",
@@ -11,6 +13,16 @@ import {CoeSimulationComponent} from "./coe-simulation.component";
     ]
 })
 export class CoePageComponent {
+    private _config:CoSimulationConfig;
+
     @Input()
-    path:string;
+    set config(config:CoSimulationConfig) {
+        this._config = config;
+
+        if (config)
+            IntoCpsApp.setTopName(config.sourcePath.split('\\').reverse()[1]);
+    }
+    get config():CoSimulationConfig {
+        return this._config;
+    }
 }

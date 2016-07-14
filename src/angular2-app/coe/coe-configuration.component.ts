@@ -1,4 +1,4 @@
-import {Component, Input, NgZone, OnInit} from "@angular/core";
+import {Component, Input, NgZone} from "@angular/core";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm,
@@ -19,9 +19,19 @@ import {SamplingRateComponent} from "./inputs/sampling-rate.component";
     ],
     templateUrl: "./angular2-app/coe/coe-configuration.component.html"
 })
-export class CoeConfigurationComponent implements OnInit {
+export class CoeConfigurationComponent {
+    private _path:string;
+
     @Input()
-    path:string;
+    set path(path:string) {
+        this._path = path;
+
+        if (path)
+            this.parseConfig();
+    }
+    get path():string {
+        return this._path;
+    }
 
     algorithms:Array<ICoSimAlgorithm> = [];
     outputPorts:Array<InstanceScalarPair> = [];
@@ -45,7 +55,7 @@ export class CoeConfigurationComponent implements OnInit {
 
     }
 
-    ngOnInit() {
+    private parseConfig() {
         let project = IntoCpsApp.getInstance().getActiveProject();
 
         CoSimulationConfig

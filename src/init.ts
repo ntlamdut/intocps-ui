@@ -114,13 +114,11 @@ menuHandler.deInitialize = () => {
 
 menuHandler.openCoeView = (path:string) => {
     $(init.mainView).empty();
-    $('#activeTabTitle').text("Multi Model > COE");
     window.ng2app.openCOE(path);
 };
 
 menuHandler.openMultiModel = (path:string) => {
     $(init.mainView).empty();
-    $('#activeTabTitle').text("Multi Model");
     window.ng2app.openMultiModel(path);
 };
 
