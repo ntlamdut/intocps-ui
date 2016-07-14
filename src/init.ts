@@ -11,9 +11,8 @@ import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
 import {SourceDom} from "./sourceDom";
 import {IViewController} from "./iViewController";
 import * as CustomFs from "./custom-fs";
-import {IProject} from "./proj/IProject";
 import * as SystemUtil from "./SystemUtil";
-import { bootstrap }    from '@angular/platform-browser-dynamic';
+import {bootstrap} from '@angular/platform-browser-dynamic';
 import {AppComponent} from './angular2-app/app.component';
 import * as fs from 'fs';
 import * as Path from 'path';
@@ -88,71 +87,71 @@ let browserController: BrowserController = new BrowserController(menuHandler);
 let init = new InitializationController();
 let controller: IViewController;
 
-function openViewController(htmlPath: string, path: string, controllerPar: new (mainDiv: HTMLDivElement) => IViewController) {
-    window.ng2app.closeAll();
-
-    $(init.mainView).load(htmlPath, (event: JQueryEventObject) => {
-        controller = new controllerPar(init.mainView);
-        if (controller.initialize) {
-            controller.initialize(new SourceDom(path));
-        }
+function closePage():Promise<void> {
+    return new Promise((resolve, reject) => {
+        window.ng2app.closePage()
+            .then(() => {
+                if (controller && controller.deInitialize) {
+                    if (controller.deInitialize())
+                        resolve();
+                    else
+                        reject();
+                }
+            }, () => reject());
     });
 }
 
-function openView(htmlPath:string, callback?:(event:JQueryEventObject) => void) {
-    window.ng2app.closeAll();
+function openView(htmlPath:string, callback?:(mainView:HTMLDivElement) => IViewController) {
+    closePage()
+        .then(() => $(init.mainView).load(htmlPath, () => {
+            if (!callback) return;
 
-    $(init.mainView).load(htmlPath, callback);
+            let newController = callback(init.mainView);
+
+            if (newController) {
+                controller = newController;
+                controller.initialize();
+            }
+        }));
 }
 
-menuHandler.deInitialize = () => {
-    if (controller != null && controller.deInitialize)
-        return controller.deInitialize();
-    else
-        return true;
-};
-
 menuHandler.openCoeView = (path:string) => {
-    $(init.mainView).empty();
-    $('#activeTabTitle').text("Multi Model > COE");
-    window.ng2app.openCOE(path);
+    closePage()
+        .then(() => {
+            IntoCpsApp.setTopName("Multi Model > COE");
+            window.ng2app.openCOE(path);
+        });
 };
 
 menuHandler.openMultiModel = (path:string) => {
-    $(init.mainView).empty();
-    $('#activeTabTitle').text("Multi Model");
-    window.ng2app.openMultiModel(path);
+    closePage()
+        .then(() => {
+            IntoCpsApp.setTopName("Multi Model");
+            window.ng2app.openMultiModel(path);
+        });
 };
 
 menuHandler.runRTTesterCommand = (commandSpec: any) => {
-    $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
+    openView("rttester/GenericModalCommand.html", () => {
         RTesterModalCommandWindow.initialize(commandSpec);
         (<any>$('#modalDialog')).modal({ keyboard: false, backdrop: false });
     });
 };
 
 menuHandler.createTDGProject = (path: string) => {
-    openView("rttester/CreateTDGProject.html", (event: JQueryEventObject) => {
-        controller = new CreateTDGProjectController(init.mainView, path);
-    });
+    openView("rttester/CreateTDGProject.html", view => new CreateTDGProjectController(view, path));
 };
 
 menuHandler.createMCProject = (path: string) => {
-    openView("rttester/CreateMCProject.html", (event: JQueryEventObject) => {
-        controller = new CreateMCProjectController(init.mainView, path);
-    });
+    openView("rttester/CreateMCProject.html", view => new CreateMCProjectController(view, path));
 };
 
 menuHandler.runTest = (path: string) => {
-    openView("rttester/RunTest.html", (event: JQueryEventObject) => {
-        controller = new RunTestController(init.mainView, path);
-    });
+    openView("rttester/RunTest.html", view => new RunTestController(view, path));
 };
 
 menuHandler.openLTLFile = (fileName: string) => {
-    $(init.mainView).load("rttester/LTLEditor.html", (event: JQueryEventObject) => {
-        controller = new LTLEditorController(init.mainView, fileName);
-    });
+    openView("rttester/LTLEditor.html", view => new LTLEditorController(view, fileName));
 };
 
 menuHandler.openSysMlExport = () => {
@@ -165,86 +164,91 @@ menuHandler.openFmu = () => {
     IntoCpsApp.setTopName("FMUs");
 };
 
-menuHandler.openDseView = (path) => {
-    openViewController("dse/dse.html", path, DseController);
+menuHandler.openDseView = () => {
+    openView("dse/dse.html", view => new DseController(view));
 };
 
-menuHandler.createDse = (path) => {
-    openView("dse/dse.html", (event: JQueryEventObject) => {
-        // create empty DSE file and load it.
-        menuHandler.openDseView("")
+menuHandler.createDse = () => {
+    // create empty DSE file and load it.
+    openView("dse/dse.html", () => {
+        menuHandler.openDseView("");
     });
 };
 
 menuHandler.createDsePlain = () => {
-    openView("dse/dse.html", (event: JQueryEventObject) => {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let name = "new";
-            let content = "{}";
-            let dsePath = project.createDse("dse-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openDseView(dsePath + "");
+    openView("dse/dse.html", () => {
+        let instance = IntoCpsApp.getInstance();
+        let project = instance.getActiveProject();
+
+        if (project) {
+            let dsePath = project.createDse(`dse-new (${Math.floor(Math.random() * 100)})`, "{}");
+
+            instance.emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            menuHandler.openDseView(dsePath);
         }
     });
 };
 
 menuHandler.createMultiModel = (path) => {
-    openView("multimodel/multimodel.html", (event: JQueryEventObject) => {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
+    openView("multimodel/multimodel.html", () => {
+        let instance = IntoCpsApp.getInstance();
+        let project = instance.getActiveProject();
+
+        if (project) {
             let name = Path.basename(path, ".sysml.json");
             let content = fs.readFileSync(path, "UTF-8");
-            let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openMultiModel(mmPath + "");
+
+            let mmPath = project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
+
+            instance.emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            menuHandler.openMultiModel(mmPath);
         }
     });
 };
 
 menuHandler.createMultiModelPlain = () => {
-    openView("multimodel/multimodel.html", (event: JQueryEventObject) => {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let name = "new";
-            let content = "{}";
-            let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openMultiModel(mmPath + "");
+    openView("multimodel/multimodel.html", () => {
+        let instance = IntoCpsApp.getInstance();
+        let project = instance.getActiveProject();
+
+        if (project) {
+            let mmPath = project.createMultiModel(`mm-new (${Math.floor(Math.random() * 100)})`, "{}");
+
+            instance.emit(IntoCpsAppEvents.PROJECT_CHANGED);
+            menuHandler.openMultiModel(mmPath);
         }
     });
 };
 
-menuHandler.createCoSimConfiguration = (path) => {
-    openView("coe/coe.html", function (event: JQueryEventObject) {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let coePath: string = project.createCoSimConfig(path + "", "co-sim-" + Math.floor(Math.random() * 100), null).toString();
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+menuHandler.createCoSimConfiguration = (path:string) => {
+    openView("coe/coe.html", () => {
+        let instance = IntoCpsApp.getInstance();
+        let project = instance.getActiveProject();
+
+        if (project) {
+            let coePath = project.createCoSimConfig(path, `co-sim-${Math.floor(Math.random() * 100)}`, null);
+
+            instance.emit(IntoCpsAppEvents.PROJECT_CHANGED);
             menuHandler.openCoeView(coePath);
         }
     });
 };
 
-menuHandler.deletePath = (path) => {
+menuHandler.deletePath = (path:string) => {
     let name = Path.basename(path);
-    if (name.indexOf('R_') >= 0) {
-        console.info("Deleting " + path);
-        CustomFs.getCustomFs().removeRecursive(path, function (err: any, v: any) {
-            if (err != null) {
-                console.error(err);
-            }
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-        });
+    let instance = IntoCpsApp.getInstance();
+    let pathToRemove:string;
 
-    } else if (name.endsWith(".coe.json") || name.endsWith(".mm.json")) {
-        let dir = Path.dirname(path);
-        console.info("Deleting " + dir);
-        CustomFs.getCustomFs().removeRecursive(dir, function (err: any, v: any) {
-            if (err != null) {
-                console.error(err);
-            }
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+    if (name.indexOf('R_') >= 0)
+        pathToRemove = path;
+    else if (name.endsWith(".coe.json") || name.endsWith(".mm.json"))
+        pathToRemove = Path.dirname(path);
+
+    if (pathToRemove) {
+        CustomFs.getCustomFs().removeRecursive(pathToRemove, error => {
+            if (error) console.error(error);
+
+            instance.emit(IntoCpsAppEvents.PROJECT_CHANGED);
         });
     }
 };

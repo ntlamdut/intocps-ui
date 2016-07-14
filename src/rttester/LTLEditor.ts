@@ -3,17 +3,14 @@
 ///<reference path="../../typings/browser/ambient/ace/index.d.ts"/>
 
 
-import {SourceDom} from "../sourceDom";
 import {IViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp"
-import * as Settings from  "../settings/settings"
-import {SettingKeys} from "../settings/SettingKeys";
 import Path = require('path');
 import {RTTester} from "../rttester/RTTester";
 import fs = require("fs");
 
 
-export class LTLEditorController extends IViewController {
+export class LTLEditorController implements IViewController {
 
     fileName: string;
     json: any = {};
@@ -21,7 +18,6 @@ export class LTLEditorController extends IViewController {
     hBMCSteps: HTMLInputElement;
 
     constructor(protected viewDiv: HTMLDivElement, fileName: string) {
-        super(viewDiv);
         this.fileName = fileName;
         IntoCpsApp.setTopName("LTL Formula");
         this.hBMCSteps = <HTMLInputElement>document.getElementById("BMCSteps");

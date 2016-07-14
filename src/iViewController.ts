@@ -1,10 +1,5 @@
-import {SourceDom} from "./sourceDom";
-
 export interface IViewController {
-    initialize?(sourceDom: SourceDom): void;
+    new (protected viewDiv: HTMLDivElement, ...args: any[]);
+    initialize?(): void;
     deInitialize?(): boolean;
-}
-
-export abstract class IViewController {
-    constructor(protected viewDiv: HTMLDivElement) {};
 }
