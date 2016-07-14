@@ -56,17 +56,10 @@ export class AppComponent implements OnInit {
         });
     }
 
-    closePage():Promise<boolean> {
-        return new Promise((resolve, reject) => {
-            this.zone.run(() => {
-                if (this.page === null)
-                    resolve();
-                else
-                    reject();
-
-                this.path = null;
-                this.page = null;
-            });
+    closeAll():void {
+        this.zone.run(() => {
+            this.path = '';
+            this.page = '';
         });
     }
 }

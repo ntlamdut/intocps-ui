@@ -8,12 +8,12 @@ export interface IProject {
     getRootFilePath(): string;
     getProjectConfigFilePath(): string;
     getFmusPath(): string;
-    getSysMlFolderName(): string;
+    getSysMlFolderName(): String;
     save():void;
 
-    createMultiModel(name: string, jsonContent: string): string;
-    createDse(name: string, jsonContent: string): string;
-    createCoSimConfig(multimodelConfigPath: string, name: string, jsonContent: string): string;
+    createMultiModel(name: String, jsonContent: String): String;
+    createDse(name: String, jsonContent: String): String;
+    createCoSimConfig(multimodelConfigPath: string, name: String, jsonContent: String): string;
 
     getSettings(): ProjectSettings;
 }
