@@ -1,12 +1,13 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import {FileSystemService} from "./shared/file-system.service";
 import {CoePageComponent} from "./coe/coe-page.component";
-import {HTTP_PROVIDERS} from "@angular/http";
+import {HTTP_PROVIDERS, Http} from "@angular/http";
 import {SettingsService} from "./shared/settings.service";
 import {MmPageComponent} from "./mm/mm-page.component";
 import {CoSimulationConfig} from "../intocps-configurations/CoSimulationConfig";
 import IntoCpsApp from "../IntoCpsApp";
 import {MultiModelConfig} from "../intocps-configurations/MultiModelConfig";
+import {CoeSimulationService} from "./coe/coe-simulation.service";
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -36,13 +37,21 @@ export class AppComponent implements OnInit {
     private page:string;
     private path:string;
 
-    constructor(private zone:NgZone) {
+    constructor(private http:Http,
+                private settings:SettingsService,
+                private fileSystem:FileSystemService,
+                private zone:NgZone) {
 
     }
 
     ngOnInit() {
         // Expose the Angular 2 application for the rest of the INTO-CPS application
         window.ng2app = this;
+    }
+
+    // Allows accessing the coe simulation service outside of Angular.
+    makeCoeSimulationService() {
+        return new CoeSimulationService(this.http, this.settings, this.fileSystem, this.zone);
     }
 
     openCOE(path: string):void {
