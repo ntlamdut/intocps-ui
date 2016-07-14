@@ -6,6 +6,7 @@ import {Http} from "@angular/http";
 import {SettingsService, SettingKeys} from "../shared/settings.service";
 import {coeServerStatusHandler} from "../../menus";
 import IntoCpsApp from "../../IntoCpsApp";
+import {WarningMessage} from "../../intocps-configurations/Messages";
 
 @Component({
     selector: "coe-simulation",
@@ -39,6 +40,8 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     url:string = '';
     version:string = '';
     config:CoSimulationConfig;
+    mmWarnings:WarningMessage[] = [];
+    coeWarnings:WarningMessage[] = [];
 
     private onlineInterval:number;
 
@@ -66,7 +69,12 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
         CoSimulationConfig
             .parse(this.path, project.getRootFilePath(), project.getFmusPath())
-            .then(config => this.zone.run(() => this.config = config));
+            .then(config => this.zone.run(() => {
+                this.config = config;
+
+                this.mmWarnings = this.config.multiModel.validate();
+                this.coeWarnings = this.config.validate();
+            }));
     }
 
     runSimulation() {

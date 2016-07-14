@@ -7,6 +7,7 @@ import {MultiModelConfig} from "./MultiModelConfig"
 import {Parser, Serializer} from "./Parser"
 import * as fs from "fs"
 import {Instance, ScalarVariable, InstanceScalarPair} from "../angular2-app/coe/models/Fmu";
+import {WarningMessage} from "./Messages";
 
 export class CoSimulationConfig implements ISerializable {
 
@@ -39,6 +40,13 @@ export class CoSimulationConfig implements ISerializable {
                 reject(error);
             }
         });
+    }
+
+    validate(): WarningMessage[] {
+        // TODO
+        console.error("No validation is done on the cosim config");
+
+        return [];
     }
 
     static create(path: string, projectRoot: string, fmuRootPath: string, data: any): Promise<CoSimulationConfig> {

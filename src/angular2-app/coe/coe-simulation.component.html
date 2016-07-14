@@ -6,8 +6,18 @@
     Co-Simulation Engine, version {{version}}, online at {{url}}.
 </div>
 
+<div *ngIf="mmWarnings.length > 0">
+    <strong>The multi model configuration is not valid.</strong>
+    <div *ngFor="let warning of mmWarnings" class="alert alert-warning">{{warning.message}}</div>
+</div>
+
+<div *ngIf="coeWarnings.length > 0">
+    <strong>The co simulation configuration is not valid.</strong>
+    <div *ngFor="let warning of coeWarnings" class="alert alert-warning">{{warning.message}}</div>
+</div>
+
 <div class="form-group">
-    <button type="button" [disabled]="!online" (click)="runSimulation()" class="btn btn-default">
+    <button type="button" [disabled]="!online || mmWarnings.length > 0 || coeWarnings.length > 0" (click)="runSimulation()" class="btn btn-default">
         <span class="glyphicon glyphicon-play"></span> Simulate
     </button>
 </div>
