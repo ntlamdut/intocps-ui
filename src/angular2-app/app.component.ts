@@ -29,12 +29,12 @@ declare let window: MyWindow;
         SettingsService
     ],
     template: `
-        <mm-page *ngIf="page === 'multiModel'" [config]="config"></mm-page>
-        <coe-page *ngIf="page === 'coe'" [config]="config"></coe-page>`
+        <mm-page *ngIf="page === 'multiModel'" [path]="path"></mm-page>
+        <coe-page *ngIf="page === 'coe'" [path]="path"></coe-page>`
 })
 export class AppComponent implements OnInit {
     private page:string;
-    private config:CoSimulationConfig | MultiModelConfig;
+    private path:string;
 
     constructor(private zone:NgZone) {
 
@@ -46,34 +46,22 @@ export class AppComponent implements OnInit {
     }
 
     openCOE(path: string):void {
-        let project = IntoCpsApp.getInstance().getActiveProject();
-
-        CoSimulationConfig
-            .parse(path, project.getRootFilePath(), project.getFmusPath())
-            .then(config => {
-                this.zone.run(() => {
-                    this.config = config;
-                    this.page = 'coe';
-                });
-            });
+        this.zone.run(() => {
+            this.path = path;
+            this.page = "coe";
+        });
     }
 
     openMultiModel(path: string):void {
-        let project = IntoCpsApp.getInstance().getActiveProject();
-
-        MultiModelConfig
-            .parse(path, project.getFmusPath())
-            .then(config => {
-                this.zone.run(() => {
-                    this.config = config;
-                    this.page = 'multiModel';
-                });
-            });
+        this.zone.run(() => {
+            this.path = path;
+            this.page = "multiModel";
+        });
     }
 
     closeAll():void {
         this.zone.run(() => {
-            this.config = null;
+            this.path = null;
             this.page = null;
         });
     }

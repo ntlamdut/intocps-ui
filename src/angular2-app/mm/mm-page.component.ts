@@ -13,16 +13,6 @@ import IntoCpsApp from "../../IntoCpsApp";
     templateUrl: "./angular2-app/mm/mm-page.component.html",
 })
 export class MmPageComponent {
-    private _config:MultiModelConfig;
-
     @Input()
-    set config(config:MultiModelConfig) {
-        this._config = config;
-
-        if (config)
-            IntoCpsApp.setTopName(config.sourcePath.split('\\').reverse()[1]);
-    }
-    get config():MultiModelConfig {
-        return this._config;
-    }
+    path:string;
 }

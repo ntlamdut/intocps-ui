@@ -5,6 +5,7 @@ import {CoeSimulationService} from "./coe-simulation.service";
 import {Http} from "@angular/http";
 import {SettingsService, SettingKeys} from "../shared/settings.service";
 import {coeServerStatusHandler} from "../../menus";
+import IntoCpsApp from "../../IntoCpsApp";
 
 @Component({
     selector: "coe-simulation",
@@ -17,18 +18,34 @@ import {coeServerStatusHandler} from "../../menus";
     templateUrl: "./angular2-app/coe/coe-simulation.component.html"
 })
 export class CoeSimulationComponent implements OnInit, OnDestroy {
+    private _path:string;
+
     @Input()
-    config:CoSimulationConfig;
+    set path(path:string) {
+        this._path = path;
+
+        if (path) {
+            this.parseConfig();
+
+            if(this.coeSimulation)
+                this.coeSimulation.reset();
+        }
+    }
+    get path():string {
+        return this._path;
+    }
 
     online:boolean = false;
     url:string = '';
     version:string = '';
+    config:CoSimulationConfig;
 
     private onlineInterval:number;
 
     constructor(
         private coeSimulation:CoeSimulationService,
         private http:Http,
+        private zone:NgZone,
         private settings:SettingsService
     ) {
 
@@ -42,6 +59,14 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         clearInterval(this.onlineInterval);
+    }
+
+    parseConfig() {
+        let project = IntoCpsApp.getInstance().getActiveProject();
+
+        CoSimulationConfig
+            .parse(this.path, project.getRootFilePath(), project.getFmusPath())
+            .then(config => this.zone.run(() => this.config = config));
     }
 
     runSimulation() {

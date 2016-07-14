@@ -28,6 +28,11 @@ export class CoeSimulationService {
 
     }
 
+    reset() {
+        this.progress = 0;
+        this.datasets.next([]);
+    }
+
     run(config:CoSimulationConfig) {
         this.config = config;
         this.remoteCoe = this.settings.get(SettingKeys.COE_REMOTE_HOST);

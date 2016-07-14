@@ -113,11 +113,13 @@ menuHandler.deInitialize = () => {
 };
 
 menuHandler.openCoeView = (path:string) => {
+    IntoCpsApp.setTopName(path.split('\\').reverse()[1]);
     $(init.mainView).empty();
     window.ng2app.openCOE(path);
 };
 
 menuHandler.openMultiModel = (path:string) => {
+    IntoCpsApp.setTopName(path.split('\\').reverse()[1]);
     $(init.mainView).empty();
     window.ng2app.openMultiModel(path);
 };
