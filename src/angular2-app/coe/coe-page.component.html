@@ -1,13 +1,7 @@
-<div class="panel panel-default">
-    <div class="panel-heading"><h3 class="panel-title">Configuration</h3></div>
-    <div class="panel-body">
-        <coe-configuration [path]="path"></coe-configuration>
-    </div>
-</div>
+<panel [title]="'Configuration'" [open]="false">
+    <coe-configuration [path]="path"></coe-configuration>
+</panel>
 
-<div class="panel panel-default">
-    <div class="panel-heading"><h3 class="panel-title">Simulation</h3></div>
-    <div class="panel-body">
-        <coe-simulation [path]="path"></coe-simulation>
-    </div>
-</div>
+<panel [title]="'Simulation'">
+    <coe-simulation [path]="path"></coe-simulation>
+</panel>

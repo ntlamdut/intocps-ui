@@ -1,13 +1,7 @@
-<div class="panel panel-default">
-    <div class="panel-heading"><h3 class="panel-title">Overview</h3></div>
-    <div class="panel-body">
-        <mm-overview [path]="path"></mm-overview>
-    </div>
-</div>
+<panel [title]="'Overview'">
+    <mm-overview [path]="path"></mm-overview>
+</panel>
 
-<div class="panel panel-default">
-    <div class="panel-heading"><h3 class="panel-title">Configuration</h3></div>
-    <div class="panel-body">
-        <mm-configuration [path]="path"></mm-configuration>
-    </div>
-</div>
+<panel [title]="'Configuration'" [open]="false">
+    <mm-configuration [path]="path"></mm-configuration>
+</panel>
