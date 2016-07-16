@@ -1,4 +1,4 @@
-import {FormControl, FormGroup} from "@angular/forms";
+import {FormControl} from "@angular/forms";
 
 export function doubleValidator(control: FormControl): { [s: string]: boolean } {
     let number = Number(control.value);
@@ -21,6 +21,7 @@ export function higherThanValidator(otherName:string) {
         let other = control.root.find(otherName);
 
         if (other && Number(control.value) <= Number(other.value)) {
+            other.updateValueAndValidity();
             return {notHigherThan:true};
         }
     }
@@ -31,6 +32,7 @@ export function lowerThanValidator(otherName:string) {
         let other = control.root.find(otherName);
 
         if (other && Number(control.value) >= Number(other.value)) {
+            other.updateValueAndValidity();
             return {notLowerThan:true};
         }
     }
