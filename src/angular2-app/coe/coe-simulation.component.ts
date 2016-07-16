@@ -44,6 +44,7 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     coeWarnings:WarningMessage[] = [];
 
     private onlineInterval:number;
+    private parsing:boolean = false;
 
     constructor(
         private coeSimulation:CoeSimulationService,
@@ -66,6 +67,7 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
     parseConfig() {
         let project = IntoCpsApp.getInstance().getActiveProject();
+        this.parsing = true;
 
         CoSimulationConfig
             .parse(this.path, project.getRootFilePath(), project.getFmusPath())
@@ -74,6 +76,8 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
                 this.mmWarnings = this.config.multiModel.validate();
                 this.coeWarnings = this.config.validate();
+
+                this.parsing = false;
             }));
     }
 

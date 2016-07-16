@@ -1,4 +1,4 @@
-import {Component, Input, NgZone} from "@angular/core";
+import {Component, Input, EventEmitter, Output, NgZone} from "@angular/core";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm,
@@ -32,6 +32,9 @@ export class CoeConfigurationComponent {
     get path():string {
         return this._path;
     }
+
+    @Output()
+    change = new EventEmitter<void>();
 
     algorithms:Array<ICoSimAlgorithm> = [];
     outputPorts:Array<InstanceScalarPair> = [];
@@ -86,7 +89,9 @@ export class CoeConfigurationComponent {
     onSubmit() {
         if (!this.editing) return;
 
-        this.config.save();
+        this.config.save()
+            .then(() => this.change.emit(this.path));
+
         this.editing = false;
     }
 
