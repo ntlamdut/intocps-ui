@@ -5,8 +5,10 @@
             <label class="col-sm-2 control-label">Start time</label>
             <div class="col-sm-10">
                 <p *ngIf="!editing" class="form-control-static">{{config.startTime}}</p>
-                <input *ngIf="editing" name="startTime" [(ngModel)]="config.startTime" class="form-control" required>
-
+                <input *ngIf="editing" [formControl]="form.find('startTime')" [(ngModel)]="config.startTime" class="form-control">
+                <div *ngIf="form.find('startTime').hasError('required')" class="alert alert-danger">Start time is required.</div>
+                <div *ngIf="form.find('startTime').hasError('invalidDouble')" class="alert alert-danger">Only numbers are allowed.</div>
+                <div *ngIf="form.find('startTime').hasError('notLowerThan')" class="alert alert-danger">Start time has to be before end time.</div>
             </div>
         </div>
 
@@ -14,7 +16,10 @@
             <label class="col-sm-2 control-label">End time</label>
             <div class="col-sm-10">
                 <p *ngIf="!editing" class="form-control-static">{{config.endTime}}</p>
-                <input *ngIf="editing" name="endTime" [(ngModel)]="config.endTime" class="form-control" required>
+                <input *ngIf="editing" [formControl]="form.find('endTime')" [(ngModel)]="config.endTime" class="form-control">
+                <div *ngIf="form.find('endTime').hasError('required')" class="alert alert-danger">End time is required.</div>
+                <div *ngIf="form.find('endTime').hasError('invalidInteger')" class="alert alert-danger">Only integers are allowed.</div>
+                <div *ngIf="form.find('endTime').hasError('notHigherThan')" class="alert alert-danger">End time has to be after start time.</div>
             </div>
         </div>
 

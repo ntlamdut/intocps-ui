@@ -1,4 +1,5 @@
 import {Component, Input, EventEmitter, Output, NgZone} from "@angular/core";
+import {FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES, Validators, FormArray, FormControl, FormGroup} from "@angular/forms";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm,
@@ -9,10 +10,13 @@ import {ScalarVariable, CausalityType, Instance, InstanceScalarPair} from "./mod
 import {ZeroCrossingComponent} from "./inputs/zero-crossing.component";
 import {BoundedDifferenceComponent} from "./inputs/bounded-difference.component";
 import {SamplingRateComponent} from "./inputs/sampling-rate.component";
+import {doubleValidator, integerValidator, higherThanValidator, lowerThanValidator} from "../shared/validators";
 
 @Component({
     selector: "coe-configuration",
     directives: [
+        FORM_DIRECTIVES,
+        REACTIVE_FORM_DIRECTIVES,
         ZeroCrossingComponent,
         BoundedDifferenceComponent,
         SamplingRateComponent
@@ -36,6 +40,7 @@ export class CoeConfigurationComponent {
     @Output()
     change = new EventEmitter<void>();
 
+    form:FormGroup;
     algorithms:Array<ICoSimAlgorithm> = [];
     outputPorts:Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
@@ -66,6 +71,11 @@ export class CoeConfigurationComponent {
             .then(config => {
                 this.zone.run(() => {
                     this.config = config;
+
+                    this.form = new FormGroup({
+                        startTime: new FormControl(this.config.startTime, [Validators.required, doubleValidator, lowerThanValidator("endTime")]),
+                        endTime: new FormControl(this.config.endTime, [Validators.required, doubleValidator, higherThanValidator("startTime")])
+                    });
 
                     // Create an array of the algorithm from the coe config and a new instance of all other algorithms
                     this.algorithms = this.algorithmConstructors
