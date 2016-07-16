@@ -190,40 +190,32 @@ menuHandler.createDsePlain = () => {
 };
 
 menuHandler.createMultiModel = (path) => {
-    openView("multimodel/multimodel.html", (event: JQueryEventObject) => {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let name = Path.basename(path, ".sysml.json");
-            let content = fs.readFileSync(path, "UTF-8");
-            let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openMultiModel(mmPath + "");
-        }
-    });
+    let project = IntoCpsApp.getInstance().getActiveProject();
+
+    if (project) {
+        let name = Path.basename(path, ".sysml.json");
+        let content = fs.readFileSync(path, "UTF-8");
+        let mmPath = project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
+        menuHandler.openMultiModel(mmPath);
+    }
 };
 
 menuHandler.createMultiModelPlain = () => {
-    openView("multimodel/multimodel.html", (event: JQueryEventObject) => {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let name = "new";
-            let content = "{}";
-            let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openMultiModel(mmPath + "");
-        }
-    });
+    let project = IntoCpsApp.getInstance().getActiveProject();
+
+    if (project) {
+        let mmPath = project.createMultiModel(`mm-new (${Math.floor(Math.random() * 100)})`, "{}");
+        menuHandler.openMultiModel(mmPath);
+    }
 };
 
 menuHandler.createCoSimConfiguration = (path) => {
-    openView("coe/coe.html", function (event: JQueryEventObject) {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let coePath: string = project.createCoSimConfig(path + "", "co-sim-" + Math.floor(Math.random() * 100), null).toString();
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openCoeView(coePath);
-        }
-    });
+    let project = IntoCpsApp.getInstance().getActiveProject();
+
+    if (project) {
+        let coePath = project.createCoSimConfig(path, `co-sim-${Math.floor(Math.random() * 100)}`, null).toString();
+        menuHandler.openCoeView(coePath);
+    }
 };
 
 menuHandler.deletePath = (path) => {
