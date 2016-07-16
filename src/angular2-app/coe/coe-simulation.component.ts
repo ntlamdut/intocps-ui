@@ -77,6 +77,13 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
             }));
     }
 
+    canRun() {
+        return this.online
+            && this.mmWarnings.length === 0
+            && this.coeWarnings.length === 0
+            && !this.parsing;
+    }
+
     runSimulation() {
         this.coeSimulation.run(this.config);
     }
