@@ -105,7 +105,10 @@ gulp.task('copy-css', function () {
 // Copy html to app folder
 gulp.task('copy-html', function () {
     gulp.src(htmlSrcs)
-        .pipe(htmlhint())
+        .pipe(htmlhint({
+            "attr-lowercase": ["*ngIf", "*ngFor", "[(ngModel)]", "[formGroup]", "[formControl]", "(ngSubmit)", "#configForm", "[basePath]", "(pathChange)", "[ngModel]", "(ngModelChange)", "[ngValue]", "[ngModelOptions]"],
+            "doctype-first": false
+        }))
         .pipe(htmlhint.reporter())
         .pipe(gulp.dest(outputPath));
 });
