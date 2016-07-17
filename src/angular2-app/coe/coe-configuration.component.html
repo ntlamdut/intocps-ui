@@ -6,7 +6,7 @@
             <div class="col-sm-10">
                 <p *ngIf="!editing" class="form-control-static">{{config.startTime}}</p>
                 <input *ngIf="editing" name="startTime" [(ngModel)]="config.startTime" class="form-control">
-                <div *ngIf="form.hasError('required', 'startTime')" class="alert alert-danger">Start time is required.</div>
+                <div *ngIf="form.hasError('required', 'startTime')" class="alert alert-danger">This field is required.</div>
                 <div *ngIf="form.hasError('invalidDouble', 'startTime')" class="alert alert-danger">Only numbers are allowed.</div>
                 <div *ngIf="form.hasError('notLowerThan', 'startTime')" class="alert alert-danger">Start time has to be before end time.</div>
             </div>
@@ -17,7 +17,7 @@
             <div class="col-sm-10">
                 <p *ngIf="!editing" class="form-control-static">{{config.endTime}}</p>
                 <input *ngIf="editing" name="endTime" [(ngModel)]="config.endTime" class="form-control">
-                <div *ngIf="form.hasError('required', 'endTime')" class="alert alert-danger">End time is required.</div>
+                <div *ngIf="form.hasError('required', 'endTime')" class="alert alert-danger">This field is required.</div>
                 <div *ngIf="form.hasError('invalidDouble', 'endTime')" class="alert alert-danger">Only numbers are allowed.</div>
                 <div *ngIf="form.hasError('notHigherThan', 'endTime')" class="alert alert-danger">End time has to be after start time.</div>
             </div>
@@ -43,6 +43,8 @@
                 <div class="col-sm-10">
                     <p *ngIf="!editing" class="form-control-static">{{config.algorithm.size}}</p>
                     <input *ngIf="editing" name="size" [(ngModel)]="config.algorithm.size" class="form-control">
+                    <div *ngIf="form.find('algorithm').hasError('required', 'size')" class="alert alert-danger">This field is required.</div>
+                    <div *ngIf="form.find('algorithm').hasError('invalidDouble', 'size')" class="alert alert-danger">Only numbers are allowed.</div>
                 </div>
             </div>
         </div>
@@ -55,6 +57,8 @@
                 <div class="col-sm-10">
                     <p *ngIf="!editing" class="form-control-static">{{config.algorithm.initSize}}</p>
                     <input *ngIf="editing" name="initSize" [(ngModel)]="config.algorithm.initSize" class="form-control">
+                    <div *ngIf="form.find('algorithm').hasError('required', 'initSize')" class="alert alert-danger">This field is required.</div>
+                    <div *ngIf="form.find('algorithm').hasError('invalidDouble', 'initSize')" class="alert alert-danger">Only numbers are allowed.</div>
                 </div>
             </div>
 
@@ -63,6 +67,8 @@
                 <div class="col-sm-10">
                     <p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMin}}</p>
                     <input *ngIf="editing" name="sizeMin" [(ngModel)]="config.algorithm.sizeMin" class="form-control">
+                    <div *ngIf="form.find('algorithm').hasError('required', 'sizeMin')" class="alert alert-danger">This field is required.</div>
+                    <div *ngIf="form.find('algorithm').hasError('invalidDouble', 'sizeMin')" class="alert alert-danger">Only numbers are allowed.</div>
                 </div>
             </div>
 
@@ -71,6 +77,8 @@
                 <div class="col-sm-10">
                     <p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMax}}</p>
                     <input *ngIf="editing" name="sizeMax" [(ngModel)]="config.algorithm.sizeMax" class="form-control">
+                    <div *ngIf="form.find('algorithm').hasError('required', 'sizeMax')" class="alert alert-danger">This field is required.</div>
+                    <div *ngIf="form.find('algorithm').hasError('invalidDouble', 'sizeMax')" class="alert alert-danger">Only numbers are allowed.</div>
                 </div>
             </div>
 <!--

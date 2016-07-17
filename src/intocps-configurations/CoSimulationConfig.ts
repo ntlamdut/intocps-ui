@@ -1,17 +1,12 @@
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
-/// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
-
 import {MultiModelConfig} from "./MultiModelConfig"
 import {Parser, Serializer} from "./Parser"
 import * as fs from "fs"
 import {Instance, ScalarVariable, InstanceScalarPair} from "../angular2-app/coe/models/Fmu";
 import {WarningMessage} from "./Messages";
-import {FormArray, FormGroup, FormControl} from "@angular/forms";
+import {FormArray, FormGroup, FormControl, Validators} from "@angular/forms";
+import {numberValidator} from "../angular2-app/shared/validators";
 
 export class CoSimulationConfig implements ISerializable {
-
     //project root required to resolve multimodel path
     projectRoot: string;
 
@@ -105,7 +100,7 @@ export class FixedStepAlgorithm implements ICoSimAlgorithm {
 
     toFormGroup() {
         return new FormGroup({
-            size: new FormControl(this.size)
+            size: new FormControl(this.size, [Validators.required, numberValidator])
         });
     }
 }
@@ -124,9 +119,9 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
 
     toFormGroup() {
         return new FormGroup({
-            initSize: new FormControl(this.initSize),
-            sizeMin: new FormControl(this.sizeMin),
-            sizeMax: new FormControl(this.sizeMax),
+            initSize: new FormControl(this.initSize, [Validators.required, numberValidator]),
+            sizeMin: new FormControl(this.sizeMin, [Validators.required, numberValidator]),
+            sizeMax: new FormControl(this.sizeMax, [Validators.required, numberValidator]),
             constraints: new FormArray(this.constraints.map(c => c.toFormGroup()))
         });
     }

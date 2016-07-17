@@ -10,7 +10,7 @@ import {ScalarVariable, CausalityType, Instance, InstanceScalarPair} from "./mod
 import {ZeroCrossingComponent} from "./inputs/zero-crossing.component";
 import {BoundedDifferenceComponent} from "./inputs/bounded-difference.component";
 import {SamplingRateComponent} from "./inputs/sampling-rate.component";
-import {doubleValidator, integerValidator, higherThanValidator, lowerThanValidator} from "../shared/validators";
+import {numberValidator} from "../shared/validators";
 
 @Component({
     selector: "coe-configuration",
@@ -94,8 +94,8 @@ export class CoeConfigurationComponent {
                         .reduce((a, b) => a.concat(...b));
 
                     this.form = new FormGroup({
-                        startTime: new FormControl(config.startTime, [Validators.required, doubleValidator]),
-                        endTime: new FormControl(config.endTime, [Validators.required, doubleValidator]),
+                        startTime: new FormControl(config.startTime, [Validators.required, numberValidator]),
+                        endTime: new FormControl(config.endTime, [Validators.required, numberValidator]),
                         algorithm: this.algorithmFormGroups.get(this.config.algorithm)
                     });
                 });
