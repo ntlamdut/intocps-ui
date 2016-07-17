@@ -172,7 +172,7 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
     toFormGroup() {
         return new FormGroup({
             id: new FormControl(this.id),
-            ports: new FormControl(this.ports, [lengthValidator(1, 2)]),
+            ports: new FormControl(this.ports, [lengthValidator(1)]),
             abstol: new FormControl(this.abstol, [numberValidator]),
             reltol: new FormControl(this.reltol, [numberValidator]),
             safety: new FormControl(this.safety, [numberValidator]),

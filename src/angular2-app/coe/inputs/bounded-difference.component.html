@@ -19,11 +19,11 @@
             <div *ngFor="let port of constraint.ports; let i=index; trackBy:customTrackBy">
                 <p *ngIf="!editing" class="form-control-static">{{port.instance.fmu.name}}.{{port.instance.name}}.{{port.scalarVariable.name}}</p>
                 <div *ngIf="editing" class="input-group">
-                    <select [(ngModel)]="constraint.ports[i]" [formControl]="formGroup.find('ports').at(i)" class="form-control">
+                    <select [(ngModel)]="constraint.ports[i]" [ngModelOptions]="{standalone: true}" class="form-control">
                         <option *ngFor="let output of ports" [ngValue]="output">{{output.instance.fmu.name}}.{{output.instance.name}}.{{output.scalarVariable.name}}</option>
                     </select>
                     <span class="input-group-btn">
-                    <button type="button" (click)="removePort(port)" class="btn btn-default">
+                    <button [disabled]="constraint.ports.length == 1" type="button" (click)="removePort(port)" class="btn btn-default">
                         <span class="glyphicon glyphicon-remove"></span>
                     </button>
                 </span>
