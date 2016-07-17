@@ -102,7 +102,7 @@ export class CoeConfigurationComponent {
             });
     }
 
-    onAlgorithmChange(algorithm) {
+    onAlgorithmChange(algorithm:ICoSimAlgorithm) {
         this.config.algorithm = algorithm;
 
         this.form.removeControl('algorithm');
