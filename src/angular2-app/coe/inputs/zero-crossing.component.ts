@@ -1,10 +1,12 @@
 import {Component, Input} from "@angular/core";
+import {FormGroup, FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES} from "@angular/forms";
 import {ZeroCrossingConstraint} from "../../../intocps-configurations/CoSimulationConfig";
-import {Instance, CausalityType, InstanceScalarPair} from "../models/Fmu";
+import {InstanceScalarPair} from "../models/Fmu";
 
 @Component({
     selector: 'zero-crossing',
-    templateUrl: "./angular2-app/coe/inputs/zero-crossing.component.html"
+    templateUrl: "./angular2-app/coe/inputs/zero-crossing.component.html",
+    directives: [FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES]
 })
 export class ZeroCrossingComponent {
     @Input()
@@ -12,6 +14,9 @@ export class ZeroCrossingComponent {
 
     @Input()
     ports:Array<InstanceScalarPair> = [];
+
+    @Input()
+    formGroup:FormGroup;
 
     @Input()
     editing:boolean = false;

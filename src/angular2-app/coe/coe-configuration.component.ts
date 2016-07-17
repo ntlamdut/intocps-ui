@@ -127,10 +127,12 @@ export class CoeConfigurationComponent {
         if (!this.newConstraint) return;
 
         let algorithm = <VariableStepAlgorithm> this.config.algorithm;
+        let formArray = <FormArray> this.form.find('algorithm').find('constraints');
+
         let constraint = new this.newConstraint();
 
         algorithm.constraints.push(constraint);
-        this.form.controls.algorithm.controls.constraints.push(constraint.toFormGroup());
+        formArray.push(constraint.toFormGroup());
     }
 
     removeConstraint(constraint:VariableStepConstraint) {
@@ -172,17 +174,6 @@ export class CoeConfigurationComponent {
 
             if (variables.length == 0)
                 this.config.livestream.delete(instance);
-        }
-    }
-
-
-    getConfig() {
-        if (!this.config) return;
-
-        return {
-            startTime: this.config.startTime,
-            endTime: this.config.endTime,
-            algorithm: this.config.algorithm.toFormGroup().value
         }
     }
 }

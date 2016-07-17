@@ -1,10 +1,12 @@
 import {Component, Input} from "@angular/core";
+import {FormGroup, FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES} from "@angular/forms";
 import {BoundedDifferenceConstraint} from "../../../intocps-configurations/CoSimulationConfig";
-import {Instance, CausalityType, InstanceScalarPair} from "../models/Fmu";
+import {InstanceScalarPair} from "../models/Fmu";
 
 @Component({
     selector: 'bounded-difference',
-    templateUrl: "./angular2-app/coe/inputs/bounded-difference.component.html"
+    templateUrl: "./angular2-app/coe/inputs/bounded-difference.component.html",
+    directives: [FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES]
 })
 export class BoundedDifferenceComponent {
     @Input()
@@ -12,6 +14,9 @@ export class BoundedDifferenceComponent {
 
     @Input()
     ports:Array<InstanceScalarPair> = [];
+
+    @Input()
+    formGroup:FormGroup;
 
     @Input()
     editing:boolean = false;

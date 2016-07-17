@@ -1,9 +1,10 @@
-<div class="form-horizontal">
+<div class="form-horizontal" [formGroup]="formGroup">
     <div class="form-group">
         <label class="col-sm-3 control-label">ID</label>
         <div class="col-sm-9">
             <p *ngIf="!editing" class="form-control-static">{{constraint.id}}</p>
             <input *ngIf="editing" [(ngModel)]="constraint.id" name="id" class="form-control">
+            <div *ngIf="formGroup.hasError('required', 'id')" class="alert alert-danger">This field is required.</div>
         </div>
     </div>
 
@@ -18,7 +19,7 @@
             <div *ngFor="let port of constraint.ports; let i=index; trackBy:customTrackBy">
                 <p *ngIf="!editing" class="form-control-static">{{port.instance.fmu.name}}.{{port.instance.name}}.{{port.scalarVariable.name}}</p>
                 <div *ngIf="editing" class="input-group">
-                    <select [(ngModel)]="constraint.ports[i]" name="port{{i}}" class="form-control">
+                    <select [(ngModel)]="constraint.ports[i]" [formControl]="formGroup.find('ports').at(i)" class="form-control">
                         <option *ngFor="let output of ports" [ngValue]="output">{{output.instance.fmu.name}}.{{output.instance.name}}.{{output.scalarVariable.name}}</option>
                     </select>
                     <span class="input-group-btn">
@@ -35,7 +36,8 @@
         <label class="col-sm-3 control-label">Absolute Tolerance</label>
         <div class="col-sm-9">
             <p *ngIf="!editing" class="form-control-static">{{constraint.abstol}}</p>
-            <input *ngIf="editing" [(ngModel)]="constraint.abstol" name="abstol" class="form-control" type="number">
+            <input *ngIf="editing" [(ngModel)]="constraint.abstol" name="abstol" class="form-control">
+            <div *ngIf="formGroup.hasError('invalidNumber', 'abstol')" class="alert alert-danger">Only numbers are allowed.</div>
         </div>
     </div>
 
@@ -43,7 +45,8 @@
         <label class="col-sm-3 control-label">Real Tolerance</label>
         <div class="col-sm-9">
             <p *ngIf="!editing" class="form-control-static">{{constraint.reltol}}</p>
-            <input *ngIf="editing" [(ngModel)]="constraint.reltol" name="reltol" class="form-control" type="number">
+            <input *ngIf="editing" [(ngModel)]="constraint.reltol" name="reltol" class="form-control">
+            <div *ngIf="formGroup.hasError('invalidNumber', 'reltol')" class="alert alert-danger">Only numbers are allowed.</div>
         </div>
     </div>
 
@@ -51,7 +54,8 @@
         <label class="col-sm-3 control-label">Safety</label>
         <div class="col-sm-9">
             <p *ngIf="!editing" class="form-control-static">{{constraint.safety}}</p>
-            <input *ngIf="editing" [(ngModel)]="constraint.safety" name="safety" class="form-control" type="number">
+            <input *ngIf="editing" [(ngModel)]="constraint.safety" name="safety" class="form-control">
+            <div *ngIf="formGroup.hasError('invalidNumber', 'safety')" class="alert alert-danger">Only numbers are allowed.</div>
         </div>
     </div>
 

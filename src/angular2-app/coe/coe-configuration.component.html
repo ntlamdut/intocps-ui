@@ -110,12 +110,14 @@
                             [editing]="editing"
                             [ports]="outputPorts"
                             [constraint]="constraint"
+                            [formGroup]="form.find('algorithm').find('constraints').at(i)"
                             *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
 
                     <bounded-difference
                             [editing]="editing"
                             [ports]="outputPorts"
                             [constraint]="constraint"
+                            [formGroup]="form.find('algorithm').find('constraints').at(i)"
                             *ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
 
                     <sampling-rate
@@ -158,6 +160,3 @@
         <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
     </button>
 </form>
-
-{{form?.value | json}}
-{{getConfig() | json}}
