@@ -1,5 +1,5 @@
 import {Component, Input} from "@angular/core";
-import {FormGroup, FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES} from "@angular/forms";
+import {FormArray, FormControl, FormGroup, FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES} from "@angular/forms";
 import {ZeroCrossingConstraint} from "../../../intocps-configurations/CoSimulationConfig";
 import {InstanceScalarPair} from "../models/Fmu";
 
@@ -28,13 +28,17 @@ export class ZeroCrossingComponent {
     addPort() {
         if (this.constraint.ports.length >= 2) return;
 
+        let formArray = <FormArray> this.formGroup.find('ports');
+
         this.constraint.ports.push(this.ports[0]);
+        formArray.push(new FormControl());
     }
 
     removePort(port:InstanceScalarPair) {
         let index = this.constraint.ports.indexOf(port);
+        let formArray = <FormArray> this.formGroup.find('ports');
 
-        if (index > -1)
-            this.constraint.ports.splice(index, 1);
+        this.constraint.ports.splice(index, 1);
+        formArray.removeAt(index);
     }
 }

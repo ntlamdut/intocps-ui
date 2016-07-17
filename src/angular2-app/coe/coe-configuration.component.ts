@@ -137,7 +137,11 @@ export class CoeConfigurationComponent {
 
     removeConstraint(constraint:VariableStepConstraint) {
         let algorithm = <VariableStepAlgorithm> this.config.algorithm;
-        algorithm.constraints.splice(algorithm.constraints.indexOf(constraint), 1);
+        let formArray = <FormArray> this.form.find('algorithm').find('constraints');
+        let index = algorithm.constraints.indexOf(constraint);
+
+        algorithm.constraints.splice(index, 1);
+        formArray.removeAt(index);
     }
 
     getConstraintName(constraint:any) {

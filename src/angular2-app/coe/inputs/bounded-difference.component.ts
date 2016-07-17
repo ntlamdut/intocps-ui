@@ -1,5 +1,5 @@
 import {Component, Input} from "@angular/core";
-import {FormGroup, FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES} from "@angular/forms";
+import {FormGroup, FormArray, FormControl, FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES} from "@angular/forms";
 import {BoundedDifferenceConstraint} from "../../../intocps-configurations/CoSimulationConfig";
 import {InstanceScalarPair} from "../models/Fmu";
 
@@ -26,13 +26,17 @@ export class BoundedDifferenceComponent {
     }
 
     addPort() {
+        let formArray = <FormArray> this.formGroup.find('ports');
+
         this.constraint.ports.push(this.ports[0]);
+        formArray.push(new FormControl());
     }
 
     removePort(port:InstanceScalarPair) {
         let index = this.constraint.ports.indexOf(port);
+        let formArray = <FormArray> this.formGroup.find('ports');
 
-        if (index > -1)
-            this.constraint.ports.splice(index, 1);
+        this.constraint.ports.splice(index, 1);
+        formArray.removeAt(index);
     }
 }
