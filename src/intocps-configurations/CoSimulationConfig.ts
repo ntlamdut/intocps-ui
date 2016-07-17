@@ -8,6 +8,7 @@ import {Parser, Serializer} from "./Parser"
 import * as fs from "fs"
 import {Instance, ScalarVariable, InstanceScalarPair} from "../angular2-app/coe/models/Fmu";
 import {WarningMessage} from "./Messages";
+import {FormArray, FormGroup, FormControl} from "@angular/forms";
 
 export class CoSimulationConfig implements ISerializable {
 
@@ -91,15 +92,27 @@ export class CoSimulationConfig implements ISerializable {
 }
 
 export interface ICoSimAlgorithm {
+    toFormGroup(): FormGroup;
+    name:string;
 }
 
 export class FixedStepAlgorithm implements ICoSimAlgorithm {
+    name = "Fixed Step";
+
     constructor(public size:number = 0.1) {
 
+    }
+
+    toFormGroup() {
+        return new FormGroup({
+            size: new FormControl(this.size)
+        });
     }
 }
 
 export class VariableStepAlgorithm implements ICoSimAlgorithm {
+    name = "Variable Step";
+
     constructor(
         public initSize:number = 0.1,
         public sizeMin:number = 0.05,
@@ -108,11 +121,21 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
     ) {
 
     }
+
+    toFormGroup() {
+        return new FormGroup({
+            initSize: new FormControl(this.initSize),
+            sizeMin: new FormControl(this.sizeMin),
+            sizeMax: new FormControl(this.sizeMax),
+            constraints: new FormArray(this.constraints.map(c => c.toFormGroup()))
+        });
+    }
 }
 
 export interface VariableStepConstraint {
     id:string;
     type:string;
+    toFormGroup(): FormGroup;
 }
 
 export class ZeroCrossingConstraint implements VariableStepConstraint {
@@ -125,6 +148,16 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
         public abstol?:number,
         public safety?:number
     ) {
+    }
+
+    toFormGroup() {
+        return new FormGroup({
+            id: new FormControl(this.id),
+            ports: new FormArray(this.ports.map(p => new FormControl())),
+            order: new FormControl(this.order),
+            abstol: new FormControl(this.abstol),
+            safety: new FormControl(this.safety)
+        });
     }
 }
 
@@ -140,6 +173,17 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
         public skipDiscrete:boolean = true
     ) {
     }
+
+    toFormGroup() {
+        return new FormGroup({
+            id: new FormControl(this.id),
+            ports: new FormArray(this.ports.map(p => new FormControl())),
+            abstol: new FormControl(this.abstol),
+            reltol: new FormControl(this.reltol),
+            safety: new FormControl(this.safety),
+            skipDiscrete: new FormControl(this.skipDiscrete)
+        });
+    }
 }
 
 export class SamplingRateConstraint implements VariableStepConstraint {
@@ -151,6 +195,15 @@ export class SamplingRateConstraint implements VariableStepConstraint {
         public rate:number,
         public startTime:number
     ) {
+    }
+
+    toFormGroup() {
+        return new FormGroup({
+            id: new FormControl(this.id),
+            base: new FormControl(this.base),
+            rate: new FormControl(this.rate),
+            startTime: new FormControl(this.startTime)
+        });
     }
 }
 

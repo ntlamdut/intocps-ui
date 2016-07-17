@@ -21,7 +21,6 @@ export function higherThanValidator(otherName:string) {
         let other = control.root.find(otherName);
 
         if (other && Number(control.value) <= Number(other.value)) {
-            other.updateValueAndValidity();
             return {notHigherThan:true};
         }
     }
@@ -32,7 +31,6 @@ export function lowerThanValidator(otherName:string) {
         let other = control.root.find(otherName);
 
         if (other && Number(control.value) >= Number(other.value)) {
-            other.updateValueAndValidity();
             return {notLowerThan:true};
         }
     }

@@ -38,10 +38,11 @@ export class CoeConfigurationComponent {
     }
 
     @Output()
-    change = new EventEmitter<void>();
+    change = new EventEmitter<string>();
 
     form:FormGroup;
-    algorithms:Array<ICoSimAlgorithm> = [];
+    algorithms:ICoSimAlgorithm[] = [];
+    algorithmFormGroups = new Map<ICoSimAlgorithm, FormGroup>();
     outputPorts:Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
     editing:boolean = false;
@@ -72,11 +73,6 @@ export class CoeConfigurationComponent {
                 this.zone.run(() => {
                     this.config = config;
 
-                    this.form = new FormGroup({
-                        startTime: new FormControl(this.config.startTime, [Validators.required, doubleValidator, lowerThanValidator("endTime")]),
-                        endTime: new FormControl(this.config.endTime, [Validators.required, doubleValidator, higherThanValidator("startTime")])
-                    });
-
                     // Create an array of the algorithm from the coe config and a new instance of all other algorithms
                     this.algorithms = this.algorithmConstructors
                         .map(constructor =>
@@ -85,15 +81,32 @@ export class CoeConfigurationComponent {
                                 : new constructor()
                         );
 
-                    this.config.multiModel.fmuInstances.forEach(instance => {
-                        instance.fmu.scalarVariables
-                            .filter(sv => sv.causality === CausalityType.Output)
-                            .forEach(sv => {
-                                this.outputPorts.push(this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name))
-                            });
+                    // Create an array of formGroups for the algorithms
+                    this.algorithms.forEach(algorithm => {
+                        this.algorithmFormGroups.set(algorithm, algorithm.toFormGroup());
+                    });
+
+                    // Create an array of all output ports on all instances
+                    this.outputPorts = this.config.multiModel.fmuInstances
+                        .map(instance => instance.fmu.scalarVariables
+                                .filter(sv => sv.causality === CausalityType.Output)
+                                .map(sv => this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name)))
+                        .reduce((a, b) => a.concat(...b));
+
+                    this.form = new FormGroup({
+                        startTime: new FormControl(config.startTime, [Validators.required, doubleValidator]),
+                        endTime: new FormControl(config.endTime, [Validators.required, doubleValidator]),
+                        algorithm: this.algorithmFormGroups.get(this.config.algorithm)
                     });
                 });
             });
+    }
+
+    onAlgorithmChange(algorithm) {
+        this.config.algorithm = algorithm;
+
+        this.form.removeControl('algorithm');
+        this.form.addControl('algorithm', this.algorithmFormGroups.get(algorithm));
     }
 
     onSubmit() {
@@ -121,14 +134,6 @@ export class CoeConfigurationComponent {
     removeConstraint(constraint:VariableStepConstraint) {
         let algorithm = <VariableStepAlgorithm> this.config.algorithm;
         algorithm.constraints.splice(algorithm.constraints.indexOf(constraint), 1);
-    }
-
-    getAlgorithmName(algorithm:any) {
-        if (algorithm === FixedStepAlgorithm || algorithm instanceof FixedStepAlgorithm)
-            return "Fixed Step";
-
-        if (algorithm === VariableStepAlgorithm || algorithm instanceof VariableStepAlgorithm)
-            return "Variable Step";
     }
 
     getConstraintName(constraint:any) {
@@ -165,6 +170,17 @@ export class CoeConfigurationComponent {
 
             if (variables.length == 0)
                 this.config.livestream.delete(instance);
+        }
+    }
+
+
+    getConfig() {
+        if (!this.config) return;
+
+        return {
+            startTime: this.config.startTime,
+            endTime: this.config.endTime,
+            algorithm: this.config.algorithm.toFormGroup().value
         }
     }
 }
