@@ -26,17 +26,16 @@ export class BoundedDifferenceComponent {
     }
 
     addPort() {
-        let formArray = <FormArray> this.formGroup.find('ports');
-
         this.constraint.ports.push(this.ports[0]);
-        formArray.push(new FormControl());
+
+        let formControl = <FormControl> this.formGroup.find('ports');
+        formControl.updateValueAndValidity();
     }
 
     removePort(port:InstanceScalarPair) {
-        let index = this.constraint.ports.indexOf(port);
-        let formArray = <FormArray> this.formGroup.find('ports');
+        this.constraint.ports.splice(this.constraint.ports.indexOf(port), 1);
 
-        this.constraint.ports.splice(index, 1);
-        formArray.removeAt(index);
+        let formControl = <FormControl> this.formGroup.find('ports');
+        formControl.updateValueAndValidity();
     }
 }

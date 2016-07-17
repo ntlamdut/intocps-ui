@@ -29,6 +29,7 @@
                 </span>
                 </div>
             </div>
+            <div *ngIf="formGroup.hasError('invalidLength', 'ports')" class="alert alert-danger alert-standalone">1 or more ports are required.</div>
         </div>
     </div>
 

@@ -27,6 +27,15 @@ export function integerValidator(control: FormControl): { [s: string]: boolean }
         return {invalidInteger: true};
 }
 
+export function lengthValidator(min: number = null, max: number = null) {
+    return (control: FormControl) => {
+        let length = control.value.length;
+
+        if (length === undefined || min !== null && length < min || max !== null && length > max)
+            return {invalidLength: true};
+    }
+}
+
 export function higherThanValidator(otherName:string) {
     return (control: FormControl) => {
         let other = control.root.find(otherName);

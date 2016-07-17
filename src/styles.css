@@ -53,3 +53,8 @@ coe-configuration .alert {
     width: 196px;
     margin-top: -4px;
 }
+
+coe-configuration .alert-standalone {
+    margin-top: 0;
+    border-radius: 4px;
+}

@@ -4,7 +4,7 @@ import * as fs from "fs"
 import {Instance, ScalarVariable, InstanceScalarPair} from "../angular2-app/coe/models/Fmu";
 import {WarningMessage} from "./Messages";
 import {FormArray, FormGroup, FormControl, Validators} from "@angular/forms";
-import {numberValidator, integerValidator} from "../angular2-app/shared/validators";
+import {numberValidator, integerValidator, lengthValidator} from "../angular2-app/shared/validators";
 
 export class CoSimulationConfig implements ISerializable {
     //project root required to resolve multimodel path
@@ -148,7 +148,7 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
     toFormGroup() {
         return new FormGroup({
             id: new FormControl(this.id),
-            ports: new FormArray(this.ports.map(p => new FormControl())),
+            ports: new FormControl(this.ports, [lengthValidator(1, 2)]),
             order: new FormControl(this.order),
             abstol: new FormControl(this.abstol, [numberValidator]),
             safety: new FormControl(this.safety, [numberValidator])
@@ -172,7 +172,7 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
     toFormGroup() {
         return new FormGroup({
             id: new FormControl(this.id),
-            ports: new FormArray(this.ports.map(p => new FormControl())),
+            ports: new FormControl(this.ports, [lengthValidator(1, 2)]),
             abstol: new FormControl(this.abstol, [numberValidator]),
             reltol: new FormControl(this.reltol, [numberValidator]),
             safety: new FormControl(this.safety, [numberValidator]),
