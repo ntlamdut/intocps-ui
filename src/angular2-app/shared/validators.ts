@@ -1,4 +1,4 @@
-import {FormControl} from "@angular/forms";
+import {FormControl, FormArray, FormGroup} from "@angular/forms";
 
 function isString(x:any) {
     return typeof x === 'string';
@@ -33,6 +33,23 @@ export function lengthValidator(min: number = null, max: number = null) {
 
         if (length === undefined || min !== null && length < min || max !== null && length > max)
             return {invalidLength: true};
+    }
+}
+
+export function uniqueGroupPropertyValidator(propertyName: string) {
+    return (control: FormArray) => {
+        for(let i = 0; i < control.length; i++) {
+            let group:FormGroup = <FormGroup> control.at(i);
+            let value = group.controls[propertyName].value;
+
+            for(let j = i+1; j < control.length; j++) {
+                let other:FormGroup = <FormGroup> control.at(j);
+                let otherValue = other.controls[propertyName].value;
+
+                if (value === otherValue)
+                    return {notUnique: value};
+            }
+        }
     }
 }
 

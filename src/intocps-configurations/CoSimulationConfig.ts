@@ -4,7 +4,10 @@ import * as fs from "fs"
 import {Instance, ScalarVariable, InstanceScalarPair} from "../angular2-app/coe/models/Fmu";
 import {WarningMessage} from "./Messages";
 import {FormArray, FormGroup, FormControl, Validators} from "@angular/forms";
-import {numberValidator, integerValidator, lengthValidator} from "../angular2-app/shared/validators";
+import {
+    numberValidator, integerValidator, lengthValidator,
+    uniqueGroupPropertyValidator
+} from "../angular2-app/shared/validators";
 
 export class CoSimulationConfig implements ISerializable {
     //project root required to resolve multimodel path
@@ -122,7 +125,7 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
             initSize: new FormControl(this.initSize, [Validators.required, numberValidator]),
             sizeMin: new FormControl(this.sizeMin, [Validators.required, numberValidator]),
             sizeMax: new FormControl(this.sizeMax, [Validators.required, numberValidator]),
-            constraints: new FormArray(this.constraints.map(c => c.toFormGroup()))
+            constraints: new FormArray(this.constraints.map(c => c.toFormGroup()), uniqueGroupPropertyValidator("id"))
         });
     }
 }
