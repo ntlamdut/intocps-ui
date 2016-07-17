@@ -45,3 +45,11 @@ coe-configuration a {
     cursor: pointer;
     color: black;
 }
+
+coe-configuration .alert {
+    padding: 5px;
+    margin-bottom: 0;
+    border-radius: 0 0 4px 4px;
+    width: 196px;
+    margin-top: -4px;
+}

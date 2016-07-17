@@ -93,6 +93,7 @@ export class CoeConfigurationComponent {
                                 .map(sv => this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name)))
                         .reduce((a, b) => a.concat(...b));
 
+                    // Create a form group for validation
                     this.form = new FormGroup({
                         startTime: new FormControl(config.startTime, [Validators.required, numberValidator]),
                         endTime: new FormControl(config.endTime, [Validators.required, numberValidator]),
@@ -128,7 +129,8 @@ export class CoeConfigurationComponent {
         let algorithm = <VariableStepAlgorithm> this.config.algorithm;
         let constraint = new this.newConstraint();
 
-        algorithm.constraints.push(constraint);
+        algorithm.constraints.push();
+        this.form.controls.algorithm.controls.constraints.push(constraint.toFormGroup());
     }
 
     removeConstraint(constraint:VariableStepConstraint) {

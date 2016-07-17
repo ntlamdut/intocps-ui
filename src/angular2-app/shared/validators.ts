@@ -19,7 +19,7 @@ function isInteger(x:any) {
 
 export function numberValidator(control: FormControl): { [s: string]: boolean } {
     if (!isNumber(control.value))
-        return {invalidDouble: true};
+        return {invalidNumber: true};
 }
 
 export function integerValidator(control: FormControl): { [s: string]: boolean } {

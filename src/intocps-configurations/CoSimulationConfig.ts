@@ -4,7 +4,7 @@ import * as fs from "fs"
 import {Instance, ScalarVariable, InstanceScalarPair} from "../angular2-app/coe/models/Fmu";
 import {WarningMessage} from "./Messages";
 import {FormArray, FormGroup, FormControl, Validators} from "@angular/forms";
-import {numberValidator} from "../angular2-app/shared/validators";
+import {numberValidator, integerValidator} from "../angular2-app/shared/validators";
 
 export class CoSimulationConfig implements ISerializable {
     //project root required to resolve multimodel path
@@ -134,7 +134,7 @@ export interface VariableStepConstraint {
 }
 
 export class ZeroCrossingConstraint implements VariableStepConstraint {
-    type:string = "zerocrossing";
+    type = "zerocrossing";
 
     constructor(
         public id:string = "zc",
@@ -157,7 +157,7 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
 }
 
 export class BoundedDifferenceConstraint implements VariableStepConstraint {
-    type:string = "boundeddifference";
+    type = "boundeddifference";
 
     constructor(
         public id:string = "bd",
@@ -182,7 +182,7 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
 }
 
 export class SamplingRateConstraint implements VariableStepConstraint {
-    type:string = "samplingrate";
+    type = "samplingrate";
 
     constructor(
         public id:string = "sr",
@@ -194,10 +194,10 @@ export class SamplingRateConstraint implements VariableStepConstraint {
 
     toFormGroup() {
         return new FormGroup({
-            id: new FormControl(this.id),
-            base: new FormControl(this.base),
-            rate: new FormControl(this.rate),
-            startTime: new FormControl(this.startTime)
+            id: new FormControl(this.id, [Validators.required]),
+            base: new FormControl(this.base, [Validators.required, integerValidator]),
+            rate: new FormControl(this.rate, [Validators.required, integerValidator]),
+            startTime: new FormControl(this.startTime, [Validators.required, integerValidator])
         });
     }
 }
