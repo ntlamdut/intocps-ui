@@ -8,7 +8,7 @@
                 <input *ngIf="editing" name="startTime" [(ngModel)]="config.startTime" class="form-control">
                 <div *ngIf="form.hasError('required', 'startTime')" class="alert alert-danger">This field is required.</div>
                 <div *ngIf="form.hasError('invalidNumber', 'startTime')" class="alert alert-danger">Only numbers are allowed.</div>
-                <div *ngIf="form.hasError('notLowerThan', 'startTime')" class="alert alert-danger">Start time has to be before end time.</div>
+                <div *ngIf="form.hasError('notLessThan')" class="alert alert-danger">Start time is after end time.</div>
             </div>
         </div>
 
@@ -19,7 +19,7 @@
                 <input *ngIf="editing" name="endTime" [(ngModel)]="config.endTime" class="form-control">
                 <div *ngIf="form.hasError('required', 'endTime')" class="alert alert-danger">This field is required.</div>
                 <div *ngIf="form.hasError('invalidNumber', 'endTime')" class="alert alert-danger">Only numbers are allowed.</div>
-                <div *ngIf="form.hasError('notHigherThan', 'endTime')" class="alert alert-danger">End time has to be after start time.</div>
+                <div *ngIf="form.hasError('notLessThan')" class="alert alert-danger">End time is before start time.</div>
             </div>
         </div>
 

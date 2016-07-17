@@ -53,22 +53,13 @@ export function uniqueGroupPropertyValidator(propertyName: string) {
     }
 }
 
-export function higherThanValidator(otherName:string) {
-    return (control: FormControl) => {
-        let other = control.root.find(otherName);
+export function lessThanValidator(selfName:string, otherName:string) {
+    return (group: FormGroup) => {
+        let self = group.find(selfName);
+        let other = group.find(otherName);
 
-        if (other && Number(control.value) <= Number(other.value)) {
-            return {notHigherThan:true};
-        }
-    }
-}
-
-export function lowerThanValidator(otherName:string) {
-    return (control: FormControl) => {
-        let other = control.root.find(otherName);
-
-        if (other && Number(control.value) >= Number(other.value)) {
-            return {notLowerThan:true};
+        if (self && other && Number(self.value) >= Number(other.value)) {
+            return {notLessThan:true};
         }
     }
 }
