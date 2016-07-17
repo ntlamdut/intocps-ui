@@ -58,7 +58,7 @@ export function lessThanValidator(selfName:string, otherName:string) {
         let self = group.find(selfName);
         let other = group.find(otherName);
 
-        if (self && other && Number(self.value) >= Number(other.value)) {
+        if (self.value && other.value && Number(self.value) >= Number(other.value)) {
             return {notLessThan:true};
         }
     }
