@@ -129,7 +129,7 @@ export class CoeConfigurationComponent {
         let algorithm = <VariableStepAlgorithm> this.config.algorithm;
         let constraint = new this.newConstraint();
 
-        algorithm.constraints.push();
+        algorithm.constraints.push(constraint);
         this.form.controls.algorithm.controls.constraints.push(constraint.toFormGroup());
     }
 
