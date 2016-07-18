@@ -35,7 +35,7 @@ export class CoSimulationConfig implements ISerializable {
             endTime: Number(this.endTime),
             multimodel_path: path,
             livestream: livestream,
-            algorithm: this.algorithm.serialize()
+            algorithm: this.algorithm.toObject()
         };
     }
 
@@ -104,7 +104,7 @@ export class CoSimulationConfig implements ISerializable {
 
 export interface ICoSimAlgorithm {
     toFormGroup(): FormGroup;
-    serialize(): {[key:string]: any};
+    toObject(): {[key:string]: any};
     type:string;
     name:string;
 }
@@ -123,7 +123,7 @@ export class FixedStepAlgorithm implements ICoSimAlgorithm {
         });
     }
 
-    serialize() {
+    toObject() {
         return {
             type: this.type,
             size: Number(this.size)
@@ -153,9 +153,9 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
         });
     }
 
-    serialize() {
+    toObject() {
         let constraints:any = {};
-        this.constraints.forEach(c => constraints[c.id] = c.serialize());
+        this.constraints.forEach(c => constraints[c.id] = c.toObject());
 
         return {
             type: this.type,
@@ -170,7 +170,7 @@ export interface VariableStepConstraint {
     id:string;
     type:string;
     toFormGroup(): FormGroup;
-    serialize(): {[key:string]: any};
+    toObject(): {[key:string]: any};
 }
 
 export class ZeroCrossingConstraint implements VariableStepConstraint {
@@ -195,7 +195,7 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
         });
     }
 
-    serialize() {
+    toObject() {
         return {
             type: this.type,
             ports: this.ports.map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable)),
@@ -230,7 +230,7 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
         });
     }
 
-    serialize() {
+    toObject() {
         return {
             type: this.type,
             ports: this.ports.map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable)),
@@ -262,7 +262,7 @@ export class SamplingRateConstraint implements VariableStepConstraint {
         });
     }
 
-    serialize() {
+    toObject() {
         return {
             type: this.type,
             base: Number(this.base),
