@@ -16,7 +16,7 @@ import {Parameters} from "./parameters/parameters";
 import {IProject} from "../proj/IProject";
 import {SettingKeys} from "../settings/SettingKeys";
 import {ListElement} from "./connections/list-element";
-import {IViewController} from "../iViewController";
+import {ViewController} from "../iViewController";
 import {SourceDom} from "../sourceDom";
 import {FmuInstancesElement} from "./connections/fmu-instances-element";
 import {ConnectionsElement} from "./connections/connections-element";
@@ -31,7 +31,7 @@ enum MmContainers {
     Keys = 1 << 3,
 }
 
-export class MmController extends IViewController {
+export class MmController extends ViewController {
     mm: MultiModelConfig = new MultiModelConfig();
     private multiModelFmusDiv: HTMLDivElement;
     private fmuAddButton: HTMLButtonElement;
@@ -49,11 +49,11 @@ export class MmController extends IViewController {
     private saveButton: HTMLButtonElement;
 
 
-    constructor(mainViewDiv: HTMLDivElement) {
+    constructor(mainViewDiv: HTMLDivElement, private path:string) {
         super(mainViewDiv);
     }
 
-    initialize(sourceDom: SourceDom) {
+    initialize() {
         IntoCpsApp.IntoCpsApp.setTopName("Multi-Model");
 
         this.fmuInstancesDiv = <HTMLDivElement>document.getElementById("multimodel-fmu-instances");
@@ -72,7 +72,7 @@ export class MmController extends IViewController {
             console.log("project-changed");  // prints "ping"
 
         });
-        this.load(sourceDom.getPath());
+        this.load(this.path);
     }
 
     deInitialize() {

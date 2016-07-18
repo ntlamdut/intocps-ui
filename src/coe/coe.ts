@@ -14,7 +14,7 @@ import {CoeSimulationRunner} from './CoeSimulationRunner'
 import {IProject} from "../proj/IProject";
 import {SettingKeys} from "../settings/SettingKeys";
 import {SourceDom} from "../sourceDom"
-import {IViewController} from "../iViewController"
+import {ViewController} from "../iViewController"
 
 import {CoSimulationConfig, Serializer} from "../intocps-configurations/intocps-configurations";
 
@@ -26,7 +26,7 @@ import * as Configs from "../intocps-configurations/intocps-configurations";
 import {Utilities} from "../utilities";
 import {LivestreamConfiguration} from "./livestream/livestream-config";
 
-export class CoeController extends IViewController {
+export class CoeController extends ViewController {
 
     coSimConfig: CoSimulationConfig = null;
 
@@ -61,14 +61,14 @@ export class CoeController extends IViewController {
 
     app: IntoCpsApp;
 
-    constructor(viewDiv: HTMLDivElement) {
+    constructor(viewDiv: HTMLDivElement, private path:string) {
         super(viewDiv);
         this.remote = require("electron").remote;
         this.dialog = this.remote.dialog;
         this.app = IntoCpsApp.getInstance();
     }
 
-    initialize(sourceDom: SourceDom): void {
+    initialize(): void {
         this.startTimeContainer = <HTMLElement>this.viewDiv.querySelector("#startTime");
         this.endTimeContainer = <HTMLElement>this.viewDiv.querySelector("#endTime");
         this.dropDownContainer = <HTMLElement>this.viewDiv.querySelector("#dropdown");
@@ -90,7 +90,7 @@ export class CoeController extends IViewController {
             console.warn("no active project cannot load coe config");
         }
 
-        CoSimulationConfig.parse(sourceDom.getPath(), activeProject.getRootFilePath(), activeProject.getFmusPath())
+        CoSimulationConfig.parse(this.path, activeProject.getRootFilePath(), activeProject.getFmusPath())
             .then(cc => {
                 console.info("CC:"); console.info(cc);
                 this.coSimConfig = cc;
