@@ -23,7 +23,20 @@ export class CoSimulationConfig implements ISerializable {
     endTime: number = 10;
 
     toObject(): any {
-        return new Serializer().toObjectCoSimulationConfig(this, this.projectRoot);
+        let livestream:any = {};
+        this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
+
+        let path = this.multiModel.sourcePath;
+        if (path.indexOf(this.projectRoot) === 0)
+            path = path.substring(this.projectRoot.length + 1);
+
+        return {
+            startTime: Number(this.startTime),
+            endTime: Number(this.endTime),
+            multimodel_path: path,
+            livestream: livestream,
+            algorithm: this.algorithm.serialize()
+        };
     }
 
     save(): Promise<void> {
@@ -91,10 +104,13 @@ export class CoSimulationConfig implements ISerializable {
 
 export interface ICoSimAlgorithm {
     toFormGroup(): FormGroup;
+    serialize(): {[key:string]: any};
+    type:string;
     name:string;
 }
 
 export class FixedStepAlgorithm implements ICoSimAlgorithm {
+    type = "fixed-step";
     name = "Fixed Step";
 
     constructor(public size:number = 0.1) {
@@ -106,9 +122,17 @@ export class FixedStepAlgorithm implements ICoSimAlgorithm {
             size: new FormControl(this.size, [Validators.required, numberValidator])
         });
     }
+
+    serialize() {
+        return {
+            type: this.type,
+            size: Number(this.size)
+        };
+    }
 }
 
 export class VariableStepAlgorithm implements ICoSimAlgorithm {
+    type = "var-step";
     name = "Variable Step";
 
     constructor(
@@ -128,12 +152,25 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
             constraints: new FormArray(this.constraints.map(c => c.toFormGroup()), uniqueGroupPropertyValidator("id"))
         });
     }
+
+    serialize() {
+        let constraints:any = {};
+        this.constraints.forEach(c => constraints[c.id] = c.serialize());
+
+        return {
+            type: this.type,
+            initsize: Number(this.initSize),
+            size: [Number(this.sizeMin), Number(this.sizeMax)],
+            constraints: constraints
+        };
+    }
 }
 
 export interface VariableStepConstraint {
     id:string;
     type:string;
     toFormGroup(): FormGroup;
+    serialize(): {[key:string]: any};
 }
 
 export class ZeroCrossingConstraint implements VariableStepConstraint {
@@ -156,6 +193,16 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
             abstol: new FormControl(this.abstol, [numberValidator]),
             safety: new FormControl(this.safety, [numberValidator])
         });
+    }
+
+    serialize() {
+        return {
+            type: this.type,
+            ports: this.ports.map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable)),
+            order: Number(this.order),
+            abstol: Number(this.abstol),
+            safety: Number(this.safety)
+        }
     }
 }
 
@@ -182,6 +229,17 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
             skipDiscrete: new FormControl(this.skipDiscrete)
         });
     }
+
+    serialize() {
+        return {
+            type: this.type,
+            ports: this.ports.map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable)),
+            abstol: Number(this.abstol),
+            reltol: Number(this.reltol),
+            safety: Number(this.safety),
+            skipDiscrete: !!this.skipDiscrete
+        }
+    }
 }
 
 export class SamplingRateConstraint implements VariableStepConstraint {
@@ -202,6 +260,15 @@ export class SamplingRateConstraint implements VariableStepConstraint {
             rate: new FormControl(this.rate, [Validators.required, integerValidator]),
             startTime: new FormControl(this.startTime, [Validators.required, integerValidator])
         });
+    }
+
+    serialize() {
+        return {
+            type: this.type,
+            base: Number(this.base),
+            rate: Number(this.rate),
+            startTime: Number(this.startTime)
+        }
     }
 }
 

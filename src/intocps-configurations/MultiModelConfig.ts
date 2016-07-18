@@ -2,7 +2,7 @@ import {Parser, Serializer} from "./Parser";
 import {WarningMessage, ErrorMessage} from "./Messages";
 import {
     Fmu, Instance, ScalarVariableType, isTypeCompatipleWithValue,
-    isTypeCompatiple, InstanceScalarPair
+    isTypeCompatiple, InstanceScalarPair, ScalarVariable
 } from "../angular2-app/coe/models/Fmu";
 import * as Path from 'path';
 import * as fs from 'fs';
@@ -127,7 +127,40 @@ export class MultiModelConfig implements ISerializable {
     }
 
     toObject(): any {
-        return new Serializer().toObjectMultiModel(this, this.fmusRootPath);
+        let fmus:any = {};
+        let connections:any = {};
+        let parameters:any = {};
+
+        this.fmus.forEach((fmu: Fmu) => {
+            let path = fmu.path;
+            if (path.indexOf(this.fmusRootPath) >= 0)
+                path = path.substring(this.fmusRootPath.length + 1);
+
+            fmus[fmu.name] = path;
+        });
+
+        this.fmuInstances.forEach((instance: Instance) => {
+            instance.outputsTo.forEach((pairs: InstanceScalarPair[], sv: ScalarVariable) => {
+                connections[Serializer.getIdSv(instance, sv)] = pairs.map(pair => Serializer.getIdSv(pair.instance, pair.scalarVariable));
+            });
+
+            instance.initialValues.forEach((value: any, sv: ScalarVariable) => {
+                let id: string = Serializer.getIdSv(instance, sv);
+
+                if(sv.type === ScalarVariableType.Bool)
+                    parameters[id] = Boolean(value);
+                else if(sv.type === ScalarVariableType.Int || sv.type === ScalarVariableType.Real)
+                    parameters[id] = Number(value);
+                else
+                    parameters[id] = value;
+            });
+        });
+
+        return {
+            fmus: fmus,
+            connections: connections,
+            parameters: parameters
+        };
     }
 
     validate(): WarningMessage[] {

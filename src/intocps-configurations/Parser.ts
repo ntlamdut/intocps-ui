@@ -247,9 +247,9 @@ export class Parser {
         let [minSize, maxSize] = this.parseSimpleTag(data, this.ALGORITHM_TYPE_VAR_SIZE_TAG);
 
         return new VariableStepAlgorithm(
-            parseFloat(data[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG]),
-            parseFloat(minSize),
-            parseFloat(maxSize),
+            data[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG],
+            minSize,
+            maxSize,
             this.parseAlgorithmVarConstraints(data[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG], multiModel)
         );
     }
@@ -310,63 +310,6 @@ export class Serializer extends Parser {
         super();
     }
 
-    public toObjectMultiModel(multiModel: MultiModelConfig, fmusRootPath: string): any {
-        let obj:any = {};
-
-        //fmus
-        obj[this.FMUS_TAG] = this.toObjectFmus(multiModel.fmus, fmusRootPath);
-        //connections
-        obj[this.CONNECTIONS_TAG] = this.toObjectConnections(multiModel.fmuInstances);
-        //parameters
-        obj[this.PARAMETERS_TAG] = this.toObjectParameters(multiModel.fmuInstances);
-
-        return obj;
-    }
-
-    public toObjectCoSimulationConfig(cc: CoSimulationConfig, projectRoot: string): any {
-        let obj:any = {};
-
-        let path = cc.multiModel.sourcePath;
-        if (path.indexOf(projectRoot) >= 0) {
-            path = path.substring(projectRoot.length + 1);
-        }
-
-        //multimodel source
-        obj[this.MULTIMODEL_PATH_TAG] = path;
-
-        //parameters
-        // obj[this.PARAMETERS_TAG] = this.toObjectParameters(cc.fmuInstances);
-
-        //start time
-        obj[this.START_TIME_TAG] = cc.startTime;
-        //end time
-        obj[this.END_TIME_TAG] = cc.endTime;
-
-        //livestream
-        obj[this.LIVESTREAM_TAG] = this.toObjectLivestream(cc.livestream);
-
-        //algorithm
-        obj[this.ALGORITHM_TAG] = this.toObjectAlgorithm(cc.algorithm);
-
-        return obj;
-    }
-
-    //convert fmus to JSON
-    private toObjectFmus(fmus: Fmu[], fmusRootPath: string): any {
-        let data:any = {};
-
-        fmus.forEach((fmu: Fmu) => {
-            let path = fmu.path;
-            if (path.indexOf(fmusRootPath) >= 0) {
-                path = path.substring(fmusRootPath.length + 1);
-            }
-
-            data[fmu.name] = path;
-        });
-
-        return data;
-    }
-
     //util method to obtain id from instance
     public static getId(value: Instance): string {
         return value.fmu.name + "." + value.name;
@@ -375,94 +318,5 @@ export class Serializer extends Parser {
     //util method to obtain full id from instance and scalarvariable
     public static getIdSv(value: Instance, sv: ScalarVariable): string {
         return value.fmu.name + "." + value.name + "." + sv.name;
-    }
-
-    //toObjectConnections
-    toObjectConnections(fmuInstances: Instance[]): any {
-        let cons:any = {};
-
-        fmuInstances.forEach(value => {
-            value.outputsTo.forEach((pairs, sv) => {
-                let key = Serializer.getIdSv(value, sv);
-                let inputs: any[] = [];
-                pairs.forEach(pair => {
-                    let input = Serializer.getIdSv(pair.instance, pair.scalarVariable);
-                    inputs.push(input);
-                });
-
-                cons[key] = inputs;
-            });
-        });
-
-        return cons;
-    }
-
-
-    //to JSON parameters
-    toObjectParameters(fmuInstances: Instance[]): any {
-        let obj:any = {};
-
-        fmuInstances.forEach(instance => {
-            instance.initialValues.forEach((value, sv) => {
-                obj[Serializer.getIdSv(instance, sv)] = value;
-            });
-        });
-
-        return obj;
-    }
-
-
-    toObjectLivestream(livestream: Map<Instance, ScalarVariable[]>): any {
-        let obj:any = {};
-
-        livestream.forEach((svs, instance) => {
-            obj[Serializer.getId(instance)] = svs.map(sv => sv.name);
-        });
-
-        return obj;
-    }
-
-    toObjectConstraint(constraint:any) {
-        let object:any = {};
-
-        Object.keys(constraint).forEach(key => {
-            if (key === "id") return;
-
-            if (key === "order")
-                object[key] = parseFloat(constraint[key]);
-            else if (key === "ports") {
-                object[key] = constraint[key].map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable));
-            } else {
-                object[key] = constraint[key];
-            }
-        });
-
-        return object;
-    }
-
-    toObjectAlgorithm(algorithm: ICoSimAlgorithm): any {
-        let obj:any = {};
-
-        if (algorithm instanceof FixedStepAlgorithm) {
-            obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_FIXED;
-            obj[this.ALGORITHM_TYPE_FIXED_SIZE_TAG] = algorithm.size;
-
-            return obj;
-        }
-
-        if (algorithm instanceof VariableStepAlgorithm) {
-            let constraints:any = {};
-
-            algorithm.constraints.forEach(c => constraints[c.id] = this.toObjectConstraint(c));
-
-            obj[this.ALGORITHM_TYPE] = this.ALGORITHM_TYPE_VAR;
-            obj[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG] = algorithm.initSize;
-            obj[this.ALGORITHM_TYPE_VAR_SIZE_TAG] = [algorithm.sizeMin, algorithm.sizeMax];
-            obj[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG] = constraints;
-
-            return obj;
-        }
-
-        return null;
     }
 }
