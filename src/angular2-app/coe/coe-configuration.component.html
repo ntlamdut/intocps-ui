@@ -1,3 +1,11 @@
+<div *ngIf="parseError">
+    <div class="alert alert-danger alert-big">
+        <p>Error: Could not parse config.</p>
+        <p>Message: {{parseError}}</p>
+        <p>Path: {{path}}</p>
+    </div>
+</div>
+
 <form *ngIf="config" [formGroup]="form" (ngSubmit)="onSubmit()" #configForm="ngForm">
 
     <div class="form-horizontal">

@@ -46,6 +46,7 @@ export class CoeConfigurationComponent {
     outputPorts:Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
     editing:boolean = false;
+    parseError:string = null;
 
     private config:CoSimulationConfig;
 
@@ -72,6 +73,8 @@ export class CoeConfigurationComponent {
             .then(config => {
                 this.zone.run(() => {
                     this.config = config;
+
+                    this.parseError = null;
 
                     // Create an array of the algorithm from the coe config and a new instance of all other algorithms
                     this.algorithms = this.algorithmConstructors
@@ -100,7 +103,7 @@ export class CoeConfigurationComponent {
                         algorithm: this.algorithmFormGroups.get(this.config.algorithm)
                     }, null, lessThanValidator('startTime', 'endTime'));
                 });
-            });
+            }, error => this.parseError = error);
     }
 
     onAlgorithmChange(algorithm:ICoSimAlgorithm) {
