@@ -1,10 +1,7 @@
 
-import {SourceDom} from "../sourceDom";
 import {ViewController} from "../iViewController";
-import {IntoCpsApp} from "../IntoCpsApp"
-import * as Settings from  "../settings/settings"
-import {SettingKeys} from "../settings/SettingKeys";
-import Path = require('path');
+import {IntoCpsApp} from "../IntoCpsApp";
+import Path = require("path");
 import {RTTester} from "../rttester/RTTester";
 
 
@@ -39,7 +36,7 @@ class Output {
     }
     display(hOutputList: HTMLUListElement, activate: boolean) {
         let self: Output = this;
-        $('<div>').load("./rttester/CreateMCProject/Output.html", function (event: JQueryEventObject) {
+        $("<div>").load("./rttester/CreateMCProject/Output.html", function (event: JQueryEventObject) {
             self.hOutput = <HTMLLinkElement>this.querySelector("#output");
             self.hOutput.innerHTML = self.name;
             self.hOutput.addEventListener("click", function () { self.component.selectOutput(self); });
@@ -72,7 +69,7 @@ class Component {
     }
     display(hComponentList: HTMLUListElement, activate: boolean) {
         let self: Component = this;
-        $('<div>').load("./rttester/CreateMCProject/Component.html", function (event: JQueryEventObject) {
+        $("<div>").load("./rttester/CreateMCProject/Component.html", function (event: JQueryEventObject) {
             self.hComponent = <HTMLLinkElement>this.querySelector("#component");
             self.hComponent.innerHTML = self.name;
             self.hComponent.addEventListener("click", function () { self.abstractions.selectComponent(self); });
@@ -160,10 +157,10 @@ export class CreateMCProjectController extends ViewController {
         let remote = require("electron").remote;
         let dialog = remote.dialog;
         let dialogResult: string[] = dialog.showOpenDialog({
-            filters: [{ name: 'XMI-Files', extensions: ['xmi', 'xml'] }]
+            filters: [{ name: "XMI-Files", extensions: ["xmi", "xml"] }]
         });
         if (dialogResult != undefined) {
-            var hText: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText");
+            let hText: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText");
             hText.value = dialogResult[0];
         }
     }
@@ -176,17 +173,16 @@ export class CreateMCProjectController extends ViewController {
 
 
     createProject(): void {
-        document.getElementById("CreationParameters").style.display = 'none';
+        document.getElementById("CreationParameters").style.display = "none";
         document.getElementById("Output").style.display = "block";
-        var hPath: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText");
-        var hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
+        let hPath: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText");
+        let hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
         let projectName = (<HTMLInputElement>document.getElementById("ProjectName")).value;
-        let app: IntoCpsApp = IntoCpsApp.getInstance();
-        var script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
+        let script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
         let targetDir = Path.normalize(Path.join(this.directory, projectName));
 
-        const spawn = require('child_process').spawn;
-        var pythonPath = RTTester.pythonExecutable();
+        const spawn = require("child_process").spawn;
+        let pythonPath = RTTester.pythonExecutable();
         let args: string[] = [
             script,
             "--dir=" + targetDir,
@@ -195,18 +191,18 @@ export class CreateMCProjectController extends ViewController {
             "--skip-rttui",
             hPath.value
         ];
-        var env: any = process.env;
+        let env: any = process.env;
         env["RTTDIR"] = RTTester.rttInstallDir();
         const p = spawn(pythonPath, args, { env: env });
-        p.stdout.on('data', (data: string) => {
+        p.stdout.on("data", (data: string) => {
             hOutputText.textContent += data + "\n";
             hOutputText.scrollTop = hOutputText.scrollHeight;
         });
-        p.stderr.on('data', (data: string) => {
+        p.stderr.on("data", (data: string) => {
             hOutputText.textContent += data + "\n";
             hOutputText.scrollTop = hOutputText.scrollHeight;
         });
-        p.on('close', (code: number) => {
+        p.on("close", (code: number) => {
             document.getElementById("scriptRUN").style.display = "none";
             document.getElementById(code == 0 ? "scriptOK" : "scriptFAIL").style.display = "block";
         });
