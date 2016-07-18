@@ -98,17 +98,15 @@ function openView(htmlPath:string, callback?:(mainView:HTMLDivElement) => void |
     if (!closeView()) return;
 
     $(init.mainView).load(htmlPath, () => {
+        controller = null;
+
         if (callback) {
             let newController = callback(init.mainView);
 
             if (newController) {
                 controller = <IViewController>newController;
                 controller.initialize();
-            } else {
-                controller = null;
             }
-        } else {
-            controller = null;
         }
     });
 }
