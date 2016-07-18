@@ -8,8 +8,7 @@ import {LTLEditorController} from "./rttester/LTLEditor"
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import {BrowserController} from "./proj/projbrowserview";
 import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
-import {SourceDom} from "./sourceDom";
-import {IViewController} from "./iViewController";
+import {ViewController, IViewController} from "./iViewController";
 import * as CustomFs from "./custom-fs";
 import {IProject} from "./proj/IProject";
 import * as SystemUtil from "./SystemUtil";
@@ -88,29 +87,31 @@ let browserController: BrowserController = new BrowserController(menuHandler);
 let init = new InitializationController();
 let controller: IViewController;
 
-function openViewController(htmlPath: string, path: string, controllerPar: new (mainDiv: HTMLDivElement) => IViewController) {
-    window.ng2app.closeAll();
-
-    $(init.mainView).load(htmlPath, (event: JQueryEventObject) => {
-        controller = new controllerPar(init.mainView);
-        if (controller.initialize) {
-            controller.initialize(new SourceDom(path));
-        }
-    });
-}
-
-function openView(htmlPath:string, callback?:(event:JQueryEventObject) => void) {
-    window.ng2app.closeAll();
-
-    $(init.mainView).load(htmlPath, callback);
-}
-
-menuHandler.deInitialize = () => {
-    if (controller != null && controller.deInitialize)
+function closeView():boolean {
+    if (controller && controller.deInitialize)
         return controller.deInitialize();
     else
         return true;
-};
+}
+
+function openView(htmlPath:string, callback?:(mainView:HTMLDivElement) => void | IViewController) {
+    if (!closeView()) return;
+
+    $(init.mainView).load(htmlPath, () => {
+        if (callback) {
+            let newController = callback(init.mainView);
+
+            if (newController) {
+                controller = <IViewController>newController;
+                controller.initialize();
+            } else {
+                controller = null;
+            }
+        } else {
+            controller = null;
+        }
+    });
+}
 
 menuHandler.openCoeView = (path:string) => {
     IntoCpsApp.setTopName(path.split('\\').reverse()[1]);
@@ -125,34 +126,26 @@ menuHandler.openMultiModel = (path:string) => {
 };
 
 menuHandler.runRTTesterCommand = (commandSpec: any) => {
-    $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
+    openView("rttester/GenericModalCommand.html", () => {
         RTesterModalCommandWindow.initialize(commandSpec);
         (<any>$('#modalDialog')).modal({ keyboard: false, backdrop: false });
     });
 };
 
 menuHandler.createTDGProject = (path: string) => {
-    openView("rttester/CreateTDGProject.html", (event: JQueryEventObject) => {
-        controller = new CreateTDGProjectController(init.mainView, path);
-    });
+    openView("rttester/CreateTDGProject.html", view => new CreateTDGProjectController(view, path));
 };
 
 menuHandler.createMCProject = (path: string) => {
-    openView("rttester/CreateMCProject.html", (event: JQueryEventObject) => {
-        controller = new CreateMCProjectController(init.mainView, path);
-    });
+    openView("rttester/CreateMCProject.html", view => new CreateMCProjectController(view, path));
 };
 
 menuHandler.runTest = (path: string) => {
-    openView("rttester/RunTest.html", (event: JQueryEventObject) => {
-        controller = new RunTestController(init.mainView, path);
-    });
+    openView("rttester/RunTest.html", view => new RunTestController(view, path));
 };
 
 menuHandler.openLTLFile = (fileName: string) => {
-    $(init.mainView).load("rttester/LTLEditor.html", (event: JQueryEventObject) => {
-        controller = new LTLEditorController(init.mainView, fileName);
-    });
+    openView("rttester/LTLEditor.html", view => new LTLEditorController(view, fileName));
 };
 
 menuHandler.openSysMlExport = () => {
@@ -166,18 +159,18 @@ menuHandler.openFmu = () => {
 };
 
 menuHandler.openDseView = (path) => {
-    openViewController("dse/dse.html", path, DseController);
+    openView("dse/dse.html", view => new DseController(view));
 };
 
 menuHandler.createDse = (path) => {
-    openView("dse/dse.html", (event: JQueryEventObject) => {
-        // create empty DSE file and load it.
-        menuHandler.openDseView("")
+    // create empty DSE file and load it.
+    openView("dse/dse.html", () => {
+        menuHandler.openDseView("");
     });
 };
 
 menuHandler.createDsePlain = () => {
-    openView("dse/dse.html", (event: JQueryEventObject) => {
+    openView("dse/dse.html", () => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = "new";

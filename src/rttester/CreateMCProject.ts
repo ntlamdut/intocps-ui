@@ -1,6 +1,6 @@
 
 import {SourceDom} from "../sourceDom";
-import {IViewController} from "../iViewController";
+import {ViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp"
 import * as Settings from  "../settings/settings"
 import {SettingKeys} from "../settings/SettingKeys";
@@ -143,7 +143,7 @@ class Abstractions {
 
 
 
-export class CreateMCProjectController extends IViewController {
+export class CreateMCProjectController extends ViewController {
 
     directory: string;
     abstractions: Abstractions;

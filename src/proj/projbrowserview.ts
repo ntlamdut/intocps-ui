@@ -237,21 +237,24 @@ export class BrowserController {
             //Remove auto expansion on double click
             event.preventDefault();
             var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
-            // Only mark the item as selected if it opens in the main window.
-            if (item.opensInMainWindow) {
-                this.tree.select(item.id);
-            }
-            item.dblClickHandler(item);
-        });
-
-        this.tree.on("click", (event: JQueryEventObject) => {
             let allowClick = true;
             if (this.menuHandler.deInitialize != null)
             { allowClick = this.menuHandler.deInitialize(); }
             if (allowClick) {
                 var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
-                item.clickHandler(item);
+                // Only mark the item as selected if it opens in the main window.
+                if (item.opensInMainWindow) {
+                    this.tree.select(item.id);
+                }
+                item.dblClickHandler(item);
             }
+        });
+
+
+        this.tree.on("click", (event: JQueryEventObject) => {
+            event.preventDefault();
+            var item: ProjectBrowserItem = <ProjectBrowserItem>((<any>event).object);
+            item.clickHandler(item);
         });
 
         this.refreshProjectBrowser();

@@ -1,6 +1,6 @@
 
 import {SourceDom} from "../sourceDom";
-import {IViewController} from "../iViewController";
+import {ViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp"
 import * as Settings from  "../settings/settings"
 import {SettingKeys} from "../settings/SettingKeys";
@@ -74,7 +74,7 @@ class FMUAssignments {
     }
 }
 
-export class RunTestController extends IViewController {
+export class RunTestController extends ViewController {
 
     testCase: string;
     fmuAssignments: FMUAssignments = new FMUAssignments(this);
