@@ -53,6 +53,17 @@ export function uniqueGroupPropertyValidator(propertyName: string) {
     }
 }
 
+export function uniqueValidator(control: FormControl) {
+    var elements = control.value;
+
+    for(let i = 0; i < elements.length; i++) {
+        for(let j = i+1; j < elements.length; j++) {
+            if (elements[i] === elements[j])
+                return {notUnique: true};
+        }
+    }
+}
+
 export function lessThanValidator(selfName:string, otherName:string) {
     return (group: FormGroup) => {
         let self = group.find(selfName);

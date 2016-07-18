@@ -27,14 +27,20 @@ export class ZeroCrossingComponent {
 
     addPort() {
         this.constraint.ports.push(this.ports[0]);
-
-        let formControl = <FormControl> this.formGroup.find('ports');
-        formControl.updateValueAndValidity();
+        this.updatePortValidation();
     }
 
     removePort(port:InstanceScalarPair) {
         this.constraint.ports.splice(this.constraint.ports.indexOf(port), 1);
+        this.updatePortValidation();
+    }
 
+    onPortChange(output: InstanceScalarPair, index: number) {
+        this.constraint.ports[index] = output;
+        this.updatePortValidation();
+    }
+
+    updatePortValidation() {
         let formControl = <FormControl> this.formGroup.find('ports');
         formControl.updateValueAndValidity();
     }

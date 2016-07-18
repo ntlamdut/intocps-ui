@@ -6,7 +6,7 @@ import {WarningMessage} from "./Messages";
 import {FormArray, FormGroup, FormControl, Validators} from "@angular/forms";
 import {
     numberValidator, integerValidator, lengthValidator,
-    uniqueGroupPropertyValidator
+    uniqueGroupPropertyValidator, uniqueValidator
 } from "../angular2-app/shared/validators";
 
 export class CoSimulationConfig implements ISerializable {
@@ -188,7 +188,7 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
     toFormGroup() {
         return new FormGroup({
             id: new FormControl(this.id),
-            ports: new FormControl(this.ports, [lengthValidator(1, 2)]),
+            ports: new FormControl(this.ports, [lengthValidator(1, 2), uniqueValidator]),
             order: new FormControl(this.order),
             abstol: new FormControl(this.abstol, [numberValidator]),
             safety: new FormControl(this.safety, [numberValidator])
@@ -222,7 +222,7 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
     toFormGroup() {
         return new FormGroup({
             id: new FormControl(this.id),
-            ports: new FormControl(this.ports, [lengthValidator(1)]),
+            ports: new FormControl(this.ports, [lengthValidator(1), uniqueValidator]),
             abstol: new FormControl(this.abstol, [numberValidator]),
             reltol: new FormControl(this.reltol, [numberValidator]),
             safety: new FormControl(this.safety, [numberValidator]),
