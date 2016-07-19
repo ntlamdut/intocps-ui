@@ -5,7 +5,7 @@
             <p *ngIf="!editing" class="form-control-static">{{constraint.id}}</p>
             <input *ngIf="editing" [(ngModel)]="constraint.id" name="id" class="form-control">
             <div *ngIf="formGroup.hasError('required', 'id')" class="alert alert-danger">This field is required.</div>
-            <div *ngIf="formGroup._parent.hasError('notUnique') && formGroup._parent.errors.notUnique === constraint.id" class="alert alert-danger">IDs are required to be unique.</div>
+            <div *ngIf="formGroup._parent.hasError('notUnique') && formGroup._parent.errors.notUnique === constraint.id" class="alert alert-danger">ID is not unique.</div>
         </div>
     </div>
 
