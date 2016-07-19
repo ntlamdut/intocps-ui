@@ -11,6 +11,7 @@ import {ZeroCrossingComponent} from "./inputs/zero-crossing.component";
 import {BoundedDifferenceComponent} from "./inputs/bounded-difference.component";
 import {SamplingRateComponent} from "./inputs/sampling-rate.component";
 import {numberValidator, lessThanValidator} from "../shared/validators";
+import {NavigationService} from "../shared/navigation.service";
 
 @Component({
     selector: "coe-configuration",
@@ -61,8 +62,8 @@ export class CoeConfigurationComponent {
         SamplingRateConstraint
     ];
 
-    constructor(private zone:NgZone) {
-
+    constructor(private zone:NgZone, private navigationService: NavigationService) {
+        this.navigationService.registerComponent(this);
     }
 
     private parseConfig() {
@@ -104,6 +105,21 @@ export class CoeConfigurationComponent {
                     }, null, lessThanValidator('startTime', 'endTime'));
                 });
             }, error => this.parseError = error);
+    }
+
+    onNavigate(): boolean {
+        if (!this.editing)
+            return true;
+
+        if (confirm("Are you sure you want to quit?") ) {
+            if (confirm("Save your work before leaving?") ) {
+                this.onSubmit();
+            }
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     onAlgorithmChange(algorithm:ICoSimAlgorithm) {

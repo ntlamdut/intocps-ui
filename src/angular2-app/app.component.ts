@@ -8,6 +8,7 @@ import {CoSimulationConfig} from "../intocps-configurations/CoSimulationConfig";
 import IntoCpsApp from "../IntoCpsApp";
 import {MultiModelConfig} from "../intocps-configurations/MultiModelConfig";
 import {CoeSimulationService} from "./coe/coe-simulation.service";
+import {NavigationService} from "./shared/navigation.service";
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -27,7 +28,8 @@ declare let window: MyWindow;
     providers: [
         HTTP_PROVIDERS,
         FileSystemService,
-        SettingsService
+        SettingsService,
+        NavigationService
     ],
     template: `
         <mm-page *ngIf="page === 'multiModel'" [path]="path"></mm-page>
@@ -37,7 +39,8 @@ export class AppComponent implements OnInit {
     private page:string;
     private path:string;
 
-    constructor(private http:Http,
+    constructor(public navigationService:NavigationService,
+                private http:Http,
                 private settings:SettingsService,
                 private fileSystem:FileSystemService,
                 private zone:NgZone) {
