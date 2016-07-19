@@ -25,6 +25,8 @@ declare var window: MyWindow;
 
 import * as Menus from "./menus";
 import {provideForms, disableDeprecatedForms} from "@angular/forms";
+import {CoeViewController} from "./angular2-app/coe/CoeViewController";
+import {MmViewController} from "./angular2-app/mm/MmViewController";
 
 class InitializationController {
     // constants
@@ -88,39 +90,46 @@ let init = new InitializationController();
 let controller: IViewController;
 
 function closeView():boolean {
-    if (controller && controller.deInitialize)
-        return controller.deInitialize();
-    else
-        return true;
+    if (controller && controller.deInitialize) {
+        let canClose = controller.deInitialize();
+
+        if (canClose)
+            controller = null;
+
+        return canClose;
+    }
+
+    return true;
 }
 
 function openView(htmlPath:string, callback?:(mainView:HTMLDivElement) => void | IViewController) {
     if (!closeView()) return;
 
-    $(init.mainView).load(htmlPath, () => {
-        controller = null;
+    function onLoad() {
+        if (!callback) return;
 
-        if (callback) {
-            let newController = callback(init.mainView);
+        let newController = callback(init.mainView);
 
-            if (newController) {
-                controller = <IViewController>newController;
-                controller.initialize();
-            }
+        if (newController) {
+            controller = <IViewController>newController;
+            controller.initialize();
         }
-    });
+    }
+
+    if (htmlPath) {
+        $(init.mainView).load(htmlPath, () => onLoad());
+    } else {
+        $(init.mainView).empty();
+        onLoad();
+    }
 }
 
 menuHandler.openCoeView = (path:string) => {
-    IntoCpsApp.setTopName(path.split('\\').reverse()[1]);
-    $(init.mainView).empty();
-    window.ng2app.openCOE(path);
+    openView(null, view => new CoeViewController(view, path));
 };
 
 menuHandler.openMultiModel = (path:string) => {
-    IntoCpsApp.setTopName(path.split('\\').reverse()[1]);
-    $(init.mainView).empty();
-    window.ng2app.openMultiModel(path);
+    openView(null, view => new MmViewController(view, path));
 };
 
 menuHandler.runRTTesterCommand = (commandSpec: any) => {
