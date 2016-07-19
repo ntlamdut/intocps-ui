@@ -111,14 +111,13 @@ export class CoeConfigurationComponent {
         if (!this.editing)
             return true;
 
-        if (confirm("Are you sure you want to quit?") ) {
-            if (confirm("Save your work before leaving?") ) {
+        if (this.form.valid) {
+            if (confirm("Save your work before leaving?"))
                 this.onSubmit();
-            }
 
             return true;
         } else {
-            return false;
+            return confirm("The changes to the configuration are invalid and can not be saved. Continue anyway?");
         }
     }
 
