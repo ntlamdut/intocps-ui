@@ -1,8 +1,8 @@
 import {IntoCpsApp} from "../IntoCpsApp"
 import {SourceDom} from "../sourceDom"
-import {IViewController} from "../iViewController"
+import {ViewController} from "../iViewController"
 
-export class DseController extends IViewController {
+export class DseController extends ViewController {
 
     private doNotPressButton: HTMLButtonElement;
 

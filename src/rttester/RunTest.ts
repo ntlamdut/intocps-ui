@@ -1,10 +1,6 @@
 
-import {SourceDom} from "../sourceDom";
-import {IViewController} from "../iViewController";
-import {IntoCpsApp} from "../IntoCpsApp"
-import * as Settings from  "../settings/settings"
-import {SettingKeys} from "../settings/SettingKeys";
-import Path = require('path');
+import {ViewController} from "../iViewController";
+import {IntoCpsApp} from "../IntoCpsApp";
 import {RTTester} from "../rttester/RTTester";
 
 class FMUAssignment {
@@ -22,8 +18,8 @@ class FMUAssignment {
         this.assignments = assignments;
         this.instanceName = instanceName;
         this.simulationFMUPath = RTTester.simulationFMU(this.assignments.controller.testCase, this.componentName);
-        var self: FMUAssignment = this;
-        $('<div>').load("./rttester/RunTest/SUTSelection.html", function (event: JQueryEventObject) {
+        let self: FMUAssignment = this;
+        $("<div>").load("./rttester/RunTest/SUTSelection.html", function (event: JQueryEventObject) {
             self.hInstanceName = this.querySelector("#instanceName");
             self.hFMUPath = this.querySelector("#fmuPath");
             self.hBrowseButton = this.querySelector("#browseButton");
@@ -34,7 +30,7 @@ class FMUAssignment {
                 let remote = require("electron").remote;
                 let dialog = remote.dialog;
                 let dialogResult: string[] = dialog.showOpenDialog({
-                    filters: [{ name: 'FMU-Files', extensions: ['fmu'] }]
+                    filters: [{ name: "FMU-Files", extensions: ["fmu"] }]
                 });
                 if (dialogResult != undefined) {
                     self.hFMUPath.value = dialogResult[0];
@@ -74,7 +70,7 @@ class FMUAssignments {
     }
 }
 
-export class RunTestController extends IViewController {
+export class RunTestController extends ViewController {
 
     testCase: string;
     fmuAssignments: FMUAssignments = new FMUAssignments(this);

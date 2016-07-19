@@ -3,17 +3,14 @@
 ///<reference path="../../typings/browser/ambient/ace/index.d.ts"/>
 
 
-import {SourceDom} from "../sourceDom";
-import {IViewController} from "../iViewController";
-import {IntoCpsApp} from "../IntoCpsApp"
-import * as Settings from  "../settings/settings"
-import {SettingKeys} from "../settings/SettingKeys";
-import Path = require('path');
+import {ViewController} from "../iViewController";
+import {IntoCpsApp} from "../IntoCpsApp";
+import Path = require("path");
 import {RTTester} from "../rttester/RTTester";
 import fs = require("fs");
 
 
-export class LTLEditorController extends IViewController {
+export class LTLEditorController extends ViewController {
 
     fileName: string;
     json: any = {};
@@ -27,7 +24,7 @@ export class LTLEditorController extends IViewController {
         this.hBMCSteps = <HTMLInputElement>document.getElementById("BMCSteps");
         this.ltlEditor = ace.edit("ltlFormula");
         this.ltlEditor.$blockScrolling = Infinity;
-        var langTools: any = ace.require("ace/ext/language_tools");
+        let langTools: any = ace.require("ace/ext/language_tools");
         this.configureCompleter(langTools);
         this.load();
         document.getElementById("save").addEventListener("click", () => this.save());
@@ -35,7 +32,7 @@ export class LTLEditorController extends IViewController {
     }
 
     load() {
-        let data = fs.readFileSync(this.fileName, 'utf-8');
+        let data = fs.readFileSync(this.fileName, "utf-8");
         console.log("this.fileName=" + this.fileName);
         console.log("data=" + data);
         this.json = JSON.parse(data);
@@ -56,8 +53,8 @@ export class LTLEditorController extends IViewController {
 
 
     configureCompleter(langTools: any) {
-        let fs = require('fs');
-        let SQL = require('sql.js');
+        let fs = require("fs");
+        let SQL = require("sql.js");
         let dbFile = Path.join(RTTester.getProjectOfFile(this.fileName), "model", "model_dump.db");
         fs.readFile(dbFile, (err: any, filebuffer: any) => {
             if (err) throw err;
@@ -66,7 +63,7 @@ export class LTLEditorController extends IViewController {
             let completer: any = {
                 identifierRegexps: [/[a-zA-Z_0-9\.]/],
                 getCompletions: function (editor: any, session: any, pos: any, prefix: any, callback: any) {
-                    if (prefix.length === 0) { callback(null, []); return }
+                    if (prefix.length === 0) { callback(null, []); return; }
                     let completions: any = [];
 
                     let ltlOps: { [key: string]: string; } = {

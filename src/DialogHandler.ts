@@ -54,6 +54,8 @@ export default class DialogHandler {
 
         this.win = new BrowserWindow({ width: this.windowWidth, height: this.windowHeight, show: false });
 
+        if (this.win.setMenu) this.win.setMenu(null);
+
         // Open the DevTools.
         //win.webContents.openDevTools();
 

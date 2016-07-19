@@ -11,8 +11,7 @@ import {LTLEditorController} from "./rttester/LTLEditor"
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import {BrowserController} from "./proj/projbrowserview";
 import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
-import {SourceDom} from "./sourceDom";
-import {IViewController} from "./iViewController";
+import {ViewController, IViewController} from "./iViewController";
 import * as CustomFs from "./custom-fs";
 import {IProject} from "./proj/IProject";
 import * as SystemUtil from "./SystemUtil";
@@ -83,85 +82,86 @@ let browserController: BrowserController = new BrowserController(menuHandler);
 let init = new InitializationController();
 let controller: IViewController;
 
-function openViewController(htmlPath: string, path: string, controllerPar: new (mainDiv: HTMLDivElement) => IViewController) {
-    $(init.mainView).load(htmlPath, (event: JQueryEventObject) => {
-        controller = new controllerPar(init.mainView);
-        if (controller.initialize) {
-            controller.initialize(new SourceDom(path));
+function closeView():boolean {
+    if (controller && controller.deInitialize)
+        return controller.deInitialize();
+    else
+        return true;
+}
+
+function openView(htmlPath:string, callback?:(mainView:HTMLDivElement) => void | IViewController) {
+    if (!closeView()) return;
+
+    $(init.mainView).load(htmlPath, () => {
+        if (callback) {
+            let newController = callback(init.mainView);
+
+            if (newController) {
+                controller = <IViewController>newController;
+                controller.initialize();
+            } else {
+                controller = null;
+            }
+        } else {
+            controller = null;
         }
     });
 }
 
-menuHandler.deInitialize = () => {
-    if (controller != null && controller.deInitialize)
-    { return controller.deInitialize(); }
-    else
-    { return true; }
-
-}
-
 menuHandler.openCoeView = (path) => {
-    openViewController("coe/coe.html", path, CoeController);
+    openView("coe/coe.html", view => new CoeController(view, path));
 };
 
 menuHandler.openMultiModel = (path) => {
-    openViewController("multimodel/multimodel.html", path, MmController);
+    openView("multimodel/multimodel.html", view => new MmController(view, path));
 };
 
 menuHandler.runRTTesterCommand = (commandSpec: any) => {
-    $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
+    openView("rttester/GenericModalCommand.html", () => {
         RTesterModalCommandWindow.initialize(commandSpec);
         (<any>$('#modalDialog')).modal({ keyboard: false, backdrop: false });
     });
-}
+};
 
 menuHandler.createTDGProject = (path: string) => {
-    $(init.mainView).load("rttester/CreateTDGProject.html", (event: JQueryEventObject) => {
-        controller = new CreateTDGProjectController(init.mainView, path);
-    });
+    openView("rttester/CreateTDGProject.html", view => new CreateTDGProjectController(view, path));
 };
 
 menuHandler.createMCProject = (path: string) => {
-    $(init.mainView).load("rttester/CreateMCProject.html", (event: JQueryEventObject) => {
-        controller = new CreateMCProjectController(init.mainView, path);
-    });
+    openView("rttester/CreateMCProject.html", view => new CreateMCProjectController(view, path));
 };
 
 menuHandler.runTest = (path: string) => {
-    $(init.mainView).load("rttester/RunTest.html", (event: JQueryEventObject) => {
-        controller = new RunTestController(init.mainView, path);
-    });
+    openView("rttester/RunTest.html", view => new RunTestController(view, path));
 };
 
 menuHandler.openLTLFile = (fileName: string) => {
-    $(init.mainView).load("rttester/LTLEditor.html", (event: JQueryEventObject) => {
-        controller = new LTLEditorController(init.mainView, fileName);
-    });
+    openView("rttester/LTLEditor.html", view => new LTLEditorController(view, fileName));
 };
 
 menuHandler.openSysMlExport = () => {
-    $(init.mainView).load("sysmlexport/sysmlexport.html");
+    openView("sysmlexport/sysmlexport.html");
     IntoCpsApp.setTopName("SysML Export");
 };
 
 menuHandler.openFmu = () => {
-    $(init.mainView).load("fmus/fmus.html");
+    openView("fmus/fmus.html");
     IntoCpsApp.setTopName("FMUs");
 };
 
 menuHandler.openDseView = (path) => {
-    openViewController("dse/dse.html", path, DseController);
+    openView("dse/dse.html", view => new DseController(view));
 };
 
 menuHandler.createDse = (path) => {
-    $(init.mainView).load("dse/dse.html", (event: JQueryEventObject) => {
-        // create empty DSE file and load it.
-        menuHandler.openDseView("")
+    // create empty DSE file and load it.
+    openView("dse/dse.html", () => {
+        menuHandler.openDseView("");
     });
 };
 
 menuHandler.createDsePlain = () => {
-    $(init.mainView).load("dse/dse.html", (event: JQueryEventObject) => {
+    openView("dse/dse.html", () => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = "new";
@@ -174,7 +174,7 @@ menuHandler.createDsePlain = () => {
 };
 
 menuHandler.createMultiModel = (path) => {
-    $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
+    openView("multimodel/multimodel.html", () => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = Path.basename(path, ".sysml.json");
@@ -187,7 +187,7 @@ menuHandler.createMultiModel = (path) => {
 };
 
 menuHandler.createMultiModelPlain = () => {
-    $(init.mainView).load("multimodel/multimodel.html", (event: JQueryEventObject) => {
+    openView("multimodel/multimodel.html", () => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let name = "new";
@@ -200,7 +200,7 @@ menuHandler.createMultiModelPlain = () => {
 };
 
 menuHandler.createCoSimConfiguration = (path) => {
-    $(init.mainView).load("coe/coe.html", function (event: JQueryEventObject) {
+    openView("coe/coe.html", () => {
         let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
         if (project != null) {
             let coePath: string = project.createCoSimConfig(path + "", "co-sim-" + Math.floor(Math.random() * 100), null).toString();
