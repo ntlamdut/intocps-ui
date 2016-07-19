@@ -195,7 +195,7 @@ menuHandler.createMultiModel = (path) => {
     if (project) {
         let name = Path.basename(path, ".sysml.json");
         let content = fs.readFileSync(path, "UTF-8");
-        let mmPath = project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
+        let mmPath = <string> project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
         menuHandler.openMultiModel(mmPath);
     }
 };
@@ -204,7 +204,7 @@ menuHandler.createMultiModelPlain = () => {
     let project = IntoCpsApp.getInstance().getActiveProject();
 
     if (project) {
-        let mmPath = project.createMultiModel(`mm-new (${Math.floor(Math.random() * 100)})`, "{}");
+        let mmPath = <string> project.createMultiModel(`mm-new (${Math.floor(Math.random() * 100)})`, "{}");
         menuHandler.openMultiModel(mmPath);
     }
 };
