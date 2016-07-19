@@ -64,6 +64,15 @@ export function uniqueValidator(control: FormControl) {
     }
 }
 
+export function uniqueControlValidator(control: FormArray) {
+    for(let i = 0; i < control.length; i++) {
+        for(let j = i+1; j < control.length; j++) {
+            if (control.at(i).value === control.at(j).value)
+                return {notUnique: control.at(i).value};
+        }
+    }
+}
+
 export function lessThanValidator(selfName:string, otherName:string) {
     return (group: FormGroup) => {
         let self = group.find(selfName);

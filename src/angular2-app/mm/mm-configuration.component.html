@@ -1,4 +1,12 @@
-<form *ngIf="config" (ngSubmit)="onSubmit()" #configForm="ngForm">
+<div *ngIf="parseError">
+    <div class="alert alert-danger alert-big">
+        <p>Error: Could not parse config.</p>
+        <p>Message: {{parseError}}</p>
+        <p>Path: {{path}}</p>
+    </div>
+</div>
+
+<form *ngIf="config" [formGroup]="form" (ngSubmit)="onSubmit()" #configForm="ngForm">
     <h4>FMUs <button type="button" (click)="config.addFmu()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h4>
 
     <div class="row">
@@ -8,7 +16,10 @@
 
     <div class="row" *ngFor="let fmu of config.fmus; let i=index">
         <div class="col-md-3 form-group">
-            <input name="fmu{{i}}" [(ngModel)]="fmu.name" class="form-control input-sm">
+            <input [formControl]="form.find('fmus').at(i)" [ngModel]="getFmuName(fmu)" (ngModelChange)="setFmuName(fmu, $event)" class="form-control input-fixed-size input-sm">
+            <div *ngIf="form.find('fmus').at(i).hasError('required')" class="alert alert-danger">This field is required.</div>
+            <div *ngIf="form.find('fmus').at(i).hasError('pattern')" class="alert alert-danger">"{" and "}" are not allowed.</div>
+            <div *ngIf="form.hasError('notUnique', 'fmus') && form.find('fmus').errors.notUnique == getFmuName(fmu)" class="alert alert-danger">Key is not unique.</div>
         </div>
         <div class="col-md-8 form-group">
             <file-browser [basePath]="config.fmusRootPath" [path]="fmu.path" (pathChange)="fmu.updatePath($event)"></file-browser>
@@ -38,7 +49,7 @@
 
             <div *ngIf="selectedInstanceFmu">
                 <div *ngFor="let instance of getInstances(selectedInstanceFmu); let i=index" class="input-group">
-                    <input name="instance{{i}}" [(ngModel)]="instance.name" class="form-control input-sm">
+                    <input [formControl]="form.find('instances').at(i)" [(ngModel)]="instance.name" class="form-control input-sm">
                     <span class="input-group-btn">
                         <button type="button" (click)="config.removeInstance(instance)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
                     </span>

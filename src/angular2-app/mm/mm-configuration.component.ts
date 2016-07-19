@@ -7,11 +7,17 @@ import {
 } from "../coe/models/Fmu";
 import {FileBrowserComponent} from "./inputs/file-browser.component";
 import {IProject} from "../../proj/IProject";
+import {FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators} from "@angular/forms";
+import {uniqueValidator, uniqueControlValidator} from "../shared/validators";
 
 @Component({
     selector: "mm-configuration",
     templateUrl: "./angular2-app/mm/mm-configuration.component.html",
-    directives: [FileBrowserComponent]
+    directives: [
+        FORM_DIRECTIVES,
+        REACTIVE_FORM_DIRECTIVES,
+        FileBrowserComponent
+    ]
 })
 export class MmConfigurationComponent {
     private _path:string;
@@ -26,6 +32,9 @@ export class MmConfigurationComponent {
     get path():string {
         return this._path;
     }
+
+    form: FormGroup;
+    parseError: string = null;
 
     private config:MultiModelConfig;
 
@@ -46,11 +55,32 @@ export class MmConfigurationComponent {
 
         MultiModelConfig
             .parse(this.path, project.getFmusPath())
-            .then(config => this.zone.run(() => this.config = config));
+            .then(config => {
+                this.zone.run(() => {
+                    this.parseError = null;
+
+                    this.config = config;
+
+                    // Create a form group for validation
+                    this.form = new FormGroup({
+                        fmus: new FormArray(this.config.fmus.map(fmu => new FormControl(fmu.name, [Validators.required, Validators.pattern("[^{^}]*")])), uniqueControlValidator),
+                        instances: new FormArray(this.config.fmus.map(fmu => new FormArray(this.getInstances(fmu).map(instance => new FormControl(instance.name))))),
+
+                    });
+                });
+            }, error => this.zone.run(() => this.parseError = error));
     }
 
     onSubmit() {
         this.config.save();
+    }
+
+    getFmuName(fmu: Fmu): string {
+        return fmu.name.substring(1, fmu.name.length -1);
+    }
+
+    setFmuName(fmu: Fmu, name: string) {
+        fmu.name = `{${name}}`;
     }
 
     getInstances(fmu:Fmu) {
