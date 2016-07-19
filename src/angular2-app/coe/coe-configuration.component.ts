@@ -104,7 +104,7 @@ export class CoeConfigurationComponent {
                         algorithm: this.algorithmFormGroups.get(this.config.algorithm)
                     }, null, lessThanValidator('startTime', 'endTime'));
                 });
-            }, error => this.parseError = error);
+            }, error => this.zone.run(() => this.parseError = error));
     }
 
     onNavigate(): boolean {
