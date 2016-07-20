@@ -160,7 +160,7 @@
                     <div class="col-md-10">
                         <p *ngIf="!editing" class="form-control-static">{{initialValue.value}}</p>
                         <div *ngIf="editing" class="input-group">
-                            <input [ngModel]="initialValue.value" (ngModelChange)="setParameter(initialValue.scalarVariable, $event)" class="form-control input-sm">
+                            <input [value]="initialValue.value" (change)="setParameter(initialValue.scalarVariable, $event.target.value)" class="form-control input-sm">
                             <span class="input-group-btn">
                                 <button type="button" (click)="removeParameter(initialValue.scalarVariable)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
                             </span>
