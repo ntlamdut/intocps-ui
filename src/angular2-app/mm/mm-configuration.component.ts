@@ -1,4 +1,4 @@
-import {Component, Input, NgZone} from "@angular/core";
+import {Component, Input, NgZone, Output, EventEmitter} from "@angular/core";
 import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
@@ -8,7 +8,7 @@ import {
 import {FileBrowserComponent} from "./inputs/file-browser.component";
 import {IProject} from "../../proj/IProject";
 import {FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators} from "@angular/forms";
-import {uniqueValidator, uniqueControlValidator} from "../shared/validators";
+import {uniqueControlValidator} from "../shared/validators";
 
 @Component({
     selector: "mm-configuration",
@@ -33,7 +33,11 @@ export class MmConfigurationComponent {
         return this._path;
     }
 
+    @Output()
+    change = new EventEmitter<string>();
+
     form: FormGroup;
+    editing: boolean = false;
     parseError: string = null;
 
     private config:MultiModelConfig;
@@ -63,7 +67,7 @@ export class MmConfigurationComponent {
 
                     // Create a form group for validation
                     this.form = new FormGroup({
-                        fmus: new FormArray(this.config.fmus.map(fmu => new FormControl(fmu.name, [Validators.required, Validators.pattern("[^{^}]*")])), uniqueControlValidator),
+                        fmus: new FormArray(this.config.fmus.map(fmu => new FormControl(this.getFmuName(fmu), [Validators.required, Validators.pattern("[^{^}]*")])), uniqueControlValidator),
                         instances: new FormArray(this.config.fmus.map(fmu => new FormArray(this.getInstances(fmu).map(instance => new FormControl(instance.name, [Validators.required, Validators.pattern("[^\.]*")])), uniqueControlValidator)))
                     });
                 });
@@ -71,7 +75,12 @@ export class MmConfigurationComponent {
     }
 
     onSubmit() {
-        this.config.save();
+        if (!this.editing) return;
+
+        this.config.save()
+            .then(() => this.change.emit(this.path));
+
+        this.editing = false;
     }
 
     addFmu() {

@@ -7,7 +7,7 @@
 </div>
 
 <form *ngIf="config" [formGroup]="form" (ngSubmit)="onSubmit()" #configForm="ngForm">
-    <h4>FMUs <button type="button" (click)="addFmu()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h4>
+    <h4>FMUs <button *ngIf="editing" type="button" (click)="addFmu()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h4>
 
     <div class="row">
         <div class="col-md-3"><label>Keys</label></div>
@@ -16,16 +16,18 @@
 
     <div class="row" formArrayName="fmus" *ngFor="let fmu of config.fmus; let i=index">
         <div class="col-md-3 form-group">
-            <input [formControlName]="i" [ngModel]="getFmuName(fmu)" (ngModelChange)="setFmuName(fmu, $event)" class="form-control input-fixed-size input-sm">
+            <p *ngIf="!editing" class="form-control-static">{{getFmuName(fmu)}}</p>
+            <input *ngIf="editing" [formControlName]="i" [ngModel]="getFmuName(fmu)" (ngModelChange)="setFmuName(fmu, $event)" class="form-control input-fixed-size input-sm">
             <div *ngIf="form.find('fmus').at(i).hasError('required')" class="alert alert-danger">This field is required.</div>
             <div *ngIf="form.find('fmus').at(i).hasError('pattern')" class="alert alert-danger">"{" and "}" are not allowed.</div>
             <div *ngIf="form.hasError('notUnique', 'fmus') && form.find('fmus').errors.notUnique == getFmuName(fmu)" class="alert alert-danger">Key is not unique.</div>
         </div>
         <div class="col-md-8 form-group">
-            <file-browser [basePath]="config.fmusRootPath" [path]="fmu.path" (pathChange)="fmu.updatePath($event)"></file-browser>
+            <p *ngIf="!editing" class="form-control-static">{{fmu.path.replace(config.fmusRootPath, '').substring(1)}}</p>
+            <file-browser  *ngIf="editing" [basePath]="config.fmusRootPath" [path]="fmu.path" (pathChange)="fmu.updatePath($event)"></file-browser>
         </div>
         <div class="col-md-1 form-group">
-            <button type="button" (click)="removeFmu(fmu)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+            <button *ngIf="editing" type="button" (click)="removeFmu(fmu)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
         </div>
     </div>
 
@@ -45,15 +47,16 @@
             </ul>
         </div>
         <div class="col-md-6">
-            <label>Instances <button type="button" [disabled]="!selectedInstanceFmu" (click)="addInstance(selectedInstanceFmu)" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></label>
+            <label>Instances <button *ngIf="editing" type="button" [disabled]="!selectedInstanceFmu" (click)="addInstance(selectedInstanceFmu)" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></label>
 
             <div *ngIf="selectedInstanceFmu">
                 <div *ngFor="let instance of getInstances(selectedInstanceFmu); let i=index">
-                    <div class="input-group">
+                    <p *ngIf="!editing" class="form-control-static">{{instance.name}}</p>
+                    <div *ngIf="editing" class="input-group">
                         <input [formControl]="getInstanceFormControl(selectedInstanceFmu, i)" [(ngModel)]="instance.name" class="form-control input-sm">
                         <span class="input-group-btn">
-                        <button type="button" (click)="removeInstance(instance)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
-                    </span>
+                            <button type="button" (click)="removeInstance(instance)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+                        </span>
                     </div>
                     <div *ngIf="getInstanceFormControl(selectedInstanceFmu, i).hasError('required')" class="alert alert-danger">This field is required.</div>
                     <div *ngIf="getInstanceFormControl(selectedInstanceFmu, i).hasError('pattern')" class="alert alert-danger">"." is not allowed.</div>
@@ -107,6 +110,7 @@
             <ul *ngIf="selectedInputInstance" class="list-group">
                 <label *ngFor="let input of getInputs()" class="list-group-item">
                     <input type="checkbox"
+                           [disabled]="!editing"
                            [checked]="isInputConnected(input)"
                            (change)="onConnectionChange($event.target.checked, input)">
                     {{input.name}}</label>
@@ -136,7 +140,7 @@
                 </div>
                 <div  *ngIf="selectedParameterInstance" class="input-group col-md-6">
                     <div *ngIf="selectedParameterInstance" class="input-group">
-                        <select class="form-control input-sm" [(ngModel)]="newParameter" name="parameterVariable">
+                        <select class="form-control input-sm" [(ngModel)]="newParameter" [ngModelOptions]="{standalone: true}">
                             <option *ngFor="let parameter of getParameters(); let i=index" [ngValue]="parameter">{{parameter.name}}</option>
                         </select>
                         <span class="input-group-btn">
@@ -151,13 +155,16 @@
             <div *ngIf="selectedParameterInstance">
                 <div *ngFor="let initialValue of getInitialValues(); let i=index" class="row">
                     <div class="col-md-2">
-                        {{initialValue.scalarVariable.name}}
+                        <p class="form-control-static">{{initialValue.scalarVariable.name}}</p>
                     </div>
-                    <div class="input-group col-md-10">
-                        <input [value]="initialValue.value" (change)="setParameter(initialValue.scalarVariable, $event.target.value)" class="form-control input-sm">
-                        <span class="input-group-btn">
-                            <button type="button" (click)="removeParameter(initialValue.scalarVariable)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
-                        </span>
+                    <div class="col-md-10">
+                        <p *ngIf="!editing" class="form-control-static">{{initialValue.value}}</p>
+                        <div *ngIf="editing" class="input-group">
+                            <input [ngModel]="initialValue.value" (ngModelChange)="setParameter(initialValue.scalarVariable, $event)" class="form-control input-sm">
+                            <span class="input-group-btn">
+                                <button type="button" (click)="removeParameter(initialValue.scalarVariable)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -166,7 +173,11 @@
 
     <hr>
 
-    <button class="btn btn-default" [disabled]="!configForm.form.valid">
+
+    <button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+    </button>
+    <button *ngIf="editing" class="btn btn-default" [disabled]="!configForm.form.valid">
         <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
     </button>
 </form>
