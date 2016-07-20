@@ -3,6 +3,7 @@ import {ViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp";
 import Path = require("path");
 import {RTTester} from "../rttester/RTTester";
+import {CTAbstractionsView} from "./CTAbstractions";
 
 
 class AbstractionSelectorMackop {
@@ -144,12 +145,14 @@ export class CreateMCProjectController extends ViewController {
 
     directory: string;
     abstractions: Abstractions;
+    hPath: HTMLInputElement;
 
 
     constructor(protected viewDiv: HTMLDivElement, directory: string) {
         super(viewDiv);
         this.directory = directory;
         IntoCpsApp.setTopName("RT-Tester Project");
+        this.hPath = <HTMLInputElement>document.getElementById("XMIModelPathText");
     };
 
 
@@ -168,6 +171,8 @@ export class CreateMCProjectController extends ViewController {
 
     loadXMIFile() {
         document.getElementById("settings").style.display = "block";
+        new CTAbstractionsView(<HTMLDivElement>document.getElementById("AbstractionsTreeDiv"),
+            this.hPath.value);
         this.abstractions = new Abstractions(this);
     }
 
@@ -175,7 +180,6 @@ export class CreateMCProjectController extends ViewController {
     createProject(): void {
         document.getElementById("CreationParameters").style.display = "none";
         document.getElementById("Output").style.display = "block";
-        let hPath: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText");
         let hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
         let projectName = (<HTMLInputElement>document.getElementById("ProjectName")).value;
         let script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
@@ -189,7 +193,7 @@ export class CreateMCProjectController extends ViewController {
             "--skip-tests",
             "--skip-configure",
             "--skip-rttui",
-            hPath.value
+            this.hPath.value
         ];
         let env: any = process.env;
         env["RTTDIR"] = RTTester.rttInstallDir();
