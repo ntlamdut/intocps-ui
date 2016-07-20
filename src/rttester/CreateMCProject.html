@@ -1,162 +1,39 @@
 <!DOCTYPE html>
-
-<script src="resources/w2ui-1.5/w2ui.min.js"></script>
-
-<div id="CreationParameters">
-    <div align="right">
-        <h5><i>(This is only a mockup)</i></h5>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h1 class="panel-title">Create Model Checking Project</h1>
     </div>
-
-    <div>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h1 class="panel-title">Select XMI Model File</h1>
-            </div>
-            <div class="panel-body">
-                <form class="form-horizontal">
-                    <div class="form-group">
-                        <label for="ProjectName" class="col-sm-2 control-label">Project Name:</label>
-                        <input type="text" class="col-sm-9" id="ProjectName">
-                    </div>
-                    <div class="form-group">
-                        <label for="XMIPathSelector" class="col-sm-2 control-label">XMI Model path:</label>
-                        <div id="XMIPathSelector" class="input-group col-sm-9">
-                            <input type="text" class="form-control input-sm" id="XMIModelPathText">
-                            <span class="input-group-btn">
+    <div class="panel-body">
+        <div id="CreationParameters">
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label for="ProjectName" class="col-sm-2 control-label">Project Name:</label>
+                    <input type="text" class="col-sm-9" id="ProjectName">
+                </div>
+                <div class="form-group">
+                    <label for="XMIPathSelector" class="col-sm-2 control-label">XMI Model path:</label>
+                    <div id="XMIPathSelector" class="input-group col-sm-9">
+                        <input type="text" class="form-control input-sm" id="XMIModelPathText">
+                        <span class="input-group-btn">
                             <button type="button" class="btn btn-default btn-sm" onclick="controller.xmiModelBrowser()">
                                <span class="glyphicon glyphicon-file"></span> Browse
-                            </button>
-                            </span>
-                        </div>
-                    </div>
-                </form>
-                <button type="button" class="btn btn-default btn-sm" onclick="controller.loadXMIFile()">
-                  <span class="glyphicon glyphicon-ok"></span> Load XMI File
-            </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="AbstractionsTreeDiv" style="height: 300px; width: 200px;">
-    </div>
-
-    <div id="settings" style="display: none">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h1 class="panel-title">Specify Abstractions</h1>
-            </div>
-            <div class="panel-body">
-                <div id="components" class="panel panel-default">
-                    <div class="panel-heading">
-                        <h1 class="panel-title">Components</h1>
-                    </div>
-                    <div class="panel-body">
-                        <ul class="list-group" id="componentList"></ul>
+                        </button>
+                        </span>
                     </div>
                 </div>
-                <div id="outputs"></div>
-
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h1 id="outputHeading" class="panel-title">Output Variables of "Component 3"</h1>
-                    </div>
-                    <div class="panel-body">
-                        <ul class="list-group" id="outputList"></ul>
-                    </div>
-                </div>
-
-                <div id="abstractions" class="panel panel-default">
-                    <div class="panel-heading">
-                        <h1 id="abstractionHeader" class="panel-title">Abstraction for "Variable 1"</h1>
-                    </div>
-                    <div class="panel-body">
-                        <div id="abstractionDiv" class="panel-group" role="tablist" aria-multiselectable="true">
-                            <div class="panel panel-default">
-                                <a class="list-group-item" role="tab" id="headingAbstractionNone" data-toggle="collapse" href="#collapseAbstractionNone"
-                                    aria-expanded="false" aria-controls="collapseAbstractionNone">
-                                        No Abstraction
-                                </a>
-                            </div>
-                            <div class="panel panel-default">
-                                <a class="collapsed list-group-item" role="tab" id="headingAbstractionRange" data-toggle="collapse" href="#collapseAbstractionRange"
-                                    aria-expanded="false" aria-controls="collapseAbstractionRange">
-                                        Range Based Abstraction
-                                </a>
-                                <div id="collapseAbstractionRange" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingAbstractionRange">
-                                    <div class="panel-body">
-                                        <form class="form-horizontal">
-                                            <div class="form-group">
-                                                <label for="upperBound" class="col-sm-2 control-label">Upper Bound:</label>
-                                                <input type="number" class="col-sm-9" id="upperBound">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="lowerBound" class="col-sm-2 control-label">Lower Bound:</label>
-                                                <input type="number" class="col-sm-9" id="lowerBound">
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="panel panel-default">
-                                <a class="collapsed list-group-item" role="tab" id="headingAbstractionGradient" data-toggle="collapse" href="#collapseAbstractionGradient"
-                                    aria-expanded="false" aria-controls="collapseAbstractionGradient">
-                                        Gradient Based Abstraction
-                                </a>
-                                <div id="collapseAbstractionGradient" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingAbstractionGradient">
-                                    <div class="panel-body">
-                                        <form class="form-horizontal">
-                                            <div class="form-group">
-                                                <label for="Gradient" class="col-sm-2 control-label">Gradient:</label>
-                                                <input type="number" step="0.1" class="col-sm-9" id="gradient">
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="panel panel-default">
-                                <a class="collapsed list-group-item" role="tab" id="headingAbstractionSimulation" data-toggle="collapse" href="#collapseAbstractionSimulation"
-                                    aria-expanded="false" aria-controls="collapseAbstractionSimulation">
-                                        Simulation Based Abstraction
-                                </a>
-                                <div id="collapseAbstractionSimulation" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingAbstractionSimulation">
-                                    <div class="panel-body">
-                                        <form class="form-horizontal">
-                                            <div class="form-group">
-                                                <label for="simulationData" class="col-sm-2 control-label">Trace file:</label>
-                                                <div id="simulationData" class="input-group col-sm-9">
-                                                    <input type="text" class="form-control input-sm">
-                                                    <span class="input-group-btn">
-                                                    <button type="button" class="btn btn-default btn-sm">
-                                                        <span class="glyphicon glyphicon-file"></span>Browse
-                                                    </button>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            </form>
+            <button type="button" class="btn btn-default btn-sm" onclick="controller.createProject()">
+                    <span class="glyphicon glyphicon-ok"></span> Create
+                </button>
+        </div>
+        <div id="Output" style="display: none;">
+            <div for="OutputText">
+                <label id="scriptRUN"><span class="glyphicon glyphicon-time"></span>&nbsp;Creating Project...</label>
+                <label id="scriptOK" style="display: none;"><span class="glyphicon glyphicon-ok"></span>&nbsp;Creation successful</label>
+                <label id="scriptFAIL" style="display: none;"><span class="glyphicon glyphicon-remove"></span>&nbsp;Creation failed</label>
             </div>
+            <textarea id="OutputText" style="width: 100%; height: 500px;" readonly="readonly" />
         </div>
-        <button type="button" class="btn btn-default btn-sm" onclick="controller.createProject()">
-        <span class="glyphicon glyphicon-ok"></span> Create
-     </button>
-    </div>
 
-</div>
-
-
-<div id="Output" style="display: none;" class="panel panel-default">
-    <div class="panel-body">
-        <div for="OutputText">
-            <label id="scriptRUN"><span class="glyphicon glyphicon-time"></span>&nbsp;Creating Project...</label>
-            <label id="scriptOK" style="display: none;"><span class="glyphicon glyphicon-ok"></span>&nbsp;Creation successful</label>
-            <label id="scriptFAIL" style="display: none;"><span class="glyphicon glyphicon-remove"></span>&nbsp;Creation failed</label>
-        </div>
-        <textarea id="OutputText" style="width: 100%; height: 500px;" readonly="readonly" />
     </div>
 </div>
