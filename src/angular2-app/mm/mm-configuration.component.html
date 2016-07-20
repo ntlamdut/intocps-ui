@@ -138,16 +138,16 @@
                 <div class="col-md-6">
                     <h5><label>Parameters</label></h5>
                 </div>
-                <div  *ngIf="selectedParameterInstance" class="input-group col-md-6">
-                    <div *ngIf="selectedParameterInstance" class="input-group">
+                <div  *ngIf="selectedParameterInstance && editing" class="col-md-6">
+                    <div class="input-group">
                         <select class="form-control input-sm" [(ngModel)]="newParameter" [ngModelOptions]="{standalone: true}">
                             <option *ngFor="let parameter of getParameters(); let i=index" [ngValue]="parameter">{{parameter.name}}</option>
                         </select>
                         <span class="input-group-btn">
-                        <button type="button" (click)="addParameter()" class="btn btn-default btn-sm">
-                            <span class="glyphicon glyphicon-plus"></span> Add
-                        </button>
-                    </span>
+                            <button type="button" (click)="addParameter()" class="btn btn-default btn-sm">
+                                <span class="glyphicon glyphicon-plus"></span> Add
+                            </button>
+                        </span>
                     </div>
                 </div>
             </div>
