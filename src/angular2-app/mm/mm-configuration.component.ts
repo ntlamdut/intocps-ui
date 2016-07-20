@@ -9,6 +9,7 @@ import {FileBrowserComponent} from "./inputs/file-browser.component";
 import {IProject} from "../../proj/IProject";
 import {FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators} from "@angular/forms";
 import {uniqueControlValidator} from "../shared/validators";
+import {NavigationService} from "../shared/navigation.service";
 
 @Component({
     selector: "mm-configuration",
@@ -50,8 +51,8 @@ export class MmConfigurationComponent {
 
     private newParameter:ScalarVariable;
 
-    constructor(private zone:NgZone) {
-
+    constructor(private zone:NgZone, private navigationService: NavigationService) {
+        this.navigationService.registerComponent(this);
     }
 
     parseConfig() {
@@ -72,6 +73,20 @@ export class MmConfigurationComponent {
                     });
                 });
             }, error => this.zone.run(() => this.parseError = error));
+    }
+
+    onNavigate(): boolean {
+        if (!this.editing)
+            return true;
+
+        if (this.form.valid) {
+            if (confirm("Save your work before leaving?"))
+                this.onSubmit();
+
+            return true;
+        } else {
+            return confirm("The changes to the configuration are invalid and can not be saved. Continue anyway?");
+        }
     }
 
     onSubmit() {
