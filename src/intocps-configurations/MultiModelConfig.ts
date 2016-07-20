@@ -92,7 +92,10 @@ export class MultiModelConfig implements ISerializable {
     }
 
     public addFmu() {
-        this.fmus.push(new Fmu());
+        let fmu = new Fmu();
+        this.fmus.push(fmu);
+
+        return fmu;
     }
 
     public removeFmu(fmu: Fmu) {
@@ -104,10 +107,10 @@ export class MultiModelConfig implements ISerializable {
     }
 
     public addInstance(fmu:Fmu, name?:string) {
-        if (!name)
-            name = `${fmu.name.replace(/[{}]/g, "")}Instance`;
+        let instance = new Instance(fmu, name || `${fmu.name.replace(/[{}]/g, "")}Instance`);
+        this.fmuInstances.push(instance);
 
-        this.fmuInstances.push(new Instance(fmu, name));
+        return instance;
     }
 
     public removeInstance(instance: Instance) {

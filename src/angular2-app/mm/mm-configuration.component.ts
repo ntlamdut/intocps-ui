@@ -99,13 +99,13 @@ export class MmConfigurationComponent {
     }
 
     addFmu() {
-        this.config.addFmu();
+        let fmu = this.config.addFmu();
 
         let formArray = <FormArray> this.form.find('fmus');
         let fmuArray = <FormArray> this.form.find('instances');
 
         fmuArray.push(new FormArray([], uniqueControlValidator));
-        formArray.push(new FormControl(null, [Validators.required, Validators.pattern("[^{^}]*")]));
+        formArray.push(new FormControl(this.getFmuName(fmu), [Validators.required, Validators.pattern("[^{^}]*")]));
     }
 
     removeFmu(fmu: Fmu) {
@@ -125,13 +125,13 @@ export class MmConfigurationComponent {
     }
 
     addInstance(fmu: Fmu) {
-        this.config.addInstance(fmu);
+        let instance = this.config.addInstance(fmu);
 
         let fmuIndex = this.config.fmus.indexOf(fmu);
         let fmuArray = <FormArray> this.form.find('instances');
         let instanceArray = <FormArray> fmuArray.controls[fmuIndex];
 
-        instanceArray.push(new FormControl(null, [Validators.required, Validators.pattern("[^\.]*")]));
+        instanceArray.push(new FormControl(instance.name, [Validators.required, Validators.pattern("[^\.]*")]));
     }
 
     removeInstance(instance: Instance) {

@@ -14,17 +14,17 @@
         <div class="col-md-8"><label>Paths</label></div>
     </div>
 
-    <div class="row" formArrayName="fmus" *ngFor="let fmu of config.fmus; let i=index">
+    <div class="row" *ngFor="let fmu of config.fmus; let i=index">
         <div class="col-md-3 form-group">
             <p *ngIf="!editing" class="form-control-static">{{getFmuName(fmu)}}</p>
-            <input *ngIf="editing" [formControlName]="i" [ngModel]="getFmuName(fmu)" (ngModelChange)="setFmuName(fmu, $event)" class="form-control input-fixed-size input-sm">
+            <input *ngIf="editing" [formControl]="form.find('fmus').at(i)" [ngModel]="getFmuName(fmu)" (ngModelChange)="setFmuName(fmu, $event)" class="form-control input-fixed-size input-sm">
             <div *ngIf="form.find('fmus').at(i).hasError('required')" class="alert alert-danger">This field is required.</div>
             <div *ngIf="form.find('fmus').at(i).hasError('pattern')" class="alert alert-danger">"{" and "}" are not allowed.</div>
             <div *ngIf="form.hasError('notUnique', 'fmus') && form.find('fmus').errors.notUnique == getFmuName(fmu)" class="alert alert-danger">Key is not unique.</div>
         </div>
         <div class="col-md-8 form-group">
             <p *ngIf="!editing" class="form-control-static">{{fmu.path.replace(config.fmusRootPath, '').substring(1)}}</p>
-            <file-browser  *ngIf="editing" [basePath]="config.fmusRootPath" [path]="fmu.path" (pathChange)="fmu.updatePath($event)"></file-browser>
+            <file-browser *ngIf="editing" [basePath]="config.fmusRootPath" [path]="fmu.path" (pathChange)="fmu.updatePath($event)"></file-browser>
         </div>
         <div class="col-md-1 form-group">
             <button *ngIf="editing" type="button" (click)="removeFmu(fmu)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
@@ -172,7 +172,6 @@
     </div>
 
     <hr>
-
 
     <button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
