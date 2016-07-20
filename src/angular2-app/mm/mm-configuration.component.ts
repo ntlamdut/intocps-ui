@@ -64,8 +64,7 @@ export class MmConfigurationComponent {
                     // Create a form group for validation
                     this.form = new FormGroup({
                         fmus: new FormArray(this.config.fmus.map(fmu => new FormControl(fmu.name, [Validators.required, Validators.pattern("[^{^}]*")])), uniqueControlValidator),
-                        instances: new FormArray(this.config.fmus.map(fmu => new FormArray(this.getInstances(fmu).map(instance => new FormControl(instance.name))))),
-
+                        instances: new FormArray(this.config.fmus.map(fmu => new FormArray(this.getInstances(fmu).map(instance => new FormControl(instance.name, [Validators.required, Validators.pattern("[^\.]*")])), uniqueControlValidator)))
                     });
                 });
             }, error => this.zone.run(() => this.parseError = error));
@@ -73,6 +72,24 @@ export class MmConfigurationComponent {
 
     onSubmit() {
         this.config.save();
+    }
+
+    addFmu() {
+        this.config.addFmu();
+
+        let formArray = <FormArray> this.form.find('fmus');
+        let fmuArray = <FormArray> this.form.find('instances');
+
+        fmuArray.push(new FormArray([], uniqueControlValidator));
+        formArray.push(new FormControl(null, [Validators.required, Validators.pattern("[^{^}]*")]));
+    }
+
+    removeFmu(fmu: Fmu) {
+        let fmuArray = <FormArray> this.form.find('fmus');
+        let index = this.config.fmus.indexOf(fmu);
+
+        fmuArray.removeAt(index);
+        this.config.removeFmu(fmu);
     }
 
     getFmuName(fmu: Fmu): string {
@@ -83,8 +100,36 @@ export class MmConfigurationComponent {
         fmu.name = `{${name}}`;
     }
 
+    addInstance(fmu: Fmu) {
+        this.config.addInstance(fmu);
+
+        let fmuIndex = this.config.fmus.indexOf(fmu);
+        let fmuArray = <FormArray> this.form.find('instances');
+        let instanceArray = <FormArray> fmuArray.controls[fmuIndex];
+
+        instanceArray.push(new FormControl(null, [Validators.required, Validators.pattern("[^\.]*")]));
+    }
+
+    removeInstance(instance: Instance) {
+        let fmuIndex = this.config.fmus.indexOf(instance.fmu);
+        let fmuArray = <FormArray> this.form.find('instances');
+        let instanceArray = <FormArray> fmuArray.controls[fmuIndex];
+        let index = this.getInstances(instance.fmu).indexOf(instance);
+
+        instanceArray.removeAt(index);
+        this.config.removeInstance(instance);
+    }
+
     getInstances(fmu:Fmu) {
         return this.config.fmuInstances.filter(instance => instance.fmu === fmu);
+    }
+
+    getInstanceFormControl(fmu: Fmu, index: number): FormControl {
+        let fmuIndex = this.config.fmus.indexOf(fmu);
+        let fmuArray = <FormArray> this.form.find('instances');
+        let instanceArray = <FormArray> fmuArray.controls[fmuIndex];
+
+        return <FormControl> instanceArray.controls[index];
     }
 
     selectInstanceFmu(fmu:Fmu) {
