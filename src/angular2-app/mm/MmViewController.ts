@@ -19,8 +19,11 @@ export class MmViewController extends ViewController {
     }
 
     deInitialize() {
-        window.ng2app.closeAll();
+        if (window.ng2app.navigationService.canNavigate()) {
+            window.ng2app.closeAll();
+            return true;
+        }
 
-        return true;
+        return false;
     }
 }
