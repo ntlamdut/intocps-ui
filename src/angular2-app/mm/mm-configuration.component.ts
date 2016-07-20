@@ -112,6 +112,11 @@ export class MmConfigurationComponent {
         let fmuArray = <FormArray> this.form.find('fmus');
         let index = this.config.fmus.indexOf(fmu);
 
+        this.getInstances(fmu).forEach(instance => this.removeInstance(instance));
+
+        if (this.selectedInstanceFmu === fmu)
+            this.selectedInstanceFmu = null;
+
         fmuArray.removeAt(index);
         this.config.removeFmu(fmu);
     }
@@ -139,6 +144,18 @@ export class MmConfigurationComponent {
         let fmuArray = <FormArray> this.form.find('instances');
         let instanceArray = <FormArray> fmuArray.controls[fmuIndex];
         let index = this.getInstances(instance.fmu).indexOf(instance);
+
+        instance.initialValues.forEach(value => this.removeParameter(instance, value));
+        instance.outputsTo.clear();
+
+        if (this.selectedInputInstance === instance)
+            this.selectedInputInstance = null;
+
+        if (this.selectedOutputInstance === instance)
+            this.selectedOutputInstance = null;
+
+        if(this.selectedParameterInstance === instance)
+            this.selectedParameterInstance = null;
 
         instanceArray.removeAt(index);
         this.config.removeInstance(instance);
@@ -206,8 +223,8 @@ export class MmConfigurationComponent {
         this.selectedParameterInstance.initialValues.set(parameter, value);
     }
 
-    removeParameter(parameter:ScalarVariable) {
-        this.selectedParameterInstance.initialValues.delete(parameter);
+    removeParameter(instance:Instance, parameter:ScalarVariable) {
+        instance.initialValues.delete(parameter);
         this.newParameter = this.getParameters()[0];
     }
 

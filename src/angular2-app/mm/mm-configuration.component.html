@@ -162,7 +162,7 @@
                         <div *ngIf="editing" class="input-group">
                             <input [value]="initialValue.value" (change)="setParameter(initialValue.scalarVariable, $event.target.value)" class="form-control input-sm">
                             <span class="input-group-btn">
-                                <button type="button" (click)="removeParameter(initialValue.scalarVariable)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+                                <button type="button" (click)="removeParameter(selectedParameterInstance, initialValue.scalarVariable)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
                             </span>
                         </div>
                     </div>
