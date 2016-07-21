@@ -131,6 +131,12 @@ export class MmConfigurationComponent {
         fmu.name = `{${name}}`;
     }
 
+    setFmuPath(fmu: Fmu, path: string) {
+        fmu
+            .updatePath(path)
+            .then(() => this.zone.run(() => {}));
+    }
+
     addInstance(fmu: Fmu) {
         let instance = this.config.addInstance(fmu);
 
