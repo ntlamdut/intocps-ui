@@ -20,6 +20,7 @@ export class CoeSimulationService {
     private url:string;
     private resultDir:string;
     private config:CoSimulationConfig;
+    private counter: number = 0;
 
     constructor(private http:Http,
                 private settings:SettingsService,
@@ -53,7 +54,8 @@ export class CoeSimulationService {
             value.forEach((sv:any) => {
                 datasets.push({
                     name: Serializer.getIdSv(index, sv),
-                    y: []
+                    y: [],
+                    x: []
                 })
             });
         });
@@ -109,6 +111,7 @@ export class CoeSimulationService {
     }
 
     private simulate() {
+        this.counter = 0;
         this.progress = 75;
 
         this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
@@ -126,8 +129,18 @@ export class CoeSimulationService {
     }
 
     private onMessage(event:MessageEvent) {
+        
         let rawData = JSON.parse(event.data);
         let datasets = this.datasets.getValue();
+        let newCOE = false;
+        let xValue = this.counter++;
+        //Preparing for new livestream messages. It has the following structure:
+        // {"data":{"{integrate}":{"inst2":{"output":"0.0"}},"{sine}":{"sine":{"output":"0.0"}}},"time":0.0}}
+        if("time" in rawData)
+        {
+            rawData = rawData.data;
+            xValue = rawData.time;
+        }
 
         Object.keys(rawData).forEach(fmuKey => {
             if (fmuKey.indexOf("{") !== 0) return;
@@ -139,10 +152,9 @@ export class CoeSimulationService {
 
                     if (value == "true") value = 1;
                     else if (value == "false") value = 0;
-
-                    datasets
-                        .find((dataset:any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`)
-                        .y.push(value);
+                    let dataset = datasets.find((dataset:any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
+                    dataset.y.push(value);
+                    dataset.x.push(xValue);
                 });
             });
         });
