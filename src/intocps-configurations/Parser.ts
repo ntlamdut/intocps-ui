@@ -215,7 +215,7 @@ export class Parser {
         if (livestreamEntry) {
             Object.keys(livestreamEntry).forEach(id => {
                 let [fmuName, instanceName] = this.parseIdShort(id);
-                let instance: Instance = multiModel.getInstanceOrCreate(fmuName, instanceName);
+                let instance: Instance = multiModel.getInstance(fmuName, instanceName);
 
                 if (instance)
                     livestream.set(instance, livestreamEntry[id].map((input:string) => instance.fmu.getScalarVariable(input)));
@@ -264,8 +264,8 @@ export class Parser {
                     id,
                     c.ports
                         .filter((id:string) => {
-                            let [fmuName] = this.parseId(id);
-                            return !!multiModel.getFmu(fmuName);
+                            let [fmuName, instanceName] = this.parseId(id);
+                            return !!multiModel.getInstance(fmuName, instanceName);
                         })
                         .map((id:string) => {
                             let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
@@ -282,8 +282,8 @@ export class Parser {
                     id,
                     c.ports
                         .filter((id:string) => {
-                            let [fmuName] = this.parseId(id);
-                            return !!multiModel.getFmu(fmuName);
+                            let [fmuName, instanceName] = this.parseId(id);
+                            return !!multiModel.getInstance(fmuName, instanceName);
                         })
                         .map((id:string) => {
                             let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
