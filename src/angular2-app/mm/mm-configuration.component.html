@@ -89,7 +89,10 @@
                 <a *ngFor="let output of getOutputs()"
                    (click)="selectOutput(output)"
                    [class.active]="selectedOutput === output"
-                   class="list-group-item">{{output.name}}</a>
+                   class="list-group-item">
+                    <span *ngIf="!output.isConfirmed" class="glyphicon glyphicon-alert pull-right" style="color: red" title="This scalar variable is not confirmed."></span>
+                    {{output.name}}
+                </a>
             </ul>
         </div>
 
@@ -109,6 +112,7 @@
 
             <ul *ngIf="selectedInputInstance" class="list-group">
                 <label *ngFor="let input of getInputs()" class="list-group-item">
+                    <span *ngIf="!input.isConfirmed" class="glyphicon glyphicon-alert pull-right" style="color: red" title="This scalar variable is not confirmed."></span>
                     <input type="checkbox"
                            [disabled]="!editing"
                            [checked]="isInputConnected(input)"
