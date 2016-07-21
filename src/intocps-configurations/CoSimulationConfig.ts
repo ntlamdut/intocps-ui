@@ -196,13 +196,16 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
     }
 
     toObject() {
-        return {
+        let obj:any = {
             type: this.type,
-            ports: this.ports.map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable)),
-            order: Number(this.order),
-            abstol: Number(this.abstol),
-            safety: Number(this.safety)
-        }
+            ports: this.ports.map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable))
+        };
+
+        if (this.order) obj.order = Number(this.order);
+        if (this.abstol) obj.abstol = Number(this.abstol);
+        if (this.safety) obj.safety = Number(this.safety);
+
+        return obj;
     }
 }
 
@@ -231,14 +234,17 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
     }
 
     toObject() {
-        return {
+        let obj:any = {
             type: this.type,
             ports: this.ports.map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable)),
-            abstol: Number(this.abstol),
-            reltol: Number(this.reltol),
-            safety: Number(this.safety),
             skipDiscrete: !!this.skipDiscrete
-        }
+        };
+
+        if (this.abstol) obj.abstol = Number(this.abstol);
+        if (this.reltol) obj.order = Number(this.reltol);
+        if (this.safety) obj.safety = Number(this.safety);
+
+        return obj;
     }
 }
 
