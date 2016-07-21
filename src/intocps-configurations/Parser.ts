@@ -217,7 +217,8 @@ export class Parser {
                 let [fmuName, instanceName] = this.parseIdShort(id);
                 let instance: Instance = multiModel.getInstanceOrCreate(fmuName, instanceName);
 
-                livestream.set(instance, livestreamEntry[id].map((input:string) => instance.fmu.getScalarVariable(input)));
+                if (instance)
+                    livestream.set(instance, livestreamEntry[id].map((input:string) => instance.fmu.getScalarVariable(input)));
             });
         }
 
@@ -261,10 +262,15 @@ export class Parser {
             if (c.type === "zerocrossing") {
                 return new ZeroCrossingConstraint(
                     id,
-                    c.ports.map((id:string) => {
-                        let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
-                        return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
-                    }),
+                    c.ports
+                        .filter((id:string) => {
+                            let [fmuName] = this.parseId(id);
+                            return !!multiModel.getFmu(fmuName);
+                        })
+                        .map((id:string) => {
+                            let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
+                            return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
+                        }),
                     c.order.toString(),
                     c.abstol,
                     c.safety
@@ -274,10 +280,15 @@ export class Parser {
             if (c.type === "boundeddifference") {
                 return new BoundedDifferenceConstraint(
                     id,
-                    c.ports.map((id:string) => {
-                        let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
-                        return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
-                    }),
+                    c.ports
+                        .filter((id:string) => {
+                            let [fmuName] = this.parseId(id);
+                            return !!multiModel.getFmu(fmuName);
+                        })
+                        .map((id:string) => {
+                            let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
+                            return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
+                        }),
                     c.abstol,
                     c.reltol,
                     c.safety,

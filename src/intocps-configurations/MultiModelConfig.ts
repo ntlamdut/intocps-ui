@@ -25,16 +25,14 @@ export class MultiModelConfig implements ISerializable {
     public getInstanceOrCreate(fmuName: string, instanceName: string) {
         let instance = this.getInstance(fmuName, instanceName);
 
-        if (instance == null) {
+        if (!instance) {
             //multimodel does not contain this instance
             let fmu = this.getFmu(fmuName);
 
-            if (fmu == null) {
-                throw "Cannot create connection fmu is missing for: " + fmuName;
+            if (fmu) {
+                instance = new Instance(fmu, instanceName);
+                this.fmuInstances.push(instance);
             }
-
-            instance = new Instance(fmu, instanceName);
-            this.fmuInstances.push(instance);
         }
 
         return instance;
@@ -53,6 +51,10 @@ export class MultiModelConfig implements ISerializable {
             return pair;
 
         let instance = this.getInstance(fmuName, instanceName);
+
+        if (!instance)
+            return null;
+
         let scalar = instance.fmu.getScalarVariable(scalarName);
 
         pair = new InstanceScalarPair(instance, scalar);

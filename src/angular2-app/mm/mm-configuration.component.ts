@@ -112,10 +112,12 @@ export class MmConfigurationComponent {
         let fmuArray = <FormArray> this.form.find('fmus');
         let index = this.config.fmus.indexOf(fmu);
 
-        this.getInstances(fmu).forEach(instance => this.removeInstance(instance));
-
         if (this.selectedInstanceFmu === fmu)
-            this.selectedInstanceFmu = null;
+            this.selectInstanceFmu(null);
+
+        this.config.fmuInstances
+            .filter(instance => instance.fmu === fmu)
+            .forEach(instance => this.removeInstanceFromForm(instance));
 
         fmuArray.removeAt(index);
         this.config.removeFmu(fmu);
@@ -140,25 +142,26 @@ export class MmConfigurationComponent {
     }
 
     removeInstance(instance: Instance) {
+        this.removeInstanceFromForm(instance);
+        this.config.removeInstance(instance);
+    }
+
+    removeInstanceFromForm(instance: Instance) {
         let fmuIndex = this.config.fmus.indexOf(instance.fmu);
         let fmuArray = <FormArray> this.form.find('instances');
         let instanceArray = <FormArray> fmuArray.controls[fmuIndex];
         let index = this.getInstances(instance.fmu).indexOf(instance);
 
-        instance.initialValues.forEach(value => this.removeParameter(instance, value));
-        instance.outputsTo.clear();
-
         if (this.selectedInputInstance === instance)
-            this.selectedInputInstance = null;
+            this.selectInputInstance(null);
 
         if (this.selectedOutputInstance === instance)
-            this.selectedOutputInstance = null;
+            this.selectOutputInstance(null);
 
         if(this.selectedParameterInstance === instance)
-            this.selectedParameterInstance = null;
+            this.selectParameterInstance(null);
 
         instanceArray.removeAt(index);
-        this.config.removeInstance(instance);
     }
 
     getInstances(fmu:Fmu) {
@@ -184,13 +187,12 @@ export class MmConfigurationComponent {
 
     selectOutputInstance(instance:Instance) {
         this.selectedOutputInstance = instance;
-        this.selectedOutput = null;
-        this.selectedInputInstance = null;
+        this.selectOutput(null);
     }
 
     selectOutput(variable:ScalarVariable) {
         this.selectedOutput = variable;
-        this.selectedInputInstance = null;
+        this.selectInputInstance(null);
     }
 
     selectInputInstance(instance:Instance) {
@@ -229,6 +231,9 @@ export class MmConfigurationComponent {
     }
 
     getParameters() {
+        if (!this.selectedParameterInstance)
+            return [null];
+
         return this.selectedParameterInstance.fmu.scalarVariables
             .filter(variable => isCausalityCompatible(variable.causality, CausalityType.Parameter) && !this.selectedParameterInstance.initialValues.has(variable));
     }
