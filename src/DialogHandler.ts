@@ -45,7 +45,7 @@ export default class DialogHandler {
 
     }
 
-    public openWindow() {
+    public openWindow(data:string = '') {
 
         const electron = require('electron');
 
@@ -66,8 +66,7 @@ export default class DialogHandler {
         if (this.externalUrl) {
             this.win.loadURL(this.htmlPath);
         } else {
-            this.win.loadURL('file://' + __dirname + '/' + this.htmlPath);
-
+            this.win.loadURL(`file://${__dirname}/${this.htmlPath}?data=${data}`);
         }
         this.win.show();
     }

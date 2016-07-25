@@ -1,8 +1,5 @@
-
 import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {IntoCpsApp} from  "./IntoCpsApp";
-import {CoeController} from  "./coe/coe";
-import {MmController} from  "./multimodel/MmController";
 import {DseController} from  "./dse/dse";
 import {CreateTDGProjectController} from  "./rttester/CreateTDGProject";
 import {CreateMCProjectController} from  "./rttester/CreateMCProject";
@@ -16,14 +13,21 @@ import {ViewController, IViewController} from "./iViewController";
 import * as CustomFs from "./custom-fs";
 import {IProject} from "./proj/IProject";
 import * as SystemUtil from "./SystemUtil";
+import { bootstrap }    from '@angular/platform-browser-dynamic';
+import {AppComponent} from './angular2-app/app.component';
+import * as fs from 'fs';
+import * as Path from 'path';
 
-import fs = require("fs");
-import Path = require('path');
+interface MyWindow extends Window {
+    ng2app: AppComponent;
+}
 
-
+declare var window: MyWindow;
 
 import * as Menus from "./menus";
-
+import {provideForms, disableDeprecatedForms} from "@angular/forms";
+import {CoeViewController} from "./angular2-app/coe/CoeViewController";
+import {MmViewController} from "./angular2-app/mm/MmViewController";
 
 class InitializationController {
     // constants
@@ -70,12 +74,15 @@ class InitializationController {
     private loadViews() {
         this.layout.load("main", "main.html", "", () => {
             this.mainView = (<HTMLDivElement>document.getElementById(this.mainViewId));
+
+            // Start Angular 2 application
+            bootstrap(AppComponent, [disableDeprecatedForms(), provideForms()]);
         });
         this.layout.load("left", "proj/projbrowserview.html", "", () => {
             browserController.initialize();
         });
     }
-};
+}
 
 // Initialise controllers
 let menuHandler: IntoCpsAppMenuHandler = new IntoCpsAppMenuHandler();
@@ -84,37 +91,46 @@ let init = new InitializationController();
 let controller: IViewController;
 
 function closeView():boolean {
-    if (controller && controller.deInitialize)
-        return controller.deInitialize();
-    else
-        return true;
+    if (controller && controller.deInitialize) {
+        let canClose = controller.deInitialize();
+
+        if (canClose)
+            controller = null;
+
+        return canClose;
+    }
+
+    return true;
 }
 
 function openView(htmlPath:string, callback?:(mainView:HTMLDivElement) => void | IViewController) {
     if (!closeView()) return;
 
-    $(init.mainView).load(htmlPath, () => {
-        if (callback) {
-            let newController = callback(init.mainView);
+    function onLoad() {
+        if (!callback) return;
 
-            if (newController) {
-                controller = <IViewController>newController;
-                controller.initialize();
-            } else {
-                controller = null;
-            }
-        } else {
-            controller = null;
+        let newController = callback(init.mainView);
+
+        if (newController) {
+            controller = <IViewController>newController;
+            controller.initialize();
         }
-    });
+    }
+
+    if (htmlPath) {
+        $(init.mainView).load(htmlPath, () => onLoad());
+    } else {
+        $(init.mainView).empty();
+        onLoad();
+    }
 }
 
-menuHandler.openCoeView = (path) => {
-    openView("coe/coe.html", view => new CoeController(view, path));
+menuHandler.openCoeView = (path:string) => {
+    openView(null, view => new CoeViewController(view, path));
 };
 
-menuHandler.openMultiModel = (path) => {
-    openView("multimodel/multimodel.html", view => new MmController(view, path));
+menuHandler.openMultiModel = (path:string) => {
+    openView(null, view => new MmViewController(view, path));
 };
 
 menuHandler.runRTTesterCommand = (commandSpec: any) => {
@@ -179,46 +195,35 @@ menuHandler.createDsePlain = () => {
 };
 
 menuHandler.createMultiModel = (path) => {
-    openView("multimodel/multimodel.html", () => {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let name = Path.basename(path, ".sysml.json");
-            let content = fs.readFileSync(path, "UTF-8");
-            let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openMultiModel(mmPath + "");
-        }
-    });
+    let project = IntoCpsApp.getInstance().getActiveProject();
+
+    if (project) {
+        let name = Path.basename(path, ".sysml.json");
+        let content = fs.readFileSync(path, "UTF-8");
+        let mmPath = <string> project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
+        menuHandler.openMultiModel(mmPath);
+    }
 };
 
 menuHandler.createMultiModelPlain = () => {
-    openView("multimodel/multimodel.html", () => {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let name = "new";
-            let content = "{}";
-            let mmPath = project.createMultiModel("mm-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openMultiModel(mmPath + "");
-        }
-    });
+    let project = IntoCpsApp.getInstance().getActiveProject();
+
+    if (project) {
+        let mmPath = <string> project.createMultiModel(`mm-new (${Math.floor(Math.random() * 100)})`, "{}");
+        menuHandler.openMultiModel(mmPath);
+    }
 };
 
 menuHandler.createCoSimConfiguration = (path) => {
-    openView("coe/coe.html", () => {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let coePath: string = project.createCoSimConfig(path + "", "co-sim-" + Math.floor(Math.random() * 100), null).toString();
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openCoeView(coePath);
-        }
+    let project = IntoCpsApp.getInstance().getActiveProject();
 
-
-    });
+    if (project) {
+        let coePath = project.createCoSimConfig(path, `co-sim-${Math.floor(Math.random() * 100)}`, null).toString();
+        menuHandler.openCoeView(coePath);
+    }
 };
 
 menuHandler.deletePath = (path) => {
-
     let name = Path.basename(path);
     if (name.indexOf('R_') >= 0) {
         console.info("Deleting " + path);
@@ -242,10 +247,8 @@ menuHandler.deletePath = (path) => {
 };
 
 menuHandler.openWithSystemEditor = (path) => {
-
     SystemUtil.openPath(path);
 };
 
 
 Menus.configureIntoCpsMenu();
-

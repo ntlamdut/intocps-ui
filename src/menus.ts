@@ -24,10 +24,10 @@ let openProjectHandler = new DialogHandler("proj/open-project.html", 300, 200, I
 });
 
 let openDownloadManagerHandler = new DialogHandler("downloadManager/DownloadManager.html", 500, 500, null, null, null);
-let coeServerStatusHandler = new DialogHandler("coe-server-status/CoeServerStatus.html", 500, 500, null, null, null);
+export let coeServerStatusHandler = new DialogHandler("coe-server-status/CoeServerStatus.html", 500, 500, null, null, null);
 let fmuBuilderHandler = new DialogHandler("http://sweng.au.dk/fmubuilder/", 500, 500, null, null, null);
 fmuBuilderHandler.externalUrl = true;
-let reportIssueHandler = new DialogHandler("http://github.com/into-cps/INTO-CPS_Application/issues/new", 600, 600, null, null, null);
+let reportIssueHandler = new DialogHandler("https://github.com/into-cps/intocps-ui/issues/new", 600, 600, null, null, null);
 reportIssueHandler.externalUrl = true;
 
 

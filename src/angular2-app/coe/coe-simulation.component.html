@@ -1,0 +1,31 @@
+<div *ngIf="!online" class="alert alert-danger">
+    Co-Simulation Engine offline. No connection at {{url}}.
+    <button type="button" class="btn btn-sm btn-default" (click)="onCoeLaunchClick()"><span class="glyphicon glyphicon-link"></span> Launch</button>
+</div>
+<div *ngIf="online" class="alert alert-success">
+    Co-Simulation Engine, version {{version}}, online at {{url}}.
+</div>
+
+<div *ngIf="mmWarnings.length > 0">
+    <strong>The multi model configuration is not valid.</strong>
+    <div *ngFor="let warning of mmWarnings" class="alert alert-warning">{{warning.message}}</div>
+</div>
+
+<div *ngIf="coeWarnings.length > 0">
+    <strong>The co simulation configuration is not valid.</strong>
+    <div *ngFor="let warning of coeWarnings" class="alert alert-warning">{{warning.message}}</div>
+</div>
+
+<div class="form-group">
+    <button type="button" [disabled]="!canRun()" (click)="runSimulation()" class="btn btn-default">
+        <span class="glyphicon glyphicon-play"></span> Simulate
+    </button>
+</div>
+
+<div class="progress">
+    <div class="progress-bar" [style.width]="coeSimulation.progress + '%'" style="min-width: 2em">
+        {{coeSimulation.progress}}%
+    </div>
+</div>
+
+<line-chart *ngIf="coeSimulation.datasets.getValue().length > 0" [datasets]="coeSimulation.datasets"></line-chart>

@@ -1,6 +1,7 @@
 
 export class Message {
-    message: string
+    constructor(public message: string = "") {
+    }
 }
 
 export class WarningMessage extends Message {

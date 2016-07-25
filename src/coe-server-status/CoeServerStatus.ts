@@ -3,38 +3,57 @@
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
-import {IntoCpsApp} from  "../IntoCpsApp"
+import {IntoCpsApp} from  "../IntoCpsApp";
 import {SettingKeys} from "../settings/SettingKeys";
-import * as COE from "../coe/coe";
-
-import Path = require('path');
-import fs = require('fs');
+import {remote} from "electron";
+import * as Path from 'path';
 
 var globalCoeIsRunning = false;
 
-
 window.onload = function () {
-    COE.checkCoeConnection("coe-status", COE.getCoeUrl()).then(() => { });
+    if (window.location.search === "?data=autolaunch")
+        launchCoe();
 };
 
+function coeOnlineCheck() {
+    let url = IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.COE_URL) || "localhost:8082";
+    let request = $.getJSON(`http://${url}/version`);
+
+    let onlineAlert = document.getElementById("online-alert");
+    let offlineAlert = document.getElementById("offline-alert");
+
+    setTimeout(() => request.abort(), 2000);
+
+    request.fail(() => {
+        onlineAlert.innerHTML = `Co-Simulation Engine, offline no connection at: ${url}`;
+
+        onlineAlert.style.display = "block";
+        offlineAlert.style.display = "none";
+
+        setTimeout(() => coeOnlineCheck(), 2000);
+    })
+    .done(data => {
+        offlineAlert.innerHTML = `Co-Simulation Engine, version: ${data.version}, online at: ${url}`;
+
+        onlineAlert.style.display = "none";
+        offlineAlert.style.display = "block";
+    });
+}
 
 function coeClose() {
-
     if (!globalCoeIsRunning) {
         return realClose();
     }
 
-    let remote = require("electron").remote;
-    let dialog = remote.dialog;
-    let buttons: string[] = ["No", "Yes"];
-    dialog.showMessageBox({ type: 'question', buttons: buttons, message: "Are you sure you want to terminate the COE" }, function (button: any) {
-        if (button == 1)//yes
-        {
-            return realClose();
-        }
-    });
-    return true;
+    remote.dialog.showMessageBox({
+            type: 'question',
+            buttons: ["No", "Yes"],
+            message: "Are you sure you want to terminate the COE?"
+        },
+        button => {if (button === 1) return realClose()}
+    );
 
+    return true;
 }
 
 function realClose() {
@@ -43,7 +62,6 @@ function realClose() {
 }
 
 function launchCoe() {
-
     var spawn = require('child_process').spawn;
 
     let installDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
@@ -72,6 +90,7 @@ function launchCoe() {
         m.innerText = data + "";
         div.appendChild(m);
     });
+
     child.stderr.on('data', function (data: any) {
         console.log('stderr: ' + data);
         //Here is where the error output goes
@@ -81,15 +100,6 @@ function launchCoe() {
         m.innerText = data + "";
         div.appendChild(m);
     });
-    child.on('close', function (code: any) {
-        console.log('closing code: ' + code);
-        //Here you can get the exit code of the script
-    });
-  
-}
-
-function downloadLog() {
-
 }
 
 function createPanel(title: string, content: HTMLElement): HTMLElement {
@@ -106,6 +116,7 @@ function createPanel(title: string, content: HTMLElement): HTMLElement {
 
     divPanel.appendChild(divTitle);
     divPanel.appendChild(divBody);
+
     return divPanel;
 }
 

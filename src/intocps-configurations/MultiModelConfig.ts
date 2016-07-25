@@ -1,131 +1,127 @@
-
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
-/// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
-
-
-import * as Collections from 'typescript-collections';
-import * as Fmi from "../coe/fmi";
 import {Parser, Serializer} from "./Parser";
-import {Message, WarningMessage, ErrorMessage} from "./Messages";
+import {WarningMessage, ErrorMessage} from "./Messages";
+import {
+    Fmu, Instance, ScalarVariableType, isTypeCompatipleWithValue,
+    isTypeCompatiple, InstanceScalarPair, ScalarVariable
+} from "../angular2-app/coe/models/Fmu";
+import * as Path from 'path';
+import * as fs from 'fs';
 
-import Path = require('path');
-import fs = require('fs');
 // Multi-Model
 
 export class MultiModelConfig implements ISerializable {
 
-
     //path to the source from which this DOM is generated
     sourcePath: string;
     fmusRootPath: string;
-    fmus: Fmi.Fmu[] = [];
-    fmuInstances: Fmi.Instance[] = [];
+    fmus: Fmu[] = [];
+    fmuInstances: Instance[] = [];
+    instanceScalarPairs: InstanceScalarPair[] = [];
 
     public getInstance(fmuName: string, instanceName: string) {
-        let res = this.fmuInstances.find(function (v) { return v.fmu.name == fmuName && v.name == instanceName; });
-        if (res == undefined) {
-            return null;
-        }
-        return res;
+        return this.fmuInstances.find(v => v.fmu.name == fmuName && v.name == instanceName) || null;
     }
 
     public getInstanceOrCreate(fmuName: string, instanceName: string) {
-        var instance = this.getInstance(fmuName, instanceName);
+        let instance = this.getInstance(fmuName, instanceName);
 
-        if (instance == null) {
+        if (!instance) {
             //multimodel does not contain this instance
             let fmu = this.getFmu(fmuName);
 
-            if (fmu == null) {
-                throw "Cannot create connection fmu is missing for: " + fmuName;
+            if (fmu) {
+                instance = new Instance(fmu, instanceName);
+                this.fmuInstances.push(instance);
             }
-
-            instance = new Fmi.Instance(fmu, instanceName);
-            this.fmuInstances.push(instance);
         }
 
         return instance;
     }
 
-    public getFmu(fmuName: string): Fmi.Fmu {
-        let res = this.fmus.find(function (v) { return v.name == fmuName; });
-        if (res == undefined) {
-            return null;
-        }
-        return res;
+    public getFmu(fmuName: string): Fmu {
+        return this.fmus.find(v => v.name == fmuName) || null;
     }
 
-    static create(path: string, fmuRootPath: string, jsonData: any): Promise<MultiModelConfig> {
-        return new Promise<MultiModelConfig>(function (resolveFinal, reject) {
-            let parser = new Parser();
+    getInstanceScalarPair(fmuName:string, instanceName:string, scalarName:string):InstanceScalarPair {
+        let pair = this.instanceScalarPairs.find(pair => {
+            return pair.instance.fmu.name === fmuName && pair.instance.name === instanceName && pair.scalarVariable.name === scalarName;
+        });
 
-            let mm = new MultiModelConfig();
-            mm.sourcePath = path;
-            mm.fmusRootPath = fmuRootPath;
+        if (pair)
+            return pair;
 
-            parser.parseFmus(jsonData, Path.normalize(fmuRootPath)).then(fmus => {
+        let instance = this.getInstance(fmuName, instanceName);
+
+        if (!instance)
+            return null;
+
+        let scalar = instance.fmu.getScalarVariable(scalarName);
+
+        pair = new InstanceScalarPair(instance, scalar);
+        this.instanceScalarPairs.push(pair);
+
+        return pair;
+    }
+
+    static create(path: string, fmuRootPath: string, data: any): Promise<MultiModelConfig> {
+        let parser = new Parser();
+
+        let mm = new MultiModelConfig();
+        mm.sourcePath = path;
+        mm.fmusRootPath = fmuRootPath;
+
+        return parser
+            .parseFmus(data, Path.normalize(fmuRootPath))
+            .then(fmus => {
                 mm.fmus = fmus;
 
-                parser.parseConnections(jsonData, mm);
-                parser.parseParameters(jsonData, mm);
-                console.info(mm);
+                parser.parseConnections(data, mm);
+                parser.parseParameters(data, mm);
 
-                resolveFinal(mm);
-            }).catch(e => reject(e));
-        });
+                return mm;
+            });
     }
 
     static parse(path: string, fmuRootPath: string): Promise<MultiModelConfig> {
-        let self = this;
-        return new Promise<MultiModelConfig>(function (resolveFinal, reject) {
-            let checkFileExists = new Promise<Buffer>(function (resolve, reject) {
-                try {
-                    if (fs.accessSync(path, fs.R_OK)) {
-                        reject();
-                    }
-                    resolve();
-                } catch (e) {
-                    reject(e);
-                }
-            }).then(() =>
-                new Promise<Buffer>(function (resolve, reject) {
-                    fs.readFile(path, function (err, data) {
-                        if (err !== null) {
-                            return reject(err);
-                        }
-                        console.log(data.toString());
+        return new Promise<Buffer>((resolve, reject) => {
+                fs.readFile(path, (error, data) => {
+                    if (error)
+                        reject(error);
+                    else
                         resolve(data);
-                    });
-                })).then((content) => {
-
-                    //console.log("Asynchronous read: " + content.toString());
-                    var jsonData = JSON.parse(content.toString());
-                    console.log(content.toString());
-                    console.log(jsonData);
-
-                    self.create(path, fmuRootPath, jsonData).then(mm => { resolveFinal(mm); }).catch(e => reject(e));
-
-                })
-        });
+                });
+            }).then(content => this.create(path, fmuRootPath, JSON.parse(content.toString())));
     }
 
-    public removeFmu(fmu: Fmi.Fmu) {
+    public addFmu() {
+        let fmu = new Fmu();
+        this.fmus.push(fmu);
+
+        return fmu;
+    }
+
+    public removeFmu(fmu: Fmu) {
         this.fmus.splice(this.fmus.indexOf(fmu), 1);
-        this.fmuInstances.filter(element => { return element.fmu == fmu }).forEach(element => {
-            this.removeInstance(element);
-        });
+        
+        this.fmuInstances
+            .filter(element => element.fmu == fmu)
+            .forEach(element => this.removeInstance(element));
     }
 
+    public addInstance(fmu:Fmu, name?:string) {
+        let instance = new Instance(fmu, name || `${fmu.name.replace(/[{}]/g, "")}Instance`);
+        this.fmuInstances.push(instance);
 
-    public removeInstance(instance: Fmi.Instance) {
+        return instance;
+    }
+
+    public removeInstance(instance: Instance) {
         // Remove the instance
         this.fmuInstances.splice(this.fmuInstances.indexOf(instance), 1);
 
         // When removing an instance, all connections to this instance must be removed as well.  
         this.fmuInstances.forEach(element => {
-            element.outputsTo.forEach((value, key) => {
+            element.outputsTo.forEach(value => {
                 for (let i = value.length - 1; i >= 0; i--) {
                     if (value[i].instance == instance) {
                         value.splice(i, 1);
@@ -136,7 +132,40 @@ export class MultiModelConfig implements ISerializable {
     }
 
     toObject(): any {
-        return new Serializer().toObjectMultiModel(this, this.fmusRootPath);
+        let fmus:any = {};
+        let connections:any = {};
+        let parameters:any = {};
+
+        this.fmus.forEach((fmu: Fmu) => {
+            let path = fmu.path;
+            if (path.indexOf(this.fmusRootPath) >= 0)
+                path = path.substring(this.fmusRootPath.length + 1);
+
+            fmus[fmu.name] = path;
+        });
+
+        this.fmuInstances.forEach((instance: Instance) => {
+            instance.outputsTo.forEach((pairs: InstanceScalarPair[], sv: ScalarVariable) => {
+                connections[Serializer.getIdSv(instance, sv)] = pairs.map(pair => Serializer.getIdSv(pair.instance, pair.scalarVariable));
+            });
+
+            instance.initialValues.forEach((value: any, sv: ScalarVariable) => {
+                let id: string = Serializer.getIdSv(instance, sv);
+
+                if(sv.type === ScalarVariableType.Bool)
+                    parameters[id] = Boolean(value);
+                else if(sv.type === ScalarVariableType.Int || sv.type === ScalarVariableType.Real)
+                    parameters[id] = Number(value);
+                else
+                    parameters[id] = value;
+            });
+        });
+
+        return {
+            fmus: fmus,
+            connections: connections,
+            parameters: parameters
+        };
     }
 
     validate(): WarningMessage[] {
@@ -149,32 +178,26 @@ export class MultiModelConfig implements ISerializable {
                 if (sv.isConfirmed) {
                     pairs.forEach(pair => {
                         if (pair.scalarVariable.isConfirmed) {
-                            if (!Fmi.isTypeCompatiple(sv.type, pair.scalarVariable.type)) {
-                                let m: ErrorMessage = { message: "Uncompatible types in connection. The output scalar variable \"" + sv.name + "\": " + sv.type + " is connected to scalar variable \"" + pair.scalarVariable.name + "\": " + pair.scalarVariable.type };
-                                messages.push(m);
+                            if (!isTypeCompatiple(sv.type, pair.scalarVariable.type)) {
+                                messages.push(new ErrorMessage(`Uncompatible types in connection. The output scalar variable "${sv.name}": ${sv.type} is connected to scalar variable "${pair.scalarVariable.name}": ${pair.scalarVariable.type}`));
                             }
-                        }
-                        else {
-                            let m: WarningMessage = { message: "Use of unconfirmed ScalarVariable: \"" + pair.scalarVariable.name + "\" as connection input" };
-                            messages.push(m);
+                        } else {
+                            messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${pair.scalarVariable.name}" as connection input`));
                         }
                     });
                 } else {
-                    let m: WarningMessage = { message: "Use of unconfirmed ScalarVariable: \"" + sv.name + "\" as connection output" };
-                    messages.push(m);
+                    messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${sv.name}" as connection output`));
                 }
             });
 
             //check parameters
             instance.initialValues.forEach((value, sv) => {
                 if (sv.isConfirmed) {
-                    if (!Fmi.isTypeCompatipleWithValue(sv.type, value)) {
-                        let m: ErrorMessage = { message: "Uncompatible types for parameter. ScalarVariable: \"" + sv.name + "\" "+Fmi.ScalarVariableType[sv.type]+"  Value: " + value +" "+typeof(value)};
-                        messages.push(m);
+                    if (!isTypeCompatipleWithValue(sv.type, value)) {
+                        messages.push(new ErrorMessage(`Uncompatible types for parameter. ScalarVariable: "${sv.name}" ${ScalarVariableType[sv.type]}  Value: ${value} ${typeof(value)}`));
                     }
                 } else {
-                    let m: WarningMessage = { message: "Use of unconfirmed ScalarVariable: \"" + sv.name + "\" as parameter" };
-                    messages.push(m);
+                    messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${sv.name}" as parameter`));
                 }
             });
         });
@@ -183,22 +206,18 @@ export class MultiModelConfig implements ISerializable {
     }
 
     save(): Promise<void> {
-        let self = this;
-        return new Promise<void>(function (resolve, reject) {
-            let messages = self.validate();
-            if (messages.length > 0) {
+        return new Promise<void>((resolve, reject) => {
+            let messages = this.validate();
+
+            if (messages.length > 0)
                 reject(messages);
-            }
-            try {
-                fs.writeFile(self.sourcePath, JSON.stringify(self.toObject()), function (err) {
-                    if (err !== null) {
-                        return reject(err);
-                    }
+
+            fs.writeFile(this.sourcePath, JSON.stringify(this.toObject()), error => {
+                if (error)
+                    reject(error);
+                else
                     resolve();
-                });
-            } catch (e) {
-                reject(e);
-            }
+            });
         });
     }
 }
