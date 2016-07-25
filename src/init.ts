@@ -7,7 +7,8 @@ import {DseController} from  "./dse/dse";
 import {CreateTDGProjectController} from  "./rttester/CreateTDGProject";
 import {CreateMCProjectController} from  "./rttester/CreateMCProject";
 import {RunTestController} from  "./rttester/RunTest";
-import {LTLEditorController} from "./rttester/LTLEditor"
+import {LTLEditorController} from "./rttester/LTLEditor";
+import {CTAbstractionsView} from "./rttester/CTAbstractionsView";
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import {BrowserController} from "./proj/projbrowserview";
 import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
@@ -137,6 +138,10 @@ menuHandler.runTest = (path: string) => {
 
 menuHandler.openLTLFile = (fileName: string) => {
     openView("rttester/LTLEditor.html", view => new LTLEditorController(view, fileName));
+};
+
+menuHandler.openCTAbstractions = (fileName: string) => {
+    openView("rttester/CTAbstractionsView.html", view => new CTAbstractionsView(view, fileName));
 };
 
 menuHandler.openSysMlExport = () => {

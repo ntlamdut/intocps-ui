@@ -316,9 +316,7 @@ export class BrowserController {
                 else if (path.endsWith(".mbtconf")) {
                     result.img = "into-cps-icon-rtt-conf";
                     if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
-                        result.dblClickHandler = function () {
-                            self.menuHandler.openLTLFile(path);
-                        };
+                        result.dblClickHandler = () => self.menuHandler.openLTLFile(path);
                     }
                 }
                 else if (path.endsWith(".log")) {
@@ -326,6 +324,13 @@ export class BrowserController {
                 }
                 else if (path.endsWith(".html")) {
                     result.img = "into-cps-icon-rtt-html";
+                }
+            }
+            else if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                if (pathComponents.length == 3 && pathComponents[2] == "abstractions.json") {
+                    result.img = "glyphicon glyphicon-cog";
+                    result.text = "Abstractions";
+                    result.dblClickHandler = () => self.menuHandler.openCTAbstractions(path);
                 }
             }
             else if (path.endsWith(".dse.json")) {
@@ -457,7 +462,13 @@ export class BrowserController {
                     }
                 }
                 if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
-                    ;
+                    if (pathComponents.length == 2) {
+                        result.img = "into-cps-icon-rtt-vsi-tick";
+                    } else if (pathComponents.length == 3) {
+                        if (pathComponents[2] == "utils") {
+                            return null;
+                        }
+                    }
                 }
                 else {
                     if (pathComponents.length == 2) {

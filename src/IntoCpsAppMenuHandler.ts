@@ -20,6 +20,7 @@ export class IntoCpsAppMenuHandler {
     runRTTesterCommand: (commandSpec: any) => void;
     runTest: (path: string) => void;
     openLTLFile: (path: string) => void;
+    openCTAbstractions: (path: string) => void;
 
     deletePath: (path: string)=>void;
     openWithSystemEditor: (path: string)=>void;
