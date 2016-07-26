@@ -8,6 +8,7 @@ import {IntoCpsApp} from  "../IntoCpsApp";
 import {Project} from "./Project";
 import fs = require("fs");
 import Path = require("path");
+const rimraf = require("rimraf");
 import {RTTester} from "../rttester/RTTester";
 import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
 import {Utilities} from "../utilities";
@@ -330,6 +331,7 @@ export class BrowserController {
                 if (pathComponents.length == 3 && pathComponents[2] == "abstractions.json") {
                     result.img = "glyphicon glyphicon-cog";
                     result.text = "Abstractions";
+                    result.menuEntries = [];
                     result.dblClickHandler = () => self.menuHandler.openCTAbstractions(path);
                 }
             }
@@ -421,6 +423,7 @@ export class BrowserController {
             }
         } else if (stat.isDirectory()) {
             result.img = "icon-folder";
+            result.menuEntries = [];
             if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION ||
                 pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.menuEntries = [];
@@ -461,24 +464,21 @@ export class BrowserController {
                         result.menuEntries.push(menuEntryCreate);
                     }
                 }
-                if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
-                    if (pathComponents.length == 2) {
-                        result.img = "into-cps-icon-rtt-vsi-tick";
-                    } else if (pathComponents.length == 3) {
-                        if (pathComponents[2] == "utils") {
-                            return null;
-                        }
+                if (pathComponents.length == 2) {
+                    if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION &&
+                        pathComponents[1] == "utils") {
+                        return null;
                     }
+                    result.img = "into-cps-icon-rtt-vsi-tick";
+                    let menuEntryDelete = menuEntry("Delete Project \"" + result.text + "\"", "glyphicon glyphicon-remove",
+                        (item: ProjectBrowserItem) => rimraf(item.path, { glob: false },
+                            (e: any) => { if (e) throw e; }));
+                    result.menuEntries.push(menuEntryDelete);
+                }
+                else if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 }
                 else {
-                    if (pathComponents.length == 2) {
-                        if (pathComponents[1] == "utils") {
-                            return null;
-                        } else {
-                            result.img = "into-cps-icon-rtt-vsi-tick";
-                        }
-                    }
-                    else if (pathComponents.length == 3 &&
+                    if (pathComponents.length == 3 &&
                         (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
                         result.img = "into-cps-icon-rtt-tla";
                     }
