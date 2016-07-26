@@ -475,7 +475,14 @@ export class BrowserController {
                             (e: any) => { if (e) throw e; }));
                     result.menuEntries.push(menuEntryDelete);
                 }
-                else if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                    if (pathComponents.length == 2) {
+                        let menuEntryAdd = menuEntry("Add LTL Query", "glyphicon glyphicon-plus",
+                            (item: ProjectBrowserItem) => { /* TODO*/ });
+                        result.menuEntries.push(menuEntryAdd);
+                    } else if (pathComponents.length == 3) {
+                        return null;
+                    }
                 }
                 else {
                     if (pathComponents.length == 3 &&
