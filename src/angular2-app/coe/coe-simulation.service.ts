@@ -138,8 +138,8 @@ export class CoeSimulationService {
         // {"data":{"{integrate}":{"inst2":{"output":"0.0"}},"{sine}":{"sine":{"output":"0.0"}}},"time":0.0}}
         if("time" in rawData)
         {
-            rawData = rawData.data;
             xValue = rawData.time;
+            rawData = rawData.data;
         }
 
         Object.keys(rawData).forEach(fmuKey => {
