@@ -218,7 +218,9 @@ export class Parser {
                 let instance: Instance = multiModel.getInstance(fmuName, instanceName);
 
                 if (instance)
-                    livestream.set(instance, livestreamEntry[id].map((input:string) => instance.fmu.getScalarVariable(input)));
+                    livestream.set(instance, livestreamEntry[id]
+                        .filter((input:string) => instance.fmu.hasOutput(input))
+                        .map((input:string) => instance.fmu.getScalarVariable(input)));
             });
         }
 

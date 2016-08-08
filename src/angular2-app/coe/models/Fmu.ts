@@ -116,6 +116,11 @@ export class Fmu {
         }
     }
 
+    public hasOutput(name: string): boolean {
+        return !!this.scalarVariables
+            .find(variable => variable.name == name && variable.causality === CausalityType.Output);
+    }
+
     public getScalarVariable(name: string): ScalarVariable {
         let scalar = this.scalarVariables.find(s => s.name == name);
 
