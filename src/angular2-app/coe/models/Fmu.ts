@@ -17,36 +17,41 @@ export class Fmu {
         return this.populate();
     }
 
+    isSupported() {
+        return !!this.platforms.map(name => this.mapPlatformName(name)).find(name => name === process.platform);
+    }
+
     public populate(): Promise<void> {
-        let checkFileExists = new Promise<Buffer>((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             try {
                 if (fs.accessSync(this.path, fs.R_OK))
-                    reject();
-                else
-                    resolve();
+                    return reject();
+
+                fs.readFile(this.path, (err, data) => {
+                    if (err)
+                        return reject(err);
+
+                    var zip = new JSZip();
+
+                    zip
+                        .loadAsync(data)
+                        .then(() => {
+                            // Get platform names
+                            this.platforms = zip
+                                .file(/^binaries\/[a-zA-Z0-9]+\/.+/)
+                                .map(folder => folder.name.split('/')[1])
+                                .sort();
+
+                            zip.file("modelDescription.xml").async("string")
+                                .then((content: string) => {
+                                    this.populateFromModelDescription(content);
+                                    resolve();
+                                });
+                        });
+                });
             } catch (e) {
                 reject(e);
             }
-        });
-
-        //wrap readFile in a promise
-        let fileReadPromise = new Promise<Buffer>((resolve, reject) => {
-            fs.readFile(this.path, (err, data) => {
-                if (err)
-                    reject(err);
-                else
-                    resolve(data);
-            });
-        });
-
-        return checkFileExists.then(() => {
-            var zip = new JSZip();
-
-            // read a zip file
-            return fileReadPromise
-                .then(data => zip.loadAsync(data))
-                .then(() => zip.file("modelDescription.xml").async("string"))
-                .then((content: string) => this.populateFromModelDescription(content));
         });
     }
 
@@ -114,6 +119,18 @@ export class Fmu {
 
             thisNode = iterator.iterateNext();
         }
+    }
+
+    private mapPlatformName(name) {
+        const map = {
+            'darwin32': 'darwin',
+            'darwin64': 'darwin',
+            'linux32': 'linux',
+            'linux64': 'linux',
+            'win64': 'win32'
+        };
+
+        return map[name] || name;
     }
 
     public hasOutput(name: string): boolean {
