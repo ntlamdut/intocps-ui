@@ -10,6 +10,7 @@ import {IProject} from "../../proj/IProject";
 import {FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators} from "@angular/forms";
 import {uniqueControlValidator} from "../shared/validators";
 import {NavigationService} from "../shared/navigation.service";
+import {WarningMessage} from "../../intocps-configurations/Messages";
 
 @Component({
     selector: "mm-configuration",
@@ -40,6 +41,7 @@ export class MmConfigurationComponent {
     form: FormGroup;
     editing: boolean = false;
     parseError: string = null;
+    warnings: WarningMessage[] = [];
 
     private config:MultiModelConfig;
 
@@ -91,6 +93,10 @@ export class MmConfigurationComponent {
 
     onSubmit() {
         if (!this.editing) return;
+
+        this.warnings = this.config.validate();
+
+        if (this.warnings.length > 0) return;
 
         this.config.save()
             .then(() => this.change.emit(this.path));
