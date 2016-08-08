@@ -161,6 +161,12 @@
 
     <hr>
 
+    <div *ngIf="warnings.length > 0">
+        <strong>Please fix the following issues before saving.</strong>
+        <div *ngFor="let warning of warnings" class="alert alert-warning alert-big">{{warning.message}}</div>
+        <hr>
+    </div>
+
     <button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
     </button>
