@@ -3,7 +3,7 @@ import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
     Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausalityCompatible, isTypeCompatiple,
-    Fmu, ScalarValuePair, isFloat, isInteger
+    Fmu, ScalarValuePair, ScalarVariableType
 } from "../coe/models/Fmu";
 import {FileBrowserComponent} from "./inputs/file-browser.component";
 import {IProject} from "../../proj/IProject";
@@ -229,10 +229,12 @@ export class MmConfigurationComponent {
     }
 
     setParameter(parameter:ScalarVariable, value:any) {
-        if (isInteger(value))
-            value = parseInt(value);
-        else if (isFloat(value))
+        if (parameter.type === ScalarVariableType.Real)
             value = parseFloat(value);
+        else if (parameter.type === ScalarVariableType.Int)
+            value = parseInt(value);
+        else if (parameter.type === ScalarVariableType.Bool)
+            value = !!value;
 
         this.selectedParameterInstance.initialValues.set(parameter, value);
     }
