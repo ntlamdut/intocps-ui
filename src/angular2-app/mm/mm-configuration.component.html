@@ -161,7 +161,10 @@
             <div *ngIf="selectedParameterInstance">
                 <div *ngFor="let initialValue of getInitialValues(); let i=index" class="row">
                     <div class="col-md-2">
-                        <p class="form-control-static">{{initialValue.scalarVariable.name}}</p>
+                        <p class="form-control-static">
+                            <span class="label label-info">{{getScalarTypeName(initialValue.scalarVariable.type)}}</span>
+                            {{initialValue.scalarVariable.name}}
+                        </p>
                     </div>
                     <div class="col-md-10">
                         <p *ngIf="!editing" class="form-control-static">{{initialValue.value}}</p>

@@ -129,6 +129,10 @@ export class MmConfigurationComponent {
         this.config.removeFmu(fmu);
     }
 
+    getScalarTypeName(type:number) {
+        return ['Real', 'Bool', 'Int', 'String', 'Unknown'][type];
+    }
+
     getFmuName(fmu: Fmu): string {
         return fmu.name.substring(1, fmu.name.length -1);
     }
