@@ -4,7 +4,6 @@ import {IntoCpsApp} from "../IntoCpsApp";
 import Path = require("path");
 import {RTTester} from "../rttester/RTTester";
 import {Abstractions, Interface, Output} from "./CTAbstractions";
-import fs = require("fs");
 
 
 export class CreateMCProjectController extends ViewController {
@@ -103,7 +102,7 @@ export class CreateMCProjectController extends ViewController {
                         let type = o[1];
                         oList.push({
                             name: name,
-                            type: type
+                            type: type,
                         });
                         return oList;
                     }, []);
