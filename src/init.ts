@@ -1,6 +1,5 @@
 import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {IntoCpsApp} from  "./IntoCpsApp";
-import {DseController} from  "./dse/dse";
 import {CreateTDGProjectController} from  "./rttester/CreateTDGProject";
 import {CreateMCProjectController} from  "./rttester/CreateMCProject";
 import {RunTestController} from  "./rttester/RunTest";
@@ -27,6 +26,7 @@ import * as Menus from "./menus";
 import {provideForms, disableDeprecatedForms} from "@angular/forms";
 import {CoeViewController} from "./angular2-app/coe/CoeViewController";
 import {MmViewController} from "./angular2-app/mm/MmViewController";
+import {DseViewController} from "./angular2-app/dse/DseViewController";
 
 class InitializationController {
     // constants
@@ -132,6 +132,10 @@ menuHandler.openMultiModel = (path:string) => {
     openView(null, view => new MmViewController(view, path));
 };
 
+menuHandler.openDseView = (path:string) => {
+    openView(null, view => new DseViewController(view, path));
+};
+
 menuHandler.runRTTesterCommand = (commandSpec: any) => {
     openView("rttester/GenericModalCommand.html", () => {
         RTesterModalCommandWindow.initialize(commandSpec);
@@ -165,29 +169,25 @@ menuHandler.openFmu = () => {
     IntoCpsApp.setTopName("FMUs");
 };
 
-menuHandler.openDseView = (path) => {
-    openView("dse/dse.html", view => new DseController(view));
-};
-
-menuHandler.createDse = (path) => {
-    // create empty DSE file and load it.
-    openView("dse/dse.html", () => {
-        menuHandler.openDseView("");
-    });
-};
-
-menuHandler.createDsePlain = () => {
-    openView("dse/dse.html", () => {
-        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-        if (project != null) {
-            let name = "new";
-            let content = "{}";
-            let dsePath = project.createDse("dse-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-            menuHandler.openDseView(dsePath + "");
-        }
-    });
-};
+//menuHandler.createDse = (path) => {
+//    // create empty DSE file and load it.
+//    openView("dse/dse.html", () => {
+//        menuHandler.openDseView("");
+//    });
+//};
+//
+//menuHandler.createDsePlain = () => {
+//    openView("dse/dse.html", () => {
+//        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
+//        if (project != null) {
+//            let name = "new";
+//            let content = "{}";
+//            let dsePath = project.createDse("dse-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
+//            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
+//            menuHandler.openDseView(dsePath + "");
+//        }
+//    });
+//};
 
 menuHandler.createMultiModel = (path) => {
     let project = IntoCpsApp.getInstance().getActiveProject();
