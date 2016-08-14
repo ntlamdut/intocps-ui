@@ -99,7 +99,12 @@ export class MmConfigurationComponent {
         if (this.warnings.length > 0) return;
 
         this.config.save()
-            .then(() => this.change.emit(this.path));
+            .then(() => {
+                this.parseConfig();
+                this.selectOutputInstance(null);
+                this.selectParameterInstance(null);
+                this.change.emit(this.path);
+            });
 
         this.editing = false;
     }
@@ -145,6 +150,8 @@ export class MmConfigurationComponent {
         fmu
             .updatePath(path)
             .then(() => this.zone.run(() => {}));
+
+        this.selectOutputInstance(null);
     }
 
     addInstance(fmu: Fmu) {
