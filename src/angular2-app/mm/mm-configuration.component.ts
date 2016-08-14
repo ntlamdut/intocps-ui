@@ -276,16 +276,19 @@ export class MmConfigurationComponent {
     }
 
     onConnectionChange(checked:boolean, input:ScalarVariable) {
-        let outputsTo = this.selectedOutputInstance.outputsTo.get(this.selectedOutput);
+        let outputsTo:InstanceScalarPair[] = this.selectedOutputInstance.outputsTo.get(this.selectedOutput);
 
         if (checked) {
             if (outputsTo == null) {
-                outputsTo = <Array<InstanceScalarPair>> [];
+                outputsTo = [];
                 this.selectedOutputInstance.outputsTo.set(this.selectedOutput, outputsTo);
             }
             outputsTo.push(new InstanceScalarPair(this.selectedInputInstance, input));
         } else {
             outputsTo.splice(outputsTo.findIndex(pair => pair.instance === this.selectedInputInstance && pair.scalarVariable === input), 1);
+
+            if (outputsTo.length === 0)
+                this.selectedOutputInstance.outputsTo.delete(this.selectedOutput);
         }
     }
 }
