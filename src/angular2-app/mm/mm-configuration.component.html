@@ -165,6 +165,7 @@
                         <p class="form-control-static">
                             <span class="label label-info">{{getScalarTypeName(initialValue.scalarVariable.type)}}</span>
                             {{initialValue.scalarVariable.name}}
+                            <span *ngIf="!initialValue.scalarVariable.isConfirmed" class="glyphicon glyphicon-info-sign pull-right" style="color: red" title="Variable is unconfirmed"></span>
                         </p>
                     </div>
                     <div class="col-md-10">
