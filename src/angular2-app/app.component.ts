@@ -4,6 +4,7 @@ import {CoePageComponent} from "./coe/coe-page.component";
 import {HTTP_PROVIDERS, Http} from "@angular/http";
 import {SettingsService} from "./shared/settings.service";
 import {MmPageComponent} from "./mm/mm-page.component";
+import {DsePageComponent} from "./dse/dse-page.component";
 import {CoSimulationConfig} from "../intocps-configurations/CoSimulationConfig";
 import IntoCpsApp from "../IntoCpsApp";
 import {MultiModelConfig} from "../intocps-configurations/MultiModelConfig";
@@ -23,7 +24,8 @@ declare let window: MyWindow;
     selector: 'app',
     directives: [
         MmPageComponent,
-        CoePageComponent
+        CoePageComponent,
+        DsePageComponent
     ],
     providers: [
         HTTP_PROVIDERS,
@@ -33,7 +35,8 @@ declare let window: MyWindow;
     ],
     template: `
         <mm-page *ngIf="page === 'multiModel'" [path]="path"></mm-page>
-        <coe-page *ngIf="page === 'coe'" [path]="path"></coe-page>`
+        <coe-page *ngIf="page === 'coe'" [path]="path"></coe-page>
+        <dse-page *ngIf="page === 'dse'" [path]="path"></dse-page>`
 })
 export class AppComponent implements OnInit {
     private page:string;
@@ -68,6 +71,13 @@ export class AppComponent implements OnInit {
         this.zone.run(() => {
             this.path = path;
             this.page = "multiModel";
+        });
+    }
+
+    openDSE(path: string):void {
+        this.zone.run(() => {
+            this.path = path;
+            this.page = "dse";
         });
     }
 
