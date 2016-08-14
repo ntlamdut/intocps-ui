@@ -10,8 +10,11 @@ export class FileBrowserComponent implements OnInit {
     @Input()
     basePath = "";
 
+    fullPath = "";
+
     @Input()
     set path(path:string) {
+        this.fullPath = path;
         this._path = path.replace(Path.normalize(`${this.basePath}/`), "");
     }
     get path():string {
@@ -46,6 +49,6 @@ export class FileBrowserComponent implements OnInit {
 
     onChange(path:string) {
         this.path = path;
-        this.pathChange.emit(Path.normalize(`${this.basePath}/${this.path}`));
+        this.pathChange.emit(this.fullPath);
     }
 }

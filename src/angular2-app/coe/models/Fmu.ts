@@ -5,6 +5,7 @@ let JSZip = require("jszip");
 export class Fmu {
     platforms: Platforms[] = [];
     scalarVariables: ScalarVariable[] = [];
+    pathNotFound = true;
 
     constructor(public name: string = "{FMU}", public path: string = "") {
 
@@ -14,7 +15,7 @@ export class Fmu {
         this.path = path;
         this.scalarVariables.forEach(sv => sv.isConfirmed = false);
         this.platforms = [];
-        return this.populate();
+        return this.populate().catch(() => this.pathNotFound = true);
     }
 
     isSupported() {
@@ -36,6 +37,8 @@ export class Fmu {
                     zip
                         .loadAsync(data)
                         .then(() => {
+                            this.pathNotFound = false;
+
                             // Get platform names
                             this.platforms = zip
                                 .file(/^binaries\/[a-zA-Z0-9]+\/.+/)
