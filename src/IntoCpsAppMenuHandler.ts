@@ -21,6 +21,7 @@ export class IntoCpsAppMenuHandler {
     runTest: (path: string) => void;
     openLTLFile: (path: string) => void;
     openCTAbstractions: (path: string) => void;
+    showAddLTLQuery: (folder: string) => void; 
 
     deletePath: (path: string)=>void;
     openWithSystemEditor: (path: string)=>void;

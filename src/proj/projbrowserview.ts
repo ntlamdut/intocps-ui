@@ -478,7 +478,9 @@ export class BrowserController {
                 if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                     if (pathComponents.length == 2) {
                         let menuEntryAdd = menuEntry("Add LTL Query", "glyphicon glyphicon-plus",
-                            (item: ProjectBrowserItem) => { /* TODO*/ });
+                            (item: ProjectBrowserItem) => {
+                                self.menuHandler.showAddLTLQuery(result.path);
+                            });
                         result.menuEntries.push(menuEntryAdd);
                     } else if (pathComponents.length == 3) {
                         return null;
