@@ -8,6 +8,7 @@ import {IntoCpsApp} from "../IntoCpsApp";
 import Path = require("path");
 import {RTTester} from "../rttester/RTTester";
 import fs = require("fs");
+import * as RTesterModalCommandWindow from "./GenericModalCommand";
 
 
 export class LTLEditorController extends ViewController {
@@ -47,8 +48,20 @@ export class LTLEditorController extends ViewController {
 
     check() {
         this.save();
+        let cmd = {
+            title: "Check LTL Query",
+            command: Path.normalize(Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-mc")),
+            arguments: [
+                "-bound", this.hBMCSteps.value,
+                "-spec", this.ltlEditor.getValue(),
+                "-projectDb", Path.join(RTTester.getProjectOfFile(this.ltlQueryFileName), ".mbt", "model", "model_dump.db")],
+            options: { env: RTTester.genericCommandEnv(this.ltlQueryFileName) }
+        };
+        $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
+            RTesterModalCommandWindow.initialize(cmd);
+            (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
+        });
     }
-
 
     configureCompleter(langTools: any) {
         let fs = require("fs");
