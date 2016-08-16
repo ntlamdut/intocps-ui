@@ -314,12 +314,6 @@ export class BrowserController {
                 else if ([".conf", ".confinc", ".rtp"].some((e) => path.endsWith(e))) {
                     result.img = "into-cps-icon-rtt-conf";
                 }
-                else if (path.endsWith(".mbtconf")) {
-                    result.img = "into-cps-icon-rtt-conf";
-                    if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
-                        result.dblClickHandler = () => self.menuHandler.openLTLFile(path);
-                    }
-                }
                 else if (path.endsWith(".log")) {
                     result.img = "into-cps-icon-rtt-log";
                 }
@@ -333,6 +327,8 @@ export class BrowserController {
                     result.text = "Abstractions";
                     result.menuEntries = [];
                     result.dblClickHandler = () => self.menuHandler.openCTAbstractions(path);
+                } else {
+                    return null;
                 }
             }
             else if (path.endsWith(".dse.json")) {
@@ -483,7 +479,24 @@ export class BrowserController {
                             });
                         result.menuEntries.push(menuEntryAdd);
                     } else if (pathComponents.length == 3) {
-                        return null;
+                        let queryFileExists = () => {
+                            try {
+                                fs.statSync(Path.join(result.path, "query.json"));
+                                return true;
+                            } catch (e) { return false; }
+                        };
+                        if (queryFileExists()) {
+                            result.img = "into-cps-icon-rtt-test-procedure";
+                            let menuEntryDelete = menuEntry("Delete LTL Query \"" + result.text + "\"", "glyphicon glyphicon-remove",
+                                (item: ProjectBrowserItem) => rimraf(item.path, { glob: false },
+                                    (e: any) => { if (e) throw e; }));
+                            result.menuEntries.push(menuEntryDelete);
+                            result.dblClickHandler = (item: ProjectBrowserItem) => {
+                                self.menuHandler.openLTLQuery(result.path);
+                            };
+                        } else {
+                            return null;
+                        }
                     }
                 }
                 else {

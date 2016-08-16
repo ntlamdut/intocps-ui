@@ -12,14 +12,13 @@ import fs = require("fs");
 
 export class LTLEditorController extends ViewController {
 
-    fileName: string;
-    json: any = {};
+    ltlQueryFileName: string;
     ltlEditor: any;
     hBMCSteps: HTMLInputElement;
 
-    constructor(protected viewDiv: HTMLDivElement, fileName: string) {
+    constructor(protected viewDiv: HTMLDivElement, folderName: string) {
         super(viewDiv);
-        this.fileName = fileName;
+        this.ltlQueryFileName = Path.join(folderName, "query.json");
         IntoCpsApp.setTopName("LTL Formula");
         this.hBMCSteps = <HTMLInputElement>document.getElementById("BMCSteps");
         this.ltlEditor = ace.edit("ltlFormula");
@@ -28,34 +27,33 @@ export class LTLEditorController extends ViewController {
         this.configureCompleter(langTools);
         this.load();
         document.getElementById("save").addEventListener("click", () => this.save());
-        document.getElementById("save").addEventListener("click", () => this.check());
+        document.getElementById("check").addEventListener("click", () => this.check());
     }
 
     load() {
-        let data = fs.readFileSync(this.fileName, "utf-8");
-        console.log("this.fileName=" + this.fileName);
-        console.log("data=" + data);
-        this.json = JSON.parse(data);
-        console.log("json=" + this.json);
-        this.ltlEditor.setValue(this.json["goals"][0]["ltl-formula"]);
-        this.hBMCSteps.value = this.json["solver-config"]["max-solver-steps"];
+        let data = fs.readFileSync(this.ltlQueryFileName, "utf-8");
+        let json = JSON.parse(data);
+        this.ltlEditor.setValue(json["ltlFormula"]);
+        this.hBMCSteps.value = json["BMCSteps"];
     }
 
     save() {
-        // TODO: save fields.
-        fs.writeFileSync(this.fileName, JSON.stringify(this.json, null, 4));
+        let json = {
+            ltlFormula: this.ltlEditor.getValue(),
+            BMCSteps: this.hBMCSteps.value,
+        };
+        fs.writeFileSync(this.ltlQueryFileName, JSON.stringify(json, null, 4));
     }
 
     check() {
         this.save();
-
     }
 
 
     configureCompleter(langTools: any) {
         let fs = require("fs");
         let SQL = require("sql.js");
-        let dbFile = Path.join(RTTester.getProjectOfFile(this.fileName), "model", "model_dump.db");
+        let dbFile = Path.join(RTTester.getProjectOfFile(this.ltlQueryFileName), ".mbt", "model", "model_dump.db");
         fs.readFile(dbFile, (err: any, filebuffer: any) => {
             if (err) throw err;
             let db = new SQL.Database(filebuffer);

@@ -149,7 +149,7 @@ export class CreateMCProjectController extends ViewController {
         };
         let displayFailure = () => {
             document.getElementById("scriptRUN").style.display = "none";
-            document.getElementById("scriptFAILu").style.display = "block";
+            document.getElementById("scriptFAIL").style.display = "block";
         };
         this.createMBTProjectPromise(xmiFileName, targetDir)
             .then(() => this.createDefaultAbstractionsPromise(xmiFileName, targetDir)
