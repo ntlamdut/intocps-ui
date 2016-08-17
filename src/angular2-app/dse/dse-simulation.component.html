@@ -9,7 +9,7 @@
 <div class="form-group">
     <label class="control-label">Co-simulation Configuration</label>
         <select [ngModel]="cosimConfig" (ngModelChange)="onConfigChange($event)" class="form-control">
-            <option *ngFor="let config of cosimConfig; #i = index" [selected]="i == 0" [ngValue]="config">{{experimentName(config)}}</option>
+            <option *ngFor="let config of cosimConfig; let i = index" [selected]="i == 0" [ngValue]="config">{{experimentName(config)}}</option>
         </select>
 </div>
 
