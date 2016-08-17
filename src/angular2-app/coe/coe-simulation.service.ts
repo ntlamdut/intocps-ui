@@ -9,6 +9,8 @@ import {BehaviorSubject} from "rxjs/Rx";
 import {Injectable, NgZone} from "@angular/core";
 import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
 
+
+
 @Injectable()
 export class CoeSimulationService {
     progress: number = 0;
@@ -120,7 +122,7 @@ export class CoeSimulationService {
         this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
 
         var message: any = { startTime: this.config.startTime, endTime: this.config.endTime };
-        
+
         // enable logging for all log categories        
         var logCategories: any = new Object();
         this.config.multiModel.fmuInstances.forEach(instance => {
@@ -174,14 +176,25 @@ export class CoeSimulationService {
     private downloadResults() {
         this.webSocket.close();
 
-        this.http.get(`http://${this.url}/result/${this.sessionId}`)
+        this.http.get(`http://${this.url}/result/${this.sessionId}/plain`)
             .subscribe(response => {
                 // Write results to disk and save a copy of the multi model and coe configs
                 Promise.all([
-                    this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/log.csv`), response.text()),
+                    this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/outputs.csv`), response.text()),
                     this.fileSystem.copyFile(this.config.sourcePath, Path.normalize(`${this.resultDir}/coe.json`)),
                     this.fileSystem.copyFile(this.config.multiModel.sourcePath, Path.normalize(`${this.resultDir}/mm.json`))
                 ]).then(() => this.progress = 100);
             });
+
+        var http = require('http');
+        var fs = require('fs');
+        var file = fs.createWriteStream(`${this.resultDir}/log.zip`);
+        let url = `http://${this.url}/result/${this.sessionId}/zip`;
+        var request = http.get(url, function (response:any) {
+            response.pipe(file);
+        });
+
     }
+
+
 }
