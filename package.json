@@ -19,7 +19,7 @@
     "start": "electron dist/main.js"
   },
   "dependencies": {
-    "@angular/common": "^2.0.0-rc.4",
+    "@angular/common": "2.0.0-rc.4",
     "@angular/compiler": "2.0.0-rc.4",
     "@angular/core": "2.0.0-rc.4",
     "@angular/forms": "0.2.0",
@@ -31,6 +31,7 @@
     "jszip": "~3.0.0",
     "md5-promised": "~1.0.1",
     "mkdirp": "~0.5.1",
+    "rimraf": "~2.5.4",
     "promise": "~7.1.1",
     "reflect-metadata": "^0.1.3",
     "request": "~2.72.0",

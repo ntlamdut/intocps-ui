@@ -8,6 +8,7 @@ import {IntoCpsApp} from  "../IntoCpsApp";
 import {Project} from "./Project";
 import fs = require("fs");
 import Path = require("path");
+const rimraf = require("rimraf");
 import {RTTester} from "../rttester/RTTester";
 import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
 import {Utilities} from "../utilities";
@@ -301,8 +302,7 @@ export class BrowserController {
             return null;
         }
         if (stat.isFile()) {
-            if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION ||
-                pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+            if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
                 result.menuEntries = [];
                 result.dblClickHandler = function () {
                     RTTester.openFileInGUI(path);
@@ -314,19 +314,21 @@ export class BrowserController {
                 else if ([".conf", ".confinc", ".rtp"].some((e) => path.endsWith(e))) {
                     result.img = "into-cps-icon-rtt-conf";
                 }
-                else if (path.endsWith(".mbtconf")) {
-                    result.img = "into-cps-icon-rtt-conf";
-                    if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
-                        result.dblClickHandler = function () {
-                            self.menuHandler.openLTLFile(path);
-                        };
-                    }
-                }
                 else if (path.endsWith(".log")) {
                     result.img = "into-cps-icon-rtt-log";
                 }
                 else if (path.endsWith(".html")) {
                     result.img = "into-cps-icon-rtt-html";
+                }
+            }
+            else if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                if (pathComponents.length == 3 && pathComponents[2] == "abstractions.json") {
+                    result.img = "glyphicon glyphicon-cog";
+                    result.text = "Abstractions";
+                    result.menuEntries = [];
+                    result.dblClickHandler = () => self.menuHandler.openCTAbstractions(path);
+                } else {
+                    return null;
                 }
             }
             else if (path.endsWith(".dse.json")) {
@@ -417,6 +419,7 @@ export class BrowserController {
             }
         } else if (stat.isDirectory()) {
             result.img = "icon-folder";
+            result.menuEntries = [];
             if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION ||
                 pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.menuEntries = [];
@@ -458,50 +461,85 @@ export class BrowserController {
                     }
                 }
                 if (pathComponents.length == 2) {
-                    if (pathComponents[1] == "utils") {
+                    if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION &&
+                        pathComponents[1] == "utils") {
                         return null;
-                    } else {
-                        result.img = "into-cps-icon-rtt-vsi-tick";
+                    }
+                    result.img = "into-cps-icon-rtt-vsi-tick";
+                    let menuEntryDelete = menuEntry("Delete Project \"" + result.text + "\"", "glyphicon glyphicon-remove",
+                        (item: ProjectBrowserItem) => rimraf(item.path, { glob: false },
+                            (e: any) => { if (e) throw e; }));
+                    result.menuEntries.push(menuEntryDelete);
+                }
+                if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
+                    if (pathComponents.length == 2) {
+                        let menuEntryAdd = menuEntry("Add LTL Query", "glyphicon glyphicon-plus",
+                            (item: ProjectBrowserItem) => {
+                                self.menuHandler.showAddLTLQuery(result.path);
+                            });
+                        result.menuEntries.push(menuEntryAdd);
+                    } else if (pathComponents.length == 3) {
+                        let queryFileExists = () => {
+                            try {
+                                fs.statSync(Path.join(result.path, "query.json"));
+                                return true;
+                            } catch (e) { return false; }
+                        };
+                        if (queryFileExists()) {
+                            result.img = "into-cps-icon-rtt-test-procedure";
+                            let menuEntryDelete = menuEntry("Delete LTL Query \"" + result.text + "\"", "glyphicon glyphicon-remove",
+                                (item: ProjectBrowserItem) => rimraf(item.path, { glob: false },
+                                    (e: any) => { if (e) throw e; }));
+                            result.menuEntries.push(menuEntryDelete);
+                            result.dblClickHandler = (item: ProjectBrowserItem) => {
+                                self.menuHandler.openLTLQuery(result.path);
+                            };
+                        } else {
+                            return null;
+                        }
                     }
                 }
-                else if (pathComponents.length == 3 &&
-                    (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
-                    result.img = "into-cps-icon-rtt-tla";
-                }
-                else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
-                    result.img = "into-cps-icon-rtt-mbt-test-procedure";
-                    if (pathComponents[3] == "Simulation") {
-                        result.menuEntries.push(menuEntry("Generate Simulation FMU", "into-cps-icon-rtt-mbt-generate",
-                            function (item: ProjectBrowserItem) {
-                                let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen-sim.py");
-                                cmd.title = "Generate Simulation FMU";
-                                self.menuHandler.runRTTesterCommand(cmd);
-                            }));
-                    } else {
-                        result.menuEntries.push(menuEntry("Solve", "into-cps-icon-rtt-mbt-generate",
-                            function (item: ProjectBrowserItem) {
-                                let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
-                                cmd.title = "Solve";
-                                self.menuHandler.runRTTesterCommand(cmd);
-                            }));
+                else {
+                    if (pathComponents.length == 3 &&
+                        (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
+                        result.img = "into-cps-icon-rtt-tla";
+                    }
+                    else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
+                        result.img = "into-cps-icon-rtt-mbt-test-procedure";
+                        if (pathComponents[3] == "Simulation") {
+                            result.menuEntries.push(menuEntry("Generate Simulation FMU", "into-cps-icon-rtt-mbt-generate",
+                                function (item: ProjectBrowserItem) {
+                                    let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen-sim.py");
+                                    cmd.title = "Generate Simulation FMU";
+                                    self.menuHandler.runRTTesterCommand(cmd);
+                                }));
+                        } else {
+                            result.menuEntries.push(menuEntry("Solve", "into-cps-icon-rtt-mbt-generate",
+                                function (item: ProjectBrowserItem) {
+                                    let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
+                                    cmd.title = "Solve";
+                                    self.menuHandler.runRTTesterCommand(cmd);
+                                }));
+                        }
+                    }
+                    else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
+                        result.img = "into-cps-icon-rtt-test-procedure";
+                        if (pathComponents[3] != "Simulation") {
+                            result.menuEntries.push(menuEntry("Generate Test FMU", "into-cps-icon-rtt-mbt-generate",
+                                function (item: ProjectBrowserItem) {
+                                    let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen.py");
+                                    cmd.title = "Generate Test FMU";
+                                    self.menuHandler.runRTTesterCommand(cmd);
+                                }));
+                            result.menuEntries.push(menuEntry("Run Test", "into-cps-icon-rtt-run",
+                                function (item: ProjectBrowserItem) {
+                                    self.menuHandler.runTest(item.path);
+                                }));
+                        }
                     }
                 }
-                else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
-                    result.img = "into-cps-icon-rtt-test-procedure";
-                    if (pathComponents[3] != "Simulation") {
-                        result.menuEntries.push(menuEntry("Generate Test FMU", "into-cps-icon-rtt-mbt-generate",
-                            function (item: ProjectBrowserItem) {
-                                let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-fmi2gen.py");
-                                cmd.title = "Generate Test FMU";
-                                self.menuHandler.runRTTesterCommand(cmd);
-                            }));
-                        result.menuEntries.push(menuEntry("Run Test", "into-cps-icon-rtt-run",
-                            function (item: ProjectBrowserItem) {
-                                self.menuHandler.runTest(item.path);
-                            }));
-                    }
-                }
-            } else if (pathComponents[0] == Project.PATH_MULTI_MODELS) {
+            }
+            else if (pathComponents[0] == Project.PATH_MULTI_MODELS) {
                 let menuEntryCreate = menuEntry("New Multi-Model", "glyphicon glyphicon-asterisk",
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.createMultiModelPlain();

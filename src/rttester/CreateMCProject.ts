@@ -3,153 +3,20 @@ import {ViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp";
 import Path = require("path");
 import {RTTester} from "../rttester/RTTester";
-
-
-class AbstractionSelectorMackop {
-    hLinks: HTMLLinkElement[];
-    constructor(ids: string[]) {
-        this.hLinks = ids.map((id) => <HTMLLinkElement>document.getElementById(id));
-        this.hLinks.forEach((l) => {
-            l.addEventListener("click", () => { this.setActive(l); });
-        });
-    }
-    setActive(link: HTMLLinkElement) {
-        link.classList.add("active");
-        link.classList.add("aria-expanded");
-        this.hLinks.forEach((l) => {
-            if (l != link) {
-                l.classList.remove("active");
-            }
-        });
-    }
-}
-
-
-class Output {
-    component: Component;
-    name: string;
-    hOutput: HTMLLinkElement;
-
-    constructor(component: Component, name: string) {
-        this.component = component;
-        this.name = name;
-    }
-    display(hOutputList: HTMLUListElement, activate: boolean) {
-        let self: Output = this;
-        $("<div>").load("./rttester/CreateMCProject/Output.html", function (event: JQueryEventObject) {
-            self.hOutput = <HTMLLinkElement>this.querySelector("#output");
-            self.hOutput.innerHTML = self.name;
-            self.hOutput.addEventListener("click", function () { self.component.selectOutput(self); });
-            if (activate)
-                self.component.selectOutput(self);
-            hOutputList.appendChild(self.hOutput);
-        });
-    }
-    setActive(active: boolean) {
-        if (!active) {
-            this.hOutput.classList.remove("active");
-        } else {
-            this.hOutput.classList.add("active");
-            let hAbstractionHeading: HTMLHeadingElement = <HTMLHeadingElement>document.getElementById("abstractionHeader");
-            hAbstractionHeading.innerHTML = "Abstraction for \"" + this.name + "\"";
-        }
-    }
-}
-
-class Component {
-    abstractions: Abstractions;
-    name: string;
-    outputs: Output[];
-    selectedOutput: Output;
-    hComponent: HTMLLinkElement;
-    constructor(abstractions: Abstractions, name: string, outputs: string[]) {
-        this.abstractions = abstractions;
-        this.name = name;
-        this.outputs = outputs.map((n) => new Output(this, n));
-    }
-    display(hComponentList: HTMLUListElement, activate: boolean) {
-        let self: Component = this;
-        $("<div>").load("./rttester/CreateMCProject/Component.html", function (event: JQueryEventObject) {
-            self.hComponent = <HTMLLinkElement>this.querySelector("#component");
-            self.hComponent.innerHTML = self.name;
-            self.hComponent.addEventListener("click", function () { self.abstractions.selectComponent(self); });
-            if (activate)
-                self.abstractions.selectComponent(self);
-            hComponentList.appendChild(self.hComponent);
-        });
-    }
-    setActive(active: boolean) {
-        if (!active) {
-            this.hComponent.classList.remove("active");
-            this.selectedOutput = null;
-        } else {
-            this.hComponent.classList.add("active");
-            let hOutputHeading: HTMLHeadingElement = <HTMLHeadingElement>document.getElementById("outputHeading");
-            let hOutputList: HTMLUListElement = <HTMLUListElement>document.getElementById("outputList");
-            hOutputHeading.innerHTML = "Outputs of \"" + this.name + "\"";
-            while (hOutputList.firstChild) {
-                hOutputList.removeChild(hOutputList.firstChild);
-            }
-            for (let i = 0; i < this.outputs.length; ++i)
-                this.outputs[i].display(hOutputList, i == 0);
-        }
-    }
-    selectOutput(output: Output) {
-        if (output == this.selectedOutput)
-            return;
-        if (this.selectedOutput != null)
-            this.selectedOutput.setActive(false);
-        this.selectedOutput = output;
-        this.selectedOutput.setActive(true);
-    }
-}
-
-class Abstractions {
-    controller: CreateMCProjectController;
-    components: Component[] = [];
-    selectedComponent: Component;
-
-    constructor(controller: CreateMCProjectController) {
-        new AbstractionSelectorMackop([
-            "headingAbstractionNone",
-            "headingAbstractionRange",
-            "headingAbstractionGradient",
-            "headingAbstractionSimulation"]);
-        this.controller = controller;
-        let hComponentList: HTMLUListElement = <HTMLUListElement>document.getElementById("componentList");
-
-        // mockup data
-        this.components.push(new Component(this, "Component A", ["Output X", "Output Y"]));
-        this.components.push(new Component(this, "Component B", ["Output U", "Output V", "Output W"]));
-
-        while (hComponentList.firstChild) {
-            hComponentList.removeChild(hComponentList.firstChild);
-        }
-        for (let i = 0; i < this.components.length; ++i)
-            this.components[i].display(hComponentList, i == 0);
-    }
-    selectComponent(component: Component) {
-        if (component == this.selectedComponent)
-            return;
-        if (this.selectedComponent != null)
-            this.selectedComponent.setActive(false);
-        this.selectedComponent = component;
-        this.selectedComponent.setActive(true);
-    }
-}
-
+import {Abstractions, Interface, Output} from "./CTAbstractions";
 
 
 export class CreateMCProjectController extends ViewController {
 
     directory: string;
-    abstractions: Abstractions;
+    hPath: HTMLInputElement;
 
 
     constructor(protected viewDiv: HTMLDivElement, directory: string) {
         super(viewDiv);
         this.directory = directory;
         IntoCpsApp.setTopName("RT-Tester Project");
+        this.hPath = <HTMLInputElement>document.getElementById("XMIModelPathText");
     };
 
 
@@ -166,47 +33,133 @@ export class CreateMCProjectController extends ViewController {
     }
 
 
-    loadXMIFile() {
-        document.getElementById("settings").style.display = "block";
-        this.abstractions = new Abstractions(this);
+    createMBTProjectPromise(xmiFileName: string, targetDir: string) {
+        return new Promise<void>((resolve, reject) => {
+            document.getElementById("CreationParameters").style.display = "none";
+            document.getElementById("Output").style.display = "block";
+            let hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
+            let script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
+
+            const spawn = require("child_process").spawn;
+            let pythonPath = RTTester.pythonExecutable();
+            let args: string[] = [
+                script,
+                "--dir=" + Path.join(targetDir, ".mbt"),
+                "--skip-tests",
+                "--skip-configure",
+                "--skip-rttui",
+                xmiFileName
+            ];
+            let env: any = process.env;
+            env["RTTDIR"] = RTTester.rttInstallDir();
+            const p = spawn(pythonPath, args, { env: env });
+            p.stdout.on("data", (data: string) => {
+                hOutputText.textContent += data + "\n";
+                hOutputText.scrollTop = hOutputText.scrollHeight;
+            });
+            p.stderr.on("data", (data: string) => {
+                hOutputText.textContent += data + "\n";
+                hOutputText.scrollTop = hOutputText.scrollHeight;
+            });
+            p.on("close", (code: number) => {
+                if (code == 0) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
+        });
     }
 
+    createDefaultAbstractionsPromise(xmiFileName: string, targetDir: string) {
+        return new Promise<void>((resolve, reject) => {
+            let extractInterface = (onLoad: (interfaceJSON: string) => void) => {
+                let script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-into-extract-interface.py");
+                const spawn = require("child_process").spawn;
+                let pythonPath = RTTester.pythonExecutable();
+                let args: string[] = [
+                    script,
+                    "--input",
+                    xmiFileName
+                ];
+                let env: any = process.env;
+                env["RTTDIR"] = RTTester.rttInstallDir();
+                let stdout = "";
+                let stderr = "";
+                const p = spawn(pythonPath, args, { env: env });
+                p.stdout.on("data", (data: string) => { stdout += data; });
+                p.stderr.on("data", (data: string) => { stderr += data; });
+                p.on("close", (code: number) => {
+                    if (code != 0) throw stderr;
+                    let obj = JSON.parse(stdout);
+                    onLoad(obj);
+                });
+            };
+            let generateAbstractions = (interfaceJSON: any) => {
+                let createOutputs = (outputs: any[]): Output[] => {
+                    return outputs.reduce((oList: any[], o: any) => {
+                        let name = o[0];
+                        let type = o[1];
+                        oList.push({
+                            name: name,
+                            type: type,
+                        });
+                        return oList;
+                    }, []);
+                };
+                let createOutputInterfaces = (interfaces: any[]): Interface[] => {
+                    return interfaces.reduce((iList: any[], i: any) => {
+                        let name = i[0];
+                        let type = i[1];
+                        if (type == "output") {
+                            let outputs = interfaceJSON["interfaces"][name][1];
+                            iList.push({
+                                name: name,
+                                outputs: createOutputs(outputs)
+                            });
+                        }
+                        return iList;
+                    }, []);
+                };
+                let createComponents = (): Abstractions => {
+                    return {
+                        components: Object.keys(interfaceJSON.components).map((compName: string) => {
+                            return {
+                                name: compName,
+                                outputInterfaces: createOutputInterfaces(interfaceJSON.components[compName]),
+                            };
+                        })
+                    };
+                };
+                let abstractions = createComponents();
+                Abstractions.writeToJSON(abstractions, Path.join(targetDir, "abstractions.json"));
+            };
+            extractInterface(generateAbstractions);
+        });
+    }
 
     createProject(): void {
-        document.getElementById("CreationParameters").style.display = "none";
-        document.getElementById("Output").style.display = "block";
-        let hPath: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText");
-        let hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
+        let xmiFileName = this.hPath.value;
         let projectName = (<HTMLInputElement>document.getElementById("ProjectName")).value;
-        let script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
         let targetDir = Path.normalize(Path.join(this.directory, projectName));
 
-        const spawn = require("child_process").spawn;
-        let pythonPath = RTTester.pythonExecutable();
-        let args: string[] = [
-            script,
-            "--dir=" + targetDir,
-            "--skip-tests",
-            "--skip-configure",
-            "--skip-rttui",
-            hPath.value
-        ];
-        let env: any = process.env;
-        env["RTTDIR"] = RTTester.rttInstallDir();
-        const p = spawn(pythonPath, args, { env: env });
-        p.stdout.on("data", (data: string) => {
-            hOutputText.textContent += data + "\n";
-            hOutputText.scrollTop = hOutputText.scrollHeight;
-        });
-        p.stderr.on("data", (data: string) => {
-            hOutputText.textContent += data + "\n";
-            hOutputText.scrollTop = hOutputText.scrollHeight;
-        });
-        p.on("close", (code: number) => {
+        let displaySuccess = () => {
             document.getElementById("scriptRUN").style.display = "none";
-            document.getElementById(code == 0 ? "scriptOK" : "scriptFAIL").style.display = "block";
-        });
+            document.getElementById("scriptOK").style.display = "block";
+        };
+        let displayFailure = () => {
+            document.getElementById("scriptRUN").style.display = "none";
+            document.getElementById("scriptFAIL").style.display = "block";
+        };
+        this.createMBTProjectPromise(xmiFileName, targetDir)
+            .then(() => this.createDefaultAbstractionsPromise(xmiFileName, targetDir)
+                .then(displaySuccess,
+                displayFailure),
+            displayFailure);
     }
+
+
+
 
 }
 
