@@ -36,7 +36,7 @@ export class Parser {
     constructor() { }
     public static fileExists(filePath: string) {
         try {
-            return fs.statSync(filePath).isFile();
+            return fs.statSync(filePath).isFile() || fs.statSync(filePath).isDirectory();
         }
         catch (err) {
             return false;

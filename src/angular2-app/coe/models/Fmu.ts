@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import Path = require("path");
 let JSZip = require("jszip");
 
 // Holds information about a .fmu container
@@ -23,6 +24,53 @@ export class Fmu {
     }
 
     public populate(): Promise<void> {
+      if (fs.lstatSync(this.path).isDirectory()) {
+            return this.populateFromDir();
+        } else {
+            return this.populateFromZip();
+        }
+    }
+
+    public populateFromDir(): Promise<void> {
+        let self = this;
+        
+        // Get supported platforms
+         fs.readdir(Path.join(self.path,"binaries"), function(err, items) {
+             //See https://typescript.codeplex.com/workitem/2242 for reason of any usage.
+            self.platforms = items.map(platform => (<any>Platforms)[platform]);
+        });
+       
+        let mdPath = Path.join(self.path,"modelDescription.xml")
+        let checkFileExists = new Promise<Buffer>(function (resolve, reject) {
+            try {
+                if (fs.accessSync(mdPath, fs.R_OK)) {
+                    reject();
+                }
+                self.pathNotFound = false;
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        });
+
+        //wrap readFile in a promise
+        let fileReadPromise = new Promise<Buffer>(function (resolve, reject) {
+            fs.readFile(mdPath, function (err, data) {
+                if (err !== null) {
+                    return reject(err);
+                }
+                resolve(data);
+            });
+        });
+
+        return checkFileExists.then(() => {
+            return fileReadPromise.then(data => {
+                self.populateFromModelDescription(data.toString('UTF-8', 0, data.length));
+            });;
+        });
+    }
+        
+    public populateFromZip(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
                 if (fs.accessSync(this.path, fs.R_OK))
@@ -42,7 +90,7 @@ export class Fmu {
                             // Get platform names
                             this.platforms = zip
                                 .file(/^binaries\/[a-zA-Z0-9]+\/.+/)
-                                .map(folder => folder.name.split('/')[1])
+                                .map((folder:any) => folder.name.split('/')[1])
                                 .sort();
 
                             zip.file("modelDescription.xml").async("string")
@@ -110,7 +158,7 @@ export class Fmu {
                 else if ("calculatedParameter" == causalityText) {
                     causality = CausalityType.CalculatedParameter;
                 }
-                else if ("local" == causalityText){
+                else if ("local" == causalityText) {
                     causality = CausalityType.Local;
                 }
             }
@@ -174,20 +222,19 @@ export enum CausalityType { Output, Input, Parameter, CalculatedParameter, Local
 export function isTypeCompatiple(t1: ScalarVariableType, t2: ScalarVariableType): boolean {
     if (t1 == ScalarVariableType.Unknown || t2 == ScalarVariableType.Unknown) {
         return true;
-    } else if(t1 ==ScalarVariableType.Bool && (t2==ScalarVariableType.Int || t2==ScalarVariableType.Real)) {
+    } else if (t1 == ScalarVariableType.Bool && (t2 == ScalarVariableType.Int || t2 == ScalarVariableType.Real)) {
         // bool -> number
         return true;
-    }else if(t2 ==ScalarVariableType.Bool && (t1==ScalarVariableType.Int || t1==ScalarVariableType.Real)) {
+    } else if (t2 == ScalarVariableType.Bool && (t1 == ScalarVariableType.Int || t1 == ScalarVariableType.Real)) {
         //number -> bool
-          return true;
-    }else
-    {
+        return true;
+    } else {
         return t1 == t2;
     }
 }
 
 export function isCausalityCompatible(t1: CausalityType, t2: CausalityType): boolean {
-    if(t1 == CausalityType.Unknown || t2 == CausalityType.Unknown){
+    if (t1 == CausalityType.Unknown || t2 == CausalityType.Unknown) {
         return true;
     }
     else {
@@ -199,29 +246,26 @@ export function isInteger(x:any) { return !isNaN(x) && isFinite(x) && Math.floor
 export function isFloat(x:any) { return !!(x % 1); }
 export function isString(value:any) {return typeof value === 'string';}
 
-export function convertToType(type: ScalarVariableType, value: any): any{
-    if(type == ScalarVariableType.Bool)
-    {
+
+export function convertToType(type: ScalarVariableType, value: any): any {
+    if (type == ScalarVariableType.Bool) {
         return Boolean(value);
     }
-    else if(type == ScalarVariableType.Int)
-    {
+    else if (type == ScalarVariableType.Int) {
         let mValue = Number(value);
-        if(isInteger(mValue)){
-            return mValue;   
-        }
-    }
-    else if(type == ScalarVariableType.Real)
-    {
-        let mValue = Number(value);
-        if(isFloat(mValue) || isInteger(mValue)){
+        if (isInteger(mValue)) {
             return mValue;
         }
     }
-    else if(type == ScalarVariableType.String)
-    {
+    else if (type == ScalarVariableType.Real) {
+        let mValue = Number(value);
+        if (isFloat(mValue) || isInteger(mValue)) {
+            return mValue;
+        }
+    }
+    else if (type == ScalarVariableType.String) {
         let mValue = value.toString();
-        if(isString(mValue)){
+        if (isString(mValue)) {
             return mValue;
         }
     }
@@ -236,7 +280,7 @@ export function isTypeCompatipleWithValue(t1: ScalarVariableType, value: any): b
         case ScalarVariableType.Real:
             return isFloat(value) || isInteger(value);
         case ScalarVariableType.Bool:
-            return typeof(value) === "boolean" || isInteger(value);
+            return typeof (value) === "boolean" || isInteger(value);
         case ScalarVariableType.Int:
             return isInteger(value);
         case ScalarVariableType.String:
