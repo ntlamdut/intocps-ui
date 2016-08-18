@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import Path = require("path");
 let JSZip = require("jszip");
-import {SYSTEM_PLATFORM} from "../../../downloader/Downloader"
+import {Utilities} from "../../../utilities"
 
 // Holds information about a .fmu container
 export class Fmu {
@@ -9,9 +9,15 @@ export class Fmu {
     scalarVariables: ScalarVariable[] = [];
     pathNotFound = true;
     logCategories: string[] =[];
+    system_platform : string = Utilities.getSystemPlatform() + Utilities.getSystemArchitecture();
 
+    
     constructor(public name: string = "{FMU}", public path: string = "") {
 
+    }
+
+    isSupported() {
+        return !!this.platforms.find(x => x === this.system_platform);
     }
 
     public updatePath(path: string): Promise<void> {
@@ -19,10 +25,6 @@ export class Fmu {
         this.scalarVariables.forEach(sv => sv.isConfirmed = false);
         this.platforms = [];
         return this.populate().catch(() => this.pathNotFound = true);
-    }
-
-    isSupported() {
-        return !!this.platforms.find(x => x ===  SYSTEM_PLATFORM);
     }
 
     public populate(): Promise<void> {
@@ -71,17 +73,12 @@ export class Fmu {
             });;
         });
     }
-        
     private convertToPlatform(platform: string) : string
     {
         let pl = platform.toLowerCase();
         switch (pl) {
-            case "darwin64": return "osx64";
-            case "darwin32" : return "osx32";
             case "win32": return "windows32";
             case "win64": return "windows64";
-            case "linux32": return "linux32";
-            case "linux64": return "linux32";
             default: return pl;
         }
     }

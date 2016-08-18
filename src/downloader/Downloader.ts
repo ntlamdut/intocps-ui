@@ -2,6 +2,7 @@ import * as childProcess from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import * as http from "http";
+import {Utilities} from "../utilities"
 let request = require("request");
 let progress = require("request-progress");
 let hash = require("md5-promised");
@@ -12,24 +13,19 @@ let unzip = require("unzip");
 
 
 export function getSystemPlatform() {
-    let arch: string;
-    if (process.arch == "ia32") {
-        arch = "32";
-    } else if (process.arch == "x64") {
-        arch = "64";
-    } else {
+    let arch: string = Utilities.getSystemArchitecture();
+    if(!(arch === "32" || arch === "64"))
         throw new Error(`Unsupported architecture ${arch}`);
-    }
-    let platform: string;
-    if (process.platform == "linux") {
-        platform = "linux";
-    } else if (process.platform == "win32") {
-        platform = "windows";
-    } else if (process.platform == "darwin") {
-        platform = "osx";
-    } else {
+    
+    let platform: string = Utilities.getSystemPlatform();
+    if(platform == "linux" || platform == "windows" || platform == "darwin")
+        {
+            if (platform == "darwin")
+                platform = "osx"
+        }
+    else
         throw new Error(`Unsupport platform ${platform}`);
-    }
+        
     return platform + arch;
 }
 
