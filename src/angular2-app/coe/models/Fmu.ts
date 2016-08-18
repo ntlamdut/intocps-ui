@@ -7,6 +7,7 @@ export class Fmu {
     platforms: Platforms[] = [];
     scalarVariables: ScalarVariable[] = [];
     pathNotFound = true;
+    logCategories: string[] =[];
 
     constructor(public name: string = "{FMU}", public path: string = "") {
 
@@ -169,6 +170,16 @@ export class Fmu {
             sv.isConfirmed = true;
 
             thisNode = iterator.iterateNext();
+        }
+
+
+         iterator = document.evaluate('fmiModelDescription/LogCategories/*[@name]/@name', oDOM, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+
+         thisNode = iterator.iterateNext();
+
+        while (thisNode) {
+            this.logCategories.push(thisNode.nodeValue);
+             thisNode = iterator.iterateNext();
         }
     }
 
