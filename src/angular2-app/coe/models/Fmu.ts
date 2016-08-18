@@ -1,10 +1,11 @@
 import * as fs from "fs";
 import Path = require("path");
 let JSZip = require("jszip");
+import {SYSTEM_PLATFORM} from "../../../downloader/Downloader"
 
 // Holds information about a .fmu container
 export class Fmu {
-    platforms: Platforms[] = [];
+    platforms: string[] = [];
     scalarVariables: ScalarVariable[] = [];
     pathNotFound = true;
     logCategories: string[] =[];
@@ -21,7 +22,7 @@ export class Fmu {
     }
 
     isSupported() {
-        return !!this.platforms.map(name => this.mapPlatformName(name)).find(name => name === process.platform);
+        return !!this.platforms.find(x => x ===  SYSTEM_PLATFORM);
     }
 
     public populate(): Promise<void> {
@@ -38,7 +39,7 @@ export class Fmu {
         // Get supported platforms
          fs.readdir(Path.join(self.path,"binaries"), function(err, items) {
              //See https://typescript.codeplex.com/workitem/2242 for reason of any usage.
-            self.platforms = items.map(platform => (<any>Platforms)[platform]);
+            self.platforms = items.map(x => self.convertToPlatform(x));
         });
        
         let mdPath = Path.join(self.path,"modelDescription.xml")
@@ -71,6 +72,20 @@ export class Fmu {
         });
     }
         
+    private convertToPlatform(platform: string) : string
+    {
+        let pl = platform.toLowerCase();
+        switch (pl) {
+            case "darwin64": return "osx64";
+            case "darwin32" : return "osx32";
+            case "win32": return "windows32";
+            case "win64": return "windows64";
+            case "linux32": return "linux32";
+            case "linux64": return "linux32";
+            default: return pl;
+        }
+    }
+
     public populateFromZip(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
@@ -91,8 +106,7 @@ export class Fmu {
                             // Get platform names
                             this.platforms = zip
                                 .file(/^binaries\/[a-zA-Z0-9]+\/.+/)
-                                .map((folder:any) => folder.name.split('/')[1])
-                                .sort();
+                                .map((folder:any) => this.convertToPlatform(folder.name.split('/')[1]));
 
                             zip.file("modelDescription.xml").async("string")
                                 .then((content: string) => {
@@ -183,18 +197,6 @@ export class Fmu {
         }
     }
 
-    private mapPlatformName(name) {
-        const map = {
-            'darwin32': 'darwin',
-            'darwin64': 'darwin',
-            'linux32': 'linux',
-            'linux64': 'linux',
-            'win64': 'win32'
-        };
-
-        return map[name] || name;
-    }
-
     public hasOutput(name: string): boolean {
         return !!this.scalarVariables
             .find(variable => variable.name == name && variable.causality === CausalityType.Output);
@@ -211,9 +213,6 @@ export class Fmu {
         return scalar;
     }
 }
-
-// Defined enums for all FMI supported platforms
-export enum Platforms { Mac64, Linux32, Linux64, Win32, Win64 }
 
 // Represents a FMI ScalarVariable
 export class ScalarVariable {

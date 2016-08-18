@@ -34,7 +34,7 @@ export function getSystemPlatform() {
 }
 
 
-const SYSTEM_PLATFORM = getSystemPlatform();
+export const SYSTEM_PLATFORM = getSystemPlatform();
 
 
 export function fetchVersionList(url:string): Promise<any> {
