@@ -3,13 +3,14 @@ import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
     Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausalityCompatible, isTypeCompatiple,
-    Fmu, ScalarValuePair, isFloat, isInteger
+    Fmu, ScalarValuePair, ScalarVariableType
 } from "../coe/models/Fmu";
 import {FileBrowserComponent} from "./inputs/file-browser.component";
 import {IProject} from "../../proj/IProject";
 import {FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators} from "@angular/forms";
 import {uniqueControlValidator} from "../shared/validators";
 import {NavigationService} from "../shared/navigation.service";
+import {WarningMessage} from "../../intocps-configurations/Messages";
 
 @Component({
     selector: "mm-configuration",
@@ -40,6 +41,7 @@ export class MmConfigurationComponent {
     form: FormGroup;
     editing: boolean = false;
     parseError: string = null;
+    warnings: WarningMessage[] = [];
 
     private config:MultiModelConfig;
 
@@ -92,8 +94,17 @@ export class MmConfigurationComponent {
     onSubmit() {
         if (!this.editing) return;
 
+        this.warnings = this.config.validate();
+
+        if (this.warnings.length > 0) return;
+
         this.config.save()
-            .then(() => this.change.emit(this.path));
+            .then(() => {
+                this.parseConfig();
+                this.selectOutputInstance(null);
+                this.selectParameterInstance(null);
+                this.change.emit(this.path);
+            });
 
         this.editing = false;
     }
@@ -123,6 +134,10 @@ export class MmConfigurationComponent {
         this.config.removeFmu(fmu);
     }
 
+    getScalarTypeName(type:number) {
+        return ['Real', 'Bool', 'Int', 'String', 'Unknown'][type];
+    }
+
     getFmuName(fmu: Fmu): string {
         return fmu.name.substring(1, fmu.name.length -1);
     }
@@ -135,6 +150,8 @@ export class MmConfigurationComponent {
         fmu
             .updatePath(path)
             .then(() => this.zone.run(() => {}));
+
+        this.selectOutputInstance(null);
     }
 
     addInstance(fmu: Fmu) {
@@ -223,10 +240,12 @@ export class MmConfigurationComponent {
     }
 
     setParameter(parameter:ScalarVariable, value:any) {
-        if (isInteger(value))
-            value = parseInt(value);
-        else if (isFloat(value))
+        if (parameter.type === ScalarVariableType.Real)
             value = parseFloat(value);
+        else if (parameter.type === ScalarVariableType.Int)
+            value = parseInt(value);
+        else if (parameter.type === ScalarVariableType.Bool)
+            value = !!value;
 
         this.selectedParameterInstance.initialValues.set(parameter, value);
     }
@@ -264,16 +283,19 @@ export class MmConfigurationComponent {
     }
 
     onConnectionChange(checked:boolean, input:ScalarVariable) {
-        let outputsTo = this.selectedOutputInstance.outputsTo.get(this.selectedOutput);
+        let outputsTo:InstanceScalarPair[] = this.selectedOutputInstance.outputsTo.get(this.selectedOutput);
 
         if (checked) {
             if (outputsTo == null) {
-                outputsTo = <Array<InstanceScalarPair>> [];
+                outputsTo = [];
                 this.selectedOutputInstance.outputsTo.set(this.selectedOutput, outputsTo);
             }
             outputsTo.push(new InstanceScalarPair(this.selectedInputInstance, input));
         } else {
             outputsTo.splice(outputsTo.findIndex(pair => pair.instance === this.selectedInputInstance && pair.scalarVariable === input), 1);
+
+            if (outputsTo.length === 0)
+                this.selectedOutputInstance.outputsTo.delete(this.selectedOutput);
         }
     }
 }

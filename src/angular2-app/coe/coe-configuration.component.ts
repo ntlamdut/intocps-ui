@@ -12,6 +12,7 @@ import {BoundedDifferenceComponent} from "./inputs/bounded-difference.component"
 import {SamplingRateComponent} from "./inputs/sampling-rate.component";
 import {numberValidator, lessThanValidator} from "../shared/validators";
 import {NavigationService} from "../shared/navigation.service";
+import {WarningMessage} from "../../intocps-configurations/Messages";
 
 @Component({
     selector: "coe-configuration",
@@ -48,6 +49,7 @@ export class CoeConfigurationComponent {
     newConstraint: new (...args: any[]) => VariableStepConstraint;
     editing:boolean = false;
     parseError:string = null;
+    warnings: WarningMessage[] = [];
 
     private config:CoSimulationConfig;
 
@@ -130,6 +132,10 @@ export class CoeConfigurationComponent {
 
     onSubmit() {
         if (!this.editing) return;
+
+        this.warnings = this.config.validate();
+
+        if (this.warnings.length > 0) return;
 
         this.config.save()
             .then(() => this.change.emit(this.path));
