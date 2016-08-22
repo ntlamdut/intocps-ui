@@ -4,7 +4,7 @@ import {IntoCpsApp} from  "./IntoCpsApp"
 
 
 export class Utilities{
-        public static timeStringToNumberConversion(text: string, setterFunc: (val: number) => void): boolean {
+    public static timeStringToNumberConversion(text: string, setterFunc: (val: number) => void): boolean {
         let value = Number(text);
         if (isNaN(value)) {
             return false;
@@ -13,12 +13,29 @@ export class Utilities{
             setterFunc(value);
             return true;
         }
-    }
-    
+    }    
 
     public static projectRoot(): string {
         let app: IntoCpsApp = IntoCpsApp.getInstance();
         return app.getActiveProject().getRootFilePath();
+    }
+
+    public static getSystemArchitecture()
+    {
+        if (process.arch == "ia32") {
+            return "32";
+        } else if (process.arch == "x64") {
+            return "64";
+        } else {
+            return process.arch;
+        }
+    }
+
+    public static getSystemPlatform(){
+        if (process.platform == "win32")
+            return "windows";
+        else
+            return process.platform;
     }
 
     public static relativeProjectPath(path: string): string {

@@ -9,23 +9,25 @@ import {BehaviorSubject} from "rxjs/Rx";
 import {Injectable, NgZone} from "@angular/core";
 import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
 
+
+
 @Injectable()
 export class CoeSimulationService {
-    progress:number = 0;
-    datasets:BehaviorSubject<Array<any>> = new BehaviorSubject([]);
+    progress: number = 0;
+    datasets: BehaviorSubject<Array<any>> = new BehaviorSubject([]);
 
-    private webSocket:WebSocket;
-    private sessionId:number;
-    private remoteCoe:boolean;
-    private url:string;
-    private resultDir:string;
-    private config:CoSimulationConfig;
+    private webSocket: WebSocket;
+    private sessionId: number;
+    private remoteCoe: boolean;
+    private url: string;
+    private resultDir: string;
+    private config: CoSimulationConfig;
     private counter: number = 0;
 
-    constructor(private http:Http,
-                private settings:SettingsService,
-                private fileSystem:FileSystemService,
-                private zone:NgZone) {
+    constructor(private http: Http,
+        private settings: SettingsService,
+        private fileSystem: FileSystemService,
+        private zone: NgZone) {
 
     }
 
@@ -34,7 +36,7 @@ export class CoeSimulationService {
         this.datasets.next([]);
     }
 
-    run(config:CoSimulationConfig) {
+    run(config: CoSimulationConfig) {
         this.config = config;
         this.remoteCoe = this.settings.get(SettingKeys.COE_REMOTE_HOST);
         this.url = this.settings.get(SettingKeys.COE_URL);
@@ -48,10 +50,10 @@ export class CoeSimulationService {
     }
 
     private initializeDatasets() {
-        let datasets:Array<any> = [];
+        let datasets: Array<any> = [];
 
-        this.config.livestream.forEach((value:any, index:any) => {
-            value.forEach((sv:any) => {
+        this.config.livestream.forEach((value: any, index: any) => {
+            value.forEach((sv: any) => {
                 datasets.push({
                     name: Serializer.getIdSv(index, sv),
                     y: [],
@@ -67,7 +69,7 @@ export class CoeSimulationService {
         this.progress = 0;
 
         this.http.get(`http://${this.url}/createSession`)
-            .subscribe((response:Response) => {
+            .subscribe((response: Response) => {
                 this.sessionId = response.json().sessionId;
                 this.uploadFmus();
             });
@@ -83,11 +85,11 @@ export class CoeSimulationService {
 
         let formData = new FormData();
 
-        this.config.multiModel.fmus.forEach((value:Fmu) => {
+        this.config.multiModel.fmus.forEach((value: Fmu) => {
             this.fileSystem.readFile(value.path).then(content => {
                 formData.append(
                     'file',
-                    new Blob([content], {type: "multipart/form-data"}),
+                    new Blob([content], { type: "multipart/form-data" }),
                     value.path
                 );
             });
@@ -119,7 +121,17 @@ export class CoeSimulationService {
         this.webSocket.addEventListener("error", event => console.error(event));
         this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
 
-        let data = JSON.stringify({ startTime: this.config.startTime, endTime: this.config.endTime });
+        var message: any = { startTime: this.config.startTime, endTime: this.config.endTime };
+
+        // enable logging for all log categories        
+        var logCategories: any = new Object();
+        this.config.multiModel.fmuInstances.forEach(instance => {
+            let key: any = instance.fmu.name + "." + instance.name;
+            logCategories[key] = instance.fmu.logCategories;
+        });
+        Object.assign(message, { logLevels: logCategories });
+
+        let data = JSON.stringify(message);
 
         this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
             .then(() => {
@@ -128,16 +140,15 @@ export class CoeSimulationService {
             });
     }
 
-    private onMessage(event:MessageEvent) {
-        
+    private onMessage(event: MessageEvent) {
+
         let rawData = JSON.parse(event.data);
         let datasets = this.datasets.getValue();
         let newCOE = false;
         let xValue = this.counter++;
         //Preparing for new livestream messages. It has the following structure:
         // {"data":{"{integrate}":{"inst2":{"output":"0.0"}},"{sine}":{"sine":{"output":"0.0"}}},"time":0.0}}
-        if("time" in rawData)
-        {
+        if ("time" in rawData) {
             xValue = rawData.time;
             rawData = rawData.data;
         }
@@ -152,7 +163,7 @@ export class CoeSimulationService {
 
                     if (value == "true") value = 1;
                     else if (value == "false") value = 0;
-                    let dataset = datasets.find((dataset:any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
+                    let dataset = datasets.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
                     dataset.y.push(value);
                     dataset.x.push(xValue);
                 });
@@ -165,14 +176,25 @@ export class CoeSimulationService {
     private downloadResults() {
         this.webSocket.close();
 
-        this.http.get(`http://${this.url}/result/${this.sessionId}`)
+        this.http.get(`http://${this.url}/result/${this.sessionId}/plain`)
             .subscribe(response => {
                 // Write results to disk and save a copy of the multi model and coe configs
                 Promise.all([
-                    this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/log.csv`), response.text()),
+                    this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/outputs.csv`), response.text()),
                     this.fileSystem.copyFile(this.config.sourcePath, Path.normalize(`${this.resultDir}/coe.json`)),
                     this.fileSystem.copyFile(this.config.multiModel.sourcePath, Path.normalize(`${this.resultDir}/mm.json`))
                 ]).then(() => this.progress = 100);
             });
+
+        var http = require('http');
+        var fs = require('fs');
+        var file = fs.createWriteStream(`${this.resultDir}/log.zip`);
+        let url = `http://${this.url}/result/${this.sessionId}/zip`;
+        var request = http.get(url, function (response:any) {
+            response.pipe(file);
+        });
+
     }
+
+
 }

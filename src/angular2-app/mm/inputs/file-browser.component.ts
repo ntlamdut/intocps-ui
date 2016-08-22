@@ -1,6 +1,7 @@
 import {Component, Input, Output, EventEmitter, OnInit} from "@angular/core";
 import {remote} from "electron";
 import * as Path from "path";
+import * as fs from "fs";
 
 @Component({
     selector: "file-browser",
@@ -46,6 +47,9 @@ export class FileBrowserComponent implements OnInit {
 
     onChange(path:string) {
         this.path = path;
-        this.pathChange.emit(Path.normalize(`${this.basePath}/${this.path}`));
+
+        fs.access(Path.normalize(`${this.basePath}/${this.path}`), fs.R_OK, error => {
+            this.pathChange.emit(Path.normalize(error ? this.path : `${this.basePath}/${this.path}`));
+        });
     }
 }

@@ -1,52 +1,120 @@
 import * as fs from "fs";
+import Path = require("path");
 let JSZip = require("jszip");
+import {Utilities} from "../../../utilities"
 
 // Holds information about a .fmu container
 export class Fmu {
-    platforms: Platforms[] = [];
+    platforms: string[] = [];
     scalarVariables: ScalarVariable[] = [];
+    pathNotFound = true;
+    logCategories: string[] =[];
+    system_platform : string = Utilities.getSystemPlatform() + Utilities.getSystemArchitecture();
 
+    
     constructor(public name: string = "{FMU}", public path: string = "") {
 
+    }
+
+    isSupported() {
+        return !!this.platforms.find(x => x === this.system_platform);
     }
 
     public updatePath(path: string): Promise<void> {
         this.path = path;
         this.scalarVariables.forEach(sv => sv.isConfirmed = false);
         this.platforms = [];
-        return this.populate();
+        return this.populate().catch(() => this.pathNotFound = true);
     }
 
     public populate(): Promise<void> {
-        let checkFileExists = new Promise<Buffer>((resolve, reject) => {
+      if (fs.lstatSync(this.path).isDirectory()) {
+            return this.populateFromDir();
+        } else {
+            return this.populateFromZip();
+        }
+    }
+
+    public populateFromDir(): Promise<void> {
+        let self = this;
+        
+        // Get supported platforms
+         fs.readdir(Path.join(self.path,"binaries"), function(err, items) {
+             //See https://typescript.codeplex.com/workitem/2242 for reason of any usage.
+            self.platforms = items.map(x => self.convertToPlatform(x));
+        });
+       
+        let mdPath = Path.join(self.path,"modelDescription.xml")
+        let checkFileExists = new Promise<Buffer>(function (resolve, reject) {
             try {
-                if (fs.accessSync(this.path, fs.R_OK))
+                if (fs.accessSync(mdPath, fs.R_OK)) {
                     reject();
-                else
-                    resolve();
+                }
+                self.pathNotFound = false;
+                resolve();
             } catch (e) {
                 reject(e);
             }
         });
 
         //wrap readFile in a promise
-        let fileReadPromise = new Promise<Buffer>((resolve, reject) => {
-            fs.readFile(this.path, (err, data) => {
-                if (err)
-                    reject(err);
-                else
-                    resolve(data);
+        let fileReadPromise = new Promise<Buffer>(function (resolve, reject) {
+            fs.readFile(mdPath, function (err, data) {
+                if (err !== null) {
+                    return reject(err);
+                }
+                resolve(data);
             });
         });
 
         return checkFileExists.then(() => {
-            var zip = new JSZip();
+            return fileReadPromise.then(data => {
+                self.populateFromModelDescription(data.toString('UTF-8', 0, data.length));
+            });;
+        });
+    }
+    private convertToPlatform(platform: string) : string
+    {
+        let pl = platform.toLowerCase();
+        switch (pl) {
+            case "win32": return "windows32";
+            case "win64": return "windows64";
+            default: return pl;
+        }
+    }
 
-            // read a zip file
-            return fileReadPromise
-                .then(data => zip.loadAsync(data))
-                .then(() => zip.file("modelDescription.xml").async("string"))
-                .then((content: string) => this.populateFromModelDescription(content));
+    public populateFromZip(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                if (fs.accessSync(this.path, fs.R_OK))
+                    return reject();
+
+                fs.readFile(this.path, (err, data) => {
+                    if (err)
+                        return reject(err);
+
+                    var zip = new JSZip();
+
+                    zip
+                        .loadAsync(data)
+                        .then(() => {
+                            this.pathNotFound = false;
+
+                            // Get platform names
+                            this.platforms = zip
+                                .file(/^binaries\/[a-zA-Z0-9]+\/.+/)
+                                .map((folder:any) => this.convertToPlatform(folder.name.split('/')[1]));
+
+                            zip.file("modelDescription.xml").async("string")
+                                .then((content: string) => {
+                                    this.populateFromModelDescription(content);
+                                    resolve();
+                                });
+                        });
+                });
+            } catch (e) {
+                reject(e);
+            }
         });
     }
 
@@ -102,7 +170,7 @@ export class Fmu {
                 else if ("calculatedParameter" == causalityText) {
                     causality = CausalityType.CalculatedParameter;
                 }
-                else if ("local" == causalityText){
+                else if ("local" == causalityText) {
                     causality = CausalityType.Local;
                 }
             }
@@ -114,6 +182,21 @@ export class Fmu {
 
             thisNode = iterator.iterateNext();
         }
+
+
+         iterator = document.evaluate('fmiModelDescription/LogCategories/*[@name]/@name', oDOM, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+
+         thisNode = iterator.iterateNext();
+
+        while (thisNode) {
+            this.logCategories.push(thisNode.nodeValue);
+             thisNode = iterator.iterateNext();
+        }
+    }
+
+    public hasOutput(name: string): boolean {
+        return !!this.scalarVariables
+            .find(variable => variable.name == name && variable.causality === CausalityType.Output);
     }
 
     public getScalarVariable(name: string): ScalarVariable {
@@ -127,9 +210,6 @@ export class Fmu {
         return scalar;
     }
 }
-
-// Defined enums for all FMI supported platforms
-export enum Platforms { Mac64, Linux32, Linux64, Win32, Win64 }
 
 // Represents a FMI ScalarVariable
 export class ScalarVariable {
@@ -149,20 +229,19 @@ export enum CausalityType { Output, Input, Parameter, CalculatedParameter, Local
 export function isTypeCompatiple(t1: ScalarVariableType, t2: ScalarVariableType): boolean {
     if (t1 == ScalarVariableType.Unknown || t2 == ScalarVariableType.Unknown) {
         return true;
-    } else if(t1 ==ScalarVariableType.Bool && (t2==ScalarVariableType.Int || t2==ScalarVariableType.Real)) {
+    } else if (t1 == ScalarVariableType.Bool && (t2 == ScalarVariableType.Int || t2 == ScalarVariableType.Real)) {
         // bool -> number
         return true;
-    }else if(t2 ==ScalarVariableType.Bool && (t1==ScalarVariableType.Int || t1==ScalarVariableType.Real)) {
+    } else if (t2 == ScalarVariableType.Bool && (t1 == ScalarVariableType.Int || t1 == ScalarVariableType.Real)) {
         //number -> bool
-          return true;
-    }else
-    {
+        return true;
+    } else {
         return t1 == t2;
     }
 }
 
 export function isCausalityCompatible(t1: CausalityType, t2: CausalityType): boolean {
-    if(t1 == CausalityType.Unknown || t2 == CausalityType.Unknown){
+    if (t1 == CausalityType.Unknown || t2 == CausalityType.Unknown) {
         return true;
     }
     else {
@@ -174,29 +253,26 @@ export function isInteger(x:any) { return !isNaN(x) && isFinite(x) && Math.floor
 export function isFloat(x:any) { return !!(x % 1); }
 export function isString(value:any) {return typeof value === 'string';}
 
-export function convertToType(type: ScalarVariableType, value: any): any{
-    if(type == ScalarVariableType.Bool)
-    {
+
+export function convertToType(type: ScalarVariableType, value: any): any {
+    if (type == ScalarVariableType.Bool) {
         return Boolean(value);
     }
-    else if(type == ScalarVariableType.Int)
-    {
+    else if (type == ScalarVariableType.Int) {
         let mValue = Number(value);
-        if(isInteger(mValue)){
-            return mValue;   
-        }
-    }
-    else if(type == ScalarVariableType.Real)
-    {
-        let mValue = Number(value);
-        if(isFloat(mValue) || isInteger(mValue)){
+        if (isInteger(mValue)) {
             return mValue;
         }
     }
-    else if(type == ScalarVariableType.String)
-    {
+    else if (type == ScalarVariableType.Real) {
+        let mValue = Number(value);
+        if (isFloat(mValue) || isInteger(mValue)) {
+            return mValue;
+        }
+    }
+    else if (type == ScalarVariableType.String) {
         let mValue = value.toString();
-        if(isString(mValue)){
+        if (isString(mValue)) {
             return mValue;
         }
     }
@@ -211,7 +287,7 @@ export function isTypeCompatipleWithValue(t1: ScalarVariableType, value: any): b
         case ScalarVariableType.Real:
             return isFloat(value) || isInteger(value);
         case ScalarVariableType.Bool:
-            return typeof(value) === "boolean" || isInteger(value);
+            return typeof (value) === "boolean" || isInteger(value);
         case ScalarVariableType.Int:
             return isInteger(value);
         case ScalarVariableType.String:

@@ -1,6 +1,7 @@
 ///<reference path="../typings/browser/ambient/github-electron/index.d.ts"/>
 ///<reference path="../typings/browser/ambient/node/index.d.ts"/>
-import {IntoCpsApp} from  "./IntoCpsApp";
+import IntoCpsApp from  "./IntoCpsApp";
+import {SettingKeys} from "./settings/SettingKeys"
 
 export default class DialogHandler {
 
@@ -53,11 +54,11 @@ export default class DialogHandler {
         const BrowserWindow = electron.remote.BrowserWindow;
 
         this.win = new BrowserWindow({ width: this.windowWidth, height: this.windowHeight, show: false });
-
-        if (this.win.setMenu) this.win.setMenu(null);
+        if(!IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.DEVELOPMENT_MODE) && this.win.setMenu)
+            this.win.setMenu(null);
 
         // Open the DevTools.
-        //win.webContents.openDevTools();
+        //this.win.webContents.openDevTools();
 
         this.win.on('closed', function () {
             this.win = null;
