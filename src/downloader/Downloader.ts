@@ -6,7 +6,9 @@ import {Utilities} from "../utilities"
 let request = require("request");
 let progress = require("request-progress");
 let hash = require("md5-promised");
-let unzip = require("unzip");
+//let unzip = require("unzip");
+let yauzl = require("yauzl");
+let mkdirp = require("mkdirp");
 
 
 
@@ -14,18 +16,17 @@ let unzip = require("unzip");
 
 export function getSystemPlatform() {
     let arch: string = Utilities.getSystemArchitecture();
-    if(!(arch === "32" || arch === "64"))
+    if (!(arch === "32" || arch === "64"))
         throw new Error(`Unsupported architecture ${arch}`);
-    
+
     let platform: string = Utilities.getSystemPlatform();
-    if(platform == "linux" || platform == "windows" || platform == "darwin")
-        {
-            if (platform == "darwin")
-                platform = "osx"
-        }
+    if (platform == "linux" || platform == "windows" || platform == "darwin") {
+        if (platform == "darwin")
+            platform = "osx"
+    }
     else
         throw new Error(`Unsupport platform ${platform}`);
-        
+
     return platform + arch;
 }
 
@@ -33,11 +34,11 @@ export function getSystemPlatform() {
 export const SYSTEM_PLATFORM = getSystemPlatform();
 
 
-export function fetchVersionList(url:string): Promise<any> {
+export function fetchVersionList(url: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         // let data = new Stream<string>();
-        request({url: url, json: true}, function (
-                error: Error, response: http.IncomingMessage, body: any) {
+        request({ url: url, json: true }, function (
+            error: Error, response: http.IncomingMessage, body: any) {
             if (!error && response.statusCode == 200) {
                 resolve(body);
             } else {
@@ -50,8 +51,8 @@ export function fetchVersionList(url:string): Promise<any> {
 
 export function fetchVersion(url: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
-        request({url: url, json: true}, function (
-                error: Error, response: http.IncomingMessage, body: any) {
+        request({ url: url, json: true }, function (
+            error: Error, response: http.IncomingMessage, body: any) {
             if (!error && response.statusCode == 200) {
                 resolve(body);
             } else {
@@ -69,25 +70,25 @@ export function downloadTool(tool: any, targetDirectory: string, progressCallbac
     const md5sum: string = tool.platforms[SYSTEM_PLATFORM].md5sum;
     return new Promise<any>((resolve, reject) => {
         progress(request(url))
-        .on("progress", function (state: any) {
-            progressCallback(state);
-        })
-        .on("error", function (error: Error) {
-            reject(error);
-        })
-        .on("end", function () {
-            progressCallback(1);
-            hash(filePath).then(function (newMd5sum: string) {
-                if (newMd5sum == md5sum) {
-                    resolve(filePath);
-                } else {
-                    reject("Bad MD5 expected: '"+md5sum + "' got: '"+newMd5sum+"'");
-                }
-            }, function (error: string) {
+            .on("progress", function (state: any) {
+                progressCallback(state);
+            })
+            .on("error", function (error: Error) {
                 reject(error);
-            });
-        })
-        .pipe(fs.createWriteStream(filePath));
+            })
+            .on("end", function () {
+                progressCallback(1);
+                hash(filePath).then(function (newMd5sum: string) {
+                    if (newMd5sum == md5sum) {
+                        resolve(filePath);
+                    } else {
+                        reject("Bad MD5 expected: '" + md5sum + "' got: '" + newMd5sum + "'");
+                    }
+                }, function (error: string) {
+                    reject(error);
+                });
+            })
+            .pipe(fs.createWriteStream(filePath));
     });
 }
 
@@ -105,16 +106,37 @@ function launchToolInstaller(filePath: string) {
 }
 
 
-function unpackTool(filePath: string, targetDirectory: string) {
+export function unpackTool(filePath: string, targetDirectory: string) {
     return new Promise((resolve, reject) => {
-        fs.createReadStream(filePath)
-        .on("error", function (error: string) {
-            reject(error);
-        })
-        .on("close", function () {
-            resolve();
-        })
-        .pipe(unzip.Extract({path: targetDirectory}));
+         yauzl.open(filePath, function(err, zip) {
+            if (err) throw err;
+            zip.on("entry", function(entry) {
+                    zip.openReadStream(entry, function(err, readStream) {
+                        if (err) throw err;
+                        let fullPath = targetDirectory + "yauzl/" + entry.fileName;
+                        // ensure parent directory exists, and then:
+                        mkdirp(path.dirname(fullPath), function(err){
+                            if(err) {
+                                throw err;}
+                            readStream.pipe(fs.createWriteStream(fullPath));
+                        });
+                        
+                    });
+                
+            });
+            zip.once("end", function() {
+                console.log("[YAUZL] Closing zip");
+                zip.close();
+            });
+        });
+        // fs.createReadStream(filePath)
+        // .on("error", function (error: string) {
+        //     reject(error);
+        // })
+        // .on("close", function () {
+        //     resolve();
+        // })
+        // .pipe(unzip.Extract({path: targetDirectory}));
     });
 }
 
@@ -132,8 +154,8 @@ export function installTool(tool: any, filePath: string, targetDirectory: string
 
 
 
-export function compareVersions (a:string, b:string) {
-    var i:number, diff:number;
+export function compareVersions(a: string, b: string) {
+    var i: number, diff: number;
     var regExStrip0 = /(\.0+)+$/;
     var segmentsA = a.replace(regExStrip0, '').split('.');
     var segmentsB = b.replace(regExStrip0, '').split('.');
