@@ -6,13 +6,8 @@ import {Utilities} from "../utilities"
 let request = require("request");
 let progress = require("request-progress");
 let hash = require("md5-promised");
-//let unzip = require("unzip");
 let yauzl = require("yauzl");
 let mkdirp = require("mkdirp");
-
-
-
-
 
 export function getSystemPlatform() {
     let arch: string = Utilities.getSystemArchitecture();
@@ -108,35 +103,34 @@ function launchToolInstaller(filePath: string) {
 
 export function unpackTool(filePath: string, targetDirectory: string) {
     return new Promise((resolve, reject) => {
-         yauzl.open(filePath, function(err, zip) {
-            if (err) throw err;
-            zip.on("entry", function(entry) {
-                    zip.openReadStream(entry, function(err, readStream) {
-                        if (err) throw err;
-                        let fullPath = targetDirectory + "yauzl/" + entry.fileName;
-                        // ensure parent directory exists, and then:
-                        mkdirp(path.dirname(fullPath), function(err){
-                            if(err) {
-                                throw err;}
-                            readStream.pipe(fs.createWriteStream(fullPath));
-                        });
-                        
-                    });
-                
+        yauzl.open(filePath, {lazyEntries: true}, function(err  : any, zipfile : any) {
+        if (err) throw err;
+        zipfile.readEntry();
+        zipfile.on("entry", function(entry : any) {
+            let desiredPath = targetDirectory + entry.fileName;
+            if (/\/$/.test(entry.fileName)) {
+            // directory file names end with '/'
+            mkdirp(desiredPath, function(err : any) {
+                if (err) throw err;
+                zipfile.readEntry();
             });
-            zip.once("end", function() {
-                console.log("[YAUZL] Closing zip");
-                zip.close();
+            } else {
+            // file entry
+            zipfile.openReadStream(entry, function(err : any, readStream : any) {
+                if (err) throw err;
+                // ensure parent directory exists
+                mkdirp(path.dirname(desiredPath), function(err : any) {
+                if (err) throw err;
+                readStream.pipe(fs.createWriteStream(desiredPath));
+                readStream.on("end", function() {
+                    zipfile.readEntry();
+                    resolve();
+                });
+                });
             });
+            }
         });
-        // fs.createReadStream(filePath)
-        // .on("error", function (error: string) {
-        //     reject(error);
-        // })
-        // .on("close", function () {
-        //     resolve();
-        // })
-        // .pipe(unzip.Extract({path: targetDirectory}));
+        });
     });
 }
 
