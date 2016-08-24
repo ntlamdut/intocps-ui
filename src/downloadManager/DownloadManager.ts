@@ -188,7 +188,6 @@ function showVersion(version: string, data: any) {
                     downloader.downloadTool(tool, getTempDir(), progress).then(function (filePath) {
                         console.log("Download complete: " + filePath);
                         dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
-                        //console.log("Unpacking tool");
                     });
                 }
             });

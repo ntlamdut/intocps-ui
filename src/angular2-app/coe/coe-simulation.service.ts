@@ -127,8 +127,9 @@ export class CoeSimulationService {
         var logCategories: any = new Object();
         this.config.multiModel.fmuInstances.forEach(instance => {
             let key: any = instance.fmu.name + "." + instance.name;
-            logCategories[key] = instance.fmu.logCategories;
-        });
+            // TODO INTO-CPS APP: Commented line because of issue in overture tool wrapper
+            //logCategories[key] = instance.fmu.logCategories;
+        });        
         Object.assign(message, { logLevels: logCategories });
 
         let data = JSON.stringify(message);
