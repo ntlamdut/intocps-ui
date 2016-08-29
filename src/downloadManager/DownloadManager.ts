@@ -5,6 +5,7 @@
 
 import {IntoCpsApp} from  "../IntoCpsApp"
 import {SettingKeys} from "../settings/SettingKeys";
+import {DialogHandler} from "../DialogHandler";
 
 import Path = require('path');
 import fs = require('fs');
@@ -140,6 +141,13 @@ function fetchList() {
 
 }
 
+function createButton() : HTMLButtonElement{
+    let btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn btn-default btn-sm";
+    return btn;
+}
+
 function showVersion(version: string, data: any) {
 
     var panel: HTMLInputElement = <HTMLInputElement>document.getElementById("tool-versions-panel");
@@ -158,7 +166,7 @@ function showVersion(version: string, data: any) {
                 supported = true;
             }
         });
-        let releasePage = tool.releasePage;
+        let releasePage = tool.releasepage;
 
         if (!supported)
             return;
@@ -168,10 +176,7 @@ function showVersion(version: string, data: any) {
         divTool.innerText = tool.name + " - " + tool.description + " (" + tool.version + ") ";
         div.appendChild(divTool);
 
-        let btn = document.createElement("button");
-        //button type="button" class="btn btn-default btn-sm"
-        btn.type = "button";
-        btn.className = "btn btn-default btn-sm";
+        let btn = createButton();
         var icon = document.createElement("span");
         icon.className = "glyphicon glyphicon-save";
         btn.appendChild(icon);
@@ -195,10 +200,15 @@ function showVersion(version: string, data: any) {
         };
 
         if (releasePage) {
-            let webView = document.createElement("webview");
-            webView.className = "display:inline-flex; width:640px; height:480px";
-            webView.src = "https://twt-gmbh.github.io/INTO-CPS-COE/";
-            divTool.appendChild(webView);
+            let btn = createButton();
+            var t = document.createTextNode("Release page");
+            btn.appendChild(t);
+            let dh = new DialogHandler(releasePage, 640, 400, null,null,null);
+            dh.externalUrl = true;            
+            divTool.appendChild(btn);
+            btn.onclick = function(e){
+                dh.openWindow();
+            };
         }
     });
 
