@@ -158,6 +158,7 @@ function showVersion(version: string, data: any) {
                 supported = true;
             }
         });
+        let releasePage = tool.releasePage;
 
         if (!supported)
             return;
@@ -192,6 +193,13 @@ function showVersion(version: string, data: any) {
                 }
             });
         };
+
+        if (releasePage) {
+            let webView = document.createElement("webview");
+            webView.className = "display:inline-flex; width:640px; height:480px";
+            webView.src = "https://twt-gmbh.github.io/INTO-CPS-COE/";
+            divTool.appendChild(webView);
+        }
     });
 
     var divT = document.getElementById("toolsversion");
