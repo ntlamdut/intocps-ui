@@ -161,13 +161,17 @@ function showVersion(version: string, data: any) {
         var supported = false;
         let platform = downloader.getSystemPlatform();
         let platforms = tool.platforms;
-        Object.keys(tool.platforms).forEach(pl => {
-            if (pl.indexOf(platform) == 0) {
-                supported = true;
-            }
-        });
-        let releasePage = tool.releasepage;
-
+        if(platforms === "any")
+        {
+            supported = true
+        }
+        else
+            {Object.keys(tool.platforms).forEach(pl => {
+                if (pl.indexOf(platform) == 0) {
+                    supported = true;
+                }
+            });
+        }
         if (!supported)
             return;
 
@@ -198,7 +202,7 @@ function showVersion(version: string, data: any) {
                 }
             });
         };
-
+        let releasePage = tool.releasepage;
         if (releasePage) {
             let btn = createButton();
             var t = document.createTextNode("Release page");
