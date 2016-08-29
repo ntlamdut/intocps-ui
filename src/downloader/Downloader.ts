@@ -59,10 +59,11 @@ export function fetchVersion(url: string): Promise<any> {
 
 
 export function downloadTool(tool: any, targetDirectory: string, progressCallback: Function) {
-    const url: string = tool.platforms[SYSTEM_PLATFORM].url;
-    const fileName: string = tool.platforms[SYSTEM_PLATFORM].filename;
+    let platFormToUse = tool.platforms.any ? "any" : SYSTEM_PLATFORM;
+    const url: string = tool.platforms[platFormToUse].url;
+    const fileName: string = tool.platforms[platFormToUse].filename;
     const filePath: string = path.join(targetDirectory, fileName);
-    const md5sum: string = tool.platforms[SYSTEM_PLATFORM].md5sum;
+    const md5sum: string = tool.platforms[platFormToUse].md5sum;
     return new Promise<any>((resolve, reject) => {
         progress(request(url))
             .on("progress", function (state: any) {
