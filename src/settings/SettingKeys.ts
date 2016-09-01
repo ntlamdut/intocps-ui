@@ -29,7 +29,7 @@ export namespace SettingKeys {
     DEFAULT_VALUES[UPDATE_SITE] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/master/download/";
     DEFAULT_VALUES[DEV_UPDATE_SITE] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/development/download/";
     DEFAULT_VALUES[EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/master/examples/examples.json";
-    DEFAULT_VALUES[DEV_EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/development/examples/examples.json";
+    DEFAULT_VALUES[DEV_EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/examples-dev/examples/examples.json";
     DEFAULT_VALUES[DEVELOPMENT_MODE] = false;
     DEFAULT_VALUES[COE_URL] = "localhost:8082";
     DEFAULT_VALUES[COE_DEBUG_ENABLED] = false;
