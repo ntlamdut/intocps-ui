@@ -16,7 +16,8 @@ var outputPath = 'dist/',
         bowerFolder + '/bootstrap/dist/css/bootstrap.css',
         resourcesFolder + '/w2ui-1.5/w2ui.min.css'],
     bowerSrcs = "",
-    customResources= [resourcesFolder+'/into-cps/**/*']
+    customResources= [resourcesFolder+'/into-cps/**/*'],
+    configJsons = ['./bower.json', './package.json', 'typings.json']
     ;
 
 // Gulp plugins
@@ -37,49 +38,58 @@ var gulp = require('gulp'),
     webpack = require('webpack'),
     htmlhint = require("gulp-htmlhint"),
     runSequence = require('run-sequence'),
-    conventionalChangelog = require('gulp-conventional-changelog'),
-    conventionalGithubReleaser = require('conventional-github-releaser'),
     bump = require('gulp-bump'),
-    gutil = require('gulp-util'),
     git = require('gulp-git'),
-    fs = require('fs')
-    ;
+    fs = require('fs'),
+    minimist = require('minimist'),
+    semver = require('semver')
+   ;
 
 // Tasks
 
-// Release Management
-gulp.task('changelog', function () {
-  return gulp.src('CHANGELOG.md', {
-    buffer: false
-  })
-    .pipe(conventionalChangelog({
-      preset: 'angular' // Or to any other commit message convention you use.
-    }))
+// Automated Release Prep
+
+function getPackageJson() {
+    // multiple calls so the version number won't be updated
+    return JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+};
+
+var knownOptions = {
+  string: 'vt',
+  boolean : 'rel',
+  default: { vt: 'patch',rel:false}
+};
+
+var options = minimist(process.argv.slice(2), knownOptions);
+
+gulp.task('bump-rel', function () {
+  var pkg = getPackageJson(); 
+  var newVer = semver.inc(pkg.version, options.vt);
+ 
+  if (!options.rel){
+    newVer += '-rc';
+  }
+
+  return gulp.src(configJsons)
+  
+    .pipe(bump({version: newVer}))
     .pipe(gulp.dest('./'));
 });
 
-gulp.task('github-release', function(done) {
-  conventionalGithubReleaser({
-    type: "oauth",
-    token: '0126af95c0e2d9b0a7c78738c4c00a860b04acc8' // change this to your own GitHub token or use an environment variable
-  }, {
-    preset: 'angular' // Or to any other commit message convention you use.
-  }, done);
-});
-
-gulp.task('bump-version', function () {
-// We hardcode the version change type to 'patch' but it may be a good idea to
-// use minimist (https://www.npmjs.com/package/minimist) to determine with a
-// command argument whether you are doing a 'major', 'minor' or a 'patch' change.
-  return gulp.src(['./bower.json', './package.json'])
-    .pipe(bump({type: "patch"}).on('error', gutil.log))
+gulp.task('bump-dev', function(){
+  var pkg = getPackageJson(); 
+  var newVer = semver.inc(pkg.version, 'prepatch','dev');
+  newVer = newVer.slice(0,-2)
+  
+  return gulp.src(configJsons)
+    .pipe(bump({version: newVer}))
     .pipe(gulp.dest('./'));
 });
 
 gulp.task('commit-changes', function () {
-  return gulp.src('.')
+  return gulp.src(['./bower.json', './package.json', 'typings.json'])
     .pipe(git.add())
-    .pipe(git.commit('[Prerelease] Bumped version number'));
+    .pipe(git.commit('[GULP] Bump version number'));
 });
 
 gulp.task('push-changes', function (cb) {
@@ -87,34 +97,30 @@ gulp.task('push-changes', function (cb) {
 });
 
 gulp.task('create-new-tag', function (cb) {
-  var version = getPackageJsonVersion();
-  git.tag(version, 'Created Tag for version: ' + version, function (error) {
+  var version = getPackageJson().version;
+  var tag = 'v'+version;
+  git.tag(tag, 'Created Tag for version: ' + version, function (error) {
     if (error) {
       return cb(error);
     }
     git.push('origin', 'master', {args: '--tags'}, cb);
   });
-
-  function getPackageJsonVersion () {
-    // We parse the json file instead of using require because require caches
-    // multiple calls so the version number won't be updated
-    return JSON.parse(fs.readFileSync('./package.json', 'utf8')).version;
-  };
 });
 
-gulp.task('release', function (callback) {
+gulp.task('prep-release', function (callback) {
   runSequence(
-    'bump-version',
-    'changelog',
+    'bump-rel',
     'commit-changes',
     'push-changes',
     'create-new-tag',
-    'github-release',
+    'bump-dev',
+    'commit-changes',
+    'push-changes',
     function (error) {
       if (error) {
         console.log(error.message);
       } else {
-        console.log('RELEASE FINISHED SUCCESSFULLY');
+        console.log('RELEASE PREP FINISHED SUCCESSFULLY');
       }
       callback(error);
     });
