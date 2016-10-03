@@ -1,8 +1,8 @@
 {
-    "name": "intocps-ui",
-    "productName": "New INTO-CPS UI",
-    "version": "1.0.0",
-    "description": "New user inferface for the INTO-CPS app",
+    "name": "into-cps-app",
+    "productName": "INTO-CPS APP",
+    "version": "2.0.1-dev",
+    "description": "User interface for the INTO-CPS Toolchain",
     "license": "MIT",
     "repository": {
         "type": "git",

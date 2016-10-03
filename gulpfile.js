@@ -16,7 +16,8 @@ var outputPath = 'dist/',
         bowerFolder + '/bootstrap/dist/css/bootstrap.css',
         resourcesFolder + '/w2ui-1.5/w2ui.min.css'],
     bowerSrcs = "",
-    customResources= [resourcesFolder+'/into-cps/**/*']
+    customResources= [resourcesFolder+'/into-cps/**/*'],
+    configJsons = ['./bower.json', './package.json', 'typings.json']
     ;
 
 // Gulp plugins
@@ -35,9 +36,96 @@ var gulp = require('gulp'),
     packager = require('electron-packager'),
     packageJSON = require('./package.json'),
     webpack = require('webpack'),
-	htmlhint = require("gulp-htmlhint");
+    htmlhint = require("gulp-htmlhint"),
+    runSequence = require('run-sequence'),
+    bump = require('gulp-bump'),
+    gutil = require('gulp-util'),
+    git = require('gulp-git'),
+    fs = require('fs'),
+    minimist = require('minimist'),
+    semver = require('semver')
+   ;
 
 // Tasks
+
+// Automated Release Prep
+
+function getPackageJson() {
+    // multiple calls so the version number won't be updated
+    return JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+};
+
+var knownOptions = {
+  string: 'vt',
+  boolean : 'rel',
+  default: { vt: 'patch',rel:false}
+};
+
+var options = minimist(process.argv.slice(2), knownOptions);
+
+gulp.task('bump-rel', function () {
+  var pkg = getPackageJson(); 
+  var newVer = semver.inc(pkg.version, options.vt);
+ 
+  if (!options.rel){
+    newVer += '-rc';
+  }
+
+  return gulp.src(configJsons)
+  
+    .pipe(bump({version: newVer}))
+    .pipe(gulp.dest('./'));
+});
+
+gulp.task('bump-dev', function(){
+  var pkg = getPackageJson(); 
+  var newVer = semver.inc(pkg.version, 'prepatch','dev');
+  newVer = newVer.slice(0,-2)
+  
+  return gulp.src(configJsons)
+    .pipe(bump({version: newVer}))
+    .pipe(gulp.dest('./'));
+});
+
+gulp.task('commit-changes', function () {
+  return gulp.src(['./bower.json', './package.json', 'typings.json'])
+    .pipe(git.add())
+    .pipe(git.commit('[GULP] Bump version number'));
+});
+
+gulp.task('push-changes', function (cb) {
+  git.push('origin', 'master', cb);
+});
+
+gulp.task('create-new-tag', function (cb) {
+  var version = getPackageJson().version;
+  var tag = 'v'+version;
+  git.tag(tag, 'Created Tag for version: ' + version, function (error) {
+    if (error) {
+      return cb(error);
+    }
+    git.push('origin', 'master', {args: '--tags'}, cb);
+  });
+});
+
+gulp.task('prep-release', function (callback) {
+  runSequence(
+    'bump-rel',
+    'commit-changes',
+    'push-changes',
+    'create-new-tag',
+    'bump-dev',
+    'commit-changes',
+    'push-changes',
+    function (error) {
+      if (error) {
+        console.log(error.message);
+      } else {
+        console.log('RELEASE PREP FINISHED SUCCESSFULLY');
+      }
+      callback(error);
+    });
+});
 
 // Install typings
 gulp.task("install-ts-defs", function () {
