@@ -2,15 +2,16 @@
 import {ViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp";
 import Path = require("path");
+import fs = require("fs");
 import {RTTester} from "../rttester/RTTester";
 import {Abstractions, Interface, Output} from "./CTAbstractions";
+import {Utilities} from "../utilities";
 
 
 export class CreateMCProjectController extends ViewController {
 
     directory: string;
     hPath: HTMLInputElement;
-
 
     constructor(protected viewDiv: HTMLDivElement, directory: string) {
         super(viewDiv);
@@ -32,35 +33,37 @@ export class CreateMCProjectController extends ViewController {
         }
     }
 
+    appendLog(msg: string) {
+        let hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
+        hOutputText.textContent += msg + "\n";
+        hOutputText.scrollTop = hOutputText.scrollHeight;
+    }
 
-    createMBTProjectPromise(xmiFileName: string, targetDir: string) {
+    createMBTProjectPromise(targetDir: string) {
+        let self = this;
         return new Promise<void>((resolve, reject) => {
             document.getElementById("CreationParameters").style.display = "none";
             document.getElementById("Output").style.display = "block";
-            let hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
-            let script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
-
+            try {
+                fs.mkdirSync(targetDir);
+            } catch (err) {
+                self.appendLog(err);
+                reject();
+                return;
+            }
+            let script: string = Path.join(RTTester.rttInstallDir(), "bin", "rtt-init-project.py");
             const spawn = require("child_process").spawn;
             let pythonPath = RTTester.pythonExecutable();
             let args: string[] = [
                 script,
-                "--dir=" + Path.join(targetDir, ".mbt"),
-                "--skip-tests",
-                "--skip-configure",
-                "--skip-rttui",
-                xmiFileName
+                "--dir=" + targetDir,
+                "--use=MC"
             ];
             let env: any = process.env;
             env["RTTDIR"] = RTTester.rttInstallDir();
             const p = spawn(pythonPath, args, { env: env });
-            p.stdout.on("data", (data: string) => {
-                hOutputText.textContent += data + "\n";
-                hOutputText.scrollTop = hOutputText.scrollHeight;
-            });
-            p.stderr.on("data", (data: string) => {
-                hOutputText.textContent += data + "\n";
-                hOutputText.scrollTop = hOutputText.scrollHeight;
-            });
+            p.stdout.on("data", self.appendLog.bind(self));
+            p.stderr.on("data", self.appendLog.bind(self));
             p.on("close", (code: number) => {
                 if (code == 0) {
                     resolve();
@@ -72,9 +75,10 @@ export class CreateMCProjectController extends ViewController {
     }
 
     createDefaultAbstractionsPromise(xmiFileName: string, targetDir: string) {
+        let self = this;
         return new Promise<void>((resolve, reject) => {
             let extractInterface = (onLoad: (interfaceJSON: string) => void) => {
-                let script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-into-extract-interface.py");
+                let script: string = Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-into-extract-interface.py");
                 const spawn = require("child_process").spawn;
                 let pythonPath = RTTester.pythonExecutable();
                 let args: string[] = [
@@ -85,14 +89,17 @@ export class CreateMCProjectController extends ViewController {
                 let env: any = process.env;
                 env["RTTDIR"] = RTTester.rttInstallDir();
                 let stdout = "";
-                let stderr = "";
                 const p = spawn(pythonPath, args, { env: env });
                 p.stdout.on("data", (data: string) => { stdout += data; });
-                p.stderr.on("data", (data: string) => { stderr += data; });
+                p.stderr.on("data", self.appendLog.bind(self));
                 p.on("close", (code: number) => {
-                    if (code != 0) throw stderr;
-                    let obj = JSON.parse(stdout);
-                    onLoad(obj);
+                    if (code != 0) {
+                        reject();
+                    } else {
+                        let obj = JSON.parse(stdout);
+                        onLoad(obj);
+                        resolve();
+                    }
                 });
             };
             let generateAbstractions = (interfaceJSON: any) => {
@@ -138,6 +145,48 @@ export class CreateMCProjectController extends ViewController {
         });
     }
 
+    createCopyModelPromise(xmiFileName: string, targetDir: string) {
+        let self = this;
+        return new Promise<void>((resolve, reject) => {
+            // copy xmi file
+            let targetFileName = Path.join(targetDir, "model", "model.xmi");
+            Utilities.copyFile(xmiFileName, targetFileName,
+                (error: string) => {
+                    if (error) {
+                        self.appendLog(error);
+                        reject();
+                    } else {
+                        resolve();
+                    }
+                });
+        });
+    }
+
+    createCreateModelDBPromise(xmiFileName: string, targetDir: string) {
+        let self = this;
+        return new Promise<void>((resolve, reject) => {
+            let exe: string = Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-tcgen");
+            const spawn = require("child_process").spawn;
+            let args: string[] = [
+                 "-model", xmiFileName,
+                 "-proj", "test",
+                 "-projectDb", Path.join(targetDir, "model", "model_dump.db")
+            ];
+            let env: any = process.env;
+            env["RTTDIR"] = RTTester.rttInstallDir();
+            const p = spawn(exe, args, { env: env });
+            p.stdout.on("data", self.appendLog.bind(self));
+            p.stderr.on("data", self.appendLog.bind(self));
+            p.on("close", (code: number) => {
+                if (code != 0) {
+                    reject();
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
+
     createProject(): void {
         let xmiFileName = this.hPath.value;
         let projectName = (<HTMLInputElement>document.getElementById("ProjectName")).value;
@@ -151,9 +200,13 @@ export class CreateMCProjectController extends ViewController {
             document.getElementById("scriptRUN").style.display = "none";
             document.getElementById("scriptFAIL").style.display = "block";
         };
-        this.createMBTProjectPromise(xmiFileName, targetDir)
-            .then(() => this.createDefaultAbstractionsPromise(xmiFileName, targetDir)
-                .then(displaySuccess,
+        this.createMBTProjectPromise(targetDir)
+            .then(() => this.createCopyModelPromise(xmiFileName, targetDir)
+                .then(() => this.createCreateModelDBPromise(xmiFileName, targetDir)
+                    .then(() => this.createDefaultAbstractionsPromise(xmiFileName, targetDir)
+                        .then(displaySuccess,
+                        displayFailure),
+                    displayFailure),
                 displayFailure),
             displayFailure);
     }
