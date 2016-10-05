@@ -1,9 +1,10 @@
 
 import Path = require('path');
+import fs = require("fs");
 import {IntoCpsApp} from  "./IntoCpsApp"
 
 
-export class Utilities{
+export class Utilities {
     public static timeStringToNumberConversion(text: string, setterFunc: (val: number) => void): boolean {
         let value = Number(text);
         if (isNaN(value)) {
@@ -13,15 +14,14 @@ export class Utilities{
             setterFunc(value);
             return true;
         }
-    }    
+    }
 
     public static projectRoot(): string {
         let app: IntoCpsApp = IntoCpsApp.getInstance();
         return app.getActiveProject().getRootFilePath();
     }
 
-    public static getSystemArchitecture()
-    {
+    public static getSystemArchitecture() {
         if (process.arch == "ia32") {
             return "32";
         } else if (process.arch == "x64") {
@@ -31,7 +31,7 @@ export class Utilities{
         }
     }
 
-    public static getSystemPlatform(){
+    public static getSystemPlatform() {
         if (process.platform == "win32")
             return "windows";
         else
@@ -66,6 +66,24 @@ export class Utilities{
                 res = false;
         }
         return res;
+    }
+
+    public static copyFile(source: string, target: string, callback: (error: string) => void) {
+        // found at: http://stackoverflow.com/a/14387791
+        let cbCalled = false;
+        let error = false;
+        let rd = fs.createReadStream(source);
+        rd.on("error", report);
+        let wr = fs.createWriteStream(target);
+        wr.on("error", report);
+        wr.on("close", () => { report(undefined); });
+        rd.pipe(wr);
+        function report(error: string) {
+            if (!cbCalled) {
+                callback(error);
+                cbCalled = true;
+            }
+        }
     }
 
 

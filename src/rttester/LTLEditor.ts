@@ -54,7 +54,7 @@ export class LTLEditorController extends ViewController {
             arguments: [
                 "-bound", this.hBMCSteps.value,
                 "-spec", this.ltlEditor.getValue(),
-                "-projectDb", Path.join(RTTester.getProjectOfFile(this.ltlQueryFileName), ".mbt", "model", "model_dump.db")],
+                "-projectDb", Path.join(RTTester.getProjectOfFile(this.ltlQueryFileName), "model", "model_dump.db")],
             options: { env: RTTester.genericCommandEnv(this.ltlQueryFileName) }
         };
         $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
@@ -66,7 +66,7 @@ export class LTLEditorController extends ViewController {
     configureCompleter(langTools: any) {
         let fs = require("fs");
         let SQL = require("sql.js");
-        let dbFile = Path.join(RTTester.getProjectOfFile(this.ltlQueryFileName), ".mbt", "model", "model_dump.db");
+        let dbFile = Path.join(RTTester.getProjectOfFile(this.ltlQueryFileName), "model", "model_dump.db");
         fs.readFile(dbFile, (err: any, filebuffer: any) => {
             if (err) throw err;
             let db = new SQL.Database(filebuffer);

@@ -461,8 +461,7 @@ export class BrowserController {
                     }
                 }
                 if (pathComponents.length == 2) {
-                    if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION &&
-                        pathComponents[1] == "utils") {
+                    if (pathComponents[1] == "utils") {
                         return null;
                     }
                     result.img = "into-cps-icon-rtt-vsi-tick";
