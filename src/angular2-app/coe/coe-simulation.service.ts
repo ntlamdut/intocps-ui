@@ -15,6 +15,7 @@ import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfi
 export class CoeSimulationService {
     progress: number = 0;
     datasets: BehaviorSubject<Array<any>> = new BehaviorSubject([]);
+    errorReport: (hasError: boolean, message: string) => void = function () { };
 
     private webSocket: WebSocket;
     private sessionId: number;
@@ -23,6 +24,8 @@ export class CoeSimulationService {
     private resultDir: string;
     private config: CoSimulationConfig;
     private counter: number = 0;
+
+
 
     constructor(private http: Http,
         private settings: SettingsService,
@@ -36,7 +39,8 @@ export class CoeSimulationService {
         this.datasets.next([]);
     }
 
-    run(config: CoSimulationConfig) {
+    run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void) {
+        this.errorReport = errorReport;
         this.config = config;
         this.remoteCoe = this.settings.get(SettingKeys.COE_REMOTE_HOST);
         this.url = this.settings.get(SettingKeys.COE_URL);
@@ -66,6 +70,7 @@ export class CoeSimulationService {
     }
 
     private createSession() {
+        this.errorReport(false, "");
         this.progress = 0;
 
         this.http.get(`http://${this.url}/createSession`)
@@ -96,7 +101,7 @@ export class CoeSimulationService {
         });
 
         this.http.post(`http://${this.url}/upload/${this.sessionId}`, formData)
-            .subscribe(() => this.initializeCoe());
+            .subscribe(() => this.initializeCoe(), (err: Response) => this.errorHandler(err));
     }
 
     private initializeCoe() {
@@ -108,7 +113,7 @@ export class CoeSimulationService {
             .then(() => this.fileSystem.writeFile(Path.join(this.resultDir, "config.json"), data))
             .then(() => {
                 this.http.post(`http://${this.url}/initialize/${this.sessionId}`, data)
-                    .subscribe(() => this.simulate());
+                    .subscribe(() => this.simulate(), (err: Response) => this.errorHandler(err));
             });
     }
 
@@ -136,8 +141,15 @@ export class CoeSimulationService {
         this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
             .then(() => {
                 this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
-                    .subscribe(() => this.downloadResults());
+                    .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
             });
+    }
+
+    errorHandler(err: Response) {
+        console.warn(err);
+        this.progress = 0;
+        this.errorReport(true, "Error: " + err.text());
+
     }
 
     private onMessage(event: MessageEvent) {
@@ -190,7 +202,7 @@ export class CoeSimulationService {
         var fs = require('fs');
         var file = fs.createWriteStream(`${this.resultDir}/log.zip`);
         let url = `http://${this.url}/result/${this.sessionId}/zip`;
-        var request = http.get(url, function (response:any) {
+        var request = http.get(url, function (response: any) {
             response.pipe(file);
         });
 
