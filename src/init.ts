@@ -3,8 +3,10 @@ import {IntoCpsApp} from  "./IntoCpsApp";
 import {CreateTDGProjectController} from  "./rttester/CreateTDGProject";
 import {CreateMCProjectController} from  "./rttester/CreateMCProject";
 import {RunTestController} from  "./rttester/RunTest";
-import {LTLEditorController} from "./rttester/LTLEditor"
+import {LTLEditorController} from "./rttester/LTLEditor";
+import {CTAbstractionsView} from "./rttester/CTAbstractionsView";
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
+import * as AddLTLQueryDialog from "./rttester/AddLTLQueryDialog";
 import {BrowserController} from "./proj/projbrowserview";
 import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
 import {ViewController, IViewController} from "./iViewController";
@@ -89,7 +91,7 @@ let browserController: BrowserController = new BrowserController(menuHandler);
 let init = new InitializationController();
 let controller: IViewController;
 
-function closeView():boolean {
+function closeView(): boolean {
     if (controller && controller.deInitialize) {
         let canClose = controller.deInitialize();
 
@@ -102,7 +104,7 @@ function closeView():boolean {
     return true;
 }
 
-function openView(htmlPath:string, callback?:(mainView:HTMLDivElement) => void | IViewController) {
+function openView(htmlPath: string, callback?: (mainView: HTMLDivElement) => void | IViewController) {
     if (!closeView()) return;
 
     function onLoad() {
@@ -124,22 +126,22 @@ function openView(htmlPath:string, callback?:(mainView:HTMLDivElement) => void |
     }
 }
 
-menuHandler.openCoeView = (path:string) => {
+menuHandler.openCoeView = (path: string) => {
     openView(null, view => new CoeViewController(view, path));
 };
 
-menuHandler.openMultiModel = (path:string) => {
+menuHandler.openMultiModel = (path: string) => {
     openView(null, view => new MmViewController(view, path));
 };
 
-menuHandler.openDseView = (path:string) => {
+menuHandler.openDseView = (path: string) => {
     openView(null, view => new DseViewController(view, path));
 };
 
 menuHandler.runRTTesterCommand = (commandSpec: any) => {
-    openView("rttester/GenericModalCommand.html", () => {
+    $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
         RTesterModalCommandWindow.initialize(commandSpec);
-        (<any>$('#modalDialog')).modal({ keyboard: false, backdrop: false });
+        (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
     });
 };
 
@@ -155,8 +157,19 @@ menuHandler.runTest = (path: string) => {
     openView("rttester/RunTest.html", view => new RunTestController(view, path));
 };
 
-menuHandler.openLTLFile = (fileName: string) => {
-    openView("rttester/LTLEditor.html", view => new LTLEditorController(view, fileName));
+menuHandler.openLTLQuery = (folder: string) => {
+    openView("rttester/LTLEditor.html", view => new LTLEditorController(view, folder));
+};
+
+menuHandler.openCTAbstractions = (fileName: string) => {
+    openView("rttester/CTAbstractionsView.html", view => new CTAbstractionsView(view, fileName));
+};
+
+menuHandler.showAddLTLQuery = (folder: string) => {
+    $("#modalDialog").load("rttester/AddLTLQueryDialog.html", (event: JQueryEventObject) => {
+        AddLTLQueryDialog.display(folder);
+        (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
+    });
 };
 
 menuHandler.openSysMlExport = () => {
@@ -195,7 +208,7 @@ menuHandler.createMultiModel = (path) => {
     if (project) {
         let name = Path.basename(path, ".sysml.json");
         let content = fs.readFileSync(path, "UTF-8");
-        let mmPath = <string> project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
+        let mmPath = <string>project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
         menuHandler.openMultiModel(mmPath);
     }
 };
@@ -204,7 +217,7 @@ menuHandler.createMultiModelPlain = () => {
     let project = IntoCpsApp.getInstance().getActiveProject();
 
     if (project) {
-        let mmPath = <string> project.createMultiModel(`mm-new (${Math.floor(Math.random() * 100)})`, "{}");
+        let mmPath = <string>project.createMultiModel(`mm-new (${Math.floor(Math.random() * 100)})`, "{}");
         menuHandler.openMultiModel(mmPath);
     }
 };

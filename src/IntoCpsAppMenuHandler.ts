@@ -19,7 +19,9 @@ export class IntoCpsAppMenuHandler {
     createMCProject: (path: string) => void;
     runRTTesterCommand: (commandSpec: any) => void;
     runTest: (path: string) => void;
-    openLTLFile: (path: string) => void;
+    openLTLQuery: (path: string) => void;
+    openCTAbstractions: (path: string) => void;
+    showAddLTLQuery: (folder: string) => void; 
 
     deletePath: (path: string)=>void;
     openWithSystemEditor: (path: string)=>void;

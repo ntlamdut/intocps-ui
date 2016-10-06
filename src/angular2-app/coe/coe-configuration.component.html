@@ -72,7 +72,7 @@
 
             <div class="form-group">
                 <label class="col-sm-5 col-md-4 control-label">Minimum step size</label>
-                <div class="col-sm-8 col-md-8">
+                <div class="col-sm-7 col-md-8">
                     <p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMin}}</p>
                     <input *ngIf="editing" name="sizeMin" [(ngModel)]="config.algorithm.sizeMin" class="form-control">
                     <div *ngIf="form.find('algorithm').hasError('required', 'sizeMin')" class="alert alert-danger">This field is required.</div>
@@ -82,7 +82,7 @@
 
             <div class="form-group">
                 <label class="col-sm-5 col-md-4 control-label">Maximum step size</label>
-                <div class="col-sm-8 col-md-8">
+                <div class="col-sm-7 col-md-8">
                     <p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMax}}</p>
                     <input *ngIf="editing" name="sizeMax" [(ngModel)]="config.algorithm.sizeMax" class="form-control">
                     <div *ngIf="form.find('algorithm').hasError('required', 'sizeMax')" class="alert alert-danger">This field is required.</div>
