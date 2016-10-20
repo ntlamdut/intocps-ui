@@ -114,7 +114,9 @@ function openView(htmlPath: string, callback?: (mainView: HTMLDivElement) => voi
 
         if (newController) {
             controller = <IViewController>newController;
-            controller.initialize();
+            if (controller.initialize) {
+                controller.initialize();
+            }
         }
     }
 
