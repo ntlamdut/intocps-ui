@@ -30,6 +30,7 @@ export class RTTester {
         let env: any = process.env;
         env["RTT_TESTCONTEXT"] = RTTester.getProjectOfFile(path);
         env["RTTDIR"] = RTTester.rttInstallDir();
+        env["RTT_OP_KEY"] = "TMS:19999:FMI";
         return env;
     }
 
