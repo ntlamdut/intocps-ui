@@ -3,14 +3,14 @@
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 ///<reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
-import {MultiModelConfig} from "./MultiModelConfig";
+import { MultiModelConfig } from "./MultiModelConfig";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, VariableStepAlgorithm, VariableStepConstraint,
     ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint
 } from "./CoSimulationConfig";
 import * as Path from 'path';
 import * as fs from 'fs';
-import {Fmu, InstanceScalarPair, Instance, ScalarVariable} from "../angular2-app/coe/models/Fmu";
+import { Fmu, InstanceScalarPair, Instance, ScalarVariable, CausalityType } from "../angular2-app/coe/models/Fmu";
 
 export class Parser {
 
@@ -55,7 +55,7 @@ export class Parser {
                     $.each(Object.keys(data[this.FMUS_TAG]), (j, key) => {
                         var description = "";
                         var path = data[this.FMUS_TAG][key];
-                        let correctedPath = Parser.fileExists(path) ? path : Path.normalize(basePath + "/" + path); 
+                        let correctedPath = Parser.fileExists(path) ? path : Path.normalize(basePath + "/" + path);
                         let fmu = new Fmu(key, correctedPath);
 
 
@@ -219,8 +219,8 @@ export class Parser {
 
                 if (instance)
                     livestream.set(instance, livestreamEntry[id]
-                        .filter((input:string) => instance.fmu.hasOutput(input))
-                        .map((input:string) => instance.fmu.getScalarVariable(input)));
+                        .filter((name: string) => instance.fmu.scalarVariables.find(variable => variable.name == name && (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local)))
+                        .map((name: string) => instance.fmu.getScalarVariable(name)));
             });
         }
 
@@ -265,11 +265,11 @@ export class Parser {
                 return new ZeroCrossingConstraint(
                     id,
                     c.ports
-                        .filter((id:string) => {
+                        .filter((id: string) => {
                             let [fmuName, instanceName] = this.parseId(id);
                             return !!multiModel.getInstance(fmuName, instanceName);
                         })
-                        .map((id:string) => {
+                        .map((id: string) => {
                             let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
                             return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
                         }),
@@ -283,11 +283,11 @@ export class Parser {
                 return new BoundedDifferenceConstraint(
                     id,
                     c.ports
-                        .filter((id:string) => {
+                        .filter((id: string) => {
                             let [fmuName, instanceName] = this.parseId(id);
                             return !!multiModel.getInstance(fmuName, instanceName);
                         })
-                        .map((id:string) => {
+                        .map((id: string) => {
                             let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
                             return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
                         }),

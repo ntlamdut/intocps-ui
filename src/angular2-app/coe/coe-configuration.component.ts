@@ -144,7 +144,7 @@ export class CoeConfigurationComponent {
     }
 
     getOutputs(scalarVariables:Array<ScalarVariable>) {
-        return scalarVariables.filter(variable => variable.causality === CausalityType.Output);
+        return scalarVariables.filter(variable => (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local));
     }
 
     addConstraint() {
