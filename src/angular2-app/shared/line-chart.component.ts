@@ -1,19 +1,25 @@
-import {OnInit, Component, ViewChild, ElementRef, Input} from "@angular/core";
-import {BehaviorSubject} from "rxjs/Rx";
+import { OnInit, Component, ViewChild, ElementRef, Input } from "@angular/core";
+import { BehaviorSubject } from "rxjs/Rx";
 
-declare let Plotly:any;
+declare let Plotly: any;
 
 @Component({
     selector: 'line-chart',
     template: ''
 })
 export class LineChartComponent implements OnInit {
-    private loading:boolean = true;
-    private redrawCooldown:boolean = false;
+    private loading: boolean = true;
+    private redrawCooldown: boolean = false;
 
     private layout = {
         legend: {
-            orientation: "h"
+            orientation: "v",
+            x: 0,
+            y: -0.1,
+            xanchor: "left",
+            yanchor: "top",
+
+            tracegroupgap: 20
         },
         xaxis: {
             showgrid: false,
@@ -28,12 +34,12 @@ export class LineChartComponent implements OnInit {
         displaylogo: false
     };
 
-    constructor(private element:ElementRef) {
+    constructor(private element: ElementRef) {
 
     }
 
     @Input()
-    set datasets(datasets:BehaviorSubject<any>) {
+    set datasets(datasets: BehaviorSubject<any>) {
         datasets.subscribe(datasets => this.redraw(datasets));
     }
 
@@ -54,7 +60,7 @@ export class LineChartComponent implements OnInit {
         window.addEventListener('resize', e => Plotly.Plots.resize(node));
     }
 
-    private redraw(datasets:Array<any>) {
+    private redraw(datasets: Array<any>) {
         if (this.loading) return;
 
         // Throttle redrawing to ~60 fps.
