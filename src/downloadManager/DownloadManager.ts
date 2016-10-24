@@ -161,7 +161,7 @@ function showVersion(version: string, data: any) {
         var supported = false;
         let platform = downloader.getSystemPlatform();
         let platforms = tool.platforms;
-        if(platforms === "any")
+        if("any" in platforms )
         {
             supported = true
         }
