@@ -37,6 +37,8 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     }
 
     online:boolean = false;
+    hasHttpError:boolean = false;
+    httpErrorMessage:string='';
     url:string = '';
     version:string = '';
     config:CoSimulationConfig;
@@ -89,7 +91,17 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     }
 
     runSimulation() {
-        this.coeSimulation.run(this.config);
+        this.zone.run(() => {
+        this.hasHttpError = false;});
+        this.coeSimulation.run(this.config,(e,m)=>{this.zone.run(() => {this.errorHandler(e,m)})});
+
+    }
+
+    errorHandler(hasError:boolean, message:string){
+      
+        this.hasHttpError = hasError;
+        this.httpErrorMessage = message;
+      
     }
 
     isCoeOnline() {
