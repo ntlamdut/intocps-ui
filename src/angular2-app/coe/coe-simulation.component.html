@@ -28,4 +28,8 @@
     </div>
 </div>
 
+<div *ngIf="hasHttpError" class="alert alert-danger">
+    {{httpErrorMessage}}
+</div>
+
 <line-chart *ngIf="coeSimulation.datasets.getValue().length > 0" [datasets]="coeSimulation.datasets"></line-chart>
