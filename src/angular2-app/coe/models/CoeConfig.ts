@@ -27,6 +27,11 @@ export class CoeConfig {
         if (!data["loggingOn"])
             delete data["loggingOn"];
 
+        if (data["overrideLogLevel"] === null || data["overrideLogLevel"] === "Not set")
+            delete data["overrideLogLevel"];
+
+
+
 
         data["fmus"] = fmus;
 

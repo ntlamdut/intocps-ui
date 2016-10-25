@@ -45,6 +45,18 @@
 		</div>
 
 
+        <div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Global COE log level override</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.overrideLogLevel}}</p>
+				<select *ngIf="editing" [ngModel]="config.overrideLogLevel" (ngModelChange)="config.overrideLogLevel=$event" [ngModelOptions]="{standalone:true}"
+					class="form-control">
+                    <option *ngFor="let name of loglevels" [ngValue]="name">{{name}}</option>
+                </select>
+			</div>
+		</div>
+
+
 
 
 		<div class="form-group">

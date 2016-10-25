@@ -24,6 +24,7 @@ export class CoSimulationConfig implements ISerializable {
     visible: boolean = false;
     loggingOn : boolean = false;
     enableAllLogCategoriesPerInstance : boolean = false;
+    overrideLogLevel : string = null;
 
     toObject(): any {
         let livestream:any = {};
@@ -40,6 +41,7 @@ export class CoSimulationConfig implements ISerializable {
             livestream: livestream,
             visible: this.visible,
             loggingOn: this.loggingOn,
+            overrideLogLevel : this.overrideLogLevel,
             enableAllLogCategoriesPerInstance : this.enableAllLogCategoriesPerInstance,
             algorithm: this.algorithm.toObject()
         };
@@ -86,6 +88,7 @@ export class CoSimulationConfig implements ISerializable {
                     config.algorithm = parser.parseAlgorithm(data, multiModel);
                     config.visible = parser.parseSimpleTagDefault(data,"visible",false);
                     config.loggingOn = parser.parseSimpleTagDefault(data,"loggingOn",false);
+                    config.overrideLogLevel = parser.parseSimpleTagDefault(data,"overrideLogLevel",null);
                     config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data,"enableAllLogCategoriesPerInstance",false);
               
 

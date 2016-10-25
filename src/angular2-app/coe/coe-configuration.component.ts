@@ -50,6 +50,7 @@ export class CoeConfigurationComponent {
     editing:boolean = false;
     parseError:string = null;
     warnings: WarningMessage[] = [];
+    loglevels : string[] = ["Not set","ERROR" ,"WARNING","INFO","DEBUG","TRACE" ];
 
     private config:CoSimulationConfig;
 
