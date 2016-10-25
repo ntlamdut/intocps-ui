@@ -21,6 +21,9 @@ export class CoSimulationConfig implements ISerializable {
     algorithm: ICoSimAlgorithm = new FixedStepAlgorithm();
     startTime: number = 0;
     endTime: number = 10;
+    visible: boolean = false;
+    loggingOn : boolean = false;
+    enableAllLogCategoriesPerInstance : boolean = false;
 
     toObject(): any {
         let livestream:any = {};
@@ -35,6 +38,9 @@ export class CoSimulationConfig implements ISerializable {
             endTime: Number(this.endTime),
             multimodel_path: path,
             livestream: livestream,
+            visible: this.visible,
+            loggingOn: this.loggingOn,
+            enableAllLogCategoriesPerInstance : this.enableAllLogCategoriesPerInstance,
             algorithm: this.algorithm.toObject()
         };
     }
@@ -78,6 +84,10 @@ export class CoSimulationConfig implements ISerializable {
                     config.endTime = parser.parseEndTime(data) || 10;
                     config.livestream = parser.parseLivestream(data, multiModel);
                     config.algorithm = parser.parseAlgorithm(data, multiModel);
+                    config.visible = parser.parseSimpleTagDefault(data,"visible",false);
+                    config.loggingOn = parser.parseSimpleTagDefault(data,"loggingOn",false);
+                    config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data,"enableAllLogCategoriesPerInstance",false);
+              
 
                     resolve(config);
                 })

@@ -1,13 +1,13 @@
-import {FileSystemService} from "../shared/file-system.service";
-import {SettingsService, SettingKeys} from "../shared/settings.service";
-import {Http, Response} from "@angular/http";
-import {Serializer} from "../../intocps-configurations/Parser";
-import {Fmu} from "./models/Fmu";
-import {CoeConfig} from "./models/CoeConfig";
+import { FileSystemService } from "../shared/file-system.service";
+import { SettingsService, SettingKeys } from "../shared/settings.service";
+import { Http, Response } from "@angular/http";
+import { Serializer } from "../../intocps-configurations/Parser";
+import { Fmu } from "./models/Fmu";
+import { CoeConfig } from "./models/CoeConfig";
 import * as Path from "path";
-import {BehaviorSubject} from "rxjs/Rx";
-import {Injectable, NgZone} from "@angular/core";
-import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
+import { BehaviorSubject } from "rxjs/Rx";
+import { Injectable, NgZone } from "@angular/core";
+import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
 
 
 
@@ -125,11 +125,14 @@ export class CoeSimulationService {
 
         // enable logging for all log categories        
         var logCategories: any = new Object();
+        let self = this;
         this.config.multiModel.fmuInstances.forEach(instance => {
             let key: any = instance.fmu.name + "." + instance.name;
-            // TODO INTO-CPS APP: Commented line because of issue in overture tool wrapper
-            //logCategories[key] = instance.fmu.logCategories;
-        });        
+
+            if (self.config.enableAllLogCategoriesPerInstance) {
+                logCategories[key] = instance.fmu.logCategories;
+            }
+        });
         Object.assign(message, { logLevels: logCategories });
 
         let data = JSON.stringify(message);
@@ -191,7 +194,7 @@ export class CoeSimulationService {
         var fs = require('fs');
         var file = fs.createWriteStream(`${this.resultDir}/log.zip`);
         let url = `http://${this.url}/result/${this.sessionId}/zip`;
-        var request = http.get(url, function (response:any) {
+        var request = http.get(url, function (response: any) {
             response.pipe(file);
         });
 

@@ -1,152 +1,179 @@
 <div *ngIf="parseError">
-    <div class="alert alert-danger alert-big">
-        <p>Error: Could not parse config.</p>
-        <p>Message: {{parseError}}</p>
-        <p>Path: {{path}}</p>
-    </div>
+	<div class="alert alert-danger alert-big">
+		<p>Error: Could not parse config.</p>
+		<p>Message: {{parseError}}</p>
+		<p>Path: {{path}}</p>
+	</div>
 </div>
 
 <form *ngIf="config" [formGroup]="form" (ngSubmit)="onSubmit()" #configForm="ngForm">
 
-    <div class="form-horizontal">
-        <div class="form-group">
-            <label class="col-sm-5 col-md-4 control-label">Start time</label>
-            <div class="col-sm-7 col-md-8">
-                <p *ngIf="!editing" class="form-control-static">{{config.startTime}}</p>
-                <input *ngIf="editing" name="startTime" [(ngModel)]="config.startTime" class="form-control">
-                <div *ngIf="form.hasError('required', 'startTime')" class="alert alert-danger">This field is required.</div>
-                <div *ngIf="form.hasError('invalidNumber', 'startTime')" class="alert alert-danger">Only numbers are allowed.</div>
-                <div *ngIf="form.hasError('notLessThan')" class="alert alert-danger">Start time is after end time.</div>
-            </div>
-        </div>
+	<button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+    </button>
+	<button *ngIf="editing" class="btn btn-default" [disabled]="!configForm.form.valid">
+        <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+    </button>
+
+	<div class="form-horizontal">
+
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Visible</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.visible}}</p>
+				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.visible"
+					(change)="config.visible=$event.target.checked" />
+			</div>
+		</div>
 
         <div class="form-group">
-            <label class="col-sm-5 col-md-4 control-label">End time</label>
-            <div class="col-sm-7 col-md-8">
-                <p *ngIf="!editing" class="form-control-static">{{config.endTime}}</p>
-                <input *ngIf="editing" name="endTime" [(ngModel)]="config.endTime" class="form-control">
-                <div *ngIf="form.hasError('required', 'endTime')" class="alert alert-danger">This field is required.</div>
-                <div *ngIf="form.hasError('invalidNumber', 'endTime')" class="alert alert-danger">Only numbers are allowed.</div>
-                <div *ngIf="form.hasError('notLessThan')" class="alert alert-danger">End time is before start time.</div>
-            </div>
-        </div>
+			<label class="col-sm-5 col-md-4 control-label">Logging on</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.loggingOn}}</p>
+				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.loggingOn"
+					(change)="config.loggingOn=$event.target.checked" />
+			</div>
+		</div>
 
-        <div class="form-group">
-            <label class="col-sm-5 col-md-4 control-label">Algorithm</label>
-            <div class="col-sm-7 col-md-8">
-                <p *ngIf="!editing" class="form-control-static">{{config.algorithm.name}}</p>
-                <select *ngIf="editing" [ngModel]="config.algorithm" (ngModelChange)="onAlgorithmChange($event)" [ngModelOptions]="{standalone:true}" class="form-control">
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Enable All log categories per instance</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.enableAllLogCategoriesPerInstance}}</p>
+				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="enableAllLogCategoriesPerInstance" class="form-control" [checked]="config.enableAllLogCategoriesPerInstance"
+					(change)="config.enableAllLogCategoriesPerInstance=$event.target.checked" />
+			</div>
+		</div>
+
+
+
+
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Start time</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.startTime}}</p>
+				<input *ngIf="editing" name="startTime" [(ngModel)]="config.startTime" class="form-control" >
+				<div *ngIf="form.hasError('required', 'startTime')" class="alert alert-danger">This field is required.</div>
+				<div *ngIf="form.hasError('invalidNumber', 'startTime')" class="alert alert-danger">Only numbers are allowed.</div>
+				<div *ngIf="form.hasError('notLessThan')" class="alert alert-danger">Start time is after end time.</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">End time</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.endTime}}</p>
+				<input *ngIf="editing" name="endTime" [(ngModel)]="config.endTime" class="form-control">
+				<div *ngIf="form.hasError('required', 'endTime')" class="alert alert-danger">This field is required.</div>
+				<div *ngIf="form.hasError('invalidNumber', 'endTime')" class="alert alert-danger">Only numbers are allowed.</div>
+				<div *ngIf="form.hasError('notLessThan')" class="alert alert-danger">End time is before start time.</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Algorithm</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.algorithm.name}}</p>
+				<select *ngIf="editing" [ngModel]="config.algorithm" (ngModelChange)="onAlgorithmChange($event)" [ngModelOptions]="{standalone:true}"
+					class="form-control">
                     <option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm.name}}</option>
                 </select>
-            </div>
-        </div>
-    </div>
+			</div>
+		</div>
+	</div>
 
-    <hr>
+	<hr>
 
-    <div *ngIf="config.algorithm.name == 'Fixed Step'" [formGroup]="form.find('algorithm')">
-        <div class="form-horizontal">
-            <div class="form-group">
-                <label class="col-sm-5 col-md-4 control-label">Step size</label>
-                <div class="col-sm-7 col-md-8">
-                    <p *ngIf="!editing" class="form-control-static">{{config.algorithm.size}}</p>
-                    <input *ngIf="editing" name="size" [(ngModel)]="config.algorithm.size" class="form-control">
-                    <div *ngIf="form.find('algorithm').hasError('required', 'size')" class="alert alert-danger">This field is required.</div>
-                    <div *ngIf="form.find('algorithm').hasError('invalidNumber', 'size')" class="alert alert-danger">Only numbers are allowed.</div>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div *ngIf="config.algorithm.name == 'Fixed Step'" [formGroup]="form.find('algorithm')">
+		<div class="form-horizontal">
+			<div class="form-group">
+				<label class="col-sm-5 col-md-4 control-label">Step size</label>
+				<div class="col-sm-7 col-md-8">
+					<p *ngIf="!editing" class="form-control-static">{{config.algorithm.size}}</p>
+					<input *ngIf="editing" name="size" [(ngModel)]="config.algorithm.size" class="form-control">
+					<div *ngIf="form.find('algorithm').hasError('required', 'size')" class="alert alert-danger">This field is required.</div>
+					<div *ngIf="form.find('algorithm').hasError('invalidNumber', 'size')" class="alert alert-danger">Only numbers are allowed.</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <div *ngIf="config.algorithm.name == 'Variable Step'" [formGroup]="form.find('algorithm')">
-        <div class="form-horizontal">
-            <div class="form-group">
-                <label class="col-sm-5 col-md-4 control-label">Initial step size</label>
-                <div class="col-sm-7 col-md-8">
-                    <p *ngIf="!editing" class="form-control-static">{{config.algorithm.initSize}}</p>
-                    <input *ngIf="editing" name="initSize" [(ngModel)]="config.algorithm.initSize" class="form-control">
-                    <div *ngIf="form.find('algorithm').hasError('required', 'initSize')" class="alert alert-danger">This field is required.</div>
-                    <div *ngIf="form.find('algorithm').hasError('invalidNumber', 'initSize')" class="alert alert-danger">Only numbers are allowed.</div>
-                </div>
-            </div>
+	<div *ngIf="config.algorithm.name == 'Variable Step'" [formGroup]="form.find('algorithm')">
+		<div class="form-horizontal">
+			<div class="form-group">
+				<label class="col-sm-5 col-md-4 control-label">Initial step size</label>
+				<div class="col-sm-7 col-md-8">
+					<p *ngIf="!editing" class="form-control-static">{{config.algorithm.initSize}}</p>
+					<input *ngIf="editing" name="initSize" [(ngModel)]="config.algorithm.initSize" class="form-control">
+					<div *ngIf="form.find('algorithm').hasError('required', 'initSize')" class="alert alert-danger">This field is required.</div>
+					<div *ngIf="form.find('algorithm').hasError('invalidNumber', 'initSize')" class="alert alert-danger">Only numbers are allowed.</div>
+				</div>
+			</div>
 
-            <div class="form-group">
-                <label class="col-sm-5 col-md-4 control-label">Minimum step size</label>
-                <div class="col-sm-7 col-md-8">
-                    <p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMin}}</p>
-                    <input *ngIf="editing" name="sizeMin" [(ngModel)]="config.algorithm.sizeMin" class="form-control">
-                    <div *ngIf="form.find('algorithm').hasError('required', 'sizeMin')" class="alert alert-danger">This field is required.</div>
-                    <div *ngIf="form.find('algorithm').hasError('invalidNumber', 'sizeMin')" class="alert alert-danger">Only numbers are allowed.</div>
-                </div>
-            </div>
+			<div class="form-group">
+				<label class="col-sm-5 col-md-4 control-label">Minimum step size</label>
+				<div class="col-sm-7 col-md-8">
+					<p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMin}}</p>
+					<input *ngIf="editing" name="sizeMin" [(ngModel)]="config.algorithm.sizeMin" class="form-control">
+					<div *ngIf="form.find('algorithm').hasError('required', 'sizeMin')" class="alert alert-danger">This field is required.</div>
+					<div *ngIf="form.find('algorithm').hasError('invalidNumber', 'sizeMin')" class="alert alert-danger">Only numbers are allowed.</div>
+				</div>
+			</div>
 
-            <div class="form-group">
-                <label class="col-sm-5 col-md-4 control-label">Maximum step size</label>
-                <div class="col-sm-7 col-md-8">
-                    <p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMax}}</p>
-                    <input *ngIf="editing" name="sizeMax" [(ngModel)]="config.algorithm.sizeMax" class="form-control">
-                    <div *ngIf="form.find('algorithm').hasError('required', 'sizeMax')" class="alert alert-danger">This field is required.</div>
-                    <div *ngIf="form.find('algorithm').hasError('invalidNumber', 'sizeMax')" class="alert alert-danger">Only numbers are allowed.</div>
-                </div>
-            </div>
+			<div class="form-group">
+				<label class="col-sm-5 col-md-4 control-label">Maximum step size</label>
+				<div class="col-sm-7 col-md-8">
+					<p *ngIf="!editing" class="form-control-static">{{config.algorithm.sizeMax}}</p>
+					<input *ngIf="editing" name="sizeMax" [(ngModel)]="config.algorithm.sizeMax" class="form-control">
+					<div *ngIf="form.find('algorithm').hasError('required', 'sizeMax')" class="alert alert-danger">This field is required.</div>
+					<div *ngIf="form.find('algorithm').hasError('invalidNumber', 'sizeMax')" class="alert alert-danger">Only numbers are allowed.</div>
+				</div>
+			</div>
 
-            <div class="form-group">
-                <label class="col-sm-5 col-md-4 control-label">Constraints</label>
-                <div class="col-sm-7 col-md-8">
-                    <div *ngIf="editing" class="input-group">
-                        <select [(ngModel)]="newConstraint" [ngModelOptions]="{standalone:true}" class="form-control">
+			<div class="form-group">
+				<label class="col-sm-5 col-md-4 control-label">Constraints</label>
+				<div class="col-sm-7 col-md-8">
+					<div *ngIf="editing" class="input-group">
+						<select [(ngModel)]="newConstraint" [ngModelOptions]="{standalone:true}" class="form-control">
                             <option *ngFor="let constraint of constraintConstructors" [ngValue]="constraint">{{getConstraintName(constraint)}}</option>
                         </select>
-                        <span class="input-group-btn">
+						<span class="input-group-btn">
                             <button type="button" (click)="addConstraint(newConstraint.value)" class="btn btn-default">
                                 <span class="glyphicon glyphicon-plus"></span> Add
-                            </button>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
+						</button>
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        <div class="constraint-container">
-            <div class="panel panel-default constraint-panel" *ngFor="let constraint of config.algorithm.constraints; let i = index">
-                <div class="panel-heading">
-                    <a *ngIf="editing" (click)="removeConstraint(constraint)" class="pull-right"><span class="glyphicon glyphicon-remove"></span></a>
-                    {{getConstraintName(constraint)}}
-                </div>
-                <div class="panel-body">
-                    <zero-crossing
-                            [editing]="editing"
-                            [ports]="outputPorts"
-                            [constraint]="constraint"
-                            [formGroup]="form.find('algorithm').find('constraints').at(i)"
-                            *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
+		<div class="constraint-container">
+			<div class="panel panel-default constraint-panel" *ngFor="let constraint of config.algorithm.constraints; let i = index">
+				<div class="panel-heading">
+					<a *ngIf="editing" (click)="removeConstraint(constraint)" class="pull-right"><span class="glyphicon glyphicon-remove"></span></a>					{{getConstraintName(constraint)}}
+				</div>
+				<div class="panel-body">
+					<zero-crossing [editing]="editing" [ports]="outputPorts" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
+						*ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
 
-                    <bounded-difference
-                            [editing]="editing"
-                            [ports]="outputPorts"
-                            [constraint]="constraint"
-                            [formGroup]="form.find('algorithm').find('constraints').at(i)"
-                            *ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
+					<bounded-difference [editing]="editing" [ports]="outputPorts" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
+						*ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
 
-                    <sampling-rate
-                            [editing]="editing"
-                            [constraint]="constraint"
-                            [formGroup]="form.find('algorithm').find('constraints').at(i)"
-                            *ngIf="constraint.type === 'samplingrate'"></sampling-rate>
-                </div>
-            </div>
-        </div>
-    </div>
+					<sampling-rate [editing]="editing" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
+						*ngIf="constraint.type === 'samplingrate'"></sampling-rate>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <hr>
+	<hr>
 
-    <label>Livestream Configuration</label>
-    <div class="form-horizontal">
-        <div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
-            <label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
-            <div class="col-sm-7 col-md-8">
-                <div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
-                    <label>
+	<label>Livestream Configuration</label>
+	<div class="form-horizontal">
+		<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
+			<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
+			<div class="col-sm-7 col-md-8">
+				<div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
+					<label>
                         <input type="checkbox"
                                [disabled]="!editing"
                                [checked]="isLivestreamChecked(instance, output)"
@@ -154,23 +181,23 @@
 
                         {{output.name}}
                     </label>
-                </div>
-            </div>
-        </div>
-    </div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <hr>
+	<hr>
 
-    <div *ngIf="warnings.length > 0">
-        <strong>Please fix the following issues before saving.</strong>
-        <div *ngFor="let warning of warnings" class="alert alert-warning alert-big">{{warning.message}}</div>
-        <hr>
-    </div>
+	<div *ngIf="warnings.length > 0">
+		<strong>Please fix the following issues before saving.</strong>
+		<div *ngFor="let warning of warnings" class="alert alert-warning alert-big">{{warning.message}}</div>
+		<hr>
+	</div>
 
-    <button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
+	<button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
     </button>
-    <button *ngIf="editing" class="btn btn-default" [disabled]="!configForm.form.valid">
+	<button *ngIf="editing" class="btn btn-default" [disabled]="!configForm.form.valid">
         <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
     </button>
 </form>

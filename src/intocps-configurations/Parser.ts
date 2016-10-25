@@ -196,6 +196,10 @@ export class Parser {
         return data[tag] !== undefined ? data[tag] : null;
     }
 
+     parseSimpleTagDefault(data: any, tag: string, defaultValue:any): any {
+        return data[tag] !== undefined ? data[tag] : defaultValue;
+    }
+
     parseStartTime(data: any): number {
         return parseFloat(this.parseSimpleTag(data, this.START_TIME_TAG));
     }
