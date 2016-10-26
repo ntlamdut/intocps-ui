@@ -372,7 +372,7 @@ export class BrowserController {
                         console.info("Create new cosim config for: " + item.path);
                         self.menuHandler.createCoSimConfiguration(item.path);
                     });
-                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport];
+                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport, menuRename];
                 parent.refresh();
                 return null;
             }

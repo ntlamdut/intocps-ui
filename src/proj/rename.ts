@@ -16,7 +16,7 @@ function gup(name: any, url: any) {
 
 window.onload = function () {
     var n: HTMLInputElement = <HTMLInputElement>document.getElementById("name");
-    n.value = Path.basename(gup("data", undefined));
+    n.value = decodeURIComponent(Path.basename(gup("data", undefined)));
 };
 
 function rename() {
@@ -32,10 +32,10 @@ function rename() {
 
     fs.move(oldPath, newPath, function (err: any) {
         if (err) {
-            console.error("Move faild " + oldPath + " -> "+newPath);
+            console.error("Move faild " + oldPath + " -> " + newPath);
             return console.error(err);
         }
-        console.error("Move completed " + oldPath + " -> "+newPath);
+        console.error("Move completed " + oldPath + " -> " + newPath);
         window.top.close();
     })
 }

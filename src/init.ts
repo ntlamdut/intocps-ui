@@ -244,7 +244,7 @@ menuHandler.deletePath = (path) => {
             IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
         });
 
-    } else if (name.endsWith(".coe.json") || name.endsWith(".mm.json")) {
+    } else if (name.endsWith("coe.json") || name.endsWith("mm.json")) {
         let dir = Path.dirname(path);
         console.info("Deleting " + dir);
         CustomFs.getCustomFs().removeRecursive(dir, function (err: any, v: any) {
@@ -262,11 +262,9 @@ menuHandler.openWithSystemEditor = (path) => {
 
 menuHandler.rename = (path: string) => {
     var DialogHandler = require("./DialogHandler").default;
-    let renameHandler = new DialogHandler("proj/rename.html", 300, 200, null, null, (arg: any) => {
-        //intoCpsApp.createProject(arg.name, arg.path);
-    });
+    let renameHandler = new DialogHandler("proj/rename.html", 300, 200, null, null, null);
 
-    if (path.endsWith("coe.json")) {
+    if (path.endsWith("coe.json") || path.endsWith("mm.json")) {
         renameHandler.openWindow(Path.dirname(path));
     }
 }
