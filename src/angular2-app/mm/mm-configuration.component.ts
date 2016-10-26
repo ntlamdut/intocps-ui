@@ -1,16 +1,18 @@
-import {Component, Input, NgZone, Output, EventEmitter} from "@angular/core";
-import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
+import { Component, Input, NgZone, Output, EventEmitter } from "@angular/core";
+import { MultiModelConfig } from "../../intocps-configurations/MultiModelConfig";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
     Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausalityCompatible, isTypeCompatiple,
     Fmu, ScalarValuePair, ScalarVariableType
 } from "../coe/models/Fmu";
-import {FileBrowserComponent} from "./inputs/file-browser.component";
-import {IProject} from "../../proj/IProject";
-import {FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators} from "@angular/forms";
-import {uniqueControlValidator} from "../shared/validators";
-import {NavigationService} from "../shared/navigation.service";
-import {WarningMessage} from "../../intocps-configurations/Messages";
+import { FileBrowserComponent } from "./inputs/file-browser.component";
+import { IProject } from "../../proj/IProject";
+import { FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators } from "@angular/forms";
+import { uniqueControlValidator } from "../shared/validators";
+import { NavigationService } from "../shared/navigation.service";
+import { WarningMessage } from "../../intocps-configurations/Messages";
+
+import * as Path from 'path';
 
 @Component({
     selector: "mm-configuration",
@@ -22,16 +24,16 @@ import {WarningMessage} from "../../intocps-configurations/Messages";
     ]
 })
 export class MmConfigurationComponent {
-    private _path:string;
+    private _path: string;
 
     @Input()
-    set path(path:string) {
+    set path(path: string) {
         this._path = path;
 
         if (path)
             this.parseConfig();
     }
-    get path():string {
+    get path(): string {
         return this._path;
     }
 
@@ -43,22 +45,22 @@ export class MmConfigurationComponent {
     parseError: string = null;
     warnings: WarningMessage[] = [];
 
-    private config:MultiModelConfig;
+    private config: MultiModelConfig;
 
-    private selectedParameterInstance:Instance;
-    private selectedOutputInstance:Instance;
-    private selectedOutput:ScalarVariable;
-    private selectedInputInstance:Instance;
-    private selectedInstanceFmu:Fmu;
+    private selectedParameterInstance: Instance;
+    private selectedOutputInstance: Instance;
+    private selectedOutput: ScalarVariable;
+    private selectedInputInstance: Instance;
+    private selectedInstanceFmu: Fmu;
 
-    private newParameter:ScalarVariable;
+    private newParameter: ScalarVariable;
 
-    constructor(private zone:NgZone, private navigationService: NavigationService) {
+    constructor(private zone: NgZone, private navigationService: NavigationService) {
         this.navigationService.registerComponent(this);
     }
 
     parseConfig() {
-        let project:IProject = IntoCpsApp.getInstance().getActiveProject();
+        let project: IProject = IntoCpsApp.getInstance().getActiveProject();
 
         MultiModelConfig
             .parse(this.path, project.getFmusPath())
@@ -112,15 +114,15 @@ export class MmConfigurationComponent {
     addFmu() {
         let fmu = this.config.addFmu();
 
-        let formArray = <FormArray> this.form.find('fmus');
-        let fmuArray = <FormArray> this.form.find('instances');
+        let formArray = <FormArray>this.form.find('fmus');
+        let fmuArray = <FormArray>this.form.find('instances');
 
         fmuArray.push(new FormArray([], uniqueControlValidator));
         formArray.push(new FormControl(this.getFmuName(fmu), [Validators.required, Validators.pattern("[^{^}]*")]));
     }
 
     removeFmu(fmu: Fmu) {
-        let fmuArray = <FormArray> this.form.find('fmus');
+        let fmuArray = <FormArray>this.form.find('fmus');
         let index = this.config.fmus.indexOf(fmu);
 
         if (this.selectedInstanceFmu === fmu)
@@ -134,12 +136,12 @@ export class MmConfigurationComponent {
         this.config.removeFmu(fmu);
     }
 
-    getScalarTypeName(type:number) {
+    getScalarTypeName(type: number) {
         return ['Real', 'Bool', 'Int', 'String', 'Unknown'][type];
     }
 
     getFmuName(fmu: Fmu): string {
-        return fmu.name.substring(1, fmu.name.length -1);
+        return fmu.name.substring(1, fmu.name.length - 1);
     }
 
     setFmuName(fmu: Fmu, name: string) {
@@ -149,7 +151,7 @@ export class MmConfigurationComponent {
     setFmuPath(fmu: Fmu, path: string) {
         fmu
             .updatePath(path)
-            .then(() => this.zone.run(() => {}));
+            .then(() => this.zone.run(() => { }));
 
         this.selectOutputInstance(null);
     }
@@ -158,8 +160,8 @@ export class MmConfigurationComponent {
         let instance = this.config.addInstance(fmu);
 
         let fmuIndex = this.config.fmus.indexOf(fmu);
-        let fmuArray = <FormArray> this.form.find('instances');
-        let instanceArray = <FormArray> fmuArray.controls[fmuIndex];
+        let fmuArray = <FormArray>this.form.find('instances');
+        let instanceArray = <FormArray>fmuArray.controls[fmuIndex];
 
         instanceArray.push(new FormControl(instance.name, [Validators.required, Validators.pattern("[^\.]*")]));
     }
@@ -171,8 +173,8 @@ export class MmConfigurationComponent {
 
     removeInstanceFromForm(instance: Instance) {
         let fmuIndex = this.config.fmus.indexOf(instance.fmu);
-        let fmuArray = <FormArray> this.form.find('instances');
-        let instanceArray = <FormArray> fmuArray.controls[fmuIndex];
+        let fmuArray = <FormArray>this.form.find('instances');
+        let instanceArray = <FormArray>fmuArray.controls[fmuIndex];
         let index = this.getInstances(instance.fmu).indexOf(instance);
 
         if (this.selectedInputInstance === instance)
@@ -181,52 +183,52 @@ export class MmConfigurationComponent {
         if (this.selectedOutputInstance === instance)
             this.selectOutputInstance(null);
 
-        if(this.selectedParameterInstance === instance)
+        if (this.selectedParameterInstance === instance)
             this.selectParameterInstance(null);
 
         instanceArray.removeAt(index);
     }
 
-    getInstances(fmu:Fmu) {
+    getInstances(fmu: Fmu) {
         return this.config.fmuInstances.filter(instance => instance.fmu === fmu);
     }
 
     getInstanceFormControl(fmu: Fmu, index: number): FormControl {
         let fmuIndex = this.config.fmus.indexOf(fmu);
-        let fmuArray = <FormArray> this.form.find('instances');
-        let instanceArray = <FormArray> fmuArray.controls[fmuIndex];
+        let fmuArray = <FormArray>this.form.find('instances');
+        let instanceArray = <FormArray>fmuArray.controls[fmuIndex];
 
-        return <FormControl> instanceArray.controls[index];
+        return <FormControl>instanceArray.controls[index];
     }
 
-    selectInstanceFmu(fmu:Fmu) {
+    selectInstanceFmu(fmu: Fmu) {
         this.selectedInstanceFmu = fmu;
     }
 
-    selectParameterInstance(instance:Instance) {
+    selectParameterInstance(instance: Instance) {
         this.selectedParameterInstance = instance;
         this.newParameter = this.getParameters()[0];
     }
 
-    selectOutputInstance(instance:Instance) {
+    selectOutputInstance(instance: Instance) {
         this.selectedOutputInstance = instance;
         this.selectOutput(null);
     }
 
-    selectOutput(variable:ScalarVariable) {
+    selectOutput(variable: ScalarVariable) {
         this.selectedOutput = variable;
         this.selectInputInstance(null);
     }
 
-    selectInputInstance(instance:Instance) {
+    selectInputInstance(instance: Instance) {
         this.selectedInputInstance = instance;
     }
 
-    getInitialValues():Array<ScalarValuePair> {
-        let initialValues:Array<ScalarValuePair> = [];
+    getInitialValues(): Array<ScalarValuePair> {
+        let initialValues: Array<ScalarValuePair> = [];
 
-         this.selectedParameterInstance.initialValues.forEach((value, variable) => {
-             initialValues.push(new ScalarValuePair(variable, value));
+        this.selectedParameterInstance.initialValues.forEach((value, variable) => {
+            initialValues.push(new ScalarValuePair(variable, value));
         });
 
         return initialValues;
@@ -239,7 +241,7 @@ export class MmConfigurationComponent {
         this.newParameter = this.getParameters()[0];
     }
 
-    setParameter(parameter:ScalarVariable, value:any) {
+    setParameter(parameter: ScalarVariable, value: any) {
         if (parameter.type === ScalarVariableType.Real)
             value = parseFloat(value);
         else if (parameter.type === ScalarVariableType.Int)
@@ -250,7 +252,7 @@ export class MmConfigurationComponent {
         this.selectedParameterInstance.initialValues.set(parameter, value);
     }
 
-    removeParameter(instance:Instance, parameter:ScalarVariable) {
+    removeParameter(instance: Instance, parameter: ScalarVariable) {
         instance.initialValues.delete(parameter);
         this.newParameter = this.getParameters()[0];
     }
@@ -273,7 +275,7 @@ export class MmConfigurationComponent {
             .filter(variable => isCausalityCompatible(variable.causality, CausalityType.Input) && isTypeCompatiple(variable.type, this.selectedOutput.type));
     }
 
-    isInputConnected(input:ScalarVariable) {
+    isInputConnected(input: ScalarVariable) {
         let pairs = this.selectedOutputInstance.outputsTo.get(this.selectedOutput);
 
         if (!pairs)
@@ -282,8 +284,8 @@ export class MmConfigurationComponent {
         return pairs.filter(pair => pair.instance === this.selectedInputInstance && pair.scalarVariable === input).length > 0;
     }
 
-    onConnectionChange(checked:boolean, input:ScalarVariable) {
-        let outputsTo:InstanceScalarPair[] = this.selectedOutputInstance.outputsTo.get(this.selectedOutput);
+    onConnectionChange(checked: boolean, input: ScalarVariable) {
+        let outputsTo: InstanceScalarPair[] = this.selectedOutputInstance.outputsTo.get(this.selectedOutput);
 
         if (checked) {
             if (outputsTo == null) {
@@ -296,6 +298,17 @@ export class MmConfigurationComponent {
 
             if (outputsTo.length === 0)
                 this.selectedOutputInstance.outputsTo.delete(this.selectedOutput);
+        }
+    }
+
+
+    createDisplayFmuPath(fmusRootPath: string, path: string): string {
+
+        if (path.startsWith(fmusRootPath)) {
+            return Path.basename(path);
+        }
+        else {
+            return path;
         }
     }
 }
