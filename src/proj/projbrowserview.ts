@@ -58,7 +58,7 @@ export class ProjectBrowserItem {
         this.controller = controller;
         this.id = "ProjectBrowserItem_" + (ProjectBrowserItem.idCounter++).toString();
         this.path = path;
-        this.isDirectory = fs.statSync(path).isDirectory();
+        this.isDirectory =fs.existsSync(path)&& fs.statSync(path).isDirectory();
         this.text = Path.basename(path);
         if (parent == null) {
             this.level = 0;
@@ -294,6 +294,10 @@ export class BrowserController {
             });
         let menuEntryImport = menuEntry("Import", "glyphicon glyphicon-import");
         let menuEntryExport = menuEntry("Export", "glyphicon glyphicon-export");
+        let menuRename = menuEntry("Rename", "glyphicon glyphicon-pencil", function (item:ProjectBrowserItem){
+            console.info("Renaming path: " + item.path);
+            self.menuHandler.rename(item.path);
+        });
 
         // Default menu entries
         result.menuEntries = [menuEntryDelete, menuEntryImport, menuEntryExport];
@@ -343,7 +347,7 @@ export class BrowserController {
                 parent.refresh();
                 return null;
             }
-            else if (path.endsWith(".coe.json")) {
+            else if (path.endsWith("coe.json") && !this.isResultFolder(Path.dirname(path))) {
                 // merge MultiModelConfig and folder
                 parent.img = "into-cps-icon-projbrowser-config";
                 (<any>parent).coeConfig = path;
@@ -351,11 +355,11 @@ export class BrowserController {
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openCoeView((<any>item).coeConfig);
                 };
-                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
+                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport, menuRename];
                 parent.refresh();
                 return null;
             }
-            else if (path.endsWith(".mm.json")) {
+            else if (path.endsWith("mm.json") && !this.isResultFolder(Path.dirname(path))) {
                 // merge MultiModelConfig and folder
                 parent.img = "into-cps-icon-projbrowser-multimodel";
                 (<any>parent).mmConfig = path;
@@ -559,8 +563,8 @@ export class BrowserController {
                 // skip the project download folder
                 return;
             }
-            else if (Path.basename(path).indexOf("R_") == 0) {
-                // result.img = 'into-cps-icon-projbrowser-result';
+            else if (this.isResultFolder(path)) {
+                result.img = 'icon-folder';
                 result.menuEntries = [menuEntryDelete, menuEntryImport, menuEntryExport];
             }
         }
@@ -600,6 +604,10 @@ export class BrowserController {
 
         }
         return false;
+    }
+
+    private isResultFolder(path: string): boolean{
+        return Path.basename(path).indexOf("R_") == 0;
     }
 
 }

@@ -1,13 +1,17 @@
-import {MultiModelConfig} from "./MultiModelConfig"
-import {Parser, Serializer} from "./Parser"
+import { MultiModelConfig } from "./MultiModelConfig"
+import { Parser, Serializer } from "./Parser"
 import * as fs from "fs"
-import {Instance, ScalarVariable, InstanceScalarPair} from "../angular2-app/coe/models/Fmu";
-import {WarningMessage} from "./Messages";
-import {FormArray, FormGroup, FormControl, Validators} from "@angular/forms";
+import { Instance, ScalarVariable, InstanceScalarPair } from "../angular2-app/coe/models/Fmu";
+import { WarningMessage,ErrorMessage } from "./Messages";
+import { FormArray, FormGroup, FormControl, Validators } from "@angular/forms";
 import {
     numberValidator, integerValidator, lengthValidator,
     uniqueGroupPropertyValidator, uniqueValidator
 } from "../angular2-app/shared/validators";
+
+import * as Path from 'path';
+
+import { checksum } from "../proj/Project";
 
 export class CoSimulationConfig implements ISerializable {
     //project root required to resolve multimodel path
@@ -15,6 +19,7 @@ export class CoSimulationConfig implements ISerializable {
 
     multiModel: MultiModelConfig;
     sourcePath: string;
+    multiModelCrc: string;
 
     //optional livestream outputs
     livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
@@ -22,12 +27,14 @@ export class CoSimulationConfig implements ISerializable {
     startTime: number = 0;
     endTime: number = 10;
     visible: boolean = false;
-    loggingOn : boolean = false;
-    enableAllLogCategoriesPerInstance : boolean = false;
-    overrideLogLevel : string = null;
+    loggingOn: boolean = false;
+    enableAllLogCategoriesPerInstance: boolean = false;
+    overrideLogLevel: string = null;
+
+
 
     toObject(): any {
-        let livestream:any = {};
+        let livestream: any = {};
         this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
 
         let path = this.multiModel.sourcePath;
@@ -41,8 +48,8 @@ export class CoSimulationConfig implements ISerializable {
             livestream: livestream,
             visible: this.visible,
             loggingOn: this.loggingOn,
-            overrideLogLevel : this.overrideLogLevel,
-            enableAllLogCategoriesPerInstance : this.enableAllLogCategoriesPerInstance,
+            overrideLogLevel: this.overrideLogLevel,
+            enableAllLogCategoriesPerInstance: this.enableAllLogCategoriesPerInstance,
             algorithm: this.algorithm.toObject()
         };
     }
@@ -66,13 +73,31 @@ export class CoSimulationConfig implements ISerializable {
         // TODO
         console.error("No validation is done on the cosim config");
 
-        return [];
+        let multiModelCrcMatch = this.multiModelCrc==undefined || this.multiModelCrc === checksum(fs.readFileSync(this.multiModel.sourcePath).toString(), "md5", "hex");
+        if (multiModelCrcMatch) {
+            return [];
+        }
+        else {
+            return [new ErrorMessage("Multimodel crc check failed")];
+        }
     }
 
     static create(path: string, projectRoot: string, fmuRootPath: string, data: any): Promise<CoSimulationConfig> {
         return new Promise<CoSimulationConfig>((resolve, reject) => {
-            let parser:Parser = new Parser();
-            let mmPath:string = parser.parseMultiModelPath(data, projectRoot);
+            let parser: Parser = new Parser();
+            var mmPath: string = Path.join(path, "..", "..", "mm.json");
+            if (!fs.existsSync(mmPath)) {
+                console.warn("Could not find mm at: " + mmPath + " initiating search or possible alternatives...")
+                //no we have the old style
+                fs.readdirSync(Path.join(path, "..", "..")).forEach(file => {
+                    if (file.endsWith("mm.json")) {
+                        mmPath = Path.join(path, "..", "..", file);
+                        console.debug("Found old style mm at: " + mmPath);
+                        return;
+                    }
+                });
+
+            }
 
             MultiModelConfig
                 .parse(mmPath, fmuRootPath)
@@ -86,11 +111,11 @@ export class CoSimulationConfig implements ISerializable {
                     config.endTime = parser.parseEndTime(data) || 10;
                     config.livestream = parser.parseLivestream(data, multiModel);
                     config.algorithm = parser.parseAlgorithm(data, multiModel);
-                    config.visible = parser.parseSimpleTagDefault(data,"visible",false);
-                    config.loggingOn = parser.parseSimpleTagDefault(data,"loggingOn",false);
-                    config.overrideLogLevel = parser.parseSimpleTagDefault(data,"overrideLogLevel",null);
-                    config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data,"enableAllLogCategoriesPerInstance",false);
-              
+                    config.visible = parser.parseSimpleTagDefault(data, "visible", false);
+                    config.loggingOn = parser.parseSimpleTagDefault(data, "loggingOn", false);
+                    config.overrideLogLevel = parser.parseSimpleTagDefault(data, "overrideLogLevel", null);
+                    config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data, "enableAllLogCategoriesPerInstance", false);
+                    config.multiModelCrc = parser.parseMultiModelCrc(data);
 
                     resolve(config);
                 })
@@ -117,16 +142,16 @@ export class CoSimulationConfig implements ISerializable {
 
 export interface ICoSimAlgorithm {
     toFormGroup(): FormGroup;
-    toObject(): {[key:string]: any};
-    type:string;
-    name:string;
+    toObject(): { [key: string]: any };
+    type: string;
+    name: string;
 }
 
 export class FixedStepAlgorithm implements ICoSimAlgorithm {
     type = "fixed-step";
     name = "Fixed Step";
 
-    constructor(public size:number = 0.1) {
+    constructor(public size: number = 0.1) {
 
     }
 
@@ -149,9 +174,9 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
     name = "Variable Step";
 
     constructor(
-        public initSize:number = 0.1,
-        public sizeMin:number = 0.05,
-        public sizeMax:number = 0.2,
+        public initSize: number = 0.1,
+        public sizeMin: number = 0.05,
+        public sizeMax: number = 0.2,
         public constraints: Array<VariableStepConstraint> = []
     ) {
 
@@ -167,7 +192,7 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
     }
 
     toObject() {
-        let constraints:any = {};
+        let constraints: any = {};
         this.constraints.forEach(c => constraints[c.id] = c.toObject());
 
         return {
@@ -180,21 +205,21 @@ export class VariableStepAlgorithm implements ICoSimAlgorithm {
 }
 
 export interface VariableStepConstraint {
-    id:string;
-    type:string;
+    id: string;
+    type: string;
     toFormGroup(): FormGroup;
-    toObject(): {[key:string]: any};
+    toObject(): { [key: string]: any };
 }
 
 export class ZeroCrossingConstraint implements VariableStepConstraint {
     type = "zerocrossing";
 
     constructor(
-        public id:string = "zc",
-        public ports:Array<InstanceScalarPair> = [],
-        public order:string = "2", // Can be 1 or 2.
-        public abstol?:number,
-        public safety?:number
+        public id: string = "zc",
+        public ports: Array<InstanceScalarPair> = [],
+        public order: string = "2", // Can be 1 or 2.
+        public abstol?: number,
+        public safety?: number
     ) {
     }
 
@@ -209,9 +234,9 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
     }
 
     toObject() {
-        let obj:any = {
+        let obj: any = {
             type: this.type,
-            ports: this.ports.map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable))
+            ports: this.ports.map((port: InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable))
         };
 
         if (this.order) obj.order = Number(this.order);
@@ -226,12 +251,12 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
     type = "boundeddifference";
 
     constructor(
-        public id:string = "bd",
-        public ports:Array<InstanceScalarPair> = [],
-        public abstol?:number,
-        public reltol?:number,
-        public safety?:number,
-        public skipDiscrete:boolean = true
+        public id: string = "bd",
+        public ports: Array<InstanceScalarPair> = [],
+        public abstol?: number,
+        public reltol?: number,
+        public safety?: number,
+        public skipDiscrete: boolean = true
     ) {
     }
 
@@ -247,9 +272,9 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
     }
 
     toObject() {
-        let obj:any = {
+        let obj: any = {
             type: this.type,
-            ports: this.ports.map((port:InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable)),
+            ports: this.ports.map((port: InstanceScalarPair) => Serializer.getIdSv(port.instance, port.scalarVariable)),
             skipDiscrete: !!this.skipDiscrete
         };
 
@@ -265,10 +290,10 @@ export class SamplingRateConstraint implements VariableStepConstraint {
     type = "samplingrate";
 
     constructor(
-        public id:string = "sr",
-        public base:number,
-        public rate:number,
-        public startTime:number
+        public id: string = "sr",
+        public base: number,
+        public rate: number,
+        public startTime: number
     ) {
     }
 

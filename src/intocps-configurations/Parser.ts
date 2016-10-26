@@ -21,7 +21,7 @@ export class Parser {
     protected START_TIME_TAG: string = "startTime";
     protected END_TIME_TAG: string = "endTime";
     protected ALGORITHM_TAG: string = "algorithm";
-    protected MULTIMODEL_PATH_TAG: string = "multimodel_path";
+    protected MULTIMODEL_CRC_TAG: string = "multimodel_crc";
 
     protected ALGORITHM_TYPE: string = "type";
     protected ALGORITHM_TYPE_FIXED: string = "fixed-step";
@@ -208,8 +208,8 @@ export class Parser {
         return parseFloat(this.parseSimpleTag(data, this.END_TIME_TAG));
     }
 
-    parseMultiModelPath(data: any, projectRoot: string): string {
-        return Path.normalize(projectRoot + "/" + this.parseSimpleTag(data, this.MULTIMODEL_PATH_TAG));
+    parseMultiModelCrc(data: any): string {
+        return this.parseSimpleTag(data, this.MULTIMODEL_CRC_TAG);
     }
 
     parseLivestream(data: any, multiModel: MultiModelConfig): Map<Instance, ScalarVariable[]> {

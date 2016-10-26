@@ -26,4 +26,5 @@ export class IntoCpsAppMenuHandler {
     deletePath: (path: string)=>void;
     openWithSystemEditor: (path: string)=>void;
     createMultiModelPlain: () =>void;
+    rename: (path:string)=>void;
 }

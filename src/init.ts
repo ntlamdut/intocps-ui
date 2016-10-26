@@ -1,20 +1,20 @@
-import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
-import {IntoCpsApp} from  "./IntoCpsApp";
-import {CreateTDGProjectController} from  "./rttester/CreateTDGProject";
-import {CreateMCProjectController} from  "./rttester/CreateMCProject";
-import {RunTestController} from  "./rttester/RunTest";
-import {LTLEditorController} from "./rttester/LTLEditor";
-import {CTAbstractionsView} from "./rttester/CTAbstractionsView";
+import { IntoCpsAppEvents } from "./IntoCpsAppEvents";
+import { IntoCpsApp } from "./IntoCpsApp";
+import { CreateTDGProjectController } from "./rttester/CreateTDGProject";
+import { CreateMCProjectController } from "./rttester/CreateMCProject";
+import { RunTestController } from "./rttester/RunTest";
+import { LTLEditorController } from "./rttester/LTLEditor";
+import { CTAbstractionsView } from "./rttester/CTAbstractionsView";
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import * as AddLTLQueryDialog from "./rttester/AddLTLQueryDialog";
-import {BrowserController} from "./proj/projbrowserview";
-import {IntoCpsAppMenuHandler} from "./IntoCpsAppMenuHandler";
-import {ViewController, IViewController} from "./iViewController";
+import { BrowserController } from "./proj/projbrowserview";
+import { IntoCpsAppMenuHandler } from "./IntoCpsAppMenuHandler";
+import { ViewController, IViewController } from "./iViewController";
 import * as CustomFs from "./custom-fs";
-import {IProject} from "./proj/IProject";
+import { IProject } from "./proj/IProject";
 import * as SystemUtil from "./SystemUtil";
-import { bootstrap }    from '@angular/platform-browser-dynamic';
-import {AppComponent} from './angular2-app/app.component';
+import { bootstrap } from '@angular/platform-browser-dynamic';
+import { AppComponent } from './angular2-app/app.component';
 import * as fs from 'fs';
 import * as Path from 'path';
 
@@ -25,10 +25,10 @@ interface MyWindow extends Window {
 declare var window: MyWindow;
 
 import * as Menus from "./menus";
-import {provideForms, disableDeprecatedForms} from "@angular/forms";
-import {CoeViewController} from "./angular2-app/coe/CoeViewController";
-import {MmViewController} from "./angular2-app/mm/MmViewController";
-import {DseViewController} from "./angular2-app/dse/DseViewController";
+import { provideForms, disableDeprecatedForms } from "@angular/forms";
+import { CoeViewController } from "./angular2-app/coe/CoeViewController";
+import { MmViewController } from "./angular2-app/mm/MmViewController";
+import { DseViewController } from "./angular2-app/dse/DseViewController";
 
 class InitializationController {
     // constants
@@ -259,6 +259,17 @@ menuHandler.deletePath = (path) => {
 menuHandler.openWithSystemEditor = (path) => {
     SystemUtil.openPath(path);
 };
+
+menuHandler.rename = (path: string) => {
+    var DialogHandler = require("./DialogHandler").default;
+    let renameHandler = new DialogHandler("proj/rename.html", 300, 200, null, null, (arg: any) => {
+        //intoCpsApp.createProject(arg.name, arg.path);
+    });
+
+    if (path.endsWith("coe.json")) {
+        renameHandler.openWindow(Path.dirname(path));
+    }
+}
 
 
 Menus.configureIntoCpsMenu();
