@@ -2,6 +2,8 @@
 import {ViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp";
 import {RTTester} from "../rttester/RTTester";
+import * as RTesterModalCommandWindow from "./GenericModalCommand";
+import Path = require("path");
 
 class FMUAssignment {
     assignments: FMUAssignments;
@@ -37,14 +39,13 @@ class FMUAssignment {
                 }
                 self.updateSimulationButton();
             });
-            self.hInstanceName.innerText = self.componentName + " - " + self.instanceName;
+            self.hInstanceName.innerText = self.componentName; // + " - " + self.instanceName;
             self.hFMUPath.value = fmuFileName != null ? fmuFileName : self.simulationFMUPath;
             self.assignments.hSUTList.appendChild(this);
             self.updateSimulationButton();
         });
     }
     updateSimulationButton() {
-        console.log("change");
         this.hSimulationButton.className = (this.hFMUPath.value == this.simulationFMUPath) ?
             "btn btn-info btn-sm" : "btn btn-default btn-sm";
     }
@@ -64,9 +65,7 @@ class FMUAssignments {
     }
     load() {
         // Mockup data
-        this.assignments.push(new FMUAssignment(this, "TurnIndicationController", "x1", null));
-        this.assignments.push(new FMUAssignment(this, "Component 2", "x2", "c:\\file2.fmu"));
-        this.assignments.push(new FMUAssignment(this, "Component 3", "x3", "c:\\file5.fmu"));
+        this.assignments.push(new FMUAssignment(this, "INTO-CPS-Demo", "", null));
     }
 }
 
@@ -74,13 +73,48 @@ export class RunTestController extends ViewController {
 
     testCase: string;
     fmuAssignments: FMUAssignments = new FMUAssignments(this);
+    hRunButton: HTMLButtonElement;
+    hStepSize: HTMLInputElement;
 
     constructor(protected viewDiv: HTMLDivElement, testCase: string) {
         super(viewDiv);
+        let self = this;
         this.testCase = testCase;
         IntoCpsApp.setTopName("Run Test");
         this.fmuAssignments.load();
+        this.hRunButton = <HTMLButtonElement>document.getElementById("runButton");
+        this.hStepSize = <HTMLInputElement>document.getElementById("stepSize");
+        this.hRunButton.addEventListener("click", this.run.bind(self));
     };
+
+    run() {
+        let python = RTTester.pythonExecutable();
+        let rttTestContext = RTTester.getProjectOfFile(this.testCase);
+        let runCOEScript = Path.normalize(Path.join(
+            rttTestContext, "..", "utils", "run-COE.py"));
+        let driverFMU = RTTester.getRelativePathInProject(this.testCase);
+        let cmd = {
+            title: "Run Test",
+            command: python,
+            arguments: [
+                runCOEScript,
+                "--verbose",
+                "--stepsize=" + this.hStepSize.value,
+                "--timeout=auto",
+                driverFMU],
+            options: {
+                env: RTTester.genericCommandEnv(this.testCase),
+                cwd: rttTestContext
+             }
+        };
+        for (var fmuAssignment of this.fmuAssignments.assignments) {
+            cmd.arguments.push(fmuAssignment.hFMUPath.value);
+        }
+        $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
+            RTesterModalCommandWindow.initialize(cmd);
+            (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
+        });
+    }
 
 }
 
