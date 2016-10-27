@@ -64,7 +64,6 @@ class FMUAssignments {
         this.hSUTList = <HTMLDivElement>document.getElementById("sutList");
     }
     load() {
-        // Mockup data
         this.assignments.push(new FMUAssignment(this, "INTO-CPS-Demo", "", null));
     }
 }
