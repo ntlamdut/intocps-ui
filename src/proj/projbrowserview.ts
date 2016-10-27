@@ -58,7 +58,7 @@ export class ProjectBrowserItem {
         this.controller = controller;
         this.id = "ProjectBrowserItem_" + (ProjectBrowserItem.idCounter++).toString();
         this.path = path;
-        this.isDirectory =fs.existsSync(path)&& fs.statSync(path).isDirectory();
+        this.isDirectory = fs.existsSync(path) && fs.statSync(path).isDirectory();
         this.text = Path.basename(path);
         if (parent == null) {
             this.level = 0;
@@ -294,7 +294,7 @@ export class BrowserController {
             });
         let menuEntryImport = menuEntry("Import", "glyphicon glyphicon-import");
         let menuEntryExport = menuEntry("Export", "glyphicon glyphicon-export");
-        let menuRename = menuEntry("Rename", "glyphicon glyphicon-pencil", function (item:ProjectBrowserItem){
+        let menuRename = menuEntry("Rename", "glyphicon glyphicon-pencil", function (item: ProjectBrowserItem) {
             console.info("Renaming path: " + item.path);
             self.menuHandler.rename(item.path);
         });
@@ -503,9 +503,13 @@ export class BrowserController {
                     }
                 }
                 else {
-                    if (pathComponents.length == 3 &&
-                        (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
-                        result.img = "into-cps-icon-rtt-tla";
+                    if (pathComponents.length == 3) {
+                        if (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures") {
+                            result.img = "into-cps-icon-rtt-tla";
+                        } else {
+                            // Hide other directories
+                            return null;
+                        }
                     }
                     else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
                         result.img = "into-cps-icon-rtt-mbt-test-procedure";
@@ -606,7 +610,7 @@ export class BrowserController {
         return false;
     }
 
-    private isResultFolder(path: string): boolean{
+    private isResultFolder(path: string): boolean {
         return Path.basename(path).indexOf("R_") == 0;
     }
 
