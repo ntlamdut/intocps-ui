@@ -432,8 +432,8 @@ export class BrowserController {
                         function (item: ProjectBrowserItem) {
                             let cmd: any = {
                                 title: "Start RT-Tester License Dongle",
-                                command: RTTester.pythonExecutable(),
-                                arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "start_license.py"))],
+                                command: Path.join(RTTester.rttInstallDir(), "bin", "rtt_licd_dongle"),
+                                arguments: ["19999"],
                                 background: true
                             };
                             cmd.title = "Start RT-Tester License Dongle";
@@ -443,8 +443,8 @@ export class BrowserController {
                         function (item: ProjectBrowserItem) {
                             let cmd: any = {
                                 title: "Stop RT-Tester License Dongle",
-                                command: RTTester.pythonExecutable(),
-                                arguments: [Utilities.absoluteProjectPath(Path.join(pathComponents[0], "utils", "stop_license.py"))]
+                                command: Path.join(RTTester.rttInstallDir(), "bin", "rtt_talk_licd"),
+                                arguments: ["stop", "19999"],
                             };
                             cmd.title = "Stop RT-Tester License Dongle";
                             self.menuHandler.runRTTesterCommand(cmd);
