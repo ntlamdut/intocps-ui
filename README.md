@@ -10,9 +10,8 @@ UI app for the INTO-CPS tool chain.
 How to build
 ---
 The app is built with [Electron](http://electron.atom.io/) and
-[Node.js](https://nodejs.org/) (v4 recommended). You need npm (comes with Node.js). We use Gulp
-to manage tasks. It's easiest to have it installed globally (`npm install -g
-gulp`). 
+[Node.js](https://nodejs.org/) (v6 recommended). You need npm (comes with Node.js). Npm 3 or higher is required. Npm
+can be upgraded with `npm install npm@latest -g`. We use Gulp to manage tasks. It's easiest to have it installed globally (`npm install -g gulp`). 
 
 After checking out the repo...
 
