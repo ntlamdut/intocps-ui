@@ -141,10 +141,7 @@ menuHandler.openDseView = (path: string) => {
 };
 
 menuHandler.runRTTesterCommand = (commandSpec: any) => {
-    $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
-        RTesterModalCommandWindow.initialize(commandSpec);
-        (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
-    });
+    RTesterModalCommandWindow.runCommand(commandSpec);
 };
 
 menuHandler.createTDGProject = (path: string) => {

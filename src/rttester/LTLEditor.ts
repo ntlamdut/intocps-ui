@@ -3,10 +3,10 @@
 ///<reference path="../../typings/browser/ambient/ace/index.d.ts"/>
 
 
-import {ViewController} from "../iViewController";
-import {IntoCpsApp} from "../IntoCpsApp";
+import { ViewController } from "../iViewController";
+import { IntoCpsApp } from "../IntoCpsApp";
 import Path = require("path");
-import {RTTester} from "../rttester/RTTester";
+import { RTTester } from "../rttester/RTTester";
 import fs = require("fs");
 import * as RTesterModalCommandWindow from "./GenericModalCommand";
 
@@ -57,10 +57,7 @@ export class LTLEditorController extends ViewController {
                 "-projectDb", Path.join(RTTester.getProjectOfFile(this.ltlQueryFileName), "model", "model_dump.db")],
             options: { env: RTTester.genericCommandEnv(this.ltlQueryFileName) }
         };
-        $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
-            RTesterModalCommandWindow.initialize(cmd);
-            (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
-        });
+        RTesterModalCommandWindow.runCommand(cmd);
     }
 
     configureCompleter(langTools: any) {

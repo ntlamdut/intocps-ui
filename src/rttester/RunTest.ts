@@ -1,7 +1,7 @@
 
-import {ViewController} from "../iViewController";
-import {IntoCpsApp} from "../IntoCpsApp";
-import {RTTester} from "../rttester/RTTester";
+import { ViewController } from "../iViewController";
+import { IntoCpsApp } from "../IntoCpsApp";
+import { RTTester } from "../rttester/RTTester";
 import * as RTesterModalCommandWindow from "./GenericModalCommand";
 import Path = require("path");
 
@@ -104,15 +104,12 @@ export class RunTestController extends ViewController {
             options: {
                 env: RTTester.genericCommandEnv(this.testCase),
                 cwd: rttTestContext
-             }
+            }
         };
         for (var fmuAssignment of this.fmuAssignments.assignments) {
             cmd.arguments.push(fmuAssignment.hFMUPath.value);
         }
-        $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
-            RTesterModalCommandWindow.initialize(cmd);
-            (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
-        });
+        RTesterModalCommandWindow.runCommand(cmd);
     }
 
 }
