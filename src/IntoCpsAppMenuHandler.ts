@@ -1,7 +1,10 @@
 
+import {IViewController} from "./iViewController";
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 
 export class IntoCpsAppMenuHandler {
+    openView: (htmlPath: string, callback?: (mainView: HTMLDivElement) => void | IViewController) => void;
+
     openCoeView: (path: string) => void;
     openMultiModel: (path: string) => void;
     openSysMlExport: (path: string) => void;

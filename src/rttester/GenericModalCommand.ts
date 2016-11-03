@@ -74,12 +74,14 @@ export function runCommand(cmd: any): void {
     load(cmd.title, (c: GenericModalCommand) => {
         const spawn = require("child_process").spawn;
         const child = spawn(cmd.command, cmd.arguments, cmd.options);
-        console.log("foo");
-        c.appendLog("here");
         child.stdout.on("data", c.appendLog.bind(c));
         child.stderr.on("data", c.appendLog.bind(c));
         child.on("close", (code: number) => {
             c.displayTermination(code == 0);
+            if (code == 0 && cmd.onSuccess)
+                cmd.onSuccess(c);
+            if (code == 1 && cmd.onFailure)
+                cmd.onFailure(c);
         });
         c.setAbortCallback(() => { child.kill(); });
         if (cmd.background) {

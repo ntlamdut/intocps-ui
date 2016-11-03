@@ -128,6 +128,8 @@ function openView(htmlPath: string, callback?: (mainView: HTMLDivElement) => voi
     }
 }
 
+menuHandler.openView = openView;
+
 menuHandler.openCoeView = (path: string) => {
     openView(null, view => new CoeViewController(view, path));
 };

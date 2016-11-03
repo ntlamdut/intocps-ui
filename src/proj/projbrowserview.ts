@@ -525,6 +525,17 @@ export class BrowserController {
                                 function (item: ProjectBrowserItem) {
                                     let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
                                     cmd.title = "Solve";
+                                    cmd.onSuccess = () => {
+                                        self.menuHandler.openView(null, (div: HTMLDivElement) => {
+                                            let path = Path.join(item.path, "log", "test-data-generation-report.html")
+                                            IntoCpsApp.setTopName(RTTester.getRelativePathInProject(path));
+                                            let f: HTMLIFrameElement = document.createElement("iframe");
+                                            f.src = path;
+                                            f.style.width = "100%";
+                                            f.style.height = "100%";
+                                            div.appendChild(f);
+                                        });
+                                    };
                                     self.menuHandler.runRTTesterCommand(cmd);
                                 }));
                         }
