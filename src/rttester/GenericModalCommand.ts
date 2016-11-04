@@ -1,7 +1,6 @@
 
 
 export class GenericModalCommand {
-    hRunButton: HTMLButtonElement;
     hAbortButton: HTMLButtonElement;
     hCloseButton: HTMLButtonElement;
     hOutputText: HTMLTextAreaElement;
@@ -10,7 +9,6 @@ export class GenericModalCommand {
     load(onLoad: () => void) {
         let self = this;
         $("#modalDialog").load("rttester/GenericModalCommand.html", (event: JQueryEventObject) => {
-            self.hRunButton = <HTMLButtonElement>document.getElementById("modalRun");
             self.hAbortButton = <HTMLButtonElement>document.getElementById("modalAbort");
             self.hCloseButton = <HTMLButtonElement>document.getElementById("modalClose");
             self.hOutputText = <HTMLTextAreaElement>document.getElementById("modalOutputText");
@@ -27,7 +25,6 @@ export class GenericModalCommand {
         hOutputText.scrollTop = hOutputText.scrollHeight;
     }
     displayTermination(success: boolean) {
-        this.hRunButton.style.display = "none";
         document.getElementById(success ? "modalOK" : "modalFAIL").style.display = "block";
         this.hCloseButton.style.display = "initial";
         this.hAbortButton.style.display = "none";
@@ -42,14 +39,10 @@ export class GenericModalCommand {
     allowClose() {
         this.hCloseButton.style.display = "initial";
     }
-    setRunCallback(cmd: (c: GenericModalCommand) => void) {
+    run(cmd: (c: GenericModalCommand) => void) {
         let self = this;
-        this.hRunButton.onclick = function () {
-            document.getElementById("modalOutput").style.display = "initial";
-            self.hRunButton.style.display = "none";
-            self.hCloseButton.style.display = "none";
-            cmd(self);
-        }
+        self.hCloseButton.style.display = "none";
+        cmd(self);
     }
 }
 
@@ -57,7 +50,7 @@ export function load(title: string, onRun: (cmd: GenericModalCommand) => void): 
     let cmd = new GenericModalCommand();
     cmd.load(() => {
         cmd.setTitle(title);
-        cmd.setRunCallback(onRun)
+        cmd.run(onRun)
     });
 }
 
