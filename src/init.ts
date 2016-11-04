@@ -134,6 +134,17 @@ menuHandler.openCoeView = (path: string) => {
     openView(null, view => new CoeViewController(view, path));
 };
 
+menuHandler.openHTMLInMainView = (path: string, title: string) => {
+    openView(null, (div: HTMLDivElement) => {
+        IntoCpsApp.setTopName(title);
+        let f: HTMLIFrameElement = document.createElement("iframe");
+        f.src = path;
+        f.style.width = "100%";
+        f.style.height = "100%";
+        div.appendChild(f);
+    });
+};
+
 menuHandler.openMultiModel = (path: string) => {
     openView(null, view => new MmViewController(view, path));
 };

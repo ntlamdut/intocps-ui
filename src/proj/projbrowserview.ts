@@ -306,6 +306,7 @@ export class BrowserController {
             return null;
         }
         if (stat.isFile()) {
+            let projectPath = RTTester.getRelativePathInProject(result.path);
             if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION) {
                 result.menuEntries = [];
                 result.dblClickHandler = function () {
@@ -323,6 +324,7 @@ export class BrowserController {
                 }
                 else if (path.endsWith(".html")) {
                     result.img = "into-cps-icon-rtt-html";
+                    result.dblClickHandler = () => self.menuHandler.openHTMLInMainView(result.path, projectPath);
                 }
             }
             else if (pathComponents[0] == Project.PATH_MODEL_CHECKING) {
@@ -525,17 +527,9 @@ export class BrowserController {
                                 function (item: ProjectBrowserItem) {
                                     let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
                                     cmd.title = "Solve";
-                                    cmd.onSuccess = () => {
-                                        self.menuHandler.openView(null, (div: HTMLDivElement) => {
-                                            let path = Path.join(item.path, "log", "test-data-generation-report.html")
-                                            IntoCpsApp.setTopName(RTTester.getRelativePathInProject(path));
-                                            let f: HTMLIFrameElement = document.createElement("iframe");
-                                            f.src = path;
-                                            f.style.width = "100%";
-                                            f.style.height = "100%";
-                                            div.appendChild(f);
-                                        });
-                                    };
+                                    let reportPath = Path.join(item.path, "log", "test-data-generation-report.html")
+                                    cmd.onSuccess = () => self.menuHandler.openHTMLInMainView
+                                        (reportPath, RTTester.getRelativePathInProject(path));
                                     self.menuHandler.runRTTesterCommand(cmd);
                                 }));
                         }

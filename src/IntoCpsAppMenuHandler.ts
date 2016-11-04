@@ -4,6 +4,7 @@ import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 
 export class IntoCpsAppMenuHandler {
     openView: (htmlPath: string, callback?: (mainView: HTMLDivElement) => void | IViewController) => void;
+    openHTMLInMainView: (path: string, title: string) => void;
 
     openCoeView: (path: string) => void;
     openMultiModel: (path: string) => void;
