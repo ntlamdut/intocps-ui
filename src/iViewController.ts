@@ -1,3 +1,6 @@
+
+
+
 export interface IViewController {
     initialize?(): void;
     deInitialize?(): boolean;

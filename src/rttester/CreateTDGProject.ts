@@ -3,19 +3,21 @@ import {ViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp";
 import Path = require("path");
 import {RTTester} from "../rttester/RTTester";
+import * as RTesterModalCommandWindow from "./GenericModalCommand";
+import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
 
 
 export class CreateTDGProjectController extends ViewController {
 
+    menuHandler: IntoCpsAppMenuHandler;
     directory: string;
 
-    constructor(protected viewDiv: HTMLDivElement, directory: string) {
+    constructor(protected viewDiv: HTMLDivElement, menuHandler: IntoCpsAppMenuHandler, directory: string) {
         super(viewDiv);
+        this.menuHandler = menuHandler;
         this.directory = directory;
         IntoCpsApp.setTopName("RT-Tester Project");
     };
-
-
 
     xmiModelBrowser() {
         let remote = require("electron").remote;
@@ -30,37 +32,28 @@ export class CreateTDGProjectController extends ViewController {
     }
 
     createProject(): void {
-        document.getElementById("CreationParameters").style.display = "none";
-        document.getElementById("Output").style.display = "block";
-        let hPath: HTMLInputElement = <HTMLInputElement>document.getElementById("XMIModelPathText");
-        let hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("OutputText");
+        let self = this;
+        let xmiPath = (<HTMLInputElement>document.getElementById("XMIModelPathText")).value;
         let projectName = (<HTMLInputElement>document.getElementById("ProjectName")).value;
-        let script: string = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
-        let targetDir = Path.normalize(Path.join(this.directory, projectName));
-
-        const spawn = require("child_process").spawn;
-        let pythonPath = RTTester.pythonExecutable();
-        let args: string[] = [
-            script,
-            "--dir=" + targetDir,
-            "--skip-rttui",
-            hPath.value
-        ];
+        let script = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
+        let targetDir = Path.normalize(Path.join(self.directory, projectName));
         let env: any = process.env;
+        let modelDetailsPath = Path.join(targetDir, "model", "model-details.html");
+        let modelDetailsTitle = RTTester.getRelativePathInProject(modelDetailsPath);
         env["RTTDIR"] = RTTester.rttInstallDir();
-        const p = spawn(pythonPath, args, { env: env });
-        p.stdout.on("data", (data: string) => {
-            hOutputText.textContent += data + "\n";
-            hOutputText.scrollTop = hOutputText.scrollHeight;
-        });
-        p.stderr.on("data", (data: string) => {
-            hOutputText.textContent += data + "\n";
-            hOutputText.scrollTop = hOutputText.scrollHeight;
-        });
-        p.on("close", (code: number) => {
-            document.getElementById("scriptRUN").style.display = "none";
-            document.getElementById(code == 0 ? "scriptOK" : "scriptFAIL").style.display = "block";
-        });
+        let cmd = {
+            title: "Create Test Automation Project",
+            command: RTTester.pythonExecutable(),
+            arguments: [
+                script,
+                "--dir=" + targetDir,
+                "--skip-rttui",
+                xmiPath
+            ],
+            options: { env: env },
+            onSuccess: () => { self.menuHandler.openHTMLInMainView(modelDetailsPath, modelDetailsTitle) }
+        };
+        RTesterModalCommandWindow.runCommand(cmd);
     }
 
 }

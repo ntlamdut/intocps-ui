@@ -6,15 +6,18 @@ import fs = require("fs");
 import {RTTester} from "../rttester/RTTester";
 import {Abstractions, Interface, Output} from "./CTAbstractions";
 import {Utilities} from "../utilities";
+import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
 
 
 export class CreateMCProjectController extends ViewController {
 
+    menuHandler: IntoCpsAppMenuHandler;
     directory: string;
     hPath: HTMLInputElement;
 
-    constructor(protected viewDiv: HTMLDivElement, directory: string) {
+    constructor(protected viewDiv: HTMLDivElement, menuHandler: IntoCpsAppMenuHandler, directory: string) {
         super(viewDiv);
+        this.menuHandler = menuHandler;
         this.directory = directory;
         IntoCpsApp.setTopName("RT-Tester Project");
         this.hPath = <HTMLInputElement>document.getElementById("XMIModelPathText");
@@ -168,9 +171,9 @@ export class CreateMCProjectController extends ViewController {
             let exe: string = Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-tcgen");
             const spawn = require("child_process").spawn;
             let args: string[] = [
-                 "-model", xmiFileName,
-                 "-proj", "test",
-                 "-projectDb", Path.join(targetDir, "model", "model_dump.db")
+                "-model", xmiFileName,
+                "-proj", "test",
+                "-projectDb", Path.join(targetDir, "model", "model_dump.db")
             ];
             let env: any = process.env;
             env["RTTDIR"] = RTTester.rttInstallDir();

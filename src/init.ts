@@ -158,11 +158,11 @@ menuHandler.runRTTesterCommand = (commandSpec: any) => {
 };
 
 menuHandler.createTDGProject = (path: string) => {
-    openView("rttester/CreateTDGProject.html", view => new CreateTDGProjectController(view, path));
+    openView("rttester/CreateTDGProject.html", view => new CreateTDGProjectController(view, menuHandler, path));
 };
 
 menuHandler.createMCProject = (path: string) => {
-    openView("rttester/CreateMCProject.html", view => new CreateMCProjectController(view, path));
+    openView("rttester/CreateMCProject.html", view => new CreateMCProjectController(view, menuHandler, path));
 };
 
 menuHandler.runTest = (path: string) => {
