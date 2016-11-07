@@ -25,6 +25,8 @@ export class GenericModalCommand {
         hOutputText.scrollTop = hOutputText.scrollHeight;
     }
     displayTermination(success: boolean) {
+        document.getElementById("modalRUN").style.display = "none";
+        document.getElementById(success ? "modalFAIL" : "modalOK").style.display = "none";
         document.getElementById(success ? "modalOK" : "modalFAIL").style.display = "block";
         this.hCloseButton.style.display = "initial";
         this.hAbortButton.style.display = "none";
