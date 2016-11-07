@@ -69,7 +69,7 @@ export function runCommand(cmd: any): void {
         const child = spawn(cmd.command, cmd.arguments, cmd.options);
         child.stdout.on("data", c.appendLog.bind(c));
         child.stderr.on("data", c.appendLog.bind(c));
-        child.on("close", (code: number) => {
+        child.on("exit", (code: number) => {
             c.displayTermination(code == 0);
             if (code == 0 && cmd.onSuccess)
                 cmd.onSuccess(c);

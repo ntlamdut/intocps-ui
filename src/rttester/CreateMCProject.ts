@@ -67,7 +67,7 @@ export class CreateMCProjectController extends ViewController {
             const p = spawn(pythonPath, args, { env: env });
             p.stdout.on("data", self.appendLog.bind(self));
             p.stderr.on("data", self.appendLog.bind(self));
-            p.on("close", (code: number) => {
+            p.on("exit", (code: number) => {
                 if (code == 0) {
                     resolve();
                 } else {
@@ -95,7 +95,7 @@ export class CreateMCProjectController extends ViewController {
                 const p = spawn(pythonPath, args, { env: env });
                 p.stdout.on("data", (data: string) => { stdout += data; });
                 p.stderr.on("data", self.appendLog.bind(self));
-                p.on("close", (code: number) => {
+                p.on("exit", (code: number) => {
                     if (code != 0) {
                         reject();
                     } else {
@@ -180,7 +180,7 @@ export class CreateMCProjectController extends ViewController {
             const p = spawn(exe, args, { env: env });
             p.stdout.on("data", self.appendLog.bind(self));
             p.stderr.on("data", self.appendLog.bind(self));
-            p.on("close", (code: number) => {
+            p.on("exit", (code: number) => {
                 if (code != 0) {
                     reject();
                 } else {
