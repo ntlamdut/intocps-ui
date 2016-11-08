@@ -42,38 +42,6 @@ export class CreateMCProjectController extends ViewController {
         }
     }
 
-    createMBTProjectPromise(c: ModalCommand.GenericModalCommand, targetDir: string) {
-        return new Promise<void>((resolve, reject) => {
-            try {
-                fs.mkdirSync(targetDir);
-            } catch (err) {
-                c.appendLog(err);
-                reject();
-                return;
-            }
-            let script: string = Path.join(RTTester.rttInstallDir(), "bin", "rtt-init-project.py");
-            const spawn = require("child_process").spawn;
-            let pythonPath = RTTester.pythonExecutable();
-            let args: string[] = [
-                script,
-                "--dir=" + targetDir,
-                "--use=MC"
-            ];
-            let env: any = process.env;
-            env["RTTDIR"] = RTTester.rttInstallDir();
-            const p = spawn(pythonPath, args, { env: env });
-            p.stdout.on("data", c.appendLog.bind(c));
-            p.stderr.on("data", c.appendLog.bind(c));
-            p.on("exit", (code: number) => {
-                if (code == 0) {
-                    resolve();
-                } else {
-                    reject();
-                }
-            });
-        });
-    }
-
     createDefaultAbstractionsPromise(c: ModalCommand.GenericModalCommand, xmiFileName: string, targetDir: string) {
         return new Promise<void>((resolve, reject) => {
             let extractInterface = (onLoad: (interfaceJSON: string) => void) => {
@@ -150,30 +118,19 @@ export class CreateMCProjectController extends ViewController {
         });
     }
 
-    createCopyModelPromise(c: ModalCommand.GenericModalCommand, xmiFileName: string, targetDir: string) {
+    createMCProject(c: ModalCommand.GenericModalCommand, xmiFileName: string, targetDir: string) {
         return new Promise<void>((resolve, reject) => {
-            // copy xmi file
-            let targetFileName = Path.join(targetDir, "model", "model.xmi");
-            Utilities.copyFile(xmiFileName, targetFileName,
-                (error: string) => {
-                    if (error) {
-                        c.appendLog(error);
-                        reject();
-                    } else {
-                        resolve();
-                    }
-                });
-        });
-    }
-
-    createCreateModelDBPromise(c: ModalCommand.GenericModalCommand, xmiFileName: string, targetDir: string) {
-        return new Promise<void>((resolve, reject) => {
-            let exe: string = Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-tcgen");
+            let exe = RTTester.pythonExecutable();
+            let script = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
             const spawn = require("child_process").spawn;
             let args: string[] = [
-                "-model", xmiFileName,
-                "-proj", "test",
-                "-projectDb", Path.join(targetDir, "model", "model_dump.db")
+                script,
+                "--skip-rttui",
+                "--skip-configure",
+                "--skip-tests",
+                "--dir=" + targetDir,
+                "--template=MC",
+                xmiFileName
             ];
             let env: any = process.env;
             env["RTTDIR"] = RTTester.rttInstallDir();
@@ -190,30 +147,23 @@ export class CreateMCProjectController extends ViewController {
         });
     }
 
-    createModel(c: ModalCommand.GenericModalCommand, targetDir: string) {
-        return new Promise<void>((resolve, reject) => {
-        });
-    }
-
     createProject(): void {
+        let self = this;
         let xmiFileName = this.hPath.value;
         let targetDir = Path.normalize(Path.join(this.directory, this.hName.value));
-        this.hName.disabled = true;
-        this.hPath.disabled = true;
-        this.hBrowseButton.disabled = true;
-        this.hCreateButton.disabled = true;
+        let modelDetailsPath = Path.join(targetDir, "model", "model-details.html");
+        let modelDetailsTitle = RTTester.getRelativePathInProject(modelDetailsPath);
 
         ModalCommand.load("Create Model Checking Project",
             (c: ModalCommand.GenericModalCommand) => {
-                let actions = [
-                    this.createMBTProjectPromise(c, targetDir),
-                    this.createCopyModelPromise(c, xmiFileName, targetDir),
-                    this.createCreateModelDBPromise(c, xmiFileName, targetDir),
-                    this.createDefaultAbstractionsPromise(c, xmiFileName, targetDir),
-                ];
-                actions.reduce((s, a) => {
-                    return s.then(() => a, () => c.displayTermination(false));
-                }).then(() => c.displayTermination(true));
+                self.createMCProject(c, xmiFileName, targetDir).then(
+                    () => self.createDefaultAbstractionsPromise(c, xmiFileName, targetDir).then(
+                        () => {
+                            c.displayTermination(true);
+                            self.menuHandler.openHTMLInMainView(modelDetailsPath, modelDetailsTitle);
+                        },
+                        () => c.displayTermination(false)),
+                    () => c.displayTermination(false));
             });
     }
 
