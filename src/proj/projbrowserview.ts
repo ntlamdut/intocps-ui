@@ -522,7 +522,7 @@ export class BrowserController {
                                     cmd.title = "Generate Simulation FMU";
                                     self.menuHandler.runRTTesterCommand(cmd);
                                 }));
-                        } else {
+                        } else if (pathComponents[3] != "_P1") {
                             result.menuEntries.push(menuEntry("Solve", "into-cps-icon-rtt-mbt-generate",
                                 function (item: ProjectBrowserItem) {
                                     let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
