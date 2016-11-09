@@ -12,6 +12,8 @@ const rimraf = require("rimraf");
 import {RTTester} from "../rttester/RTTester";
 import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
 import {Utilities} from "../utilities";
+import * as CopyTestProcedureDialog from "../rttester/CopyTestProcedureDialog";
+
 
 export class MenuEntry {
     id: string;
@@ -535,6 +537,13 @@ export class BrowserController {
                             result.menuEntries.push(menuEntry("Delete MBT Test Procedure \"" + result.text + "\"", "glyphicon glyphicon-remove",
                                 (item: ProjectBrowserItem) => rimraf(item.path, { glob: false },
                                     (e: any) => { if (e) throw e; })));
+                            result.menuEntries.push(menuEntry("Copy MBT Test Procedure", "glyphicon glyphicon-plus",
+                                (item: ProjectBrowserItem) => {
+                                    $("#modalDialog").load("rttester/CopyTestProcedureDialog.html", (event: JQueryEventObject) => {
+                                        CopyTestProcedureDialog.display(item.path);
+                                        (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
+                                    });
+                                }));
                         }
                     }
                     else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
