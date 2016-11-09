@@ -141,7 +141,7 @@ export class CTAbstractionsView extends ViewController {
         for (let c of this.abstractions.components) {
             for (let i of c.outputInterfaces) {
                 for (let v of i.outputs) {
-                    if (v.abstraction.selected == "range") {
+                    if (v.abstraction && v.abstraction.selected == "range") {
                         abstractionSignalMap.entries[v.name].lowerBound = +v.abstraction.rangeBased.lowerBound;
                         abstractionSignalMap.entries[v.name].upperBound = +v.abstraction.rangeBased.upperBound;
                     }
