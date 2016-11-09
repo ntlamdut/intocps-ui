@@ -48,13 +48,15 @@ export class LTLEditorController extends ViewController {
 
     check() {
         this.save();
+        let projectPath = RTTester.getProjectOfFile(this.ltlQueryFileName);
         let cmd = {
             title: "Check LTL Query",
             command: Path.normalize(Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-mc")),
             arguments: [
                 "-bound", this.hBMCSteps.value,
                 "-spec", this.ltlEditor.getValue(),
-                "-projectDb", Path.join(RTTester.getProjectOfFile(this.ltlQueryFileName), "model", "model_dump.db")],
+                "-sigMap", Path.join(projectPath, "model", "signalmap-with-interval-abstraction.csv"),
+                "-projectDb", Path.join(projectPath, "model", "model_dump.db")],
             options: { env: RTTester.genericCommandEnv(this.ltlQueryFileName) }
         };
         RTesterModalCommandWindow.runCommand(cmd);

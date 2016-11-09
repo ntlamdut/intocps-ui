@@ -2,6 +2,9 @@
 import {ViewController} from "../iViewController";
 import {IntoCpsApp} from "../IntoCpsApp";
 import {Abstractions, Interface, Output, Component, Abstraction} from "../rttester/CTAbstractions";
+import {SignalMap, SignalMapEntry} from "./SignalMap";
+import Path = require("path");
+import {RTTester} from "../rttester/RTTester";
 
 
 let makeAbstractionTreeID = (function () {
@@ -12,6 +15,7 @@ let makeAbstractionTreeID = (function () {
 export class CTAbstractionsView extends ViewController {
 
     jsonFileName: string;
+    signalMap: SignalMap;
     abstractions: Abstractions;
     currentOutput: Output;
 
@@ -41,47 +45,51 @@ export class CTAbstractionsView extends ViewController {
         this.hAbstractionSelection = <HTMLInputElement>document.getElementById("AbstractionSelection");
         this.jsonFileName = jsonFileName;
         IntoCpsApp.setTopName("Configure Abstractions");
-        this.abstractions = Abstractions.loadFromJSON(jsonFileName);
-        this.displayAbstractions();
-        // Actions for radio buttons:
-        let abstractionSelections = <HTMLInputElement[]><any>document.getElementsByName("AbstractionSelection");
-        for (let i = 0; i < abstractionSelections.length; ++i) {
-            abstractionSelections[i].onclick = (ev: MouseEvent) => {
-                let selectionValue = abstractionSelections[i].value;
-                this.currentOutput.abstraction.selected = selectionValue;
-                self.displaySelectedAbstraction(selectionValue);
-            };
-        }
-        this.hLowerBound.onchange = (ev: Event) => {
-            self.currentOutput.abstraction.rangeBased.lowerBound = +this.hLowerBound.value;
-        };
-        this.hUpperBound.onchange = (ev: Event) => {
-            self.currentOutput.abstraction.rangeBased.upperBound = +this.hUpperBound.value;
-        };
-        this.hGradient.onchange = (ev: Event) => {
-            self.currentOutput.abstraction.gradientBased.gradient = +this.hGradient.value;
-        };
-        this.hGradientTimeFrame.onchange = (ev: Event) => {
-            self.currentOutput.abstraction.gradientBased.timeFrame = +this.hGradientTimeFrame.value;
-        };
-        this.hSimulationFile.onchange = (ev: Event) => {
-            self.currentOutput.abstraction.simulationBased.fileName = this.hSimulationFile.value;
-        };
-        this.hSimulationMaxValueRange.onchange = (ev: Event) => {
-            self.currentOutput.abstraction.simulationBased.maxValueRange = +this.hSimulationMaxValueRange.value;
-        };
-        document.getElementById("simulationFileBrowse").onclick = (ev: MouseEvent) => {
-            let remote = require("electron").remote;
-            let dialog = remote.dialog;
-            let dialogResult: string[] = dialog.showOpenDialog({
-                filters: [{ name: "Log-Files (*.log)", extensions: ["log"] }]
-            });
-            if (dialogResult != undefined) {
-                self.currentOutput.abstraction.simulationBased.fileName
-                    = this.hSimulationFile.value
-                    = dialogResult[0];
+        let signalMapFileName = Path.join(RTTester.getProjectOfFile(jsonFileName), "model", "signalmap.csv");
+        SignalMap.loadFromFile(signalMapFileName, (signalMap) => {
+            this.signalMap = signalMap;
+            this.abstractions = Abstractions.loadFromJSON(jsonFileName);
+            this.displayAbstractions();
+            // Actions for radio buttons:
+            let abstractionSelections = <HTMLInputElement[]><any>document.getElementsByName("AbstractionSelection");
+            for (let i = 0; i < abstractionSelections.length; ++i) {
+                abstractionSelections[i].onclick = (ev: MouseEvent) => {
+                    let selectionValue = abstractionSelections[i].value;
+                    this.currentOutput.abstraction.selected = selectionValue;
+                    self.displaySelectedAbstraction(selectionValue);
+                };
             }
-        };
+            this.hLowerBound.onchange = (ev: Event) => {
+                self.currentOutput.abstraction.rangeBased.lowerBound = +this.hLowerBound.value;
+            };
+            this.hUpperBound.onchange = (ev: Event) => {
+                self.currentOutput.abstraction.rangeBased.upperBound = +this.hUpperBound.value;
+            };
+            this.hGradient.onchange = (ev: Event) => {
+                self.currentOutput.abstraction.gradientBased.gradient = +this.hGradient.value;
+            };
+            this.hGradientTimeFrame.onchange = (ev: Event) => {
+                self.currentOutput.abstraction.gradientBased.timeFrame = +this.hGradientTimeFrame.value;
+            };
+            this.hSimulationFile.onchange = (ev: Event) => {
+                self.currentOutput.abstraction.simulationBased.fileName = this.hSimulationFile.value;
+            };
+            this.hSimulationMaxValueRange.onchange = (ev: Event) => {
+                self.currentOutput.abstraction.simulationBased.maxValueRange = +this.hSimulationMaxValueRange.value;
+            };
+            document.getElementById("simulationFileBrowse").onclick = (ev: MouseEvent) => {
+                let remote = require("electron").remote;
+                let dialog = remote.dialog;
+                let dialogResult: string[] = dialog.showOpenDialog({
+                    filters: [{ name: "Log-Files (*.log)", extensions: ["log"] }]
+                });
+                if (dialogResult != undefined) {
+                    self.currentOutput.abstraction.simulationBased.fileName
+                        = this.hSimulationFile.value
+                        = dialogResult[0];
+                }
+            };
+        });
     }
 
     displaySelectedAbstraction(name: string) {
@@ -105,7 +113,11 @@ export class CTAbstractionsView extends ViewController {
             this.hSelectAbstractionDiv.style.display = "none";
             this.hAbstractionSettings.style.display = "none";
         } else {
-            if (!o.abstraction) o.abstraction = new Abstraction();
+            if (!o.abstraction) {
+                o.abstraction = new Abstraction();
+                o.abstraction.rangeBased.lowerBound = this.signalMap.entries[o.name].lowerBound;
+                o.abstraction.rangeBased.upperBound = this.signalMap.entries[o.name].upperBound;
+            }
             this.hLowerBound.value = o.abstraction.rangeBased.lowerBound.toString();
             this.hUpperBound.value = o.abstraction.rangeBased.upperBound.toString();
             this.hGradient.value = o.abstraction.gradientBased.gradient.toString();
@@ -125,6 +137,21 @@ export class CTAbstractionsView extends ViewController {
 
     save() {
         Abstractions.writeToJSON(this.abstractions, this.jsonFileName);
+        let abstractionSignalMap: SignalMap = jQuery.extend(true, {}, this.signalMap);
+        for (let c of this.abstractions.components) {
+            for (let i of c.outputInterfaces) {
+                for (let v of i.outputs) {
+                    if (v.abstraction.selected == "range") {
+                        abstractionSignalMap.entries[v.name].lowerBound = +v.abstraction.rangeBased.lowerBound;
+                        abstractionSignalMap.entries[v.name].upperBound = +v.abstraction.rangeBased.upperBound;
+                    }
+                }
+            }
+        }
+        let abtstractionSignalMapFileName = Path.join(RTTester.getProjectOfFile(this.jsonFileName),
+            "model", "signalmap-with-interval-abstraction.csv");
+        abstractionSignalMap.saveToFile(abtstractionSignalMapFileName,
+            (error) => { if (error) console.log(error); });
     }
 
     displayAbstractions(): void {

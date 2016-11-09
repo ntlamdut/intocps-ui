@@ -149,20 +149,31 @@ export class CreateMCProjectController extends ViewController {
 
     createSignalMap(c: ModalCommand.GenericModalCommand, targetDir: string) {
         return new Promise<void>((resolve, reject) => {
+            let modelDir = Path.join(targetDir, "model");
             let exe = Path.join(RTTester.rttMBTInstallDir(), "bin", "sigmaptool");
             const spawn = require("child_process").spawn;
             let args: string[] = [
                 "-projectDb", "model_dump.db"
             ];
             let env: any = process.env;
-            const p = spawn(exe, args, { cwd: Path.join(targetDir, "model") });
+            const p = spawn(exe, args, { cwd: modelDir });
             p.stdout.on("data", c.appendLog.bind(c));
             p.stderr.on("data", c.appendLog.bind(c));
             p.on("exit", (code: number) => {
                 if (code != 0) {
                     reject();
                 } else {
-                    resolve();
+                    Utilities.copyFile(
+                        Path.join(modelDir, "signalmap.csv"),
+                        Path.join(modelDir, "signalmap-with-interval-abstraction.csv"),
+                        (error) => {
+                            if (error) {
+                                console.log(error);
+                                reject();
+                            } else {
+                                resolve();
+                            }
+                        });
                 }
             });
         });
