@@ -532,6 +532,9 @@ export class BrowserController {
                                         (reportPath, RTTester.getRelativePathInProject(path));
                                     self.menuHandler.runRTTesterCommand(cmd);
                                 }));
+                            result.menuEntries.push(menuEntry("Delete MBT Test Procedure \"" + result.text + "\"", "glyphicon glyphicon-remove",
+                                (item: ProjectBrowserItem) => rimraf(item.path, { glob: false },
+                                    (e: any) => { if (e) throw e; })));
                         }
                     }
                     else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
@@ -547,6 +550,9 @@ export class BrowserController {
                                 function (item: ProjectBrowserItem) {
                                     self.menuHandler.runTest(item.path);
                                 }));
+                            result.menuEntries.push(menuEntry("Delete Test Procedure \"" + result.text + "\"", "glyphicon glyphicon-remove",
+                                (item: ProjectBrowserItem) => rimraf(item.path, { glob: false },
+                                    (e: any) => { if (e) throw e; })));
                         }
                     }
                 }
