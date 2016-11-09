@@ -35,7 +35,7 @@ export class CreateTDGProjectController extends ViewController {
         let self = this;
         let xmiPath = (<HTMLInputElement>document.getElementById("XMIModelPathText")).value;
         let projectName = (<HTMLInputElement>document.getElementById("ProjectName")).value;
-        let script = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
+        let script = Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-create-fmi2-project.py");
         let targetDir = Path.normalize(Path.join(self.directory, projectName));
         let env: any = process.env;
         let modelDetailsPath = Path.join(targetDir, "model", "model-details.html");

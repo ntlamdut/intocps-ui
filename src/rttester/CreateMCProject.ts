@@ -121,7 +121,7 @@ export class CreateMCProjectController extends ViewController {
     createMCProject(c: ModalCommand.GenericModalCommand, xmiFileName: string, targetDir: string) {
         return new Promise<void>((resolve, reject) => {
             let exe = RTTester.pythonExecutable();
-            let script = Path.join(RTTester.rttMBTInstallDir(), "bin/rtt-mbt-create-fmi2-project.py");
+            let script = Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-create-fmi2-project.py");
             const spawn = require("child_process").spawn;
             let args: string[] = [
                 script,
@@ -147,6 +147,27 @@ export class CreateMCProjectController extends ViewController {
         });
     }
 
+    createSignalMap(c: ModalCommand.GenericModalCommand, targetDir: string) {
+        return new Promise<void>((resolve, reject) => {
+            let exe = Path.join(RTTester.rttMBTInstallDir(), "bin", "sigmaptool");
+            const spawn = require("child_process").spawn;
+            let args: string[] = [
+                "-projectDb", "model_dump.db"
+            ];
+            let env: any = process.env;
+            const p = spawn(exe, args, { cwd: Path.join(targetDir, "model") });
+            p.stdout.on("data", c.appendLog.bind(c));
+            p.stderr.on("data", c.appendLog.bind(c));
+            p.on("exit", (code: number) => {
+                if (code != 0) {
+                    reject();
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
+
     createProject(): void {
         let self = this;
         let xmiFileName = this.hPath.value;
@@ -158,10 +179,12 @@ export class CreateMCProjectController extends ViewController {
             (c: ModalCommand.GenericModalCommand) => {
                 self.createMCProject(c, xmiFileName, targetDir).then(
                     () => self.createDefaultAbstractionsPromise(c, xmiFileName, targetDir).then(
-                        () => {
-                            c.displayTermination(true);
-                            self.menuHandler.openHTMLInMainView(modelDetailsPath, modelDetailsTitle);
-                        },
+                        () => self.createSignalMap(c, targetDir).then(
+                            () => {
+                                c.displayTermination(true);
+                                self.menuHandler.openHTMLInMainView(modelDetailsPath, modelDetailsTitle);
+                            },
+                            () => c.displayTermination(false)),
                         () => c.displayTermination(false)),
                     () => c.displayTermination(false));
             });
