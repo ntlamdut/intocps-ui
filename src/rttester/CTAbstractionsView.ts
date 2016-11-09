@@ -21,7 +21,9 @@ export class CTAbstractionsView extends ViewController {
     hLowerBound: HTMLInputElement;
     hUpperBound: HTMLInputElement;
     hGradient: HTMLInputElement;
+    hGradientTimeFrame: HTMLInputElement;
     hSimulationFile: HTMLInputElement;
+    hSimulationMaxValueRange: HTMLInputElement;
     hAbstractionSelection: HTMLInputElement;
 
 
@@ -33,7 +35,9 @@ export class CTAbstractionsView extends ViewController {
         this.hLowerBound = <HTMLInputElement>document.getElementById("lowerBound");
         this.hUpperBound = <HTMLInputElement>document.getElementById("upperBound");
         this.hGradient = <HTMLInputElement>document.getElementById("gradient");
+        this.hGradientTimeFrame = <HTMLInputElement>document.getElementById("gradientTimeFrame");
         this.hSimulationFile = <HTMLInputElement>document.getElementById("simulationFile");
+        this.hSimulationMaxValueRange = <HTMLInputElement>document.getElementById("simulationMaxValueRange");
         this.hAbstractionSelection = <HTMLInputElement>document.getElementById("AbstractionSelection");
         this.jsonFileName = jsonFileName;
         IntoCpsApp.setTopName("Configure Abstractions");
@@ -57,8 +61,14 @@ export class CTAbstractionsView extends ViewController {
         this.hGradient.onchange = (ev: Event) => {
             self.currentOutput.abstraction.gradientBased.gradient = +this.hGradient.value;
         };
+        this.hGradientTimeFrame.onchange = (ev: Event) => {
+            self.currentOutput.abstraction.gradientBased.timeFrame = +this.hGradientTimeFrame.value;
+        };
         this.hSimulationFile.onchange = (ev: Event) => {
             self.currentOutput.abstraction.simulationBased.fileName = this.hSimulationFile.value;
+        };
+        this.hSimulationMaxValueRange.onchange = (ev: Event) => {
+            self.currentOutput.abstraction.simulationBased.maxValueRange = +this.hSimulationMaxValueRange.value;
         };
         document.getElementById("simulationFileBrowse").onclick = (ev: MouseEvent) => {
             let remote = require("electron").remote;
@@ -99,8 +109,10 @@ export class CTAbstractionsView extends ViewController {
             this.hLowerBound.value = o.abstraction.rangeBased.lowerBound.toString();
             this.hUpperBound.value = o.abstraction.rangeBased.upperBound.toString();
             this.hGradient.value = o.abstraction.gradientBased.gradient.toString();
+            this.hGradientTimeFrame.value = o.abstraction.gradientBased.timeFrame.toString();
             this.hSimulationFile.value = o.abstraction.simulationBased.fileName ?
                 o.abstraction.simulationBased.fileName.toString() : "";
+            this.hSimulationMaxValueRange.value = o.abstraction.simulationBased.maxValueRange.toString();
             this.hSelectAbstractionDiv.style.display = "block";
             this.hAbstractionSettings.style.display = "none";
             let abstraction = o.abstraction.selected;

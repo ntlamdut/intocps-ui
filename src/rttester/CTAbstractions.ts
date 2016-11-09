@@ -11,15 +11,19 @@ export class RangeBasedAbstraction {
 
 export class GradientBasedAbstraction {
     gradient: Number;
+    timeFrame: Number;
     constructor() {
         this.gradient = 0;
+        this.timeFrame = 1000;
     }
 }
 
 export class SimulationBasedAbstraction {
     fileName: string;
+    maxValueRange: Number;
     constructor() {
         this.fileName = null;
+        this.maxValueRange = 1;
     }
 }
 
