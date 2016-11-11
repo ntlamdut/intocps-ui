@@ -524,7 +524,14 @@ export class BrowserController {
                                     cmd.title = "Generate Simulation FMU";
                                     self.menuHandler.runRTTesterCommand(cmd);
                                 }));
-                        } else if (pathComponents[3] != "_P1") {
+                        } else {
+                            result.menuEntries.push(menuEntry("Copy MBT Test Procedure", "glyphicon glyphicon-plus",
+                                (item: ProjectBrowserItem) => {
+                                    $("#modalDialog").load("rttester/CopyTestProcedureDialog.html", (event: JQueryEventObject) => {
+                                        CopyTestProcedureDialog.display(item.path);
+                                        (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
+                                    });
+                                }));
                             result.menuEntries.push(menuEntry("Solve", "into-cps-icon-rtt-mbt-generate",
                                 function (item: ProjectBrowserItem) {
                                     let cmd: any = RTTester.genericMBTPythonCommandSpec(path, "rtt-mbt-gen.py");
@@ -534,16 +541,11 @@ export class BrowserController {
                                         (reportPath, RTTester.getRelativePathInProject(path));
                                     self.menuHandler.runRTTesterCommand(cmd);
                                 }));
-                            result.menuEntries.push(menuEntry("Delete MBT Test Procedure \"" + result.text + "\"", "glyphicon glyphicon-remove",
-                                (item: ProjectBrowserItem) => rimraf(item.path, { glob: false },
-                                    (e: any) => { if (e) throw e; })));
-                            result.menuEntries.push(menuEntry("Copy MBT Test Procedure", "glyphicon glyphicon-plus",
-                                (item: ProjectBrowserItem) => {
-                                    $("#modalDialog").load("rttester/CopyTestProcedureDialog.html", (event: JQueryEventObject) => {
-                                        CopyTestProcedureDialog.display(item.path);
-                                        (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
-                                    });
-                                }));
+                            if (pathComponents[3] != "_P1") {
+                                result.menuEntries.push(menuEntry("Delete MBT Test Procedure \"" + result.text + "\"", "glyphicon glyphicon-remove",
+                                    (item: ProjectBrowserItem) => rimraf(item.path, { glob: false },
+                                        (e: any) => { if (e) throw e; })));
+                            }
                         }
                     }
                     else if (pathComponents.length == 4 && pathComponents[2] == "RTT_TestProcedures") {
