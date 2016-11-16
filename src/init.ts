@@ -166,7 +166,7 @@ menuHandler.createMCProject = (path: string) => {
 };
 
 menuHandler.runTest = (path: string) => {
-    openView("rttester/RunTest.html", view => new RunTestController(view, path));
+    openView("rttester/RunTest.html", view => new RunTestController(view, menuHandler, path));
 };
 
 menuHandler.openLTLQuery = (folder: string) => {

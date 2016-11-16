@@ -4,6 +4,8 @@ import { IntoCpsApp } from "../IntoCpsApp";
 import { RTTester } from "../rttester/RTTester";
 import * as RTesterModalCommandWindow from "./GenericModalCommand";
 import Path = require("path");
+import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
+
 
 class FMUAssignment {
     assignments: FMUAssignments;
@@ -70,13 +72,15 @@ class FMUAssignments {
 
 export class RunTestController extends ViewController {
 
+    menuHandler: IntoCpsAppMenuHandler;
     testCase: string;
     fmuAssignments: FMUAssignments = new FMUAssignments(this);
     hRunButton: HTMLButtonElement;
     hStepSize: HTMLInputElement;
 
-    constructor(protected viewDiv: HTMLDivElement, testCase: string) {
+    constructor(protected viewDiv: HTMLDivElement, menuHandler: IntoCpsAppMenuHandler, testCase: string) {
         super(viewDiv);
+        this.menuHandler = menuHandler;
         let self = this;
         this.testCase = testCase;
         IntoCpsApp.setTopName("Run Test");
@@ -87,11 +91,14 @@ export class RunTestController extends ViewController {
     };
 
     run() {
+        let self = this;
         let python = RTTester.pythonExecutable();
         let rttTestContext = RTTester.getProjectOfFile(this.testCase);
         let runCOEScript = Path.normalize(Path.join(
             rttTestContext, "..", "utils", "run-COE.py"));
         let driverFMU = RTTester.getRelativePathInProject(this.testCase);
+        let summaryPath = Path.join(this.testCase, "test-case-summary.html");
+        let summaryTitle = RTTester.getRelativePathInProject(summaryPath);
         let cmd = {
             title: "Run Test",
             command: python,
@@ -104,7 +111,8 @@ export class RunTestController extends ViewController {
             options: {
                 env: RTTester.genericCommandEnv(this.testCase),
                 cwd: rttTestContext
-            }
+            },
+            onSuccess: () => { self.menuHandler.openHTMLInMainView(summaryPath, summaryTitle) }
         };
         for (var fmuAssignment of this.fmuAssignments.assignments) {
             cmd.arguments.push(fmuAssignment.hFMUPath.value);
