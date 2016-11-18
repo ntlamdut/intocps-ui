@@ -10,7 +10,7 @@ export class CoeConfig {
         let fmus: any = {};
 
         this.coSimConfig.multiModel.fmus.forEach(fmu => {
-            fmus[fmu.name] = (this.remoteCoe ? Path.join("session:", Path.basename(fmu.path)) : "file:///" + fmu.path).replace(/\\/g, "/");
+            fmus[fmu.name] = (this.remoteCoe ? Path.join("session:", Path.basename(fmu.path)) : "file:///" + fmu.path).replace(/\\/g, "/").replace(/ /g, "%20");
         });
 
         let data: any = {};
