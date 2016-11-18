@@ -14,11 +14,6 @@ function gup(name: any, url: any) {
 }
 
 
-window.onload = function () {
-    var n: HTMLInputElement = <HTMLInputElement>document.getElementById("name");
-    n.value = decodeURIComponent(Path.basename(gup("data", undefined)));
-};
-
 function rename() {
 
     var n: HTMLInputElement = <HTMLInputElement>document.getElementById("newName");
