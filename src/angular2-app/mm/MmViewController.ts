@@ -1,6 +1,7 @@
 import {ViewController} from "../../iViewController";
 import IntoCpsApp from "../../IntoCpsApp";
 import {AppComponent} from "../app.component";
+import * as Path from 'path';
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -15,7 +16,7 @@ export class MmViewController extends ViewController {
 
     initialize() {
         $(this.view).css('height',0);
-        IntoCpsApp.setTopName(this.path.split('\\').reverse()[1]);
+        IntoCpsApp.setTopName(Path.basename(Path.join(this.path,"../")));
         window.ng2app.openMultiModel(this.path);
     }
 
