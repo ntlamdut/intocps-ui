@@ -18,7 +18,7 @@ export class Project implements IProject {
     PATH_FMUS: String = "FMUs";
     PATH_MODELS: String = "Models";
     static PATH_MULTI_MODELS: String = "Multi-models";
-    static PATH_DSE: String = "Design Space Explorations";
+    static PATH_DSE: String = "DSEs";
     //PATH_CONNECTIONS: String = "SysML Connections";
     static PATH_SYSML: String = "SysML";
     static PATH_TEST_DATA_GENERATION: String = "Test-Data-Generation";
@@ -60,6 +60,12 @@ export class Project implements IProject {
             } catch (e) {
                 //already exists
             }
+                //create empty ignore file for folder
+            fs.writeFile(path+'/.gitignore', "#Always track this folder in Git", {flag: 'wx'}, function(err) {
+              if(err) {
+                return console.log(err);
+              }
+            }); 
         }
 
         fs.open(this.configPath, "w", (err, fd) => {
