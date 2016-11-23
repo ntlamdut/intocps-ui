@@ -57,15 +57,15 @@ export class Project implements IProject {
                 var folder = folders[i];
                 let path = Path.normalize(this.rootPath + "/" + folder);
                 fs.mkdir(path, function (err) { });
+                fs.writeFile(path+'/.gitignore', "#Always track this folder in Git", {flag: 'wx'}, function(err) {
+                  if(err) {
+                    return console.log(err);
+                  }
+                }); 
             } catch (e) {
                 //already exists
             }
                 //create empty ignore file for folder
-            fs.writeFile(path+'/.gitignore', "#Always track this folder in Git", {flag: 'wx'}, function(err) {
-              if(err) {
-                return console.log(err);
-              }
-            }); 
         }
 
         fs.open(this.configPath, "w", (err, fd) => {
