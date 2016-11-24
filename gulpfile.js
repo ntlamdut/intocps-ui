@@ -224,6 +224,7 @@ gulp.task("package-darwin", function(callback) {
         arch: "x64",
         version: "1.2.1",
         overwrite:true,
+        prune:true,
         icon: 'src/resources/into-cps/appicon/into-cps-logo.png.icns',
         out: 'pkg',
         "app-version": packageJSON.version,
@@ -246,6 +247,7 @@ gulp.task("package-win32", function(callback) {
         arch: "all",
         version: "1.2.1",
         overwrite:true,
+        prune:true,
         icon: 'src/resources/into-cps/appicon/into-cps-logo.png.ico',
         out: 'pkg',
         "app-version": packageJSON.version,
@@ -268,6 +270,7 @@ gulp.task("package-linux", function(callback) {
         arch: "x64",
         version: "1.2.1",
         overwrite:true,
+        prune:true,
         out: 'pkg',
         "app-version": packageJSON.version,
         "version-string": {
