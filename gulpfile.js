@@ -248,7 +248,6 @@ gulp.task("package-win32", function(callback) {
         version: "1.2.1",
         overwrite:true,
         prune:true,
-        ignore:[/src.*/,/dist.*/,/.gitignore/,/gulpfile.js/,/LICENSE.md/,/README.md/,/webpack.config.js/,/typings/],
         icon: 'src/resources/into-cps/appicon/into-cps-logo.png.ico',
         out: 'pkg',
         "app-version": packageJSON.version,
