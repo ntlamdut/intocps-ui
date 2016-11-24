@@ -3,9 +3,9 @@
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
-import {IntoCpsApp} from  "../IntoCpsApp";
-import {SettingKeys} from "../settings/SettingKeys";
-import {remote} from "electron";
+import { IntoCpsApp } from "../IntoCpsApp";
+import { SettingKeys } from "../settings/SettingKeys";
+import { remote } from "electron";
 import * as Path from 'path';
 
 var globalCoeIsRunning = false;
@@ -32,12 +32,12 @@ function coeOnlineCheck() {
 
         setTimeout(() => coeOnlineCheck(), 2000);
     })
-    .done(data => {
-        offlineAlert.innerHTML = `Co-Simulation Engine, version: ${data.version}, online at: ${url}`;
+        .done(data => {
+            offlineAlert.innerHTML = `Co-Simulation Engine, version: ${data.version}, online at: ${url}`;
 
-        onlineAlert.style.display = "none";
-        offlineAlert.style.display = "block";
-    });
+            onlineAlert.style.display = "none";
+            offlineAlert.style.display = "block";
+        });
 }
 
 function coeClose() {
@@ -46,11 +46,11 @@ function coeClose() {
     }
 
     remote.dialog.showMessageBox({
-            type: 'question',
-            buttons: ["No", "Yes"],
-            message: "Are you sure you want to terminate the COE?"
-        },
-        button => {if (button === 1) return realClose()}
+        type: 'question',
+        buttons: ["No", "Yes"],
+        message: "Are you sure you want to terminate the COE?"
+    },
+        button => { if (button === 1) return realClose() }
     );
 
     return true;
@@ -84,11 +84,14 @@ function launchCoe() {
     document.getElementById("coe-console").appendChild(panel);
 
     child.stdout.on('data', function (data: any) {
-        console.log('stdout: ' + data);
+       // console.log('stdout: ' + data);
         //Here is where the output goes
         let m = document.createElement("span");
         m.innerText = data + "";
         div.appendChild(m);
+        while (div.childElementCount>200 && div.hasChildNodes()) {
+            div.removeChild(div.firstChild);
+        }
     });
 
     child.stderr.on('data', function (data: any) {
