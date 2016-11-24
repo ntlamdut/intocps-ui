@@ -97,12 +97,12 @@ export function fetchProjectThroughGit(url: string, targetFolder: string, update
         var child: any = null;
 
         if (!repoExists) {
-            child = spawn('git', ['clone', "--progress", url], {
+            child = spawn('git', ['clone',"--depth","1", "--progress", url], {
                 detached: false,
                 cwd: childCwd
             });
         } else {
-            child = spawn('git', ['pull', "--progress"], {
+            child = spawn('git', ['pull',"--depth","1", "--progress"], {
                 detached: false,
                 cwd: repoPath
             });
