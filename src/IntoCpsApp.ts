@@ -154,8 +154,10 @@ export default class IntoCpsApp extends EventEmitter {
         let project = SerializationHelper.toInstance(new Project("", "", ""), content.toString());
         project.configPath = path;
         project.rootPath = Path.dirname(path);
+        project.save() // create all the project folders, in case they don't exist.
         return project;
     }
+
 
     //get the global instance
     public static getInstance(): IntoCpsApp {
