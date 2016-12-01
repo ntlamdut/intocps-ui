@@ -255,14 +255,30 @@ export class MmConfigurationComponent {
         data["linkDataArray"] = [];
 
         var index = 1;
+        var idMap: Map<any, number> = new Map();
 
         this.config.fmuInstances.forEach(instance => {
             var instanceObj: any = new Object();
 
-            instanceObj["key"] = index++;
+            idMap.set(instance, index);
+            instanceObj["key"] = index;
             instanceObj["name"] = instance.name;
             instanceObj["type"] = instance.fmu.name;
             data["nodeDataArray"].push(instanceObj);
+            index++;
+        });
+
+        this.config.fmuInstances.forEach(i => {
+            i.outputsTo.forEach((pairs: InstanceScalarPair[], sv: ScalarVariable) => {
+                pairs.forEach(p => {
+                    var c: any = new Object();
+                    c["from"] = idMap.get(i);
+                    c["frompid"] = sv.name;
+                    c["to"] = idMap.get(p.instance);
+                    c["topid"] = p.scalarVariable.name;
+                    data["linkDataArray"].push(c);
+                });
+            });
         });
 
         //        var json = JSON.parse("{\"key\":1, \"type\":\"Table\", \"name\":\"Product\"}");
