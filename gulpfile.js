@@ -7,7 +7,7 @@
 var outputPath = 'dist/',
     htmlSrcs = ['src/**/*.html'],
     jsSrcs = 'src/**/*.js',
-    tsSrcs = ['src/**/*.ts', 'typings/browser/**/*.ts'],
+    tsSrcs = ['src/**/*.ts', 'typings/browser/**/*.ts','typings/globals/**/*.ts'],
     bowerFolder = 'bower_components',
     resourcesFolder = 'src/resources',
     typingsFolder = 'typings',

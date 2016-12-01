@@ -20,5 +20,8 @@
         "w2ui": "registry:dt/w2ui#1.4.3+20160501154442",
         "ace": "registry:dt/ace#0.0.0+20160630235124",
         "sql.js": "registry:dt/sql.js#0.0.0+20160316155526"
+    },
+    "globalDependencies": {
+        "gojs": "registry:dt/gojs#1.6.0+20160323033500"
     }
 }
