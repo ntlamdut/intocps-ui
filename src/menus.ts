@@ -1,6 +1,3 @@
-
-
-
 const fs = require('fs');
 const path = require('path');
 var settings = require("./settings/settings").default;
@@ -39,21 +36,15 @@ createProjectHandler.install();
 openProjectHandler.install();
 openDownloadManagerHandler.install();
 
-
-
-
-
 export function configureIntoCpsMenu() {
   const {remote} = require('electron');
+  const app = remote.app
   const {Menu, MenuItem} = remote;
 
   // Definitions needed for menu construction
   var defaultMenu = require('electron-default-menu')
   // Get template for default menu 
   var menu: any[] = defaultMenu();
-
-
-  //let mw = mainWindow;
 
 
   var fileMenuPos = 0;
@@ -84,14 +75,12 @@ export function configureIntoCpsMenu() {
   menu.splice(fileMenuPos, 0, {
     label: 'File',
     submenu: [
-
       {
         label: 'New Project',
         accelerator: 'CmdOrCtrl+N',
         click: function (item: any, focusedWindow: any) {
           createProjectHandler.openWindow();
         }
-
       },
       {
         type: 'separator'
@@ -129,23 +118,33 @@ export function configureIntoCpsMenu() {
           let activeProject = IntoCpsApp.getInstance().getActiveProject();
           if (activeProject != null)
             SystemUtil.openPath(activeProject.rootPath);
-        }
+        },
       }
     ]
   })
 
+  // Add File->Exit on Windows
+  if (process.platform === 'win32') {
+    menu[fileMenuPos].submenu.push(
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Exit',
+        click: function (item: any, focusedWindow: any) {
+          app.quit();
+        }
+      })
+  }
+
+
   menu.forEach(m => {
     if (m.label == "Window") {
-
-
-
-
-
       if (!(process.platform === 'darwin')) {
-              m.submenu.splice(m.submenu.length - 1, 0, {
-        type: 'separator'
+        m.submenu.splice(m.submenu.length - 1, 0, {
+          type: 'separator'
 
-      });
+        });
         m.submenu.splice(-1, 0, {
           label: 'Show Settings',
           accelerator: 'Alt+S',
