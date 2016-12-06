@@ -52,22 +52,6 @@ export class Project implements IProject {
         let folders = [Project.PATH_SYSML, Project.PATH_DSE, this.PATH_FMUS, this.PATH_MODELS, Project.PATH_MULTI_MODELS,
         Project.PATH_TEST_DATA_GENERATION, Project.PATH_MODEL_CHECKING];
 
-        for (var i = 0; folders.length > i; i++) {
-            try {
-                var folder = folders[i];
-                let path = Path.normalize(this.rootPath + "/" + folder);
-                fs.mkdir(path, function (err) { });
-                fs.writeFile(path+'/.gitignore', "#Always track this folder in Git", {flag: 'wx'}, function(err) {
-                  if(err) {
-                    return console.log(err);
-                  }
-                }); 
-            } catch (e) {
-                //already exists
-            }
-                //create empty ignore file for folder
-        }
-
         fs.open(this.configPath, "w", (err, fd) => {
             if (err) {
                 "The error: " + err + " happened when attempting to open the file: " + this.configPath + " for writing.";
