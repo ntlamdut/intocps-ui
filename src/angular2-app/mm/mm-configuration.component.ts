@@ -192,33 +192,7 @@ export class MmConfigurationComponent {
             myDiagram.nodeTemplateMap.add(typename, node);
         }
 
-        makeTemplate("Table", "images/55x55.png", "forestgreen",
-            [],
-            [makePort("OUT", false)]);
-
-        makeTemplate("Join", "images/55x55.png", "mediumorchid",
-            [makePort("L", true), makePort("R", true)],
-            [makePort("UL", false), makePort("ML", false), makePort("M", false), makePort("MR", false), makePort("UR", false)]);
-
-        makeTemplate("Project", "images/55x55.png", "darkcyan",
-            [makePort("", true)],
-            [makePort("OUT", false)]);
-
-        makeTemplate("Filter", "images/55x55.png", "cornflowerblue",
-            [makePort("", true)],
-            [makePort("OUT", false), makePort("INV", false)]);
-
-        makeTemplate("Group", "images/55x55.png", "mediumpurple",
-            [makePort("", true)],
-            [makePort("OUT", false)]);
-
-        makeTemplate("Sort", "images/55x55.png", "sienna",
-            [makePort("", true)],
-            [makePort("OUT", false)]);
-
-        makeTemplate("Export", "images/55x55.png", "darkred",
-            [makePort("", true)],
-            []);
+   
 
 
         this.config.fmus.forEach(fmu => {
@@ -238,7 +212,7 @@ export class MmConfigurationComponent {
         myDiagram.linkTemplate =
             $(go.Link,
                 {
-                    routing: go.Link.Orthogonal, corner: 5,
+                    routing: go.Link.AvoidsNodes,
                     relinkableFrom: true, relinkableTo: true
                 },
                 $(go.Shape, { stroke: "gray", strokeWidth: 2 }),
