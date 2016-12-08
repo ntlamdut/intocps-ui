@@ -9,11 +9,19 @@ import { remote } from "electron";
 import * as Path from 'path';
 
 var globalCoeIsRunning = false;
-
+var globalChild: any;
+var preventDefault = true;
 window.onload = function () {
     if (window.location.search === "?data=autolaunch")
         launchCoe();
 };
+window.onbeforeunload = (ev: Event) => {
+    if(preventDefault)
+        {
+            ev.returnValue=false;
+            coeClose();
+        }
+}
 
 function coeOnlineCheck() {
     let url = IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.COE_URL) || "localhost:8082";
@@ -41,24 +49,31 @@ function coeOnlineCheck() {
 }
 
 function coeClose() {
-    if (!globalCoeIsRunning) {
-        return realClose();
-    }
-
-    remote.dialog.showMessageBox({
-        type: 'question',
-        buttons: ["No", "Yes"],
-        message: "Are you sure you want to terminate the COE?"
-    },
-        button => { if (button === 1) return realClose() }
-    );
-
-    return true;
+    if (globalCoeIsRunning)
+        remote.dialog.showMessageBox({
+            type: 'question',
+            buttons: ["No", "Yes"],
+            message: "Are you sure you want to terminate the COE?"
+        },
+            button => { if (button === 1) return realClose() }
+        );
 }
 
 function realClose() {
-    window.top.close();
-    return false;
+    if (globalChild) {
+        var kill = require('tree-kill');
+        kill(globalChild.pid, 'SIGKILL', (err: any) => {
+            if (err) {
+                remote.dialog.showErrorBox("Failed to close COE", "It was not possible to close the COE. Pid: " + globalChild.pid)
+            }
+            else {
+                globalChild = null;
+            }
+            preventDefault = false;
+            window.top.close();
+        });
+    }
+
 }
 
 function clearOutput() {
@@ -83,6 +98,7 @@ function launchCoe() {
         cwd: childCwd
     });
     child.unref();
+    globalChild = child;
     globalCoeIsRunning = true;
 
     let root = document.getElementById("coe-console")
@@ -95,7 +111,7 @@ function launchCoe() {
     let panel = createPanel("Console", div);
     root.appendChild(panel);
     let mLaunch = document.createElement("span");
-    mLaunch.innerHTML="Terminal args: java -jar "+coePath+"<br/>";
+    mLaunch.innerHTML = "Terminal args: java -jar " + coePath + "<br/>";
     div.appendChild(mLaunch);
 
     child.stdout.on('data', function (data: any) {
