@@ -8,11 +8,12 @@ import * as Path from "path";
 import { BehaviorSubject } from "rxjs/Rx";
 import { Injectable, NgZone } from "@angular/core";
 import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
-
+import * as http from "http"
 
 
 @Injectable()
 export class CoeSimulationService {
+    
     progress: number = 0;
     datasets: BehaviorSubject<Array<any>> = new BehaviorSubject([]);
     errorReport: (hasError: boolean, message: string) => void = function () { };
@@ -202,14 +203,21 @@ export class CoeSimulationService {
                 ]).then(() => this.progress = 100);
             });
 
-        var http = require('http');
+        
         var fs = require('fs');
         var file = fs.createWriteStream(`${this.resultDir}/log.zip`);
         let url = `http://${this.url}/result/${this.sessionId}/zip`;
-        var request = http.get(url, function (response: any) {
+        var request = http.get(url, (response:http.IncomingMessage) => {
             response.pipe(file);
+            response.on('end', () =>{
+                let destroySessionUrl = `http://${this.url}/destroy/${this.sessionId}`;
+                http.get(destroySessionUrl, (response:any) => {
+                    let statusCode = response.statusCode;
+                    if(statusCode != 200)
+                        console.error("Destroy session returned statuscode: " + statusCode)
+                });
+            });      
         });
-
     }
 
 

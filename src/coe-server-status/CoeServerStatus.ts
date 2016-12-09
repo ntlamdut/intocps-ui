@@ -1,5 +1,3 @@
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
@@ -7,6 +5,7 @@ import { IntoCpsApp } from "../IntoCpsApp";
 import { SettingKeys } from "../settings/SettingKeys";
 import { remote } from "electron";
 import * as Path from 'path';
+import * as child_process from 'child_process'
 
 var globalCoeIsRunning = false;
 var globalChild: any;
@@ -83,7 +82,7 @@ function clearOutput() {
     }
 }
 function launchCoe() {
-    var spawn = require('child_process').spawn;
+    var spawn = child_process.spawn;
 
     let installDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
     let coePath = Path.join(installDir, "coe.jar");
