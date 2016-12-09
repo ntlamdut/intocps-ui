@@ -56,7 +56,7 @@ export class Project implements IProject {
           try {
             var folder = folders[i];
             let path = Path.normalize(this.rootPath + "/" + folder);
-            if (!fs.existsSync(path) {
+            if (!fs.existsSync(path)) {
               fs.mkdir(path, function (err) { });
             }
           } 
