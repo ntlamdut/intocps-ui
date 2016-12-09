@@ -41,23 +41,13 @@ function createWindow() {
   intoCpsApp.setWindow(mainWindow);
 
 
-  mainWindow.on('close', function (ev) {
+  mainWindow.on('close', function () {
     let allWindows = BrowserWindow.getAllWindows();
     allWindows.forEach((bw => {
       if (bw != mainWindow)
-       bw.close();
+        bw.close();
     }));
-    //This check if here in case some windows does not close. E.g. the coe window has a pop-up.
-    if(BrowserWindow.getAllWindows().length > 1)
-    {
-      ev.preventDefault();
-      allWindows.forEach((bw => {
-      if (bw != mainWindow)
-       bw.focus();
-    }));
-    }
   });
-
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
 
