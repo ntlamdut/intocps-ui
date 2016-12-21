@@ -9,16 +9,19 @@ import Path = require("path");
 import { RTTester } from "../rttester/RTTester";
 import fs = require("fs");
 import * as RTesterModalCommandWindow from "./GenericModalCommand";
+import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
 
 
 export class LTLEditorController extends ViewController {
 
+    menuHandler: IntoCpsAppMenuHandler;
     ltlQueryFileName: string;
     ltlEditor: any;
     hBMCSteps: HTMLInputElement;
 
-    constructor(protected viewDiv: HTMLDivElement, folderName: string) {
+    constructor(protected viewDiv: HTMLDivElement, menuHandler: IntoCpsAppMenuHandler, folderName: string) {
         super(viewDiv);
+        this.menuHandler = menuHandler;
         this.ltlQueryFileName = Path.join(folderName, "query.json");
         IntoCpsApp.setTopName("LTL Formula");
         this.hBMCSteps = <HTMLInputElement>document.getElementById("BMCSteps");
@@ -47,17 +50,25 @@ export class LTLEditorController extends ViewController {
     }
 
     check() {
+        let self = this;
         this.save();
         let projectPath = RTTester.getProjectOfFile(this.ltlQueryFileName);
+        let queryDir = Path.dirname(this.ltlQueryFileName);
+        let modelCheckingReportPath = Path.join(queryDir, "model-checking-report.html");
+        let modelCheckingReportTitle = RTTester.getRelativePathInProject(modelCheckingReportPath);
         let cmd = {
             title: "Check LTL Query",
-            command: Path.normalize(Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-mc")),
+            command: RTTester.pythonExecutable(),
             arguments: [
-                "-bound", this.hBMCSteps.value,
-                "-spec", this.ltlEditor.getValue(),
-                "-sigMap", Path.join(projectPath, "model", "signalmap-with-interval-abstraction.csv"),
-                "-projectDb", Path.join(projectPath, "model", "model_dump.db")],
-            options: { env: RTTester.genericCommandEnv(this.ltlQueryFileName) }
+                Path.normalize(Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-mc.py")),
+                "--bound", this.hBMCSteps.value,
+                "--sigMap", Path.join(projectPath, "model", "signalmap-with-interval-abstraction.csv"),
+                this.ltlEditor.getValue()],
+            options: {
+                env: RTTester.genericCommandEnv(this.ltlQueryFileName),
+                cwd: queryDir
+            },
+            onSuccess: () => { self.menuHandler.openHTMLInMainView(modelCheckingReportPath, modelCheckingReportTitle) }
         };
         RTesterModalCommandWindow.runCommand(cmd);
     }
