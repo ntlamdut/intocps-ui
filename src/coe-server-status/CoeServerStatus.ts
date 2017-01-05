@@ -12,7 +12,7 @@ var globalCoeIsRunning = false;
 
 window.onload = function () {
     if (window.location.search === "?data=autolaunch")
-        launchCoe();
+        launchCoe() ;
 };
 
 function coeOnlineCheck() {
@@ -25,18 +25,20 @@ function coeOnlineCheck() {
     setTimeout(() => request.abort(), 2000);
 
     request.fail(() => {
-        onlineAlert.innerHTML = `Co-Simulation Engine, offline no connection at: ${url}`;
+        onlineAlert.innerHTML = `Co-Simulation Orchestration Engine, offline no connection at: ${url}`;
 
         onlineAlert.style.display = "block";
         offlineAlert.style.display = "none";
-
+        $('#coe-spawn').prop('disabled', false);
         setTimeout(() => coeOnlineCheck(), 2000);
     })
         .done(data => {
-            offlineAlert.innerHTML = `Co-Simulation Engine, version: ${data.version}, online at: ${url}`;
+            offlineAlert.innerHTML = `Co-Simulation Orchestration Engine, version: ${data.version}, online at: ${url}`;
 
             onlineAlert.style.display = "none";
             offlineAlert.style.display = "block";
+
+            $('#coe-spawn').prop('disabled', true);
         });
 }
 
@@ -68,6 +70,7 @@ function clearOutput() {
     }
 }
 function launchCoe() {
+    $('#coe-spawn').prop('disabled', true);
     var spawn = require('child_process').spawn;
 
     let installDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
