@@ -6,6 +6,7 @@ import Path = require('path');
 
 import { IProject } from "./IProject"
 import { ProjectSettings } from "./ProjectSettings"
+import {DseConfiguration} from "../intocps-configurations/dse-configuration"
 
 export class Project implements IProject {
 
@@ -122,7 +123,7 @@ export class Project implements IProject {
 
         let fullpath = Path.normalize(path + "/" + name + ".dse.json");
 
-        fs.writeFileSync(fullpath, jsonContent == null ? "{}" : jsonContent, "UTF-8");
+        fs.writeFileSync(fullpath, jsonContent, "UTF-8");
 
         return fullpath;
     }

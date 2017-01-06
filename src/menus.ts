@@ -156,7 +156,7 @@ export function configureIntoCpsMenu() {
       }
 
       m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'Show COE Server Status',
+        label: 'Show Co-simulation Orchestration Engine',
         accelerator: 'Alt+O',
         click: function (item: any, focusedWindow: any) {
           coeServerStatusHandler.openWindow();

@@ -1,10 +1,14 @@
 intocps-ui
 ---
 
-UI app for the INTO-CPS tool chain.
+The INTO-CPS Application is the frontend of the INTO-CPS Tool Chain. It is used
+to configure and run FMI-based co-simulations. Other features include model
+checking, test automation and design space exploration.
 
-![The INTO-CPS App](src/resources/screenshot.png?raw=true "The INTO-CPS App")
+The App is primarily a UI. Most of the modelling and simulation work is done by
+the INTO-CPS tools themselves. These can be downloaded from within the app.
 
+![The INTO-CPS Application](src/resources/screenshot.png?raw=true "The INTO-CPS App")
 
 
 How to build

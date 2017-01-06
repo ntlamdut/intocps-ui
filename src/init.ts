@@ -17,6 +17,7 @@ import { bootstrap } from '@angular/platform-browser-dynamic';
 import { AppComponent } from './angular2-app/app.component';
 import * as fs from 'fs';
 import * as Path from 'path';
+import {DseConfiguration} from "./intocps-configurations/dse-configuration"
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -201,18 +202,6 @@ menuHandler.openFmu = () => {
 //    });
 //};
 //
-//menuHandler.createDsePlain = () => {
-//    openView("dse/dse.html", () => {
-//        let project: IProject = require("electron").remote.getGlobal("intoCpsApp").getActiveProject();
-//        if (project != null) {
-//            let name = "new";
-//            let content = "{}";
-//            let dsePath = project.createDse("dse-" + name + " (" + Math.floor(Math.random() * 100) + ")", content);
-//            IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
-//            menuHandler.openDseView(dsePath + "");
-//        }
-//    });
-//};
 
 menuHandler.createMultiModel = (path) => {
     let project = IntoCpsApp.getInstance().getActiveProject();
@@ -224,6 +213,18 @@ menuHandler.createMultiModel = (path) => {
         menuHandler.openMultiModel(mmPath);
     }
 };
+
+menuHandler.createDsePlain = () => {
+    let project = IntoCpsApp.getInstance().getActiveProject();
+    if (project) {
+        let name = "new";
+        let dseConfig = new DseConfiguration()
+        let dseObject = dseConfig.toObject();
+        let dseJson = JSON.stringify(dseObject);
+        let dsePath = <string>project.createDse("dse-" + name + " (" + Math.floor(Math.random() * 100) + ")", dseJson);
+        menuHandler.openDseView(dsePath);
+    }
+}
 
 menuHandler.createMultiModelPlain = () => {
     let project = IntoCpsApp.getInstance().getActiveProject();
@@ -254,7 +255,7 @@ menuHandler.deletePath = (path) => {
             IntoCpsApp.getInstance().emit(IntoCpsAppEvents.PROJECT_CHANGED);
         });
 
-    } else if (name.endsWith("coe.json") || name.endsWith("mm.json")) {
+    } else if (name.endsWith("coe.json") || name.endsWith("mm.json") || name.endsWith(".dse.json")) {
         let dir = Path.dirname(path);
         console.info("Deleting " + dir);
         CustomFs.getCustomFs().removeRecursive(dir, function (err: any, v: any) {
