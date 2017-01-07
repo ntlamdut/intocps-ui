@@ -43,7 +43,8 @@ var gulp = require('gulp'),
     git = require('gulp-git'),
     fs = require('fs'),
     minimist = require('minimist'),
-    semver = require('semver')
+    semver = require('semver'),
+    cleancss = require('gulp-clean-css')
    ;
 
 // Tasks
@@ -187,7 +188,9 @@ gulp.task('copy-custom',function (){
 
 // Copy css to app folder
 gulp.task('copy-css', function () {
-    gulp.src(cssSrcs).pipe(gulp.dest(outputPath + 'css'));
+    gulp.src(cssSrcs)
+        .pipe(cleancss())
+        .pipe(gulp.dest(outputPath + 'css'));
 });
 
 // Copy html to app folder
