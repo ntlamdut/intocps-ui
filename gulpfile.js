@@ -44,8 +44,9 @@ var gulp = require('gulp'),
     fs = require('fs'),
     minimist = require('minimist'),
     semver = require('semver'),
-    cleancss = require('gulp-clean-css')
-   ;
+    cleancss = require('gulp-clean-css'),
+    uglify = require('gulp-uglify')
+    ;
 
 // Tasks
 
@@ -152,9 +153,8 @@ gulp.task("compile-ts", function () {
         .pipe(sourcemap.init())
         .pipe(ts(tsProject));
 
-    tsResult.dts.pipe(gulp.dest(outputPath));
-
-    return tsResult.js.pipe(sourcemap.write())
+    return tsResult.js.pipe(uglify({preserveComments: 'license'}))
+        .pipe(sourcemap.write())
         .pipe(gulp.dest(outputPath));
 });
 
