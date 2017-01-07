@@ -288,21 +288,18 @@ export class BrowserController {
             return new MenuEntry(result, text, icon, callback);
         }
 
-        let menuEntryDuplicate = menuEntry("Duplicate", "glyphicon glyphicon-duplicate");
         let menuEntryDelete = menuEntry("Delete", "glyphicon glyphicon-remove",
             function (item: ProjectBrowserItem) {
                 console.info("Delete path: " + item.path);
                 self.menuHandler.deletePath(item.path);
             });
-        let menuEntryImport = menuEntry("Import", "glyphicon glyphicon-import");
-        let menuEntryExport = menuEntry("Export", "glyphicon glyphicon-export");
         let menuRename = menuEntry("Rename", "glyphicon glyphicon-pencil", function (item: ProjectBrowserItem) {
             console.info("Renaming path: " + item.path);
             self.menuHandler.rename(item.path);
         });
 
         // Default menu entries
-        result.menuEntries = [menuEntryDelete, menuEntryImport, menuEntryExport];
+        result.menuEntries = [menuEntryDelete];
 
         if (Path.basename(path).startsWith(".")) {
             return null;
@@ -347,7 +344,7 @@ export class BrowserController {
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openDseView((<any>item).dseConfig);
                 };
-                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport];
+                parent.menuEntries = [menuEntryDelete];
                 parent.refresh();
                 return null;
             }
@@ -359,7 +356,7 @@ export class BrowserController {
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openCoeView((<any>item).coeConfig);
                 };
-                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryImport, menuEntryExport, menuRename];
+                parent.menuEntries = [menuEntryDelete, menuRename];
                 parent.refresh();
                 return null;
             }
@@ -376,7 +373,7 @@ export class BrowserController {
                         console.info("Create new cosim config for: " + item.path);
                         self.menuHandler.createCoSimConfiguration(item.path);
                     });
-                parent.menuEntries = [menuEntryDuplicate, menuEntryDelete, menuEntryCreateCoSim, menuEntryImport, menuEntryExport, menuRename];
+                parent.menuEntries = [menuEntryDelete, menuEntryCreateCoSim, menuRename];
                 parent.refresh();
                 return null;
             }
@@ -400,7 +397,7 @@ export class BrowserController {
                         console.info("Create new multimodel for: " + item.path);
                         self.menuHandler.createMultiModel(item.path);
                     });
-                result.menuEntries = [menuEntryCreateMM, menuEntryDelete, menuEntryImport, menuEntryExport];
+                result.menuEntries = [menuEntryCreateMM, menuEntryDelete];
             }
             else if (path.endsWith(".emx")) {
                 result.img = "into-cps-icon-projbrowser-20sim";
@@ -591,7 +588,7 @@ export class BrowserController {
             }
             else if (this.isResultFolder(path)) {
                 result.img = 'icon-folder';
-                result.menuEntries = [menuEntryDelete, menuEntryImport, menuEntryExport];
+                result.menuEntries = [menuEntryDelete];
             }
         }
         if (result != null) {
