@@ -87,6 +87,23 @@ export class LTLEditorController extends ViewController {
                     if (prefix.length === 0) { callback(null, []); return; }
                     let completions: any = [];
 
+                    // Completions for some builtins symbols
+                    let builtinSymbols: { [key: string]: string; } = {
+                        "false": "constant",
+                        "true": "constant",
+                        "_timeTick": "time",
+                    };
+                    for (let sym in builtinSymbols) {
+                        if (sym.indexOf(prefix) != -1) {
+                            completions.push({
+                                name: sym,
+                                value: sym,
+                                meta: builtinSymbols[sym],
+                            });
+                        }
+                    }
+
+                    // Snippets for LTL operators
                     let ltlOps: { [key: string]: string; } = {
                         "Next": "Next ([\u2026])",
                         "Finally": "Finally ([\u2026])",
@@ -105,6 +122,7 @@ export class LTLEditorController extends ViewController {
                         }
                     }
 
+                    // Completions for model symbols
                     stmt.bind(["%" + prefix + "%"]);
                     while (stmt.step()) { //
                         let r = stmt.getAsObject();
