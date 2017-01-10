@@ -46,14 +46,14 @@ export default class DialogHandler {
 
     }
 
-    public openWindow(data:string = '') {
+    public openWindow(data:string = '', showWindow:boolean = true) {
 
         const electron = require('electron');
 
         // Module to create native browser window.
         const BrowserWindow = electron.remote.BrowserWindow;
 
-        this.win = new BrowserWindow({ width: this.windowWidth, height: this.windowHeight, show: false });
+        this.win = new BrowserWindow({ width: this.windowWidth, height: this.windowHeight, show: showWindow });
         if(!IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.DEVELOPMENT_MODE) && this.win.setMenu)
             this.win.setMenu(null);
 
@@ -69,7 +69,7 @@ export default class DialogHandler {
         } else {
             this.win.loadURL(`file://${__dirname}/${this.htmlPath}?data=${data}`);
         }
-        this.win.show();
+        return this.win;
     }
 
 }

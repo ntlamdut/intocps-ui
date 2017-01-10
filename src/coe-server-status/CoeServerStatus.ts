@@ -1,19 +1,50 @@
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
 import { IntoCpsApp } from "../IntoCpsApp";
 import { SettingKeys } from "../settings/SettingKeys";
-import { remote } from "electron";
+import { remote, ipcRenderer } from "electron";
 import * as Path from 'path';
+import * as child_process from 'child_process'
 
-var globalCoeIsRunning = false;
-
+var globalChild: any;
+var intoCpsAppIns = IntoCpsApp.getInstance();
+var killWindow = false;
+var preventUnload = true;
 window.onload = function () {
     if (window.location.search === "?data=autolaunch")
-        launchCoe() ;
+        launchCoe();
 };
+
+function hideBehaviour(ev: Event) {
+    ev.returnValue = false;
+    remote.getCurrentWindow().hide();
+}
+
+remote.getCurrentWindow().on('minimize', (ev: Event) => {
+    hideBehaviour(ev);
+})
+
+window.onbeforeunload = (ev: Event) => {
+    if (preventUnload) {
+        var isqutting = intoCpsAppIns.isquitting;
+        if (isqutting || killWindow) {
+            if (globalChild) {
+                ev.returnValue = false;
+                killCoeCloseWindow();
+            }
+        }
+        else
+        {
+            hideBehaviour(ev)
+        }
+    }
+}
+
+ipcRenderer.on("kill", (event, message) => {
+    killWindow = true;
+    window.close();
+});
 
 function coeOnlineCheck() {
     let url = IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.COE_URL) || "localhost:8082";
@@ -25,42 +56,39 @@ function coeOnlineCheck() {
     setTimeout(() => request.abort(), 2000);
 
     request.fail(() => {
-        onlineAlert.innerHTML = `Co-Simulation Orchestration Engine, offline no connection at: ${url}`;
+        onlineAlert.innerHTML = `Co-Simulation Engine, offline no connection at: ${url}`;
 
         onlineAlert.style.display = "block";
         offlineAlert.style.display = "none";
-        $('#coe-spawn').prop('disabled', false);
+
         setTimeout(() => coeOnlineCheck(), 2000);
     })
         .done(data => {
-            offlineAlert.innerHTML = `Co-Simulation Orchestration Engine, version: ${data.version}, online at: ${url}`;
+            offlineAlert.innerHTML = `Co-Simulation Engine, version: ${data.version}, online at: ${url}`;
 
             onlineAlert.style.display = "none";
             offlineAlert.style.display = "block";
-
-            $('#coe-spawn').prop('disabled', true);
         });
 }
 
-function coeClose() {
-    if (!globalCoeIsRunning) {
-        return realClose();
+function killCoeCloseWindow() {
+    if (globalChild) {
+        var kill = require('tree-kill');
+        kill(globalChild.pid, 'SIGKILL', (err: any) => {
+            if (err) {
+                remote.dialog.showErrorBox("Failed to close COE", "It was not possible to close the COE. Pid: " + globalChild.pid)
+            }
+            else {
+                globalChild = null;
+            }
+            preventUnload = false;
+            window.close();
+        });
     }
-
-    remote.dialog.showMessageBox({
-        type: 'question',
-        buttons: ["No", "Yes"],
-        message: "Are you sure you want to terminate the COE?"
-    },
-        button => { if (button === 1) return realClose() }
-    );
-
-    return true;
 }
 
-function realClose() {
-    window.top.close();
-    return false;
+function coeClose(){
+    window.close();
 }
 
 function clearOutput() {
@@ -70,10 +98,9 @@ function clearOutput() {
     }
 }
 function launchCoe() {
-    $('#coe-spawn').prop('disabled', true);
-    var spawn = require('child_process').spawn;
+    var spawn = child_process.spawn;
 
-    let installDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
+    let installDir = intoCpsAppIns.getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
     let coePath = Path.join(installDir, "coe.jar");
     let childCwd = Path.join(installDir, "coe-working-dir");
 
@@ -86,7 +113,7 @@ function launchCoe() {
         cwd: childCwd
     });
     child.unref();
-    globalCoeIsRunning = true;
+    globalChild = child;
 
     let root = document.getElementById("coe-console")
     while (root.hasChildNodes()) {
@@ -98,7 +125,7 @@ function launchCoe() {
     let panel = createPanel("Console", div);
     root.appendChild(panel);
     let mLaunch = document.createElement("span");
-    mLaunch.innerHTML="Terminal args: java -jar "+coePath+"<br/>";
+    mLaunch.innerHTML = "Terminal args: java -jar " + coePath + "<br/>";
     div.appendChild(mLaunch);
 
     child.stdout.on('data', function (data: any) {

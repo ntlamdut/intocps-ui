@@ -4,9 +4,9 @@ import {LineChartComponent} from "../shared/line-chart.component";
 import {CoeSimulationService} from "./coe-simulation.service";
 import {Http} from "@angular/http";
 import {SettingsService, SettingKeys} from "../shared/settings.service";
-import {coeServerStatusHandler} from "../../menus";
 import IntoCpsApp from "../../IntoCpsApp";
 import {WarningMessage} from "../../intocps-configurations/Messages";
+import {openCOEServerStatusWindow} from "../../menus"
 
 @Component({
     selector: "coe-simulation",
@@ -116,6 +116,6 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     }
 
     onCoeLaunchClick() {
-        coeServerStatusHandler.openWindow("autolaunch");
+        openCOEServerStatusWindow("autolaunch")
     }
 }
