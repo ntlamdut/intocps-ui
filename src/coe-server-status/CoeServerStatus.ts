@@ -86,6 +86,10 @@ function killCoeCloseWindow() {
     }
 }
 
+function coeClose(){
+    window.close();
+}
+
 function clearOutput() {
     let div = document.getElementById("coe-console-output");
     while (div != null && div.hasChildNodes()) {
