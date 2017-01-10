@@ -40,12 +40,12 @@ openProjectHandler.install();
 openDownloadManagerHandler.install();
 let appIcon : Electron.Tray = null;
 let coeServerStatusHandlerWindow: Electron.BrowserWindow = null;
-export function openCOEServerStatusWindow(data: string = "") {
+export function openCOEServerStatusWindow(data: string = "", show:boolean=true) {
   if (coeServerStatusHandlerWindow) {
       coeServerStatusHandlerWindow.show();
   }
   else {
-    coeServerStatusHandlerWindow = coeServerStatusHandler.openWindow(data, false);
+    coeServerStatusHandlerWindow = coeServerStatusHandler.openWindow(data, show);
   }
 }
 
