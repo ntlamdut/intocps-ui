@@ -43,8 +43,10 @@ var gulp = require('gulp'),
     git = require('gulp-git'),
     fs = require('fs'),
     minimist = require('minimist'),
-    semver = require('semver')
-   ;
+    semver = require('semver'),
+    cleancss = require('gulp-clean-css'),
+    uglify = require('gulp-uglify')
+    ;
 
 // Tasks
 
@@ -151,9 +153,8 @@ gulp.task("compile-ts", function () {
         .pipe(sourcemap.init())
         .pipe(ts(tsProject));
 
-    tsResult.dts.pipe(gulp.dest(outputPath));
-
-    return tsResult.js.pipe(sourcemap.write())
+    return tsResult.js.pipe(uglify({preserveComments: 'license'}))
+        .pipe(sourcemap.write())
         .pipe(gulp.dest(outputPath));
 });
 
@@ -187,7 +188,9 @@ gulp.task('copy-custom',function (){
 
 // Copy css to app folder
 gulp.task('copy-css', function () {
-    gulp.src(cssSrcs).pipe(gulp.dest(outputPath + 'css'));
+    gulp.src(cssSrcs)
+        .pipe(cleancss())
+        .pipe(gulp.dest(outputPath + 'css'));
 });
 
 // Copy html to app folder

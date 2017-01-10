@@ -25,6 +25,7 @@ export default class IntoCpsApp extends EventEmitter {
     settings: Settings;
 
     activeProject: IProject = null;
+    isquitting = false;
 
     constructor(app: Electron.App, processPlatform: String) {
         super();
