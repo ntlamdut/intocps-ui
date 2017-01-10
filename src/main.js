@@ -12,7 +12,6 @@ var IntoCpsApp = require("./IntoCpsApp").default;
 const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
-
 let intoCpsApp = new IntoCpsApp(app, process.platform);
 
 global.intoCpsApp = intoCpsApp;
@@ -42,20 +41,13 @@ function createWindow() {
 
 
   mainWindow.on('close', function (ev) {
-    let allWindows = BrowserWindow.getAllWindows();
-    allWindows.forEach((bw => {
-      if (bw != mainWindow)
-       bw.close();
+    intoCpsApp.isquitting = true;
+    BrowserWindow.getAllWindows().forEach((bw => {
+      if (bw != mainWindow) {
+        bw.removeAllListeners();
+        bw.close();
+       }
     }));
-    //This check if here in case some windows does not close. E.g. the coe window has a pop-up.
-    if(BrowserWindow.getAllWindows().length > 1)
-    {
-      ev.preventDefault();
-      allWindows.forEach((bw => {
-      if (bw != mainWindow)
-       bw.focus();
-    }));
-    }
   });
 
   // Emitted when the window is closed.
@@ -80,7 +72,10 @@ function createWindow() {
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
-app.on('ready', createWindow);
+app.on('ready', function () {
+  createWindow();
+});
+
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {

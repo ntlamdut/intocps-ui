@@ -70,6 +70,8 @@ export default class DialogHandler {
             this.win.loadURL(`file://${__dirname}/${this.htmlPath}?data=${data}`);
         }
         this.win.show();
+
+        return this.win;
     }
 
 }

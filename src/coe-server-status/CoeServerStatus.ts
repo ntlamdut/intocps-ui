@@ -3,24 +3,47 @@
 
 import { IntoCpsApp } from "../IntoCpsApp";
 import { SettingKeys } from "../settings/SettingKeys";
-import { remote } from "electron";
+import { remote, ipcRenderer } from "electron";
 import * as Path from 'path';
 import * as child_process from 'child_process'
 
-var globalCoeIsRunning = false;
 var globalChild: any;
-var preventDefault = true;
+var intoCpsAppIns = IntoCpsApp.getInstance();
+var killWindow = false;
+var preventUnload = true;
 window.onload = function () {
     if (window.location.search === "?data=autolaunch")
         launchCoe();
 };
-window.onbeforeunload = (ev: Event) => {
-    if(preventDefault)
-        {
-            ev.returnValue=false;
-            coeClose();
-        }
+
+function hideBehaviour(ev: Event) {
+    ev.returnValue = false;
+    remote.getCurrentWindow().hide();
 }
+
+remote.getCurrentWindow().on('minimize', (ev: Event) => {
+    hideBehaviour(ev);
+})
+
+window.onbeforeunload = (ev: Event) => {
+    if (preventUnload) {
+        var isqutting = intoCpsAppIns.isquitting;
+        if (isqutting || killWindow) {
+            if (globalChild) {
+                ev.returnValue = false;
+                killCoeCloseWindow();
+            }
+        }
+        else
+        {
+            hideBehaviour(ev)
+        }
+    }
+}
+ipcRenderer.on("kill", (event, message) => {
+    killWindow = true;
+    window.close();
+});
 
 function coeOnlineCheck() {
     let url = IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.COE_URL) || "localhost:8082";
@@ -47,18 +70,7 @@ function coeOnlineCheck() {
         });
 }
 
-function coeClose() {
-    if (globalCoeIsRunning)
-        remote.dialog.showMessageBox({
-            type: 'question',
-            buttons: ["No", "Yes"],
-            message: "Are you sure you want to terminate the COE?"
-        },
-            button => { if (button === 1) return realClose() }
-        );
-}
-
-function realClose() {
+function killCoeCloseWindow() {
     if (globalChild) {
         var kill = require('tree-kill');
         kill(globalChild.pid, 'SIGKILL', (err: any) => {
@@ -68,11 +80,10 @@ function realClose() {
             else {
                 globalChild = null;
             }
-            preventDefault = false;
-            window.top.close();
+            preventUnload = false;
+            window.close();
         });
     }
-
 }
 
 function clearOutput() {
@@ -84,7 +95,7 @@ function clearOutput() {
 function launchCoe() {
     var spawn = child_process.spawn;
 
-    let installDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
+    let installDir = intoCpsAppIns.getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
     let coePath = Path.join(installDir, "coe.jar");
     let childCwd = Path.join(installDir, "coe-working-dir");
 
@@ -98,7 +109,6 @@ function launchCoe() {
     });
     child.unref();
     globalChild = child;
-    globalCoeIsRunning = true;
 
     let root = document.getElementById("coe-console")
     while (root.hasChildNodes()) {
