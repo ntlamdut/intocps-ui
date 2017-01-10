@@ -45,7 +45,7 @@ export function openCOEServerStatusWindow(data: string = "") {
       coeServerStatusHandlerWindow.show();
   }
   else {
-    coeServerStatusHandlerWindow = coeServerStatusHandler.openWindow(data);
+    coeServerStatusHandlerWindow = coeServerStatusHandler.openWindow(data, false);
   }
 }
 
@@ -56,7 +56,7 @@ export function configureIntoCpsMenu() {
   appIcon.setToolTip('INTO-CPS Co-Simulation Orchestration Engine');
   var trayIconContextMenu = electron.remote.Menu.buildFromTemplate([
     {
-      label: 'Open COE status window',
+      label: 'Show COE',
       click: function () {
         openCOEServerStatusWindow();
       }
