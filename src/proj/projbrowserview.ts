@@ -332,6 +332,9 @@ export class BrowserController {
                     result.text = "Abstractions";
                     result.menuEntries = [];
                     result.dblClickHandler = () => self.menuHandler.openCTAbstractions(path);
+                } else if (pathComponents.length == 4 && pathComponents[3] == "model-checking-report.html") {
+                    result.img = "into-cps-icon-rtt-html";
+                    result.dblClickHandler = () => self.menuHandler.openHTMLInMainView(result.path, projectPath);
                 } else {
                     return null;
                 }
