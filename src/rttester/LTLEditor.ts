@@ -62,6 +62,7 @@ export class LTLEditorController extends ViewController {
             arguments: [
                 Path.normalize(Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-mc.py")),
                 "--bound", this.hBMCSteps.value,
+                "--abstractions", Path.join(projectPath, "abstractions.json"),
                 "--sigMap", Path.join(projectPath, "model", "signalmap-with-interval-abstraction.csv"),
                 this.ltlEditor.getValue()],
             options: {
