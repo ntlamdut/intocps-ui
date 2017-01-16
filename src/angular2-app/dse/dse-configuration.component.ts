@@ -4,10 +4,10 @@ import {OutputConnectionsPair} from "../coe/models/Fmu";
 import IntoCpsApp from "../../IntoCpsApp";
 
 @Component({
-    selector: "dse-overview",
-    templateUrl: "./angular2-app/dse/dse-overview.component.html"
+    selector: "dse-configuration",
+    templateUrl: "./angular2-app/dse/dse-configuration.component.html"
 })
-export class DseOverviewComponent {
+export class DseConfigurationComponent {
     private _path:string;
 
     @Input()

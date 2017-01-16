@@ -1,3 +1,15 @@
-<panel [title]="'Overview'">
+<!--panel [title]="'Overview'">
     <dse-overview #overview [path]="path"></dse-overview>
+</panel-->
+
+<!--panel [title]="'Configuration'" [open]="false">
+    <dse-configuration [path]="path" (change)="sim.parseConfig()"></dse-configuration>
+</panel-->
+
+<panel [title]="'Simulation'">
+    <dse-simulation #sim [path]="path"></dse-simulation>
 </panel>
+
+<!--panel [title]="'Configuration'">
+    <dse-configuration #sim [path]="path"></dse-configuration>
+</panel-->
