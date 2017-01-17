@@ -351,6 +351,15 @@ export class BrowserController {
                 parent.refresh();
                 return null;
             }
+            else if (path.endsWith("results.html")) {
+                result.img = "into-cps-icon-projbrowser-dse-result";
+                result.removeFileExtensionFromText();
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                     self.menuHandler.openWithSystemEditor(item.path);
+                
+                    return null;
+                };
+            }
             else if (path.endsWith("coe.json") && !this.isResultFolder(Path.dirname(path))) {
                 // merge MultiModelConfig and folder
                 parent.img = "into-cps-icon-projbrowser-config";
