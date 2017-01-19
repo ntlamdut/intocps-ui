@@ -8,6 +8,7 @@ export namespace SettingKeys {
     export var INSTALL_DIR = "install_dir";
     export var INSTALL_TMP_DIR = "install_tmp_dir";
     export var COE_URL = "coe_host_url";
+    export var DAEMON_URL = "traceability_daemon_url";
     export var COE_DEBUG_ENABLED = "coe_debug_enabled";
     export var COE_REMOTE_HOST = "coe_remote_host";
     export var COE_JAR_PATH = "coe_jar_path";
@@ -32,6 +33,7 @@ export namespace SettingKeys {
     DEFAULT_VALUES[DEV_EXAMPLE_REPO] = "https://raw.githubusercontent.com/into-cps/into-cps.github.io/examples-dev/examples/examples.json";
     DEFAULT_VALUES[DEVELOPMENT_MODE] = false;
     DEFAULT_VALUES[COE_URL] = "localhost:8082";
+    DEFAULT_VALUES[DAEMON_URL] = "localhost:8083";
     DEFAULT_VALUES[COE_DEBUG_ENABLED] = false;
     DEFAULT_VALUES[COE_REMOTE_HOST] = false;
 }

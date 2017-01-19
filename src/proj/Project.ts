@@ -23,6 +23,7 @@ export class Project implements IProject {
     //PATH_CONNECTIONS: String = "SysML Connections";
     static PATH_SYSML: String = "SysML";
     static PATH_TEST_DATA_GENERATION: String = "Test-Data-Generation";
+    static PATH_TRACEABILITY: String = "Traceability";
     static PATH_MODEL_CHECKING: String = "Model-Checking";
 
     constructor(name: string, rootPath: string, configPath: string) {
@@ -51,7 +52,7 @@ export class Project implements IProject {
     public save() {
 
         let folders = [Project.PATH_SYSML, Project.PATH_DSE, this.PATH_FMUS, this.PATH_MODELS, Project.PATH_MULTI_MODELS,
-        Project.PATH_TEST_DATA_GENERATION, Project.PATH_MODEL_CHECKING];
+        Project.PATH_TEST_DATA_GENERATION, Project.PATH_MODEL_CHECKING, Project.PATH_TRACEABILITY];
 
         for (var i = 0; folders.length > i; i++) {
           try {
