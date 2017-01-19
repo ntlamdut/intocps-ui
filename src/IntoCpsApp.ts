@@ -62,7 +62,7 @@ export default class IntoCpsApp extends EventEmitter {
             this.settings.setValue(SettingKeys.EXAMPLE_REPO, this.settings.getValue(SettingKeys.DEV_EXAMPLE_REPO));
         }
 
-        this.trmanager = new trManager(this.settings.setSetting.bind(this.settings), app);
+        this.trmanager = new trManager(this.settings.setSetting.bind(this.settings));
         let activeProjectPath = this.settings.getSetting(SettingKeys.ACTIVE_PROJECT);
         if (activeProjectPath) {
             try {
