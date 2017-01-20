@@ -7,9 +7,7 @@ var cypherQueries = require('./cypherQueries');
 
 var neo4j = require('neo4j');
 Promise.promisifyAll(neo4j);
-var db = new neo4j.GraphDatabase({
-    url: 'http://neo4j:neo4j@127.0.0.1'
-});
+var db:any;
 
 export interface TraceNodeProps {
     uri: string,
@@ -81,12 +79,14 @@ module.exports = {
     },
 
     modifyNode: function (obj: TraceNode): Promise<any> {
+        obj.node.properties = this.prepareProps(obj.node.properties);
         return this.sendCypherResponse(cypherQueries.modifyNode(obj.node.properties, 'uri'), obj.node.properties);
     },
  
     
     // stores a node with uri 'uri' in neo4j
     storeNode: function (obj: TraceNode):Promise<any> {
+        obj.node.properties = this.prepareProps(obj.node.properties);
         return this.sendCypherResponse(cypherQueries.storeNode(obj.node.properties, obj.node.properties.specifier), obj.node.properties)
     },
 
@@ -136,13 +136,75 @@ module.exports = {
         var params:Object = {
                 srcUriLocal: srcUri,
                 rel: relation,
-                trgUriLocal: trgUri,
+                trgUriLocal: trgUri, 
             };
         return this.sendCypherResponse(cypherQueries.createRelation('srcUriLocal', 'rel', 'trgUriLocal'), params);
     },
 
     getNodeByParams: function(params:Object):Promise<any>{
-        return this.sendCypherResponse(cypherQueries.getNodeByParams(params), params);
-    }
+        params = this.preparePropsNoKeyStrings(params);
+        return this.sendCypherResponse(cypherQueries.getNodeByParams(params), params).then((
+            function(results:any){
+                return this.deleteKeyStrings(results);
+        }).bind(this)
+        );
+    },
 
+    deleteKeyStrings: function(TrNodes:Array<TraceNode>):Array<TraceNode>{
+        TrNodes.forEach((function(item:TraceNode, index:number) {
+            TrNodes[index] = this.deleteKeyString(item);
+        }).bind(this));
+        return TrNodes;
+    },
+
+  deleteKeyString: function(TrNode:TraceNode):any{
+    var newNode:TraceNode = TrNode;
+    for (var key in TrNode.node.properties){
+        if (!key.match(".*" + this.getKeyKey("") + "$")){
+            newNode.node.properties[TrNode.node.properties[this.getKeyKey(key)]] = TrNode.node.properties[key];
+            if (!key.match(TrNode.node.properties[this.getKeyKey(key)])){
+                delete newNode.node.properties[key];
+            }
+        }
+    }
+    for (var key in newNode.node.properties){
+      if (key.match(".*" + this.getKeyKey("") + "$")){
+        delete newNode.node.properties[key];
+      }
+    }
+    return newNode;
+  },
+
+    prepareProps: function(props:any):any{
+        var newProps:{"input": any} = {"input":{}};
+        console.log("prparing props");
+        for(var key in props){
+            newProps["input"][this.getKeyOfProperty(key)] = props[key];
+            newProps["input"][this.getKeyKey(key)] = key;
+        }
+        console.log(newProps["input"]);
+        return newProps["input"];
+    },
+    preparePropsNoKeyStrings:function(props:string):string{
+        var newProps:any = this.prepareProps(props);
+        for(var key in newProps){
+            if(key.match(".*" + this.getKeyKey("") + "$")){
+                delete newProps[key];
+            }
+        }
+        console.log(newProps);
+        return newProps;    
+    },
+    getKeyOfProperty: function(key:string):string{
+        var keyNoSpecialChar:string;
+        if (key.match("rdf:about")){
+            keyNoSpecialChar = "uri";
+        }else{
+            keyNoSpecialChar = key.replace(/[^a-zA-Z ]/g, "");
+        }
+        return keyNoSpecialChar;
+    },
+    getKeyKey:function(key:string):string{
+        return  this.getKeyOfProperty(key)+"ThisIsTheKeyString";
+    }
 };

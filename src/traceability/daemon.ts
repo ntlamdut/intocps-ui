@@ -450,10 +450,14 @@ export class Daemon {
     delete triple.source.node.properties.uri;    
     delete triple.target.node.properties.uri;
     for (var key in triple.source.node.properties){
-      obj["rdf:RDF"][sourceSpecifier][key] = triple.source.node.properties[key];
+      if (!key.match(".*" + this.db.getKeyKey("") + "$")){
+        obj["rdf:RDF"][sourceSpecifier][this.db.getKeyKey(key)] = triple.source.node.properties[key];
+      }
     }
     for (var key in triple.target.node.properties){
-      obj["rdf:RDF"][sourceSpecifier][triple.relation][targetSpecifier][key] = triple.target.node.properties[key];
+      if (!key.match(".*" + this.db.getKeyKey("") + "$")){
+        obj["rdf:RDF"][sourceSpecifier][triple.relation][targetSpecifier][this.db.getKeyKey(key)] = triple.target.node.properties[key];
+      }
     }
     return obj;
   }
@@ -461,7 +465,7 @@ export class Daemon {
   // translates array of Trace objects to an RDF/XML object
   private toRdfXml(triples: Trace[]) {
     var rdfObjects: Object[] = [];
-    var builder = new xml2js.Builder({ headless: true });
+    var builder = new xml2js.Builder({ headless: true }); 
     for (let triple of triples) {
       rdfObjects.push(builder.buildObject(this.toObject(triple)));
     }
