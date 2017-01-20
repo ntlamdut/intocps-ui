@@ -41,13 +41,18 @@ function createWindow() {
 
 
   mainWindow.on('close', function (ev) {
-    intoCpsApp.isquitting = true;
-    BrowserWindow.getAllWindows().forEach((bw => {
-      if (bw != mainWindow) {
-        bw.removeAllListeners();
-        bw.close();
-       }
-    }));
+    if (!intoCpsApp.isquitting){
+      intoCpsApp.isquitting = true;
+      ev.preventDefault();
+      intoCpsApp.trmanager.stop(mainWindow.close.bind(mainWindow));
+    }else{
+      BrowserWindow.getAllWindows().forEach((bw => {
+        if (bw != mainWindow) {
+          bw.removeAllListeners();
+          bw.close();
+        }
+      }));
+    }
   });
 
   // Emitted when the window is closed.

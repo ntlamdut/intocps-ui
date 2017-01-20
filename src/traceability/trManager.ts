@@ -23,8 +23,8 @@ class Neo4Jconfiguration {
         this.configurationLocation = confLoc; 
         this.homeLocation = this.getHomeLocation(appDir); 
         this.setBinaryLocation();
-        this.username = "neo4j";
-        this.password = "tracer";
+        this.username = "intoCPSAPP";
+        this.password = "traceabilityDatabasePassword";
         this.port = "7474";
     }
 
@@ -109,13 +109,17 @@ export class trManager{
             return;
         }
         var neo4jURL:string = "http://" + this.neo4Jconf.username + ":" + this.neo4Jconf.password + "@localhost:" + this.neo4Jconf.port;
-        this.daemon.connect(neo4jURL, (function(timeOut:number, counter:number, err:Error){
-            counter = counter+1;
-            if (counter > 7){
-                console.log('Connection to Neo4J failed. Trying one more time.');
-            }
-            setTimeout(this.connectDaemon.bind(this, timeOut, counter, err),2000);
-        }).bind(this, timeOut, counter));
+        if (this.running){
+            this.daemon.connect(neo4jURL, (function(timeOut:number, counter:number, err:Error){
+                counter = counter+1;
+                if (counter > 7){
+                    console.log('Connection to Neo4J failed. Trying one more time.');
+                }
+                setTimeout(this.connectDaemon.bind(this, timeOut, counter, err),2000);
+            }).bind(this, timeOut, counter));
+        }else{
+            setTimeout(this.connectDaemon.bind(this, timeOut, counter, new Error("Neo4J is not running")),2000);
+        }
     }
     private startDaemon(setSettingsCallback:Function){
         this.daemon = new Daemon();
@@ -147,7 +151,7 @@ export class trManager{
                 fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms");
             } 
         }
-        fs.writeFileSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms" + Path.sep + "auth", "neo4j:SHA-256,BCB4F6DD8ECCF49B07E6020C7685A6CB38236AF45BE8DE61FAE32950C9B0764A,3532115F7EB74AD6B981503A41542FC2:", {flag:'w'});
+        fs.writeFileSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms" + Path.sep + "auth", "intoCPSAPP:SHA-256,F87194C8C7E0FE66418F8A00DCB5FA0006012AFC9BBD2FC11BA87F6395AA8C78,7231E99A45F1979225410DC457DF8E5B:", {flag:'w'});
     }
     private startNeo4J():childProcess.ChildProcess{
         try{
@@ -159,23 +163,16 @@ export class trManager{
                                                     "NEO4J_CONF":this.neo4Jconf.getConfigurationLocation(),
                                                 },
                                         detached: false, 
-                                        shell: false,
+                                        shell: true, 
                                         cwd: this.neo4Jconf.binariesLocation,
                                         killSignal:"SIGKILL"
                                         };
             console.log("Starting Neo4J from path " + this.neo4Jconf.binariesLocation + ". With database configuration: " + this.neo4Jconf.getConfigurationLocation());
-            switch (process.platform){
-                case "win32" || "win64":
-                    var localNeo4JProcess = spawn("neo4j.bat", ["console"], neo4JExecOptions,  (error:any, stdout:any, stderr:any) => {
-                    console.log("Closing Neo4J");
-                    }); 
-                    break;
-                case "default":
-                    var localNeo4JProcess = spawn("neo4j", ["console"], neo4JExecOptions,  (error:any, stdout:any, stderr:any) => {
-                    console.log("Closing Neo4J");
-                    }); 
-                    break;
-            }
+            var command:string = "neo4j";
+            var localNeo4JProcess:childProcess.ChildProcess = spawn(command, ["console"], neo4JExecOptions,  ((error:any, stdout:any, stderr:any) => {
+                this.running = false;
+                console.log("Closing Neo4J");
+            }).bind(this)); 
         }catch(err){
             this.errorOnNeo4JStart(err);
             return undefined;
@@ -191,6 +188,7 @@ export class trManager{
 
     public stop(nextCallback?:Function){
         if (!this.running){
+            nextCallback();
             return;
         }
         if (nextCallback){
