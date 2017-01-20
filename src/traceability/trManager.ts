@@ -23,8 +23,8 @@ class Neo4Jconfiguration {
         this.configurationLocation = confLoc; 
         this.homeLocation = this.getHomeLocation(appDir); 
         this.setBinaryLocation();
-        this.username = "intoCPSAPP";
-        this.password = "traceabilityDatabasePassword";
+        this.username = "intoCPSApp";
+        this.password = "KLHJiK8k2378HKsg823jKKLJ89sjklJHBNf8j8JH7FxE";
         this.port = "7474";
     }
 
@@ -151,7 +151,7 @@ export class trManager{
                 fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms");
             } 
         }
-        fs.writeFileSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms" + Path.sep + "auth", "intoCPSAPP:SHA-256,F87194C8C7E0FE66418F8A00DCB5FA0006012AFC9BBD2FC11BA87F6395AA8C78,7231E99A45F1979225410DC457DF8E5B:", {flag:'w'});
+        fs.writeFileSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms" + Path.sep + "auth", "intoCPSApp:SHA-256,9780635B5BC9974CCB47A230B20DEF8069A26E2B3EC954A76E4034B9308042B0,2ADAC311B595F9670EBA0424F5620BED:", {flag:'w'});
     }
     private startNeo4J():childProcess.ChildProcess{
         try{
