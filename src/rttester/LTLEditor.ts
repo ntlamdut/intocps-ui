@@ -93,6 +93,7 @@ export class LTLEditorController extends ViewController {
                         "false": "constant",
                         "true": "constant",
                         "_timeTick": "time",
+                        "_stable": "bool",
                     };
                     for (let sym in builtinSymbols) {
                         if (sym.indexOf(prefix) != -1) {
