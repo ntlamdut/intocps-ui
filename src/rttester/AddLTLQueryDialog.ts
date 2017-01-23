@@ -7,6 +7,7 @@ export function display(dir: string): void {
     let hQueryName: HTMLInputElement = <HTMLInputElement>document.getElementById("QueryName");
     let hModalFail: HTMLLabelElement = <HTMLLabelElement>document.getElementById("modalFail");
 
+    $('#modalDialog').on('shown.bs.modal', ()=> hQueryName.focus());
     hQueryName.addEventListener("input", () => {
         if (hQueryName.value == "") {
             hModalFail.innerText = "";
@@ -49,7 +50,7 @@ export function display(dir: string): void {
         }
         (<any>$("#modalDialog")).modal("hide");
     };
-    hAddButton.addEventListener("click", (event: Event)=> create());
+    hAddButton.addEventListener("click", (event: Event) => create());
     hQueryName.addEventListener("keydown", (e) => {
         // enter key
         if (e.keyCode == 13 && !hAddButton.disabled) {

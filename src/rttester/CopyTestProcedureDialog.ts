@@ -15,6 +15,8 @@ export function display(templateTP: string): void {
     let prjDir = RTTester.getProjectOfFile(templateTP);
     hModalTitle.innerText = "Copy Test Procedure \"" + oldTPName + "\"";
 
+    $('#modalDialog').on('shown.bs.modal', ()=> hTPName.focus());
+
     hTPName.addEventListener("input", () => {
         if (hTPName.value == "") {
             hModalFail.innerText = "";
