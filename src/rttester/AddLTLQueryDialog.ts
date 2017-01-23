@@ -27,7 +27,7 @@ export function display(dir: string): void {
             });
         }
     });
-    hAddButton.addEventListener("click", function (event: Event) {
+    let create = () => {
         let ltlDir = Path.join(dir, hQueryName.value);
         let err = fs.mkdirSync(ltlDir);
         if (err) {
@@ -48,6 +48,13 @@ export function display(dir: string): void {
             return;
         }
         (<any>$("#modalDialog")).modal("hide");
+    };
+    hAddButton.addEventListener("click", (event: Event)=> create());
+    hQueryName.addEventListener("keydown", (e) => {
+        // enter key
+        if (e.keyCode == 13 && !hAddButton.disabled) {
+            create();
+        }
     });
 }
 

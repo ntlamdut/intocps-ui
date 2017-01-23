@@ -35,7 +35,7 @@ export function display(templateTP: string): void {
             });
         }
     });
-    hCopyButton.addEventListener("click", function (event: Event) {
+    let copy = () => {
         let newTP = Path.join("TestProcedures", hTPName.value);
         let script = Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-copy-test.py");
         const spawn = require("child_process").spawn;
@@ -46,9 +46,16 @@ export function display(templateTP: string): void {
         ];
         let env: any = RTTester.genericCommandEnv(templateTP);
         const p = spawn(RTTester.pythonExecutable(), args, { env: env });
-        p.stdout.on("data", (d:any)=> console.log(d.toString()));
-        p.stderr.on("data", (d:any)=> console.log(d.toString()));
+        p.stdout.on("data", (d: any) => console.log(d.toString()));
+        p.stderr.on("data", (d: any) => console.log(d.toString()));
         (<any>$("#modalDialog")).modal("hide");
+    };
+    hCopyButton.addEventListener("click", (event: Event)=> copy());
+    hTPName.addEventListener("keydown", (e) => {
+        // enter key
+        if (e.keyCode == 13 && !hCopyButton.disabled) {
+            copy();
+        }
     });
 }
 
