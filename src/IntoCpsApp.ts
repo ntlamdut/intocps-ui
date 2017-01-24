@@ -12,6 +12,7 @@ import {Project} from "./proj/Project";
 import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {SettingKeys} from "./settings//SettingKeys";
 import {EventEmitter} from "events";
+import {trManager} from "./traceability/trManager"
 
 
 // constants
@@ -21,6 +22,7 @@ export default class IntoCpsApp extends EventEmitter {
     app: Electron.App;
     platform: String
     window: Electron.BrowserWindow;
+    trmanager:trManager;
 
     settings: Settings;
 
@@ -60,6 +62,7 @@ export default class IntoCpsApp extends EventEmitter {
             this.settings.setValue(SettingKeys.EXAMPLE_REPO, this.settings.getValue(SettingKeys.DEV_EXAMPLE_REPO));
         }
 
+        this.trmanager = new trManager(this.settings.setSetting.bind(this.settings));
         let activeProjectPath = this.settings.getSetting(SettingKeys.ACTIVE_PROJECT);
         if (activeProjectPath) {
             try {
@@ -78,6 +81,10 @@ export default class IntoCpsApp extends EventEmitter {
 
     public setWindow(win: Electron.BrowserWindow) {
         this.window = win;
+    }
+
+    public recordTrace(jsonObj: Object){
+        this.trmanager.recordTrace(jsonObj);
     }
 
 
@@ -148,7 +155,7 @@ export default class IntoCpsApp extends EventEmitter {
     }
 
     loadProject(path: string): IProject {
-        console.info("Loading project from: " + path);
+        console.info("Loading project from: " + path); 
         let config = Path.normalize(path);
         let content = fs.readFileSync(config, "utf8");
         // TODO load configuration containers and config files
@@ -156,6 +163,7 @@ export default class IntoCpsApp extends EventEmitter {
         project.configPath = path;
         project.rootPath = Path.dirname(path);
         project.save() // create all the project folders, in case they don't exist.
+        this.trmanager.changeDataBase(Path.dirname(path), this.settings.getValue(SettingKeys.INSTALL_DIR));
         return project;
     }
 
