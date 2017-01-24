@@ -83,6 +83,10 @@ export default class IntoCpsApp extends EventEmitter {
         this.window = win;
     }
 
+    public recordTrace(jsonObj: Object){
+        this.trmanager.recordTrace(jsonObj);
+    }
+
 
     private createAppFolderRoot(app: Electron.App): string {
         const path = require("path");

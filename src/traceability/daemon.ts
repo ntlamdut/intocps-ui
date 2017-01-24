@@ -198,7 +198,6 @@ export class Daemon {
       return next();
     }
     console.log("POST request received:");
-    console.log("The request body is " + JSON.stringify(req.body));
     if (req.is('application/json')) {
       console.log("The content type is 'application/json'"); 
       var jsonObj = req.body; 
@@ -217,7 +216,6 @@ export class Daemon {
       return next();
     }
     console.log("POST request received:");
-    console.log("The request body is " + JSON.stringify(req.body));
     try {
       this.toJson(req.body, (function cb(err: Error, obj: Object) {
         if (err) throw err;
@@ -244,6 +242,14 @@ export class Daemon {
 
   // stores the data object
   private storeObject(jsonObj: Object, resp: restify.Response):Promise<any> {
+      var pr:Promise<any> = this.recordTrace(jsonObj);
+      pr.then(function () {
+        resp.send("POST request received.");
+      }).catch(this.reportError(resp, 500)); 
+      return pr;
+  }
+
+  public recordTrace(jsonObj: Object):Promise<any>{
       var objArray : Object[];
       if (!Array.isArray(jsonObj)) {
         objArray = [jsonObj];
@@ -251,7 +257,7 @@ export class Daemon {
       else { 
         objArray = jsonObj;
       }
-      var pr = Promise.resolve(undefined);
+      var pr:Promise<any> = Promise.resolve(undefined);
       for (var index in objArray) {
         var obj :any = objArray[index];
         if ((<Object>obj).hasOwnProperty("$")) {
@@ -260,10 +266,8 @@ export class Daemon {
         }
         pr = pr.return(obj).then((function (localObj:any){return this.parseSubject(localObj, "");}).bind(this));
       }
-      pr.then(function () {
-        resp.send("POST request received.");
-      }).catch(this.reportError(resp, 500)); 
       return pr;
+    
   }
 
   private isNode(obj: any){

@@ -80,15 +80,15 @@ module.exports = {
     },
 
     modifyNode: function (obj: TraceNode): Promise<any> {
-        obj.node.properties = this.prepareProps(obj.node.properties);
-        return this.sendCypherResponse(cypherQueries.modifyNode(obj.node.properties, 'uri'), obj.node.properties);
+        var modifiedProps = this.prepareProps(obj.node.properties);
+        return this.sendCypherResponse(cypherQueries.modifyNode(modifiedProps, 'uri'), modifiedProps);
     },
  
     
     // stores a node with uri 'uri' in neo4j
     storeNode: function (obj: TraceNode):Promise<any> {
-        obj.node.properties = this.prepareProps(obj.node.properties);
-        return this.sendCypherResponse(cypherQueries.storeNode(obj.node.properties, obj.node.properties.specifier), obj.node.properties)
+        var modifiedProps = this.prepareProps(obj.node.properties);
+        return this.sendCypherResponse(cypherQueries.storeNode(modifiedProps, modifiedProps.specifier), modifiedProps)
     },
 
     sendCypherResponse: function(cypherQuery:string, cypherParams:any): Promise<any>{
@@ -143,8 +143,8 @@ module.exports = {
     },
 
     getNodeByParams: function(params:Object):Promise<any>{
-        params = this.preparePropsNoKeyStrings(params);
-        return this.sendCypherResponse(cypherQueries.getNodeByParams(params), params).then((
+        var modifiedparams = this.preparePropsNoKeyStrings(params);
+        return this.sendCypherResponse(cypherQueries.getNodeByParams(modifiedparams), modifiedparams).then((
             function(results:any){
                 return this.deleteKeyStrings(results);
         }).bind(this)
@@ -177,14 +177,12 @@ module.exports = {
   },
 
     prepareProps: function(props:any):any{
-        var newProps:{"input": any} = {"input":{}};
-        console.log("prparing props");
+        var newProps:any = {};
         for(var key in props){
-            newProps["input"][this.getKeyOfProperty(key)] = props[key];
-            newProps["input"][this.getKeyKey(key)] = key;
+            newProps[this.getKeyOfProperty(key)] = props[key];
+            newProps[this.getKeyKey(key)] = key;
         }
-        console.log(newProps["input"]);
-        return newProps["input"];
+        return newProps;
     },
     preparePropsNoKeyStrings:function(props:string):string{
         var newProps:any = this.prepareProps(props);
@@ -193,7 +191,6 @@ module.exports = {
                 delete newProps[key];
             }
         }
-        console.log(newProps);
         return newProps;    
     },
     getKeyOfProperty: function(key:string):string{
@@ -201,7 +198,7 @@ module.exports = {
         if (key.match("rdf:about")){
             keyNoSpecialChar = "uri";
         }else{
-            keyNoSpecialChar = key.replace(/[^a-zA-Z ]/g, "");
+            keyNoSpecialChar = key.replace(/[^a-zA-Z_]/g, "");
         }
         return keyNoSpecialChar;
     },

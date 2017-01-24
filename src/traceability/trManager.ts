@@ -73,6 +73,10 @@ export class trManager{
     public getDaemonPort():number{
         return this.daemon.port;
     }
+
+    public recordTrace(jsonObj: Object){
+        this.daemon.recordTrace(jsonObj);
+    }
  
     public start(neo4JConfLoc:string, appDir:string){
         this.neo4Jconf = new Neo4Jconfiguration( neo4JConfLoc, appDir);
