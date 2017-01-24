@@ -1,3 +1,4 @@
+///<reference path="../../typings/browser.d.ts"/>
 // db access
 // =========
  
@@ -205,6 +206,6 @@ module.exports = {
         return keyNoSpecialChar;
     },
     getKeyKey:function(key:string):string{
-        return  this.getKeyOfProperty(key)+"ThisIsTheKeyString";
+        return  this.getKeyOfProperty(key)+"__KeyString";
     }
 };
