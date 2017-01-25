@@ -97,7 +97,7 @@ export class RunTestController extends ViewController {
             let script = Path.join(RTTester.rttInstallDir(), "bin", "rtt_live_sigplot.py");
             const spawn = require("child_process").spawn;
             const child = spawn(RTTester.pythonExecutable(),
-                [script, "--line", "--corners"]);
+                [script, "--line", "--corners", "--subplots", "--duplicates"]);
         }
         let self = this;
         let python = RTTester.pythonExecutable();
