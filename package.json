@@ -26,6 +26,7 @@
     "@angular/http": "2.0.0-rc.4",
     "@angular/platform-browser": "2.0.0-rc.4",
     "@angular/platform-browser-dynamic": "2.0.0-rc.4",
+    "@types/bunyan": "0.0.35",
     "bluebird": "~3.4.7",
     "electron-default-menu": "~0.2.0",
     "es6-shim": "~0.35.1",
