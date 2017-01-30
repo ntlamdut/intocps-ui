@@ -163,7 +163,7 @@ export default class IntoCpsApp extends EventEmitter {
         project.configPath = path;
         project.rootPath = Path.dirname(path);
         project.save() // create all the project folders, in case they don't exist.
-        this.trmanager.changeDataBase(Path.dirname(path), this.settings.getValue(SettingKeys.INSTALL_DIR));
+        this.trmanager.changeDataBase(Path.dirname(path), this.settings.getValue(SettingKeys.INSTALL_DIR), this.settings.getValue(SettingKeys.INSTALL_TMP_DIR));
         return project;
     }
 
