@@ -76,6 +76,7 @@ export class RunTestController extends ViewController {
     testCase: string;
     fmuAssignments: FMUAssignments = new FMUAssignments(this);
     hRunButton: HTMLButtonElement;
+    hEnableSignalViewer: HTMLInputElement;
     hStepSize: HTMLInputElement;
 
     constructor(protected viewDiv: HTMLDivElement, menuHandler: IntoCpsAppMenuHandler, testCase: string) {
@@ -86,11 +87,18 @@ export class RunTestController extends ViewController {
         IntoCpsApp.setTopName("Run Test");
         this.fmuAssignments.load();
         this.hRunButton = <HTMLButtonElement>document.getElementById("runButton");
+        this.hEnableSignalViewer = <HTMLInputElement>document.getElementById("enableSignalViewer");
         this.hStepSize = <HTMLInputElement>document.getElementById("stepSize");
         this.hRunButton.addEventListener("click", this.run.bind(self));
     };
 
     run() {
+        if (this.hEnableSignalViewer.checked) {
+            let script = Path.join(RTTester.rttInstallDir(), "bin", "rtt_live_sigplot.py");
+            const spawn = require("child_process").spawn;
+            const child = spawn(RTTester.pythonExecutable(),
+                [script, "--line", "--corners", "--subplots", "--duplicates"]);
+        }
         let self = this;
         let python = RTTester.pythonExecutable();
         let rttTestContext = RTTester.getProjectOfFile(this.testCase);
