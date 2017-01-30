@@ -20,10 +20,10 @@ class Neo4Jconfiguration {
     port:string;
     active:boolean;
 
-    constructor(confLoc:string, appDir:string){
+    constructor(confLoc:string, appDir:string, appsDirTemp:string){
         this.active = false;
         this.configurationLocation = confLoc; 
-        this.homeLocation = this.getHomeLocation(appDir); 
+        this.homeLocation = this.getHomeLocation(appDir, appsDirTemp); 
         this.setBinaryLocation();
         this.username = "intoCPSApp";
         this.password = "KLHJiK8k2378HKsg823jKKLJ89sjklJHBNf8j8JH7FxE";
@@ -40,18 +40,28 @@ class Neo4Jconfiguration {
     public getConfigurationLocation():string{
         return this.configurationLocation;
     }
-    private getHomeLocation(appsDir:string):string{
+    private getHomeLocation(appsDir:string, appsDirTemp:string):string{
         if (fs.existsSync(appsDir)){
-            var files:Array<string> = fsFinder.from(appsDir).findFiles("bin" + Path.sep + "neo4j*");
+            var files:Array<string> = fsFinder.from(appsDir).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
             if (files.length > 0){ 
                 var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
                 this.active = true;
             }else{
-                console.log("Neo4J was not found. Please download neo4j to the folder " + appsDir);
-                return "";
+                console.log(appsDirTemp);
+                if (fs.existsSync(appsDirTemp)){
+                    var files:Array<string> = fsFinder.from(appsDirTemp).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
+                    if (files.length > 0){ 
+                        var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
+                        this.active = true;
+                    }
+                }
             }
         }else{
                 console.log("The path " + appsDir + " does not exist. Neo4J can not be found here.");
+                return "";
+        }
+        if (!this.active){
+                console.log("Neo4J was not found. Please download neo4j to the folder " + appsDir);
                 return "";
         }
         return path;
@@ -78,8 +88,8 @@ export class trManager{
         this.daemon.recordTrace(jsonObj);
     }
  
-    public start(neo4JConfLoc:string, appDir:string){
-        this.neo4Jconf = new Neo4Jconfiguration( neo4JConfLoc, appDir);
+    public start(neo4JConfLoc:string, appDir:string, appsDirTemp:string){
+        this.neo4Jconf = new Neo4Jconfiguration( neo4JConfLoc, appDir, appsDirTemp);
         if (this.neo4Jconf.active){
             this.running = true;
             this.neo4JProcess = this.startNeo4J();
@@ -87,12 +97,12 @@ export class trManager{
         }
     }
 
-    public changeDataBase(projectLocation:string, appDir:string){
+    public changeDataBase(projectLocation:string, appDir:string, appsDirTemp:string){
         var confLoc:string = projectLocation + Path.sep + Project.PATH_TRACEABILITY;
         if (this.running){
             this.stop(this.start.bind(this, confLoc,appDir));
         }else{
-            this.start(confLoc, appDir);
+            this.start(confLoc, appDir, appsDirTemp);
         }
     }
 
