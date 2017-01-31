@@ -2,6 +2,7 @@ import * as TraceProtocol from "./trace-protocol"
 import * as GitConn from "./git-connection"
 import * as Path from 'path';
 import { IntoCpsApp } from "./../IntoCpsApp";
+import {Utilities} from "../utilities";
 
 export function sysMlToMM(mmPath: string, sysmlPath:string) : any {
     let project = IntoCpsApp.getInstance().getActiveProject();
@@ -21,9 +22,14 @@ export function sysMlToMM(mmPath: string, sysmlPath:string) : any {
     activity.used.push(et);
     activity.wasAssociatedWith = ea;
     activity.calcAndSetAbout();
+    
+    efDerived.hash = GitConn.GitCommands.getHashOfFile(sysmlPath);
+    efDerived.type = "configuration";
+    efDerived.path = Utilities.pathToUri(sysmlPath);
+
 
     ef.hash = GitConn.GitCommands.getHashOfFile(mmPath);
-    ef.path = encodeURI(Path.relative(project.getRootFilePath(), mmPath).replace(/\\/g, "/"));
+    ef.path = Utilities.pathToUri(Path.relative(project.getRootFilePath(), mmPath));
     ef.type = "configuration";
     ef.wasGeneratedBy = activity;
     ef.wasAttributedTo = ea;
