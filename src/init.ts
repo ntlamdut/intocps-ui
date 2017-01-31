@@ -17,7 +17,10 @@ import { bootstrap } from '@angular/platform-browser-dynamic';
 import { AppComponent } from './angular2-app/app.component';
 import * as fs from 'fs';
 import * as Path from 'path';
-import {DseConfiguration} from "./intocps-configurations/dse-configuration"
+import { DseConfiguration } from "./intocps-configurations/dse-configuration"
+import * as TraceProtocol from "./traceability/trace-protocol"
+import * as GitConn from "./traceability/git-connection"
+import * as TraceMessage from "./traceability/messages"
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -211,6 +214,11 @@ menuHandler.createMultiModel = (path) => {
         let content = fs.readFileSync(path, "UTF-8");
         let mmPath = <string>project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
         menuHandler.openMultiModel(mmPath);
+        //Create the trace 
+        var serializedMessage = TraceMessage.sysMlToMM(mmPath,path);      
+        console.log("RootMessage: " + JSON.stringify(serializedMessage));
+        //GitConn.GitCommands.commitFile(mmPath);
+        
     }
 };
 
