@@ -1,5 +1,6 @@
+import { IntoCpsApp } from "./../IntoCpsApp";
 var execSync = require('child_process').execSync;
-
+let appInstance = IntoCpsApp.getInstance();
 export class GitCommands{
 
     private static removeNewline(str: string) : string{
@@ -7,20 +8,27 @@ export class GitCommands{
     }
 
     public static getUserData(){
-        var username: string = this.removeNewline(execSync("git config user.name").toString());
-        var email: string = this.removeNewline(execSync("git config user.email").toString());
+        var username: string = this.removeNewline(this.execGitCmd("git config user.name").toString());
+        var email: string = this.removeNewline(this.execGitCmd("git config user.email").toString());
         return new UserData(username, email);
     } 
 
     public static getHashOfFile(path: string) : string{
-        return this.removeNewline(execSync(`git hash-object "${path}" `).toString());        
+        return this.removeNewline(execSync(`git hash-object "${path}"`).toString());        
     }
 
     public static commitFile(path: string){
-        execSync(`git add "${path}" `);
-        execSync(`git commit "${path}" `);
+        this.execGitCmd(`git add "${path}"`);
+        this.execGitCmd(`git commit -m "autocommit" "${path}"`);
+    }
+
+    public static execGitCmd(gitCmd: string)
+    {
+        return execSync(gitCmd,{cwd:appInstance.getActiveProject().getRootFilePath()});
     }
 }
+
+
 
 export class UserData{
     public username: string;

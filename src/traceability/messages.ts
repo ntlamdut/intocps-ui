@@ -25,7 +25,8 @@ export function sysMlToMM(mmPath: string, sysmlPath:string) : any {
     
     efDerived.hash = GitConn.GitCommands.getHashOfFile(sysmlPath);
     efDerived.type = "configuration";
-    efDerived.path = Utilities.pathToUri(sysmlPath);
+    efDerived.path = Utilities.pathToUri(Path.relative(project.getRootFilePath(), sysmlPath));
+    efDerived.calcAbout();
 
 
     ef.hash = GitConn.GitCommands.getHashOfFile(mmPath);

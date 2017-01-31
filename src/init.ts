@@ -207,7 +207,8 @@ menuHandler.openFmu = () => {
 //
 
 menuHandler.createMultiModel = (path) => {
-    let project = IntoCpsApp.getInstance().getActiveProject();
+    let appInstance = IntoCpsApp.getInstance();
+    let project = appInstance.getActiveProject();
 
     if (project) {
         let name = Path.basename(path, ".sysml.json");
@@ -215,10 +216,10 @@ menuHandler.createMultiModel = (path) => {
         let mmPath = <string>project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
         menuHandler.openMultiModel(mmPath);
         //Create the trace 
-        var serializedMessage = TraceMessage.sysMlToMM(mmPath,path);      
-        console.log("RootMessage: " + JSON.stringify(serializedMessage));
-        //GitConn.GitCommands.commitFile(mmPath);
-        
+        var message = TraceMessage.sysMlToMM(mmPath,path);
+        appInstance.recordTrace(message);
+        console.log("RootMessage: " + JSON.stringify(message));
+        GitConn.GitCommands.commitFile(mmPath);       
     }
 };
 
