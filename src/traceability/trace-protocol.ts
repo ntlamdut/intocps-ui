@@ -1,5 +1,6 @@
 import * as GitConn from "./git-connection"
 import * as uuid from "uuid"
+import { IntoCpsApp } from "./../IntoCpsApp";
 
 interface Entity {
     serialize(): any;
@@ -329,8 +330,7 @@ export class EntityTool implements Entity {
     private about: string;
     //intocps
     // required
-    //TODO CTTK: Fix version
-    private version: string = "1.2";
+    private version: string = IntoCpsApp.getInstance().app.getVersion();
     // required
     private type: string = "softwareTool";
     // required
