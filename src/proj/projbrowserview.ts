@@ -1,12 +1,10 @@
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/w2ui/index.d.ts"/>
 
 import {IntoCpsAppEvents} from "../IntoCpsAppEvents";
 import {IntoCpsApp} from  "../IntoCpsApp";
 import {Project} from "./Project";
-import fs = require("fs");
+import * as fs from 'fs';
 import Path = require("path");
 const rimraf = require("rimraf");
 import {RTTester} from "../rttester/RTTester";
@@ -630,7 +628,7 @@ export class BrowserController {
         let projectFile = Path.normalize(Path.join(path, ".project"));
 
         try {
-            if (!fs.accessSync(projectFile, fs.R_OK)) {
+            if (!fs.accessSync(projectFile, fs.constants.R_OK)) {
                 let content = fs.readFileSync(projectFile, "UTF-8");
                 return content.indexOf("org.overture.ide.vdmrt.core.nature") >= 0;
 

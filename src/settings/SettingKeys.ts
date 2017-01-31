@@ -1,6 +1,3 @@
-/// <reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-/// <reference path="../../typings/browser/ambient/node/index.d.ts"/>
-
 // Module contaiing valid setting keys
 export namespace SettingKeys {
     export var DEVELOPMENT_MODE = "development_mode";

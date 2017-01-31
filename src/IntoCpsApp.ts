@@ -1,9 +1,6 @@
-/// <reference path="../typings/browser/ambient/github-electron/index.d.ts"/>
-/// <reference path="../typings/browser/ambient/node/index.d.ts"/>
+import * as Path from 'path';
+import * as fs from 'fs';
 
-
-import fs = require("fs");
-import Path = require("path");
 
 import {ISettingsValues} from "./settings/ISettingsValues";
 import {Settings} from "./settings/settings";
@@ -66,7 +63,7 @@ export default class IntoCpsApp extends EventEmitter {
         let activeProjectPath = this.settings.getSetting(SettingKeys.ACTIVE_PROJECT);
         if (activeProjectPath) {
             try {
-                if (!fs.accessSync(activeProjectPath, fs.R_OK)) {
+                if (!fs.accessSync(activeProjectPath, fs.constants.R_OK)) {
 
                     this.activeProject = this.loadProject(activeProjectPath);
                 } else {
