@@ -174,7 +174,7 @@ menuHandler.runTest = (path: string) => {
 };
 
 menuHandler.openLTLQuery = (folder: string) => {
-    openView("rttester/LTLEditor.html", view => new LTLEditorController(view, folder));
+    openView("rttester/LTLEditor.html", view => new LTLEditorController(view, menuHandler, folder));
 };
 
 menuHandler.openCTAbstractions = (fileName: string) => {

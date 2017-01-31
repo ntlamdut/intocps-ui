@@ -52,3 +52,9 @@
   background-repeat: no-repeat;
   background-size: contain;
 }
+
+.into-cps-icon-projbrowser-dse-result {
+  background: url("icons/dse-result-icon.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}

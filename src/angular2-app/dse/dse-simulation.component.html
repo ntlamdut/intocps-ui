@@ -1,0 +1,20 @@
+<div *ngIf="!online" class="alert alert-danger">
+    Co-Simulation Engine offline. No connection at {{url}}.
+    <button type="button" class="btn btn-sm btn-default" (click)="onCoeLaunchClick()"><span class="glyphicon glyphicon-link"></span> Launch</button>
+</div>
+<div *ngIf="online" class="alert alert-success">
+    Co-Simulation Engine, version {{version}}, online at {{url}}.
+</div>
+
+<div class="form-group">
+    <label class="control-label">Co-simulation Configuration</label>
+        <select [ngModel]="cosimConfig" (ngModelChange)="onConfigChange($event)" class="form-control">
+            <option *ngFor="let config of cosimConfig; let i = index" [selected]="i == 0" [ngValue]="config">{{experimentName(config)}}</option>
+        </select>
+</div>
+
+<div class="form-group">
+    <button type="button" [disabled]="!canRun()" (click)="runDse()" class="btn btn-default">
+        <span class="glyphicon glyphicon-play"></span> Simulate
+    </button>
+</div>
