@@ -3,9 +3,9 @@
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
-import {IntoCpsApp} from  "../IntoCpsApp"
-import {SettingKeys} from "../settings/SettingKeys";
-import {DialogHandler} from "../DialogHandler";
+import { IntoCpsApp } from "../IntoCpsApp"
+import { SettingKeys } from "../settings/SettingKeys";
+import { DialogHandler } from "../DialogHandler";
 
 import Path = require('path');
 import fs = require('fs');
@@ -141,7 +141,7 @@ function fetchList() {
 
 }
 
-function createButton() : HTMLButtonElement{
+function createButton(): HTMLButtonElement {
     let btn = document.createElement("button");
     btn.type = "button";
     btn.className = "btn btn-default btn-sm";
@@ -161,12 +161,11 @@ function showVersion(version: string, data: any) {
         var supported = false;
         let platform = downloader.getSystemPlatform();
         let platforms = tool.platforms;
-        if("any" in platforms )
-        {
+        if ("any" in platforms) {
             supported = true
         }
-        else
-            {Object.keys(tool.platforms).forEach(pl => {
+        else {
+            Object.keys(tool.platforms).forEach(pl => {
                 if (pl.indexOf(platform) == 0) {
                     supported = true;
                 }
@@ -198,7 +197,7 @@ function showVersion(version: string, data: any) {
                     downloader.downloadTool(tool, getTempDir(), progress).then(function (filePath) {
                         console.log("Download complete: " + filePath);
                         dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
-                    });
+                    }, function (error) { dialog.showErrorBox("Invalid Checksum", error); });
                 }
             });
         };
@@ -207,10 +206,10 @@ function showVersion(version: string, data: any) {
             let btn = createButton();
             var t = document.createTextNode("Release page");
             btn.appendChild(t);
-            let dh = new DialogHandler(releasePage, 640, 400, null,null,null);
-            dh.externalUrl = true;            
+            let dh = new DialogHandler(releasePage, 640, 400, null, null, null);
+            dh.externalUrl = true;
             divTool.appendChild(btn);
-            btn.onclick = function(e){
+            btn.onclick = function (e) {
                 dh.openWindow();
             };
         }
