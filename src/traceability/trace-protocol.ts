@@ -166,7 +166,7 @@ export class Activity {
     // required
     public time: string;
     // required
-    public type: "configurationCreation";
+    public type: "configuration";
 
     //prov
     // optional
@@ -222,14 +222,16 @@ export class Activity {
     }
 }
 
+type EntityFileTypeOptions = "configuration" | "source"
+
 export class EntityFile implements Entity {
     //rdf
     //required
     private about: string;
-
+    
     //intocps
     // required
-    public type: "configuration";
+    public type: EntityFileTypeOptions;
     // required
     public hash: string;
     // required
@@ -251,6 +253,29 @@ export class EntityFile implements Entity {
 
     public calcAbout() {
         this.about = `Entity.${this.type}:${this.path}#${this.hash}`;
+    }
+
+    public setPropertiesCalcAbout(config: EntityFileConfig) {
+        if (config.type)
+            this.type = config.type;
+        if (config.hash)
+            this.hash = config.hash;
+        if (config.path)
+            this.path = config.path;
+        if (config.commit)
+            this.commit = config.commit;
+        if (config.url)
+            this.url = config.url;
+        if (config.path)
+            this.path = config.path;
+        if (config.wasAttributedTo)
+            this.wasAttributedTo = config.wasAttributedTo;
+        if (config.wasGeneratedBy)
+            this.wasGeneratedBy = config.wasGeneratedBy;
+        if (config.wasDerivedFrom)
+            this.wasDerivedFrom = config.wasDerivedFrom;
+        this.calcAbout();
+
     }
 
     private canBeSerialized() {
@@ -283,6 +308,18 @@ export class EntityFile implements Entity {
             return MsgCreator.CreateMsg().setAbout(this.about).getSerializedObject()
         else return {}
     }
+}
+
+interface EntityFileConfig {
+    type?: EntityFileTypeOptions;
+    hash?: string
+    path?: string
+    commit?: string
+    comment?: string
+    url?: string
+    wasAttributedTo?: EntityAgent
+    wasGeneratedBy?: Activity
+    wasDerivedFrom?: EntityFile
 }
 
 
@@ -344,7 +381,7 @@ export class EntityAgent implements Entity {
         var agent = GitConn.GitCommands.getUserData();
         this.name = agent.username;
         this.email = agent.email.length > 0 ? agent.email : null;
-        this.about = `agent:${this.name}`;
+        this.about = `Agent:${this.name}`;
     }
 
     public getAbout() { return this.about; }

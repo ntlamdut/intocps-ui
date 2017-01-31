@@ -20,7 +20,7 @@ import * as Path from 'path';
 import { DseConfiguration } from "./intocps-configurations/dse-configuration"
 import * as TraceProtocol from "./traceability/trace-protocol"
 import * as GitConn from "./traceability/git-connection"
-import * as TraceMessage from "./traceability/messages"
+import {TraceMessager} from "./traceability/trace-messenger"
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -216,10 +216,8 @@ menuHandler.createMultiModel = (path) => {
         let mmPath = <string>project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
         menuHandler.openMultiModel(mmPath);
         //Create the trace 
-        var message = TraceMessage.sysMlToMM(mmPath,path);
-        appInstance.recordTrace(message);
-        console.log("RootMessage: " + JSON.stringify(message));
-        GitConn.GitCommands.commitFile(mmPath);       
+        let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath,path);
+        //console.log("RootMessage: " + JSON.stringify(message));    
     }
 };
 
