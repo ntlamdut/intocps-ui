@@ -14,6 +14,7 @@ export class GitCommands{
     } 
 
     public static getHashOfFile(path: string) : string{
+        console.log("path: " + path);
         return this.removeNewline(execSync(`git hash-object "${path}"`).toString());        
     }
 

@@ -206,7 +206,7 @@ export class Activity {
                 .setAbout(this.about)
                 .setTime(this.time)
                 .setType(this.type)
-                .setUsed(this.used ? this.used.map((entity) => entity.shortSerialize()) : null)
+                .setUsed(this.used ? MsgCreator.CreateMsg().setEntities(this.used.map((entity) => entity.shortSerialize())).getSerializedObject() : null)
                 .setWasAssociatedWith(this.wasAssociatedWith ? this.wasAssociatedWith.shortSerialize() : null)
                 .getSerializedObject()
         else
@@ -300,7 +300,7 @@ export class EntityFile implements Entity {
                 .setUrl(this.url)
                 .setWasAttributedTo(this.wasAttributedTo ? this.wasAttributedTo.shortSerialize() : null)
                 .setWasGeneratedBy(this.wasGeneratedBy ? this.wasGeneratedBy.shortSerialize() : null)
-                .setWasDerivedFrom(this.wasDerivedFrom ? this.wasDerivedFrom.shortSerialize() : null)
+                .setWasDerivedFrom(this.wasDerivedFrom ? MsgCreator.CreateMsg().setEntities(this.wasDerivedFrom.shortSerialize()).getSerializedObject() : null)
                 .getSerializedObject();
         else return {}
     }

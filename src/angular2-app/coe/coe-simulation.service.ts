@@ -9,7 +9,7 @@ import { BehaviorSubject } from "rxjs/Rx";
 import { Injectable, NgZone } from "@angular/core";
 import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
 import * as http from "http"
-
+import * as fs from 'fs';
 import {TraceMessager} from "../../traceability/trace-messenger"
 
 
@@ -198,6 +198,7 @@ export class CoeSimulationService {
         let resultPath =Path.normalize(`${this.resultDir}/outputs.csv`);
         let coeConfigPath = Path.normalize(`${this.resultDir}/coe.json`);
         let mmConfigPath = Path.normalize(`${this.resultDir}/mm.json`);
+        let logPath = Path.normalize(`${this.resultDir}/log.zip`);
 
         this.http.get(`http://${this.url}/result/${this.sessionId}/plain`)
             .subscribe(response => {
@@ -210,16 +211,14 @@ export class CoeSimulationService {
             });
 
         
-        var fs = require('fs');
-        var file = fs.createWriteStream(`${this.resultDir}/log.zip`);
+        var logStream = fs.createWriteStream(logPath);
         let url = `http://${this.url}/result/${this.sessionId}/zip`;
         var request = http.get(url, (response:http.IncomingMessage) => {
-            response.pipe(file);
+            response.pipe(logStream);
             response.on('end', () =>{
 
                 // simulation completed + result
-                let message = TraceMessager.submitSimulationResultMessage(this.config.sourcePath, [resultPath,coeConfigPath,mmConfigPath,file]);
-
+                let message = TraceMessager.submitSimulationResultMessage(this.config.sourcePath, this.config.multiModel.sourcePath, [resultPath,coeConfigPath,mmConfigPath,logPath]);
                 let destroySessionUrl = `http://${this.url}/destroy/${this.sessionId}`;
                 http.get(destroySessionUrl, (response:any) => {
                     let statusCode = response.statusCode;
