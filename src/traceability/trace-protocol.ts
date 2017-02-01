@@ -167,7 +167,7 @@ export class Activity {
     // required
     public time: string;
     // required
-    public type: "configuration";
+    public type: TypeOptions;
 
     //prov
     // optional
@@ -223,7 +223,7 @@ export class Activity {
     }
 }
 
-type EntityFileTypeOptions = "configuration" | "source"
+type TypeOptions = "configuration" | "source"|"result"| "simulation";
 
 export class EntityFile implements Entity {
     //rdf
@@ -232,7 +232,7 @@ export class EntityFile implements Entity {
     
     //intocps
     // required
-    public type: EntityFileTypeOptions;
+    public type: TypeOptions;
     // required
     public hash: string;
     // required
@@ -312,7 +312,7 @@ export class EntityFile implements Entity {
 }
 
 interface EntityFileConfig {
-    type?: EntityFileTypeOptions;
+    type?: TypeOptions;
     hash?: string
     path?: string
     commit?: string

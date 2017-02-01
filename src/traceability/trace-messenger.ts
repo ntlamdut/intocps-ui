@@ -107,5 +107,94 @@ export class TraceMessager {
 
         return serializedMessage;
     }
-}
 
+
+    public static submitCoeConfigMessage(mmPath: string, coePath: string)
+    {
+         let project = this.appInstance.getActiveProject();
+        var rootMessage = new TraceProtocol.RootMessage();
+        var activity = new TraceProtocol.Activity();
+        var ef = new TraceProtocol.EntityFile();
+        var et = new TraceProtocol.EntityTool();
+        var ea = new TraceProtocol.EntityAgent();
+        var afUsed = new TraceProtocol.EntityFile();
+
+        rootMessage.activity = activity;
+        rootMessage.entities.push(ef);
+        rootMessage.agents.push(ea);
+
+        activity.type = "configuration"
+        activity.used.push(et);
+        activity.wasAssociatedWith = ea;
+        activity.calcAndSetAbout();
+
+        afUsed.setPropertiesCalcAbout({
+            hash: GitConn.GitCommands.getHashOfFile(mmPath),
+            type: "configuration",
+            path: this.getUriRelativeToProjectRoot(mmPath)
+        });
+
+
+        ef.setPropertiesCalcAbout({
+            hash: GitConn.GitCommands.getHashOfFile(coePath),
+            path: this.getUriRelativeToProjectRoot(coePath),
+            type: "configuration",
+            wasGeneratedBy: activity,
+            wasAttributedTo: ea,
+            wasDerivedFrom: afUsed,
+            comment: "Derived multi model configuration from SysML configuration"
+        });
+        let serializedMessage = rootMessage.serialize();
+        this.finishTrace(coePath, serializedMessage);
+
+        return serializedMessage;
+    }
+    
+
+    public static submitSimulationResultMessage(coePath: string, generatedFiles: string[]){
+      let project = this.appInstance.getActiveProject();
+        var rootMessage = new TraceProtocol.RootMessage();
+        var activity = new TraceProtocol.Activity();
+        var ef = new TraceProtocol.EntityFile();
+        var et = new TraceProtocol.EntityTool();
+        var ea = new TraceProtocol.EntityAgent();
+        
+
+        generatedFiles.forEach((path: string) => {
+            let resultEf = new TraceProtocol.EntityFile()
+            resultEf.setPropertiesCalcAbout({
+                hash: GitConn.GitCommands.getHashOfFile(path),
+                type: "result",
+                path: this.getUriRelativeToProjectRoot(path)
+            });
+            resultEf.calcAbout();
+            activity.used.push(resultEf);
+        });
+
+        rootMessage.activity = activity;
+        rootMessage.entities.push(ef);
+        rootMessage.agents.push(ea);
+
+        activity.type = "simulation"
+        activity.used.push(et);
+        activity.wasAssociatedWith = ea;
+        activity.calcAndSetAbout();
+
+        
+
+        ef.setPropertiesCalcAbout({
+            hash: GitConn.GitCommands.getHashOfFile(coePath),
+            path: this.getUriRelativeToProjectRoot(coePath),
+            type: "configuration",
+            wasGeneratedBy: activity,
+            wasAttributedTo: ea,
+            comment: "Simulation"
+        });
+
+        let serializedMessage = rootMessage.serialize();
+        this.finishTrace(coePath, serializedMessage);
+
+        return serializedMessage;
+    }
+
+}

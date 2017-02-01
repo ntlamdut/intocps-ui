@@ -18,8 +18,7 @@ import { AppComponent } from './angular2-app/app.component';
 import * as fs from 'fs';
 import * as Path from 'path';
 import { DseConfiguration } from "./intocps-configurations/dse-configuration"
-import * as TraceProtocol from "./traceability/trace-protocol"
-import * as GitConn from "./traceability/git-connection"
+
 import {TraceMessager} from "./traceability/trace-messenger"
 
 interface MyWindow extends Window {
@@ -248,6 +247,7 @@ menuHandler.createCoSimConfiguration = (path) => {
     if (project) {
         let coePath = project.createCoSimConfig(path, `co-sim-${Math.floor(Math.random() * 100)}`, null).toString();
         menuHandler.openCoeView(coePath);
+        let message = TraceMessager.submitCoeConfigMessage(path,coePath);
     }
 };
 
