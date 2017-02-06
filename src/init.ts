@@ -207,10 +207,33 @@ menuHandler.createMultiModel = (path) => {
     let project = IntoCpsApp.getInstance().getActiveProject();
 
     if (project) {
+
         let name = Path.basename(path, ".sysml.json");
-        let content = fs.readFileSync(path, "UTF-8");
-        let mmPath = <string>project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
-        menuHandler.openMultiModel(mmPath);
+        let ivname  = `mm-${name}`;
+        
+
+        w2prompt({
+            label       : 'Name',
+            value       : ivname,
+            attrs       : 'style="width: 200px"',
+            title       : 'New MM Project',
+            ok_text     : 'Ok',
+            cancel_text : 'Cancel',
+            width       : 400,
+            height      : 200,
+            callBack    : function (value : String) {
+
+                let content = fs.readFileSync(path, "UTF-8");
+                try {
+                let mmPath = <string>project.createMultiModel(value, content);
+                menuHandler.openMultiModel(mmPath);
+                } catch (error){
+                    // TODO: Validate name! Distinguish names... Maybe with the help of the recent w2prompt :with
+                    w2alert('MM Project '+  value + ' already exists! Choose a different name.',"Error");
+                }
+            }
+    });
+
     }
 };
 
@@ -230,10 +253,33 @@ menuHandler.createMultiModelPlain = () => {
     let project = IntoCpsApp.getInstance().getActiveProject();
 
     if (project) {
-        let mmPath = <string>project.createMultiModel(`mm-new (${Math.floor(Math.random() * 100)})`, "{}");
-        menuHandler.openMultiModel(mmPath);
+
+        let ivname  = `mm-new`;
+        
+
+        w2prompt({
+            label       : 'Name',
+            value       : ivname,
+            attrs       : 'style="width: 200px"',
+            title       : 'New MM Project',
+            ok_text     : 'Ok',
+            cancel_text : 'Cancel',
+            width       : 400,
+            height      : 200,
+            callBack    : function (value : String) {
+                try {
+                let mmPath = <string>project.createMultiModel(value, "{}");
+                menuHandler.openMultiModel(mmPath);
+                } catch (error){
+                    // TODO: Validate name! Distinguish names... Maybe with the help of the recent w2prompt :with
+                    w2alert('MM Project '+  value + ' already exists! Choose a different name.',"Error");
+                }
+            }
+    });
+
     }
 };
+
 
 menuHandler.createCoSimConfiguration = (path) => {
     let project = IntoCpsApp.getInstance().getActiveProject();
