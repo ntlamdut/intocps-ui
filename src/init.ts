@@ -76,7 +76,8 @@ class InitializationController {
     private loadViews() {
         this.layout.load("main", "main.html", "", () => {
             this.mainView = (<HTMLDivElement>document.getElementById(this.mainViewId));
-
+            var appVer = (<HTMLSpanElement>document.getElementById('appVersion'));
+            appVer.innerText = IntoCpsApp.getInstance().app.getVersion();
             // Start Angular 2 application
             bootstrap(AppComponent, [disableDeprecatedForms(), provideForms()]);
         });
