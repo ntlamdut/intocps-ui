@@ -18,6 +18,7 @@ export namespace SettingKeys {
     export var EXAMPLE_REPO = "example_site";
     export var DEV_EXAMPLE_REPO = "dev_example_site";
     export var DEFAULT_PROJECTS_FOLDER_PATH = "default_projects_folder_path";
+    export var ENABLE_TRACEABILITY = "enable_traceability";
 
     export var DEFAULT_VALUES: { [key: string]: any; } = {};
     DEFAULT_VALUES[RTTESTER_INSTALL_DIR] = 'C:/opt/rt-tester';
@@ -33,4 +34,5 @@ export namespace SettingKeys {
     DEFAULT_VALUES[DAEMON_URL] = "localhost:8083";
     DEFAULT_VALUES[COE_DEBUG_ENABLED] = false;
     DEFAULT_VALUES[COE_REMOTE_HOST] = false;
+    DEFAULT_VALUES[ENABLE_TRACEABILITY] = true;
 }

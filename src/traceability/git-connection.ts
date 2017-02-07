@@ -14,12 +14,11 @@ export class GitCommands{
     } 
 
     public static getHashOfFile(path: string) : string{
-        console.log("path: " + path);
         return this.removeNewline(execSync(`git hash-object "${path}"`).toString());        
     }
 
     public static commitFile(path: string){
-        this.execGitCmd(`git add "${path}"`);
+        this.execGitCmd(`git add -f "${path}"`);
         this.execGitCmd(`git commit -m "autocommit" "${path}"`);
     }
 
