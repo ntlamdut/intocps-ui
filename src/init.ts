@@ -30,6 +30,7 @@ import { provideForms, disableDeprecatedForms } from "@angular/forms";
 import { CoeViewController } from "./angular2-app/coe/CoeViewController";
 import { MmViewController } from "./angular2-app/mm/MmViewController";
 import { DseViewController } from "./angular2-app/dse/DseViewController";
+import { TraceGraphViewController } from "./angular2-app/trace/TraceGraphViewController";
 
 class InitializationController {
     // constants
@@ -279,7 +280,10 @@ menuHandler.rename = (path: string) => {
     if (path.endsWith("coe.json") || path.endsWith("mm.json")) {
         renameHandler.openWindow(Path.dirname(path));
     }
-}
+};
+menuHandler.showTraceView = () => {
+    menuHandler.openHTMLInMainView("http://localhost:7474/browser/","Traceability Graph View");
+};
 
 
 Menus.configureIntoCpsMenu();
