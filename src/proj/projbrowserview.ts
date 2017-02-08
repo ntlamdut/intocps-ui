@@ -355,7 +355,8 @@ export class BrowserController {
                 result.img = "into-cps-icon-projbrowser-dse-result";
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
-                     self.menuHandler.openWithSystemEditor(item.path);
+                     //self.menuHandler.openWithSystemEditor(item.path);
+                     self.menuHandler.openHTMLInMainView(item.path,"DSE Results View");
                 
                     return null;
                 };
