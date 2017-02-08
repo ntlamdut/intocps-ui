@@ -30,4 +30,6 @@ export class IntoCpsAppMenuHandler {
     openWithSystemEditor: (path: string)=>void;
     createMultiModelPlain: () =>void;
     rename: (path:string)=>void;
+
+    showTraceView: () =>void;
 }
