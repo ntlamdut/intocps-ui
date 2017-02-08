@@ -9,14 +9,18 @@ import { BehaviorSubject } from "rxjs/Rx";
 import { Injectable, NgZone } from "@angular/core";
 import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
 import * as http from "http"
+import * as child_process from 'child_process'
+import fs = require('fs');
 
 
 @Injectable()
 export class CoeSimulationService {
-    
+
     progress: number = 0;
     datasets: BehaviorSubject<Array<any>> = new BehaviorSubject([]);
     errorReport: (hasError: boolean, message: string) => void = function () { };
+    postProcessingOutputReport: (hasError: boolean, message: string) => void = function () { };
+
 
     private webSocket: WebSocket;
     private sessionId: number;
@@ -40,8 +44,9 @@ export class CoeSimulationService {
         this.datasets.next([]);
     }
 
-    run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void) {
+    run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void, postScriptOutputReport: (hasError: boolean, message: string) => void) {
         this.errorReport = errorReport;
+        this.postProcessingOutputReport = postScriptOutputReport;
         this.config = config;
         this.remoteCoe = this.settings.get(SettingKeys.COE_REMOTE_HOST);
         this.url = this.settings.get(SettingKeys.COE_URL);
@@ -200,23 +205,88 @@ export class CoeSimulationService {
                     this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/outputs.csv`), response.text()),
                     this.fileSystem.copyFile(this.config.sourcePath, Path.normalize(`${this.resultDir}/coe.json`)),
                     this.fileSystem.copyFile(this.config.multiModel.sourcePath, Path.normalize(`${this.resultDir}/mm.json`))
-                ]).then(() => this.progress = 100);
+                ]).then(() => {
+                    this.progress = 100;
+
+                    this.executePostProcessingScript(Path.normalize(`${this.resultDir}/outputs.csv`));
+                });
             });
 
-        
+
         var fs = require('fs');
         var file = fs.createWriteStream(`${this.resultDir}/log.zip`);
         let url = `http://${this.url}/result/${this.sessionId}/zip`;
-        var request = http.get(url, (response:http.IncomingMessage) => {
+        var request = http.get(url, (response: http.IncomingMessage) => {
             response.pipe(file);
-            response.on('end', () =>{
+            response.on('end', () => {
                 let destroySessionUrl = `http://${this.url}/destroy/${this.sessionId}`;
-                http.get(destroySessionUrl, (response:any) => {
+                http.get(destroySessionUrl, (response: any) => {
                     let statusCode = response.statusCode;
-                    if(statusCode != 200)
+                    if (statusCode != 200)
                         console.error("Destroy session returned statuscode: " + statusCode)
                 });
-            });      
+            });
+        });
+    }
+
+    private createPanel(title: string, content: HTMLElement): HTMLElement {
+        var divPanel = document.createElement("div");
+        divPanel.className = "panel panel-default";
+
+        var divTitle = document.createElement("div");
+        divTitle.className = "panel-heading";
+        divTitle.innerText = title;
+
+        var divBody = document.createElement("div");
+        divBody.className = "panel-body";
+        divBody.appendChild(content);
+
+        divPanel.appendChild(divTitle);
+        divPanel.appendChild(divBody);
+
+        return divPanel;
+    }
+
+    private executePostProcessingScript(outputFile: string) {
+
+        let script :string= this.config.postProcessingScript;
+        let self = this;
+
+        //default will be '.'
+        if (script == null || script.length <= 1)
+            return;
+
+
+        var scriptExists = false;
+        try {
+            fs.accessSync(script, fs.R_OK);
+            scriptExists = true;
+
+        } catch (e) {
+
+        }
+
+        if(!scriptExists)
+        {
+            script = Path.normalize(Path.join(this.config.projectRoot,script));
+        }
+
+        var spawn = child_process.spawn;
+
+        var child = spawn(script, [outputFile, "" + this.config.endTime], {
+            detached: true,
+            shell: true,
+            cwd: Path.dirname(outputFile)
+        });
+        child.unref();
+
+        child.stdout.on('data', function (data: any) {
+            self.postProcessingOutputReport(false, data + "");
+        });
+
+        child.stderr.on('data', function (data: any) {
+            console.log('stderr: ' + data);
+            self.postProcessingOutputReport(true, data + "");
         });
     }
 

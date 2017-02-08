@@ -22,6 +22,8 @@ export class CoeConfig {
         delete data["startTime"];
         delete data["multimodel_path"];
         delete data["enableAllLogCategoriesPerInstance"];
+        delete data["postProcessingScript"];
+        
         if (!data["visible"])
             delete data["visible"];
         if (!data["loggingOn"])

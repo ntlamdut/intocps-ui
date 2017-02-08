@@ -2,7 +2,7 @@ import { MultiModelConfig } from "./MultiModelConfig"
 import { Parser, Serializer } from "./Parser"
 import * as fs from "fs"
 import { Instance, ScalarVariable, InstanceScalarPair } from "../angular2-app/coe/models/Fmu";
-import { WarningMessage,ErrorMessage } from "./Messages";
+import { WarningMessage, ErrorMessage } from "./Messages";
 import { FormArray, FormGroup, FormControl, Validators } from "@angular/forms";
 import {
     numberValidator, integerValidator, lengthValidator,
@@ -30,27 +30,29 @@ export class CoSimulationConfig implements ISerializable {
     loggingOn: boolean = false;
     enableAllLogCategoriesPerInstance: boolean = false;
     overrideLogLevel: string = null;
+    postProcessingScript: string = "";
 
-
+    public getProjectRelativePath(path: string): string {
+        if (path.indexOf(this.projectRoot) === 0)
+            return path.substring(this.projectRoot.length + 1);
+        return path;
+    }
 
     toObject(): any {
         let livestream: any = {};
         this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
 
-        let path = this.multiModel.sourcePath;
-        if (path.indexOf(this.projectRoot) === 0)
-            path = path.substring(this.projectRoot.length + 1);
-
         return {
             startTime: Number(this.startTime),
             endTime: Number(this.endTime),
-            multimodel_path: path,
+            multimodel_path: this.getProjectRelativePath(this.multiModel.sourcePath),
             livestream: livestream,
             visible: this.visible,
             loggingOn: this.loggingOn,
             overrideLogLevel: this.overrideLogLevel,
             enableAllLogCategoriesPerInstance: this.enableAllLogCategoriesPerInstance,
-            algorithm: this.algorithm.toObject()
+            algorithm: this.algorithm.toObject(),
+            postProcessingScript: this.getProjectRelativePath(this.postProcessingScript)
         };
     }
 
@@ -73,7 +75,7 @@ export class CoSimulationConfig implements ISerializable {
         // TODO
         console.error("No validation is done on the cosim config");
 
-        let multiModelCrcMatch = this.multiModelCrc==undefined || this.multiModelCrc === checksum(fs.readFileSync(this.multiModel.sourcePath).toString(), "md5", "hex");
+        let multiModelCrcMatch = this.multiModelCrc == undefined || this.multiModelCrc === checksum(fs.readFileSync(this.multiModel.sourcePath).toString(), "md5", "hex");
         if (multiModelCrcMatch) {
             return [];
         }
@@ -116,6 +118,7 @@ export class CoSimulationConfig implements ISerializable {
                     config.overrideLogLevel = parser.parseSimpleTagDefault(data, "overrideLogLevel", null);
                     config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data, "enableAllLogCategoriesPerInstance", false);
                     config.multiModelCrc = parser.parseMultiModelCrc(data);
+                    config.postProcessingScript = parser.parseSimpleTagDefault(data, "postProcessingScript", "");
 
                     resolve(config);
                 })

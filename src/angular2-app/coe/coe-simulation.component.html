@@ -33,3 +33,24 @@
 </div>
 
 <line-chart *ngIf="coeSimulation.datasets.getValue().length > 0" [datasets]="coeSimulation.datasets"></line-chart>
+
+
+
+<div *ngIf="hasPostScriptOutput">
+
+<div class="panel panel-default">
+  <div class="panel-heading">Post-script output</div>
+  <div class="panel-body">
+    <div *ngIf="hasPostScriptOutputError" class="alert alert-danger">
+        <p class="form-control-static">{{postScriptOutput}}</p>
+    </div>
+    <div *ngIf="!hasPostScriptOutputError" class="alert alert-info">
+        <p class="form-control-static">{{postScriptOutput}}</p>
+    </div>
+  </div>
+</div>
+
+
+
+   
+</div>
