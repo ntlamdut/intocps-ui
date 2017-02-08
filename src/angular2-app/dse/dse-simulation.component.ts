@@ -117,9 +117,6 @@ export class DseSimulationComponent implements OnInit, OnDestroy {
         let multiModelConfigName = this.config.slice(absoluteProjectPath.length + 1, this.config.length); 
 
         let scriptFile = Path.join(installDir, "dse", "Algorithm_exhaustive.py"); 
-                    alert(absoluteProjectPath);
-                    alert(experimentConfigName);
-                    alert(multiModelConfigName);
         var child = spawn("python", [scriptFile, absoluteProjectPath, experimentConfigName, multiModelConfigName], {
             detached: true,
             shell: false,
