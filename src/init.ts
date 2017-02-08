@@ -30,7 +30,6 @@ import { provideForms, disableDeprecatedForms } from "@angular/forms";
 import { CoeViewController } from "./angular2-app/coe/CoeViewController";
 import { MmViewController } from "./angular2-app/mm/MmViewController";
 import { DseViewController } from "./angular2-app/dse/DseViewController";
-import { TraceGraphViewController } from "./angular2-app/trace/TraceGraphViewController";
 
 class InitializationController {
     // constants
