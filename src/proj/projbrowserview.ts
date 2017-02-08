@@ -594,6 +594,12 @@ export class BrowserController {
                         self.menuHandler.createDsePlain(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
+            } else if (Path.basename(path) == Project.PATH_TRACEABILITY) {
+                let menuGraph = menuEntry("View Traceability Graph", "glyphicon glyphicon-asterisk",
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.showTraceView();
+                    });
+                result.menuEntries = [menuGraph];
             } else if (Path.basename(path) == "downloads") {
                 // skip the project download folder
                 return;

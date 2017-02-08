@@ -279,7 +279,10 @@ menuHandler.rename = (path: string) => {
     if (path.endsWith("coe.json") || path.endsWith("mm.json")) {
         renameHandler.openWindow(Path.dirname(path));
     }
-}
+};
+menuHandler.showTraceView = () => {
+    menuHandler.openHTMLInMainView("http://localhost:7474/browser/","Traceability Graph View");
+};
 
 
 Menus.configureIntoCpsMenu();
