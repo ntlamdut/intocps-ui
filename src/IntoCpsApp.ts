@@ -86,7 +86,6 @@ export default class IntoCpsApp extends EventEmitter {
 
 
     private createAppFolderRoot(app: Electron.App): string {
-        const path = require("path");
         // Create intoCpsApp folder
         const userPath = function () {
             if (app.getPath("exe").indexOf("electron-prebuilt") > -1) {
@@ -95,11 +94,13 @@ export default class IntoCpsApp extends EventEmitter {
                 return __dirname;
             }
             else {
-                return app.getPath("userData");
+                let path = app.getPath("userData");
+                console.log(`Npm start user data path: ${path}`);
+                return path;
             }
         } ();
 
-        return path.normalize(userPath + "/intoCpsApp");
+        return Path.normalize(userPath + "/intoCpsApp");
     }
 
     private createDirectoryStructure(path: string) {
