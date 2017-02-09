@@ -76,8 +76,7 @@ class InitializationController {
     private loadViews() {
         this.layout.load("main", "main.html", "", () => {
             this.mainView = (<HTMLDivElement>document.getElementById(this.mainViewId));
-            var appVer = (<HTMLSpanElement>document.getElementById('appVersion'));
-            appVer.innerText = IntoCpsApp.getInstance().app.getVersion();
+
             // Start Angular 2 application
             bootstrap(AppComponent, [disableDeprecatedForms(), provideForms()]);
         });
@@ -191,6 +190,11 @@ menuHandler.openSysMlExport = () => {
     IntoCpsApp.setTopName("SysML Export");
 };
 
+menuHandler.openSysMlDSEExport = () => {
+    openView("sysmlexport/sysmldseexport.html");
+    IntoCpsApp.setTopName("SysML DSE Export");
+};
+
 menuHandler.openFmu = () => {
     openView("fmus/fmus.html");
     IntoCpsApp.setTopName("FMUs");
@@ -212,6 +216,18 @@ menuHandler.createMultiModel = (path) => {
         let content = fs.readFileSync(path, "UTF-8");
         let mmPath = <string>project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
         menuHandler.openMultiModel(mmPath);
+    }
+};
+
+
+menuHandler.createSysMLDSEConfig = (path) => {
+    let project = IntoCpsApp.getInstance().getActiveProject();
+
+    if (project) {
+        let name = Path.basename(path, ".sysml-dse.json");
+        let content = fs.readFileSync(path, "UTF-8");
+        let dsePath = <string>project.createSysMLDSEConfig(`dse-${name} (${Math.floor(Math.random() * 100)})`, content);
+        menuHandler.openDseView(dsePath);
     }
 };
 
@@ -279,10 +295,7 @@ menuHandler.rename = (path: string) => {
     if (path.endsWith("coe.json") || path.endsWith("mm.json")) {
         renameHandler.openWindow(Path.dirname(path));
     }
-};
-menuHandler.showTraceView = () => {
-    menuHandler.openHTMLInMainView("http://localhost:7474/browser/","Traceability Graph View");
-};
+}
 
 
 Menus.configureIntoCpsMenu();
