@@ -351,6 +351,15 @@ export class BrowserController {
                 parent.refresh();
                 return null;
             }
+            else if (path.endsWith("results.html")) {
+                result.img = "into-cps-icon-projbrowser-dse-result";
+                result.removeFileExtensionFromText();
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                     self.menuHandler.openHTMLInMainView(item.path,"DSE Results View");
+                
+                    return null;
+                };
+            }
             else if (path.endsWith("coe.json") && !this.isResultFolder(Path.dirname(path))) {
                 // merge MultiModelConfig and folder
                 parent.img = "into-cps-icon-projbrowser-config";
@@ -599,6 +608,12 @@ export class BrowserController {
                         self.menuHandler.createDsePlain(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
+            } else if (Path.basename(path) == Project.PATH_TRACEABILITY) {
+                let menuGraph = menuEntry("View Traceability Graph", "glyphicon glyphicon-asterisk",
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.showTraceView();
+                    });
+                result.menuEntries = [menuGraph];
             } else if (Path.basename(path) == "downloads") {
                 // skip the project download folder
                 return;
