@@ -299,6 +299,10 @@ menuHandler.rename = (path: string) => {
     }
 };
 menuHandler.showTraceView = () => {
+    var DialogHandler = require("./DialogHandler").default;
+    let renameHandler = new DialogHandler("traceability/traceHints.html", 600, 800, null, null, null);
+
+    renameHandler.openWindow();
     menuHandler.openHTMLInMainView("http://localhost:7474/browser/","Traceability Graph View");
 };
 
