@@ -7,6 +7,7 @@ export class IntoCpsAppMenuHandler {
 
     openCoeView: (path: string) => void;
     openMultiModel: (path: string) => void;
+    openSysMlDSEExport: (path: string) => void;
     openSysMlExport: (path: string) => void;
     openFmu: (path: string) => void;
     openDseView: (path: string) => void;
@@ -15,6 +16,7 @@ export class IntoCpsAppMenuHandler {
     
     createDse: (path: string) => void;
     createDsePlain: (path: string) => void;
+    createSysMLDSEConfig: (path: string) => void;
     createMultiModel: (path: string) => void;
     createCoSimConfiguration: (path: string) => void;
 

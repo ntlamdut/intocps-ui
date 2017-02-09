@@ -411,6 +411,20 @@ export class BrowserController {
                     });
                 result.menuEntries = [menuEntryCreateMM, menuEntryDelete];
             }
+            else if (path.endsWith(".sysml-dse.json")) {
+                result.img = "into-cps-icon-projbrowser-modelio";
+                result.removeFileExtensionFromText();
+                result.opensInMainWindow = true;
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openSysMlDSEExport(item.path);
+                };
+                let menuEntryCreateSysMLDSE = menuEntry("Create DSE Configuration", "glyphicon glyphicon-briefcase",
+                    function (item: ProjectBrowserItem) {
+                        console.info("Create new dse config for: " + item.path);
+                        self.menuHandler.createSysMLDSEConfig(item.path);
+                    });
+                result.menuEntries = [menuEntryCreateSysMLDSE, menuEntryDelete];
+            }
             else if (path.endsWith(".emx")) {
                 result.img = "into-cps-icon-projbrowser-20sim";
                 result.removeFileExtensionFromText();
