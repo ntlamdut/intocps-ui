@@ -228,7 +228,7 @@ menuHandler.createSysMLDSEConfig = (path) => {
     if (project) {
         let name = Path.basename(path, ".sysml-dse.json");
         let content = fs.readFileSync(path, "UTF-8");
-        let dsePath = <string>project.createSysMLDSEConfig(`dse-${name} (${Math.floor(Math.random() * 100)})`, content);
+        let dsePath = <string>project.createSysMLDSEConfig(`dse-${name}-${Math.floor(Math.random() * 100)}`, content);
         menuHandler.openDseView(dsePath);
     }
 };
