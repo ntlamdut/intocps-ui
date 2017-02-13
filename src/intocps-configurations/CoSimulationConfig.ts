@@ -31,28 +31,30 @@ export class CoSimulationConfig implements ISerializable {
     loggingOn: boolean = false;
     enableAllLogCategoriesPerInstance: boolean = false;
     overrideLogLevel: string = null;
+    postProcessingScript: string = "";
 
-
+    public getProjectRelativePath(path: string): string {
+        if (path.indexOf(this.projectRoot) === 0)
+            return path.substring(this.projectRoot.length + 1);
+        return path;
+    }
 
     toObject(): any {
         let livestream: any = {};
         this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
 
-        let path = this.multiModel.sourcePath;
-        if (path.indexOf(this.projectRoot) === 0)
-            path = path.substring(this.projectRoot.length + 1);
-
         return {
             startTime: Number(this.startTime),
             endTime: Number(this.endTime),
-            multimodel_path: path,
+            multimodel_path: this.getProjectRelativePath(this.multiModel.sourcePath),
             livestream: livestream,
             livestreamInterval: Number(this.livestreamInterval),
             visible: this.visible,
             loggingOn: this.loggingOn,
             overrideLogLevel: this.overrideLogLevel,
             enableAllLogCategoriesPerInstance: this.enableAllLogCategoriesPerInstance,
-            algorithm: this.algorithm.toObject()
+            algorithm: this.algorithm.toObject(),
+            postProcessingScript: this.getProjectRelativePath(this.postProcessingScript)
         };
     }
 
@@ -139,6 +141,7 @@ export class CoSimulationConfig implements ISerializable {
                     config.overrideLogLevel = parser.parseSimpleTagDefault(data, "overrideLogLevel", null);
                     config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data, "enableAllLogCategoriesPerInstance", false);
                     config.multiModelCrc = parser.parseMultiModelCrc(data);
+                    config.postProcessingScript = parser.parseSimpleTagDefault(data, "postProcessingScript", "");
 
                     resolve(config);
                 })

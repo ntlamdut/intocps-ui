@@ -9,7 +9,8 @@ import { BehaviorSubject } from "rxjs/Rx";
 import { Injectable, NgZone } from "@angular/core";
 import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
 import * as http from "http"
-import * as fs from 'fs';
+import * as fs from 'fs'
+import * as child_process from 'child_process'
 import { TraceMessager } from "../../traceability/trace-messenger"
 
 
@@ -20,6 +21,7 @@ export class CoeSimulationService {
     datasets: BehaviorSubject<Array<any>> = new BehaviorSubject([]);
     errorReport: (hasError: boolean, message: string) => void = function () { };
     simulationCompletedHandler: () => void = function () { };
+    postProcessingOutputReport: (hasError: boolean, message: string) => void = function () { };
 
     private webSocket: WebSocket;
     private sessionId: number;
@@ -44,10 +46,11 @@ export class CoeSimulationService {
 
     }
 
-    run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void, simCompleted: () => void) {
+    run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void, simCompleted: () => void, postScriptOutputReport: (hasError: boolean, message: string) => void) {
         this.errorReport = errorReport;
         this.simulationCompletedHandler = simCompleted;
         this.config = config;
+        this.postProcessingOutputReport = postScriptOutputReport;
         this.remoteCoe = this.settings.get(SettingKeys.COE_REMOTE_HOST);
         this.url = this.settings.get(SettingKeys.COE_URL);
 
@@ -132,10 +135,12 @@ export class CoeSimulationService {
         this.webSocket.addEventListener("error", event => console.error(event));
         this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
 
-        var message: any = { startTime: this.config.startTime, 
-            endTime: this.config.endTime, 
-            reportProgress: true, 
-            liveLogInterval: this.config.livestreamInterval };
+        var message: any = {
+            startTime: this.config.startTime,
+            endTime: this.config.endTime,
+            reportProgress: true,
+            liveLogInterval: this.config.livestreamInterval
+        };
 
         // enable logging for all log categories        
         var logCategories: any = new Object();
@@ -222,7 +227,10 @@ export class CoeSimulationService {
                     this.fileSystem.writeFile(resultPath, response.text()),
                     this.fileSystem.copyFile(this.config.sourcePath, coeConfigPath),
                     this.fileSystem.copyFile(this.config.multiModel.sourcePath, mmConfigPath)
-                ]).then(() => this.progress = 100);
+                ]).then(() => {
+                    this.progress = 100;
+                    this.executePostProcessingScript(resultPath);
+                });
             });
 
 
@@ -241,6 +249,66 @@ export class CoeSimulationService {
                         console.error("Destroy session returned statuscode: " + statusCode)
                 });
             });
+        });
+    }
+
+    private createPanel(title: string, content: HTMLElement): HTMLElement {
+        var divPanel = document.createElement("div");
+        divPanel.className = "panel panel-default";
+
+        var divTitle = document.createElement("div");
+        divTitle.className = "panel-heading";
+        divTitle.innerText = title;
+
+        var divBody = document.createElement("div");
+        divBody.className = "panel-body";
+        divBody.appendChild(content);
+
+        divPanel.appendChild(divTitle);
+        divPanel.appendChild(divBody);
+
+        return divPanel;
+    }
+
+    private executePostProcessingScript(outputFile: string) {
+
+        let script: string = this.config.postProcessingScript;
+        let self = this;
+
+        //default will be '.'
+        if (script == null || script.length <= 1)
+            return;
+
+
+        var scriptExists = false;
+        try {
+            fs.accessSync(script, fs.constants.R_OK);
+            scriptExists = true;
+
+        } catch (e) {
+
+        }
+
+        if (!scriptExists) {
+            script = Path.normalize(Path.join(this.config.projectRoot, script));
+        }
+
+        var spawn = child_process.spawn;
+
+        var child = spawn(script, [outputFile, "" + this.config.endTime], {
+            detached: true,
+            shell: true,
+            cwd: Path.dirname(outputFile)
+        });
+        child.unref();
+
+        child.stdout.on('data', function (data: any) {
+            self.postProcessingOutputReport(false, data + "");
+        });
+
+        child.stderr.on('data', function (data: any) {
+            console.log('stderr: ' + data);
+            self.postProcessingOutputReport(true, data + "");
         });
     }
 

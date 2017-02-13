@@ -44,6 +44,9 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     config: CoSimulationConfig;
     mmWarnings: WarningMessage[] = [];
     coeWarnings: WarningMessage[] = [];
+    hasPostScriptOutput = false;
+    hasPostScriptOutputError = false;
+    postScriptOutput = '';
     simulating: boolean = false;
 
     private onlineInterval: number;
@@ -94,11 +97,20 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     runSimulation() {
         this.zone.run(() => {
             this.hasHttpError = false;
+            this.hasPostScriptOutput = false;
+            this.hasPostScriptOutputError = false;
+            this.postScriptOutput = "";
             this.simulating = true;
         });
+
+
+
         this.coeSimulation.run(this.config,
-            (e, m) => { this.zone.run(() => { this.errorHandler(e, m) }) }, 
-            () => { this.zone.run(() => {this.simulating = false  }) });
+            (e, m) => { this.zone.run(() => { this.errorHandler(e, m) }) },
+            () => { this.zone.run(() => { this.simulating = false }) },
+            (e, m) => { this.zone.run(() => { this.postScriptOutputHandler(e, m) }) }
+        );
+
 
     }
 
@@ -115,6 +127,14 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
         this.hasHttpError = hasError;
         this.httpErrorMessage = message;
+
+    }
+
+    postScriptOutputHandler(hasError: boolean, message: string) {
+
+        this.hasPostScriptOutput = true;
+        this.hasPostScriptOutputError = hasError;
+        this.postScriptOutput = message;
 
     }
 

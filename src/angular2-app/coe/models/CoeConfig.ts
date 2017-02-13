@@ -22,6 +22,7 @@ export class CoeConfig {
         delete data["startTime"];
         delete data["multimodel_path"];
         delete data["enableAllLogCategoriesPerInstance"];
+        delete data["postProcessingScript"];
 
         if (!data["livestreamInterval"])
             delete data["livestreamInterval"];
@@ -32,9 +33,6 @@ export class CoeConfig {
 
         if (data["overrideLogLevel"] === null || data["overrideLogLevel"] === "Not set")
             delete data["overrideLogLevel"];
-
-
-
 
         data["fmus"] = fmus;
 

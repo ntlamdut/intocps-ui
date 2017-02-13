@@ -19,11 +19,11 @@
 <div class="form-group">
     <div *ngIf="!simulating">
         <button type="button" [disabled]="!canRun()" (click)="runSimulation()" class="btn btn-default">
-        <span class="glyphicon glyphicon-play"></span> Simulate    </button>
+        <span class="glyphicon glyphicon-play"></span>Simulate</button>
     </div>
-     <div *ngIf="simulating">
+    <div *ngIf="simulating">
         <button type="button" (click)="stopSimulation()" class="btn btn-default">
-        <span class="glyphicon glyphicon-stop"></span> Stop    </button>
+        <span class="glyphicon glyphicon-stop"></span>Stop</button>
     </div>
 </div>
 
@@ -38,3 +38,20 @@
 </div>
 
 <line-chart *ngIf="coeSimulation.datasets.getValue().length > 0" [datasets]="coeSimulation.datasets"></line-chart>
+
+
+
+<div *ngIf="hasPostScriptOutput">
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Post-script output</div>
+        <div class="panel-body">
+            <div *ngIf="hasPostScriptOutputError" class="alert alert-danger">
+                <p class="form-control-static">{{postScriptOutput}}</p>
+            </div>
+            <div *ngIf="!hasPostScriptOutputError" class="alert alert-info">
+                <p class="form-control-static">{{postScriptOutput}}</p>
+            </div>
+        </div>
+    </div>
+</div>

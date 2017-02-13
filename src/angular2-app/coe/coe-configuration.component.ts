@@ -13,6 +13,7 @@ import { SamplingRateComponent } from "./inputs/sampling-rate.component";
 import { numberValidator, lessThanValidator } from "../shared/validators";
 import { NavigationService } from "../shared/navigation.service";
 import { WarningMessage } from "../../intocps-configurations/Messages";
+import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
 
 @Component({
     selector: "coe-configuration",
@@ -21,7 +22,8 @@ import { WarningMessage } from "../../intocps-configurations/Messages";
         REACTIVE_FORM_DIRECTIVES,
         ZeroCrossingComponent,
         BoundedDifferenceComponent,
-        SamplingRateComponent
+        SamplingRateComponent,
+        FileBrowserComponent
     ],
     templateUrl: "./angular2-app/coe/coe-configuration.component.html"
 })
@@ -109,6 +111,10 @@ export class CoeConfigurationComponent {
                     }, null, lessThanValidator('startTime', 'endTime'));
                 });
             }, error => this.zone.run(() => this.parseError = error));
+    }
+
+    public setPostProcessingScript(config: CoSimulationConfig, path: string) {
+        config.postProcessingScript = config.getProjectRelativePath(path);
     }
 
     onNavigate(): boolean {
