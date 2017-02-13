@@ -182,6 +182,26 @@ function showVersion(version: string, data: any) {
         icon.className = "glyphicon glyphicon-save";
         btn.appendChild(icon);
         divTool.appendChild(btn);
+        var progressDiv = <HTMLDivElement>document.getElementById("progress-bars");
+
+        let progressFunction = (downloadName: string, component: HTMLDivElement) => {
+            let setProgress = (progress: number) => {
+                let styleWidth = progress.toString() + "%";
+                let downloadText = styleWidth + " - " + downloadName;
+
+                component.style.width = styleWidth;
+                component.innerHTML = downloadText;
+            }
+            return (state: any) => {
+                if (state == 1) {
+                    setProgress(100);
+                    return;
+                }
+                let pct = parseInt((state.percentage * 100) + "", 10);
+                console.log(pct + "%");
+                setProgress(pct);
+            }
+        }
 
         btn.onclick = function (e) {
             let remote = require("electron").remote;
@@ -190,12 +210,23 @@ function showVersion(version: string, data: any) {
             dialog.showMessageBox({ type: 'question', buttons: buttons, message: "Download: " + tool.name + " (" + tool.version + ")" }, function (button: any) {
                 if (button == 1)//yes
                 {
-                    var divProgress = <HTMLInputElement>document.getElementById("coe-progress");
-                    divProgress.scrollIntoView();
-                    downloader.downloadTool(tool, getTempDir(), progress).then(function (filePath) {
-                        console.log("Download complete: " + filePath);
-                        dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
-                    }, function (error) { dialog.showErrorBox("Invalid Checksum", error); });
+                    $("<div>").load("./progress-bar-component.html", function (event: JQueryEventObject) {
+                        let progressBarComponent = <HTMLDivElement>(<HTMLDivElement>this).firstElementChild;
+                        //Prepend the child
+                        if(progressDiv.hasChildNodes){
+                            progressDiv.insertBefore(progressBarComponent, progressDiv.firstChild)
+                        }
+                        else{progressDiv.appendChild(progressBarComponent);}
+                        
+                        //Get the filling div
+                        let component = <HTMLDivElement>(<HTMLDivElement>progressBarComponent).querySelector("#coe-progress");
+                        component.scrollIntoView();
+                        //Start the download
+                        downloader.downloadTool(tool, getTempDir(), progressFunction(tool.name, component)).then(function (filePath) {
+                            console.log("Download complete: " + filePath);
+                            dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
+                        }, function (error) { dialog.showErrorBox("Invalid Checksum", error); });
+                    });
                 }
             });
         };
