@@ -47,6 +47,7 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     hasPostScriptOutput = false;
     hasPostScriptOutputError = false;
     postScriptOutput = '';
+    simulating: boolean = false;
 
     private onlineInterval: number;
     private parsing: boolean = false;
@@ -99,15 +100,26 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
             this.hasPostScriptOutput = false;
             this.hasPostScriptOutputError = false;
             this.postScriptOutput = "";
+            this.simulating = true;
         });
 
 
 
         this.coeSimulation.run(this.config,
             (e, m) => { this.zone.run(() => { this.errorHandler(e, m) }) },
+            () => { this.zone.run(() => { this.simulating = false }) },
             (e, m) => { this.zone.run(() => { this.postScriptOutputHandler(e, m) }) }
         );
 
+
+    }
+
+    stopSimulation() {
+        this.zone.run(() => {
+
+            this.simulating = false;
+        });
+        this.coeSimulation.stop();
 
     }
 

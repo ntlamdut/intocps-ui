@@ -1,5 +1,3 @@
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 
 import fs = require('fs');
 import Path = require('path');
@@ -18,8 +16,8 @@ export class Project implements IProject {
 
     PATH_FMUS: String = "FMUs";
     PATH_MODELS: String = "Models";
-    static PATH_MULTI_MODELS: String = "Multi-models";
-    static PATH_DSE: String = "DSEs";
+    static PATH_MULTI_MODELS: string = "Multi-models";
+    static PATH_DSE: string = "DSEs";
     //PATH_CONNECTIONS: String = "SysML Connections";
     static PATH_SYSML: String = "SysML";
     static PATH_TEST_DATA_GENERATION: String = "Test-Data-Generation";
@@ -111,6 +109,18 @@ export class Project implements IProject {
         fs.mkdirSync(path);
 
         let fullpath = Path.normalize(path + "/mm.json");
+
+        fs.writeFileSync(fullpath, jsonContent == null ? "{}" : jsonContent, "UTF-8");
+
+        return fullpath;
+    }
+
+    public createSysMLDSEConfig(name: String, jsonContent: String): String {
+        let path = Path.normalize(this.rootPath + "/" + Project.PATH_DSE + "/" + name);
+
+        fs.mkdirSync(path);
+
+        let fullpath = Path.normalize(path + "/"+name+".dse.json");
 
         fs.writeFileSync(fullpath, jsonContent == null ? "{}" : jsonContent, "UTF-8");
 

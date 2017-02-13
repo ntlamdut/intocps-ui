@@ -1,11 +1,9 @@
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
-import {IntoCpsApp} from  "../IntoCpsApp"
-import {SettingKeys} from "../settings/SettingKeys";
-import {DialogHandler} from "../DialogHandler";
+import { IntoCpsApp } from "../IntoCpsApp"
+import { SettingKeys } from "../settings/SettingKeys";
+import { DialogHandler } from "../DialogHandler";
 
 import Path = require('path');
 import fs = require('fs');
@@ -141,7 +139,7 @@ function fetchList() {
 
 }
 
-function createButton() : HTMLButtonElement{
+function createButton(): HTMLButtonElement {
     let btn = document.createElement("button");
     btn.type = "button";
     btn.className = "btn btn-default btn-sm";
@@ -161,12 +159,11 @@ function showVersion(version: string, data: any) {
         var supported = false;
         let platform = downloader.getSystemPlatform();
         let platforms = tool.platforms;
-        if("any" in platforms )
-        {
+        if ("any" in platforms) {
             supported = true
         }
-        else
-            {Object.keys(tool.platforms).forEach(pl => {
+        else {
+            Object.keys(tool.platforms).forEach(pl => {
                 if (pl.indexOf(platform) == 0) {
                     supported = true;
                 }
@@ -185,6 +182,26 @@ function showVersion(version: string, data: any) {
         icon.className = "glyphicon glyphicon-save";
         btn.appendChild(icon);
         divTool.appendChild(btn);
+        var progressDiv = <HTMLDivElement>document.getElementById("progress-bars");
+
+        let progressFunction = (downloadName: string, component: HTMLDivElement) => {
+            let setProgress = (progress: number) => {
+                let styleWidth = progress.toString() + "%";
+                let downloadText = styleWidth + " - " + downloadName;
+
+                component.style.width = styleWidth;
+                component.innerHTML = downloadText;
+            }
+            return (state: any) => {
+                if (state == 1) {
+                    setProgress(100);
+                    return;
+                }
+                let pct = parseInt((state.percentage * 100) + "", 10);
+                console.log(pct + "%");
+                setProgress(pct);
+            }
+        }
 
         btn.onclick = function (e) {
             let remote = require("electron").remote;
@@ -193,11 +210,22 @@ function showVersion(version: string, data: any) {
             dialog.showMessageBox({ type: 'question', buttons: buttons, message: "Download: " + tool.name + " (" + tool.version + ")" }, function (button: any) {
                 if (button == 1)//yes
                 {
-                    var divProgress = <HTMLInputElement>document.getElementById("coe-progress");
-                    divProgress.scrollIntoView();
-                    downloader.downloadTool(tool, getTempDir(), progress).then(function (filePath) {
-                        console.log("Download complete: " + filePath);
-                        dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
+                    $("<div>").load("./progress-bar-component.html", function (event: JQueryEventObject) {
+                        let progressBarComponent = <HTMLDivElement>(<HTMLDivElement>this).firstElementChild;
+                        //Prepend the child
+                        if(progressDiv.hasChildNodes){
+                            progressDiv.insertBefore(progressBarComponent, progressDiv.firstChild)
+                        }
+                        else{progressDiv.appendChild(progressBarComponent);}
+                        
+                        //Get the filling div
+                        let component = <HTMLDivElement>(<HTMLDivElement>progressBarComponent).querySelector("#coe-progress");
+                        component.scrollIntoView();
+                        //Start the download
+                        downloader.downloadTool(tool, getTempDir(), progressFunction(tool.name, component)).then(function (filePath) {
+                            console.log("Download complete: " + filePath);
+                            dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
+                        }, function (error) { dialog.showErrorBox("Invalid Checksum", error); });
                     });
                 }
             });
@@ -207,10 +235,10 @@ function showVersion(version: string, data: any) {
             let btn = createButton();
             var t = document.createTextNode("Release page");
             btn.appendChild(t);
-            let dh = new DialogHandler(releasePage, 640, 400, null,null,null);
-            dh.externalUrl = true;            
+            let dh = new DialogHandler(releasePage, 640, 400, null, null, null);
+            dh.externalUrl = true;
             divTool.appendChild(btn);
-            btn.onclick = function(e){
+            btn.onclick = function (e) {
                 dh.openWindow();
             };
         }

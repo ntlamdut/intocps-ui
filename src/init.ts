@@ -17,7 +17,9 @@ import { bootstrap } from '@angular/platform-browser-dynamic';
 import { AppComponent } from './angular2-app/app.component';
 import * as fs from 'fs';
 import * as Path from 'path';
-import {DseConfiguration} from "./intocps-configurations/dse-configuration"
+import { DseConfiguration } from "./intocps-configurations/dse-configuration"
+
+import {TraceMessager} from "./traceability/trace-messenger"
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -78,6 +80,7 @@ class InitializationController {
             this.mainView = (<HTMLDivElement>document.getElementById(this.mainViewId));
             var appVer = (<HTMLSpanElement>document.getElementById('appVersion'));
             appVer.innerText = IntoCpsApp.getInstance().app.getVersion();
+
             // Start Angular 2 application
             bootstrap(AppComponent, [disableDeprecatedForms(), provideForms()]);
         });
@@ -191,6 +194,11 @@ menuHandler.openSysMlExport = () => {
     IntoCpsApp.setTopName("SysML Export");
 };
 
+menuHandler.openSysMlDSEExport = () => {
+    openView("sysmlexport/sysmldseexport.html");
+    IntoCpsApp.setTopName("SysML DSE Export");
+};
+
 menuHandler.openFmu = () => {
     openView("fmus/fmus.html");
     IntoCpsApp.setTopName("FMUs");
@@ -205,13 +213,29 @@ menuHandler.openFmu = () => {
 //
 
 menuHandler.createMultiModel = (path) => {
-    let project = IntoCpsApp.getInstance().getActiveProject();
+    let appInstance = IntoCpsApp.getInstance();
+    let project = appInstance.getActiveProject();
 
     if (project) {
         let name = Path.basename(path, ".sysml.json");
         let content = fs.readFileSync(path, "UTF-8");
         let mmPath = <string>project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
         menuHandler.openMultiModel(mmPath);
+        //Create the trace 
+        let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath,path);
+        //console.log("RootMessage: " + JSON.stringify(message));    
+    }
+};
+
+
+menuHandler.createSysMLDSEConfig = (path) => {
+    let project = IntoCpsApp.getInstance().getActiveProject();
+
+    if (project) {
+        let name = Path.basename(path, ".sysml-dse.json");
+        let content = fs.readFileSync(path, "UTF-8");
+        let dsePath = <string>project.createSysMLDSEConfig(`dse-${name}-${Math.floor(Math.random() * 100)}`, content);
+        menuHandler.openDseView(dsePath);
     }
 };
 
@@ -242,6 +266,7 @@ menuHandler.createCoSimConfiguration = (path) => {
     if (project) {
         let coePath = project.createCoSimConfig(path, `co-sim-${Math.floor(Math.random() * 100)}`, null).toString();
         menuHandler.openCoeView(coePath);
+        let message = TraceMessager.submitCoeConfigMessage(path,coePath);
     }
 };
 
@@ -279,7 +304,14 @@ menuHandler.rename = (path: string) => {
     if (path.endsWith("coe.json") || path.endsWith("mm.json")) {
         renameHandler.openWindow(Path.dirname(path));
     }
-}
+};
+menuHandler.showTraceView = () => {
+    var DialogHandler = require("./DialogHandler").default;
+    let renameHandler = new DialogHandler("traceability/traceHints.html", 600, 800, null, null, null);
+
+    renameHandler.openWindow();
+    menuHandler.openHTMLInMainView("http://localhost:7474/browser/","Traceability Graph View");
+};
 
 
 Menus.configureIntoCpsMenu();

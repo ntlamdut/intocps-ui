@@ -9,12 +9,13 @@ interface MyWindow extends Window {
 declare var window: MyWindow;
 
 export class DseViewController extends ViewController {
-    constructor(view: HTMLDivElement, private path:string) {
+    constructor(private view: HTMLDivElement, private path:string) {
         super(view);
     }
 
     initialize() {
         //IntoCpsApp.setTopName(this.path.split('\\').reverse()[1]);
+        $(this.view).css('height',0);
         IntoCpsApp.setTopName(this.path);
         window.ng2app.openDSE(this.path);
     }
@@ -22,6 +23,7 @@ export class DseViewController extends ViewController {
     deInitialize() {
         if (window.ng2app.navigationService.canNavigate()) {
             window.ng2app.closeAll();
+            $(this.view).css('height',"calc(100%-80px)");
             return true;
         }
 

@@ -1,4 +1,3 @@
-///<reference path="../../typings/browser.d.ts"/>
 
 import childProcess = require("child_process"); 
 import {IntoCpsApp} from  "../IntoCpsApp"
