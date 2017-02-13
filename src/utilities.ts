@@ -86,5 +86,9 @@ export class Utilities {
         }
     }
 
+    public static pathToUri(path: string)
+    {
+        return encodeURI(path.replace(/\\/g, "/"))
+    }
 
 }

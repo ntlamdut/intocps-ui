@@ -2,7 +2,7 @@ import { MultiModelConfig } from "./MultiModelConfig"
 import { Parser, Serializer } from "./Parser"
 import * as fs from "fs"
 import { Instance, ScalarVariable, InstanceScalarPair } from "../angular2-app/coe/models/Fmu";
-import { WarningMessage,ErrorMessage } from "./Messages";
+import { WarningMessage, ErrorMessage } from "./Messages";
 import { FormArray, FormGroup, FormControl, Validators } from "@angular/forms";
 import {
     numberValidator, integerValidator, lengthValidator,
@@ -56,9 +56,17 @@ export class CoSimulationConfig implements ISerializable {
         };
     }
 
+    saveOverride(): Promise<void> {
+        //we consider this an explicit user action. Allowing CRC override
+        this.multiModelCrc = checksum(fs.readFileSync(this.multiModel.sourcePath).toString(), "md5", "hex");
+        return this.save();
+    }
+
+
     save(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
+
                 fs.writeFile(this.sourcePath, JSON.stringify(this.toObject()), error => {
                     if (error)
                         reject(error);
@@ -72,16 +80,28 @@ export class CoSimulationConfig implements ISerializable {
     }
 
     validate(): WarningMessage[] {
-        // TODO
-        console.error("No validation is done on the cosim config");
 
-        let multiModelCrcMatch = this.multiModelCrc==undefined || this.multiModelCrc === checksum(fs.readFileSync(this.multiModel.sourcePath).toString(), "md5", "hex");
-        if (multiModelCrcMatch) {
-            return [];
+        //first re-check mm
+        let mmWarnings = this.multiModel.validate();
+        if (mmWarnings.length > 0) {
+            return mmWarnings;
         }
-        else {
-            return [new ErrorMessage("Multimodel crc check failed")];
+
+        let messages: WarningMessage[] = [];
+        // check this config
+        if (this.endTime <= 0) {
+            messages.push(new ErrorMessage("End time must be larger than 0. Actual: '" + this.endTime + "'"));
         }
+        if (this.startTime >= this.endTime) {
+            messages.push(new ErrorMessage("Start time '" + this.startTime + "'must be smaller than end time '" + this.endTime + "'"));
+        }
+
+        let multiModelCrcMatch = this.multiModelCrc == undefined || this.multiModelCrc === checksum(fs.readFileSync(this.multiModel.sourcePath).toString(), "md5", "hex");
+        if (!multiModelCrcMatch) {
+            return [new ErrorMessage("Multimodel crc check failed. Multimodel has changed.")];
+        }
+
+        return messages;
     }
 
     static create(path: string, projectRoot: string, fmuRootPath: string, data: any): Promise<CoSimulationConfig> {
@@ -128,7 +148,7 @@ export class CoSimulationConfig implements ISerializable {
 
     static parse(path: string, projectRoot: string, fmuRootPath: string): Promise<CoSimulationConfig> {
         return new Promise<CoSimulationConfig>((resolve, reject) => {
-            fs.access(path, fs.R_OK, error => {
+            fs.access(path, fs.constants.R_OK, error => {
                 if (error) return reject(error);
 
                 fs.readFile(path, (error, content) => {

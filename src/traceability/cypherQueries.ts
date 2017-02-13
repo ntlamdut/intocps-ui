@@ -1,5 +1,3 @@
-///<reference path="../../typings/browser.d.ts"/>
-
 module.exports = {
 
     getNodeByParams: function (nodeParams: Object):string{

@@ -1,12 +1,12 @@
-import {Component, Input, NgZone, OnInit, OnDestroy} from "@angular/core";
-import {CoSimulationConfig} from "../../intocps-configurations/CoSimulationConfig";
-import {LineChartComponent} from "../shared/line-chart.component";
-import {CoeSimulationService} from "./coe-simulation.service";
-import {Http} from "@angular/http";
-import {SettingsService, SettingKeys} from "../shared/settings.service";
+import { Component, Input, NgZone, OnInit, OnDestroy } from "@angular/core";
+import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
+import { LineChartComponent } from "../shared/line-chart.component";
+import { CoeSimulationService } from "./coe-simulation.service";
+import { Http } from "@angular/http";
+import { SettingsService, SettingKeys } from "../shared/settings.service";
 import IntoCpsApp from "../../IntoCpsApp";
-import {WarningMessage} from "../../intocps-configurations/Messages";
-import {openCOEServerStatusWindow} from "../../menus"
+import { WarningMessage } from "../../intocps-configurations/Messages";
+import { openCOEServerStatusWindow } from "../../menus"
 
 @Component({
     selector: "coe-simulation",
@@ -19,40 +19,41 @@ import {openCOEServerStatusWindow} from "../../menus"
     templateUrl: "./angular2-app/coe/coe-simulation.component.html"
 })
 export class CoeSimulationComponent implements OnInit, OnDestroy {
-    private _path:string;
+    private _path: string;
 
     @Input()
-    set path(path:string) {
+    set path(path: string) {
         this._path = path;
 
         if (path) {
             this.parseConfig();
 
-            if(this.coeSimulation)
+            if (this.coeSimulation)
                 this.coeSimulation.reset();
         }
     }
-    get path():string {
+    get path(): string {
         return this._path;
     }
 
-    online:boolean = false;
-    hasHttpError:boolean = false;
-    httpErrorMessage:string='';
-    url:string = '';
-    version:string = '';
-    config:CoSimulationConfig;
-    mmWarnings:WarningMessage[] = [];
-    coeWarnings:WarningMessage[] = [];
+    online: boolean = false;
+    hasHttpError: boolean = false;
+    httpErrorMessage: string = '';
+    url: string = '';
+    version: string = '';
+    config: CoSimulationConfig;
+    mmWarnings: WarningMessage[] = [];
+    coeWarnings: WarningMessage[] = [];
+    simulating: boolean = false;
 
-    private onlineInterval:number;
-    private parsing:boolean = false;
+    private onlineInterval: number;
+    private parsing: boolean = false;
 
     constructor(
-        private coeSimulation:CoeSimulationService,
-        private http:Http,
-        private zone:NgZone,
-        private settings:SettingsService
+        private coeSimulation: CoeSimulationService,
+        private http: Http,
+        private zone: NgZone,
+        private settings: SettingsService
     ) {
 
     }
@@ -92,16 +93,29 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
     runSimulation() {
         this.zone.run(() => {
-        this.hasHttpError = false;});
-        this.coeSimulation.run(this.config,(e,m)=>{this.zone.run(() => {this.errorHandler(e,m)})});
+            this.hasHttpError = false;
+            this.simulating = true;
+        });
+        this.coeSimulation.run(this.config,
+            (e, m) => { this.zone.run(() => { this.errorHandler(e, m) }) }, 
+            () => { this.zone.run(() => {this.simulating = false  }) });
 
     }
 
-    errorHandler(hasError:boolean, message:string){
-      
+    stopSimulation() {
+        this.zone.run(() => {
+
+            this.simulating = false;
+        });
+        this.coeSimulation.stop();
+
+    }
+
+    errorHandler(hasError: boolean, message: string) {
+
         this.hasHttpError = hasError;
         this.httpErrorMessage = message;
-      
+
     }
 
     isCoeOnline() {
@@ -109,13 +123,13 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
             .get(`http://${this.url}/version`)
             .timeout(2000)
             .map(response => response.json())
-            .subscribe((data:any) => {
+            .subscribe((data: any) => {
                 this.online = true;
                 this.version = data.version;
             }, () => this.online = false);
     }
 
     onCoeLaunchClick() {
-        openCOEServerStatusWindow("autolaunch",false)
+        openCOEServerStatusWindow("autolaunch", false)
     }
 }

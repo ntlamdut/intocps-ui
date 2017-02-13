@@ -17,9 +17,14 @@
 </div>
 
 <div class="form-group">
-    <button type="button" [disabled]="!canRun()" (click)="runSimulation()" class="btn btn-default">
-        <span class="glyphicon glyphicon-play"></span> Simulate
-    </button>
+    <div *ngIf="!simulating">
+        <button type="button" [disabled]="!canRun()" (click)="runSimulation()" class="btn btn-default">
+        <span class="glyphicon glyphicon-play"></span> Simulate    </button>
+    </div>
+     <div *ngIf="simulating">
+        <button type="button" (click)="stopSimulation()" class="btn btn-default">
+        <span class="glyphicon glyphicon-stop"></span> Stop    </button>
+    </div>
 </div>
 
 <div class="progress">

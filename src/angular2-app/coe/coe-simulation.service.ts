@@ -9,14 +9,17 @@ import { BehaviorSubject } from "rxjs/Rx";
 import { Injectable, NgZone } from "@angular/core";
 import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
 import * as http from "http"
+import * as fs from 'fs';
+import { TraceMessager } from "../../traceability/trace-messenger"
 
 
 @Injectable()
 export class CoeSimulationService {
-    
+
     progress: number = 0;
     datasets: BehaviorSubject<Array<any>> = new BehaviorSubject([]);
     errorReport: (hasError: boolean, message: string) => void = function () { };
+    simulationCompletedHandler: () => void = function () { };
 
     private webSocket: WebSocket;
     private sessionId: number;
@@ -38,10 +41,12 @@ export class CoeSimulationService {
     reset() {
         this.progress = 0;
         this.datasets.next([]);
+
     }
 
-    run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void) {
+    run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void, simCompleted: () => void) {
         this.errorReport = errorReport;
+        this.simulationCompletedHandler = simCompleted;
         this.config = config;
         this.remoteCoe = this.settings.get(SettingKeys.COE_REMOTE_HOST);
         this.url = this.settings.get(SettingKeys.COE_URL);
@@ -52,6 +57,12 @@ export class CoeSimulationService {
 
         this.initializeDatasets();
         this.createSession();
+    }
+
+
+    stop() {
+        this.http.get(`http://${this.url}/stopsimulation/${this.sessionId}`)
+            .subscribe((response: Response) => { }, (err: Response) => this.errorHandler(err));
     }
 
     private initializeDatasets() {
@@ -72,7 +83,6 @@ export class CoeSimulationService {
 
     private createSession() {
         this.errorReport(false, "");
-        this.progress = 0;
 
         this.http.get(`http://${this.url}/createSession`)
             .subscribe((response: Response) => {
@@ -82,7 +92,6 @@ export class CoeSimulationService {
     }
 
     private uploadFmus() {
-        this.progress = 25;
 
         if (!this.remoteCoe) {
             this.initializeCoe();
@@ -106,8 +115,6 @@ export class CoeSimulationService {
     }
 
     private initializeCoe() {
-        this.progress = 50;
-
         let data = new CoeConfig(this.config, this.remoteCoe).toJSON();
 
         this.fileSystem.mkdir(this.resultDir)
@@ -120,14 +127,15 @@ export class CoeSimulationService {
 
     private simulate() {
         this.counter = 0;
-        this.progress = 75;
-
         this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
 
         this.webSocket.addEventListener("error", event => console.error(event));
         this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
 
-        var message: any = { startTime: this.config.startTime, endTime: this.config.endTime,liveLogInterval:this.config.livestreamInterval };
+        var message: any = { startTime: this.config.startTime, 
+            endTime: this.config.endTime, 
+            reportProgress: true, 
+            liveLogInterval: this.config.livestreamInterval };
 
         // enable logging for all log categories        
         var logCategories: any = new Object();
@@ -167,6 +175,14 @@ export class CoeSimulationService {
         // {"data":{"{integrate}":{"inst2":{"output":"0.0"}},"{sine}":{"sine":{"output":"0.0"}}},"time":0.0}}
         if ("time" in rawData) {
             xValue = rawData.time;
+
+            if (rawData.time < this.config.endTime) {
+                let pct = (rawData.time / this.config.endTime) * 100;
+                this.progress = Math.round(pct);
+            } else {
+                this.progress = 100;
+            }
+
             rawData = rawData.data;
         }
 
@@ -192,31 +208,39 @@ export class CoeSimulationService {
 
     private downloadResults() {
         this.webSocket.close();
+        this.simulationCompletedHandler();
+
+        let resultPath = Path.normalize(`${this.resultDir}/outputs.csv`);
+        let coeConfigPath = Path.normalize(`${this.resultDir}/coe.json`);
+        let mmConfigPath = Path.normalize(`${this.resultDir}/mm.json`);
+        let logPath = Path.normalize(`${this.resultDir}/log.zip`);
 
         this.http.get(`http://${this.url}/result/${this.sessionId}/plain`)
             .subscribe(response => {
                 // Write results to disk and save a copy of the multi model and coe configs
                 Promise.all([
-                    this.fileSystem.writeFile(Path.normalize(`${this.resultDir}/outputs.csv`), response.text()),
-                    this.fileSystem.copyFile(this.config.sourcePath, Path.normalize(`${this.resultDir}/coe.json`)),
-                    this.fileSystem.copyFile(this.config.multiModel.sourcePath, Path.normalize(`${this.resultDir}/mm.json`))
+                    this.fileSystem.writeFile(resultPath, response.text()),
+                    this.fileSystem.copyFile(this.config.sourcePath, coeConfigPath),
+                    this.fileSystem.copyFile(this.config.multiModel.sourcePath, mmConfigPath)
                 ]).then(() => this.progress = 100);
             });
 
-        
-        var fs = require('fs');
-        var file = fs.createWriteStream(`${this.resultDir}/log.zip`);
+
+        var logStream = fs.createWriteStream(logPath);
         let url = `http://${this.url}/result/${this.sessionId}/zip`;
-        var request = http.get(url, (response:http.IncomingMessage) => {
-            response.pipe(file);
-            response.on('end', () =>{
+        var request = http.get(url, (response: http.IncomingMessage) => {
+            response.pipe(logStream);
+            response.on('end', () => {
+
+                // simulation completed + result
+                let message = TraceMessager.submitSimulationResultMessage(this.config.sourcePath, this.config.multiModel.sourcePath, [resultPath, coeConfigPath, mmConfigPath, logPath]);
                 let destroySessionUrl = `http://${this.url}/destroy/${this.sessionId}`;
-                http.get(destroySessionUrl, (response:any) => {
+                http.get(destroySessionUrl, (response: any) => {
                     let statusCode = response.statusCode;
-                    if(statusCode != 200)
+                    if (statusCode != 200)
                         console.error("Destroy session returned statuscode: " + statusCode)
                 });
-            });      
+            });
         });
     }
 

@@ -1,9 +1,6 @@
-/// <reference path="../typings/browser/ambient/github-electron/index.d.ts"/>
-/// <reference path="../typings/browser/ambient/node/index.d.ts"/>
+import * as Path from 'path';
+import * as fs from 'fs';
 
-
-import fs = require("fs");
-import Path = require("path");
 
 import {ISettingsValues} from "./settings/ISettingsValues";
 import {Settings} from "./settings/settings";
@@ -66,7 +63,7 @@ export default class IntoCpsApp extends EventEmitter {
         let activeProjectPath = this.settings.getSetting(SettingKeys.ACTIVE_PROJECT);
         if (activeProjectPath) {
             try {
-                if (!fs.accessSync(activeProjectPath, fs.R_OK)) {
+                if (!fs.accessSync(activeProjectPath, fs.constants.R_OK)) {
 
                     this.activeProject = this.loadProject(activeProjectPath);
                 } else {
@@ -89,7 +86,6 @@ export default class IntoCpsApp extends EventEmitter {
 
 
     private createAppFolderRoot(app: Electron.App): string {
-        const path = require("path");
         // Create intoCpsApp folder
         const userPath = function () {
             if (app.getPath("exe").indexOf("electron-prebuilt") > -1) {
@@ -98,11 +94,13 @@ export default class IntoCpsApp extends EventEmitter {
                 return __dirname;
             }
             else {
-                return app.getPath("userData");
+                let path = app.getPath("userData");
+                console.log(`Npm start user data path: ${path}`);
+                return path;
             }
         } ();
 
-        return path.normalize(userPath + "/intoCpsApp");
+        return Path.normalize(userPath + "/intoCpsApp");
     }
 
     private createDirectoryStructure(path: string) {
