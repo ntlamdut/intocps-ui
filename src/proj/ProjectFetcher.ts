@@ -1,5 +1,3 @@
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 /// <reference path="../../node_modules/typescript/lib/lib.es6.d.ts" />
 
@@ -84,7 +82,7 @@ export function fetchProjectThroughGit(url: string, targetFolder: string, update
 
         var repoExists = false;
         try {
-            fs.accessSync(repoProjectFile, fs.R_OK);
+            fs.accessSync(repoProjectFile, fs.constants.R_OK);
             repoExists = true;
 
         } catch (e) {

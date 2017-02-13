@@ -125,7 +125,7 @@ export class CoSimulationConfig implements ISerializable {
 
     static parse(path: string, projectRoot: string, fmuRootPath: string): Promise<CoSimulationConfig> {
         return new Promise<CoSimulationConfig>((resolve, reject) => {
-            fs.access(path, fs.R_OK, error => {
+            fs.access(path, fs.constants.R_OK, error => {
                 if (error) return reject(error);
 
                 fs.readFile(path, (error, content) => {

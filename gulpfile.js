@@ -151,7 +151,7 @@ gulp.task("clean", function () {
 gulp.task("compile-ts", function () {
     var tsResult = gulp.src(tsSrcs)
         .pipe(sourcemap.init())
-        .pipe(ts(tsProject));
+        .pipe(tsProject());
 
     return tsResult.js.pipe(uglify({preserveComments: 'license'}))
         .pipe(sourcemap.write())

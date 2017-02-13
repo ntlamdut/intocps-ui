@@ -1,11 +1,12 @@
-///<reference path="../../typings/browser.d.ts"/>
-
 // for REST services
-import restify = require('restify');
+import * as restify  from 'restify';
+//import restify = require('restify');
 // concurrency
-import Promise = require("bluebird");
+import * as Promise from 'bluebird';
+//import Promise = require("bluebird");
 // xml handling
-import xml2js = require('xml2js');
+import * as xml2js from 'xml2js';
+//import xml2js = require('xml2js');
  
 // var neo4j = require('neo4j'); 
 

@@ -1,8 +1,7 @@
-///<reference path="../../typings/browser.d.ts"/>
 // db access
 // =========
- 
-import Promise = require("bluebird");
+ import * as Promise from 'bluebird';
+//import Promise = require("bluebird");
 
 var cypherQueries = require('./cypherQueries');
 

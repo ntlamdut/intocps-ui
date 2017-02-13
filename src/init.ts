@@ -17,7 +17,9 @@ import { bootstrap } from '@angular/platform-browser-dynamic';
 import { AppComponent } from './angular2-app/app.component';
 import * as fs from 'fs';
 import * as Path from 'path';
-import {DseConfiguration} from "./intocps-configurations/dse-configuration"
+import { DseConfiguration } from "./intocps-configurations/dse-configuration"
+
+import {TraceMessager} from "./traceability/trace-messenger"
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -211,13 +213,17 @@ menuHandler.openFmu = () => {
 //
 
 menuHandler.createMultiModel = (path) => {
-    let project = IntoCpsApp.getInstance().getActiveProject();
+    let appInstance = IntoCpsApp.getInstance();
+    let project = appInstance.getActiveProject();
 
     if (project) {
         let name = Path.basename(path, ".sysml.json");
         let content = fs.readFileSync(path, "UTF-8");
         let mmPath = <string>project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
         menuHandler.openMultiModel(mmPath);
+        //Create the trace 
+        let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath,path);
+        //console.log("RootMessage: " + JSON.stringify(message));    
     }
 };
 
@@ -260,6 +266,7 @@ menuHandler.createCoSimConfiguration = (path) => {
     if (project) {
         let coePath = project.createCoSimConfig(path, `co-sim-${Math.floor(Math.random() * 100)}`, null).toString();
         menuHandler.openCoeView(coePath);
+        let message = TraceMessager.submitCoeConfigMessage(path,coePath);
     }
 };
 

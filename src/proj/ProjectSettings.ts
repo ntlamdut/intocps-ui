@@ -1,8 +1,3 @@
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
-
-
-
 export class ProjectSettings {
 
     private owner: any;
