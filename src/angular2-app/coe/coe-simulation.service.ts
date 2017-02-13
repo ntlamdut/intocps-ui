@@ -41,6 +41,7 @@ export class CoeSimulationService {
     reset() {
         this.progress = 0;
         this.datasets.next([]);
+
     }
 
     run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void, simCompleted: () => void) {
@@ -82,7 +83,6 @@ export class CoeSimulationService {
 
     private createSession() {
         this.errorReport(false, "");
-        this.progress = 0;
 
         this.http.get(`http://${this.url}/createSession`)
             .subscribe((response: Response) => {
@@ -92,7 +92,6 @@ export class CoeSimulationService {
     }
 
     private uploadFmus() {
-        this.progress = 25;
 
         if (!this.remoteCoe) {
             this.initializeCoe();
@@ -116,8 +115,6 @@ export class CoeSimulationService {
     }
 
     private initializeCoe() {
-        this.progress = 50;
-
         let data = new CoeConfig(this.config, this.remoteCoe).toJSON();
 
         this.fileSystem.mkdir(this.resultDir)
@@ -130,14 +127,13 @@ export class CoeSimulationService {
 
     private simulate() {
         this.counter = 0;
-        this.progress = 75;
-
         this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
 
         this.webSocket.addEventListener("error", event => console.error(event));
         this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
 
-        var message: any = { startTime: this.config.startTime, endTime: this.config.endTime };
+        var message: any = { startTime: this.config.startTime, endTime: this.config.endTime ,reportProgress:true};
+        
 
         // enable logging for all log categories        
         var logCategories: any = new Object();
@@ -177,6 +173,14 @@ export class CoeSimulationService {
         // {"data":{"{integrate}":{"inst2":{"output":"0.0"}},"{sine}":{"sine":{"output":"0.0"}}},"time":0.0}}
         if ("time" in rawData) {
             xValue = rawData.time;
+
+            if (rawData.time < this.config.endTime) {
+                let pct = (rawData.time / this.config.endTime) * 100;
+                this.progress = Math.round(pct);
+            } else {
+                this.progress = 100;
+            }
+
             rawData = rawData.data;
         }
 
