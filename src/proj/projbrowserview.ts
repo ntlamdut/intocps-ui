@@ -353,7 +353,7 @@ export class BrowserController {
                 result.img = "into-cps-icon-projbrowser-dse-result";
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
-                     self.menuHandler.openWithSystemEditor(item.path);
+                     self.menuHandler.openHTMLInMainView(item.path,"DSE Results View");
                 
                     return null;
                 };
@@ -408,6 +408,20 @@ export class BrowserController {
                         self.menuHandler.createMultiModel(item.path);
                     });
                 result.menuEntries = [menuEntryCreateMM, menuEntryDelete];
+            }
+            else if (path.endsWith(".sysml-dse.json")) {
+                result.img = "into-cps-icon-projbrowser-modelio";
+                result.removeFileExtensionFromText();
+                result.opensInMainWindow = true;
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openSysMlDSEExport(item.path);
+                };
+                let menuEntryCreateSysMLDSE = menuEntry("Create DSE Configuration", "glyphicon glyphicon-briefcase",
+                    function (item: ProjectBrowserItem) {
+                        console.info("Create new dse config for: " + item.path);
+                        self.menuHandler.createSysMLDSEConfig(item.path);
+                    });
+                result.menuEntries = [menuEntryCreateSysMLDSE, menuEntryDelete];
             }
             else if (path.endsWith(".emx")) {
                 result.img = "into-cps-icon-projbrowser-20sim";
@@ -592,6 +606,12 @@ export class BrowserController {
                         self.menuHandler.createDsePlain(item.path);
                     });
                 result.menuEntries = [menuEntryCreate];
+            } else if (Path.basename(path) == Project.PATH_TRACEABILITY) {
+                let menuGraph = menuEntry("View Traceability Graph", "glyphicon glyphicon-asterisk",
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.showTraceView();
+                    });
+                result.menuEntries = [menuGraph];
             } else if (Path.basename(path) == "downloads") {
                 // skip the project download folder
                 return;
