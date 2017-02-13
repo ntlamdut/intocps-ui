@@ -23,6 +23,7 @@ export class CoSimulationConfig implements ISerializable {
 
     //optional livestream outputs
     livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
+    livestreamInterval : number = 0.0
     algorithm: ICoSimAlgorithm = new FixedStepAlgorithm();
     startTime: number = 0;
     endTime: number = 10;
@@ -46,6 +47,7 @@ export class CoSimulationConfig implements ISerializable {
             endTime: Number(this.endTime),
             multimodel_path: path,
             livestream: livestream,
+            livestreamInterval: Number(this.livestreamInterval),
             visible: this.visible,
             loggingOn: this.loggingOn,
             overrideLogLevel: this.overrideLogLevel,
@@ -110,6 +112,7 @@ export class CoSimulationConfig implements ISerializable {
                     config.startTime = parser.parseStartTime(data) || 0;
                     config.endTime = parser.parseEndTime(data) || 10;
                     config.livestream = parser.parseLivestream(data, multiModel);
+                    config.livestreamInterval =parseFloat( parser.parseSimpleTagDefault(data, "livestreamInterval", "0.0"));
                     config.algorithm = parser.parseAlgorithm(data, multiModel);
                     config.visible = parser.parseSimpleTagDefault(data, "visible", false);
                     config.loggingOn = parser.parseSimpleTagDefault(data, "loggingOn", false);

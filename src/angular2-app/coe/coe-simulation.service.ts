@@ -127,7 +127,7 @@ export class CoeSimulationService {
         this.webSocket.addEventListener("error", event => console.error(event));
         this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
 
-        var message: any = { startTime: this.config.startTime, endTime: this.config.endTime };
+        var message: any = { startTime: this.config.startTime, endTime: this.config.endTime,liveLogInterval:this.config.livestreamInterval };
 
         // enable logging for all log categories        
         var logCategories: any = new Object();
