@@ -190,6 +190,19 @@
 	<hr>
 
 	<label>Livestream Configuration</label>
+
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Live log interval (reduce this if graph is too slow, 0=all)</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.livestreamInterval}}</p>
+				<input *ngIf="editing" name="livestreamInterval" [(ngModel)]="config.livestreamInterval" class="form-control" >
+				<div *ngIf="form.hasError('required', 'livestreamInterval')" class="alert alert-danger">This field is required.</div>
+				<div *ngIf="form.hasError('invalidNumber', 'livestreamInterval')" class="alert alert-danger">Only numbers are allowed.</div>
+		
+			</div>
+		</div>
+
+
 	<div class="form-horizontal">
 		<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
 			<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>

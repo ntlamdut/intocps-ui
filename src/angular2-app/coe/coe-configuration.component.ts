@@ -106,6 +106,7 @@ export class CoeConfigurationComponent {
                     this.form = new FormGroup({
                         startTime: new FormControl(config.startTime, [Validators.required, numberValidator]),
                         endTime: new FormControl(config.endTime, [Validators.required, numberValidator]),
+                        livestreamInterval: new FormControl(config.livestreamInterval, [Validators.required, numberValidator]),
                         algorithm: this.algorithmFormGroups.get(this.config.algorithm)
                     }, null, lessThanValidator('startTime', 'endTime'));
                 });

@@ -135,8 +135,12 @@ export class CoeSimulationService {
         this.webSocket.addEventListener("error", event => console.error(event));
         this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
 
-        var message: any = { startTime: this.config.startTime, endTime: this.config.endTime, reportProgress: true };
-
+        var message: any = {
+            startTime: this.config.startTime,
+            endTime: this.config.endTime,
+            reportProgress: true,
+            liveLogInterval: this.config.livestreamInterval
+        };
 
         // enable logging for all log categories        
         var logCategories: any = new Object();
@@ -224,7 +228,7 @@ export class CoeSimulationService {
                     this.fileSystem.copyFile(this.config.sourcePath, coeConfigPath),
                     this.fileSystem.copyFile(this.config.multiModel.sourcePath, mmConfigPath)
                 ]).then(() => {
-                this.progress = 100;
+                    this.progress = 100;
                     this.executePostProcessingScript(resultPath);
                 });
             });
