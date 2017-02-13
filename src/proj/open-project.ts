@@ -1,9 +1,9 @@
 
 import Path = require('path');
-import fs = require('fs');
+import * as fs from 'fs';
 import {IntoCpsApp} from  "../IntoCpsApp";
 import {Settings} from "../settings/settings";
-import {SettingKeys} from "../settings//SettingKeys";
+import {SettingKeys} from "../settings/SettingKeys";
 function launchProjectExplorer() {
     let remote = require("electron").remote;
     let dialog = remote.dialog;
@@ -33,10 +33,10 @@ function openProject() {
 
     var p: HTMLInputElement = <HTMLInputElement>document.getElementById("projectRootPathText");
 
-    var fs = require("fs");
     try {
+        console.log(process.versions)
         let path =Path.join(p.value, ".project.json");
-        if (fs.accessSync(path, fs.R_OK)) {
+        if (fs.accessSync(path, fs.constants.R_OK)) {
             dialog.showErrorBox("Cannot open project", "Unable to find project at path: " + path);
         }
         IntoCpsApp.getInstance().emit('open-project-open', { path: path });

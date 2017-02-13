@@ -15,7 +15,7 @@ export class DseConfiguration implements ISerializable {
 
     static parse(path: string): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
-            fs.access(path, fs.R_OK, error => {
+            fs.access(path, fs.constants.R_OK, error => {
                 if (error) return reject(error);
                 fs.readFile(path, (error, content) => {
                     if (error) return reject(error);

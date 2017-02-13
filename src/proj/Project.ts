@@ -1,5 +1,3 @@
-///<reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/node/index.d.ts"/>
 
 import fs = require('fs');
 import Path = require('path');
@@ -18,8 +16,8 @@ export class Project implements IProject {
 
     PATH_FMUS: String = "FMUs";
     PATH_MODELS: String = "Models";
-    static PATH_MULTI_MODELS: String = "Multi-models";
-    static PATH_DSE: String = "DSEs";
+    static PATH_MULTI_MODELS: string = "Multi-models";
+    static PATH_DSE: string = "DSEs";
     //PATH_CONNECTIONS: String = "SysML Connections";
     static PATH_SYSML: String = "SysML";
     static PATH_TEST_DATA_GENERATION: String = "Test-Data-Generation";

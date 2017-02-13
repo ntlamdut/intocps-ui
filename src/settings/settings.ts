@@ -1,11 +1,9 @@
-/// <reference path="../../typings/browser/ambient/github-electron/index.d.ts"/>
-/// <reference path="../../typings/browser/ambient/node/index.d.ts"/>
 /**
  * Settings
  */
 import fs = require("fs");
 import path = require("path");
-import {ISettingsValues} from "./ISettingsValues.ts";
+import {ISettingsValues} from "./ISettingsValues";
 
 export default class Settings implements ISettingsValues {
   app: Electron.App;
