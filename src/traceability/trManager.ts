@@ -45,23 +45,19 @@ class Neo4Jconfiguration {
             if (files.length > 0){ 
                 var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
                 this.active = true;
-            }else{
-                console.log(appsDirTemp);
-                if (fs.existsSync(appsDirTemp)){
-                    var files:Array<string> = fsFinder.from(appsDirTemp).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
-                    if (files.length > 0){ 
-                        var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
-                        this.active = true;
-                    }
-                }
             }
-        }else{
-                console.log("The path " + appsDir + " does not exist. Neo4J can not be found here.");
-                return "";
+        }
+        if (fs.existsSync(appsDirTemp)){
+            var files:Array<string> = fsFinder.from(appsDirTemp).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
+            if (files.length > 0){ 
+                var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
+                this.active = true;
+            }
         }
         if (!this.active){
-                console.log("Neo4J was not found. Please download neo4j to the folder " + appsDir);
-                return "";
+            var path = "";
+            console.log("Neo4J was not found. Please download neo4j to the folder " + appsDir);
+            return "";
         }
         return path;
     }
