@@ -1,4 +1,6 @@
 import { IntoCpsApp } from "./../IntoCpsApp";
+var sha1 = require('node-sha1');
+var fs = require('fs');
 var execSync = require('child_process').execSync;
 let appInstance = IntoCpsApp.getInstance();
 export class GitCommands{
@@ -14,7 +16,8 @@ export class GitCommands{
     } 
 
     public static getHashOfFile(path: string) : string{
-        return this.removeNewline(execSync(`git hash-object "${path}"`).toString());        
+        var fileContent:Buffer = fs.readFileSync(path);
+        return sha1(Buffer.concat([new Buffer("blob " + fileContent.length + "\0"), fileContent]));        
     }
 
     public static commitFile(path: string){

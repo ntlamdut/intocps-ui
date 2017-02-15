@@ -209,8 +209,7 @@ export class trManager{
         var kill = require('tree-kill');
         kill(this.neo4JProcess.pid, 'SIGKILL', (function(nextCallback:Function, err: any) {
             if (err) { 
-                console.log("Failed to close Neo4J. " + "It was not possible to close Neo4J. Pid: " + this.neo4JProcess.pid +". Error message is ");
-                console.log(err);
+                console.log("Failed to close Neo4J. " + "It was not possible to close Neo4J. Pid: " + this.neo4JProcess.pid);
             }
             else {
                 this.neo4JProcess = null;
