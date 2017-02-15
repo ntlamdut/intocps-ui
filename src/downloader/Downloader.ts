@@ -102,13 +102,20 @@ function launchToolInstaller(filePath: string) {
 }
 
 
+export function toolRequiresUnpack(tool: any){
+    let platFormToUse = tool.platforms.any ? "any" : SYSTEM_PLATFORM;
+    const action: string = tool.platforms[platFormToUse].action;
+    return action === "unpack";
+}
+
 export function unpackTool(filePath: string, targetDirectory: string) {
     return new Promise((resolve, reject) => {
         yauzl.open(filePath, {lazyEntries: true}, function(err  : any, zipfile : any) {
         if (err) throw err;
         zipfile.readEntry();
         zipfile.on("entry", function(entry : any) {
-            let desiredPath = targetDirectory + entry.fileName;
+            let desiredPath = path.join(targetDirectory, entry.fileName);
+            //let desiredPath = targetDirectory + entry.fileName;
             if (/\/$/.test(entry.fileName)) {
             // directory file names end with '/'
             mkdirp(desiredPath, function(err : any) {
@@ -134,19 +141,6 @@ export function unpackTool(filePath: string, targetDirectory: string) {
         });
     });
 }
-
-
-export function installTool(tool: any, filePath: string, targetDirectory: string) {
-    const action = tool.platforms[SYSTEM_PLATFORM].action;
-    if (action == "launch") {
-        return launchToolInstaller(filePath);
-    } else if (action == "unpack") {
-        return unpackTool(filePath, targetDirectory);
-    } else {
-        throw new Error(`Unsupported action: ${action}`);
-    }
-}
-
 
 
 export function compareVersions(a: string, b: string) {

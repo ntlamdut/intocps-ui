@@ -213,11 +213,11 @@ function showVersion(version: string, data: any) {
                     $("<div>").load("./progress-bar-component.html", function (event: JQueryEventObject) {
                         let progressBarComponent = <HTMLDivElement>(<HTMLDivElement>this).firstElementChild;
                         //Prepend the child
-                        if(progressDiv.hasChildNodes){
+                        if (progressDiv.hasChildNodes) {
                             progressDiv.insertBefore(progressBarComponent, progressDiv.firstChild)
                         }
-                        else{progressDiv.appendChild(progressBarComponent);}
-                        
+                        else { progressDiv.appendChild(progressBarComponent); }
+
                         //Get the filling div
                         let component = <HTMLDivElement>(<HTMLDivElement>progressBarComponent).querySelector("#coe-progress");
                         component.scrollIntoView();
@@ -225,6 +225,10 @@ function showVersion(version: string, data: any) {
                         downloader.downloadTool(tool, getTempDir(), progressFunction(tool.name, component)).then(function (filePath) {
                             console.log("Download complete: " + filePath);
                             dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
+                            if (downloader.toolRequiresUnpack(tool)) {
+                                let installDirectory = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_DIR)
+                                downloader.unpackTool(filePath, installDirectory);
+                            }
                         }, function (error) { dialog.showErrorBox("Invalid Checksum", error); });
                     });
                 }
@@ -257,22 +261,5 @@ function showVersion(version: string, data: any) {
 
     divT.appendChild(createPanel("Overview - Release: " + data.version, div));
     divT.scrollIntoView();
-    //console.log("Downloading tool: Overture Tool Wrapper");
-    // panel.appendChild(createPanel("Downloading: Overture Tool Wrapper", document.createElement("div")));
-    // tool = data.tools.overtureToolWrapper;
-    //return downloader.downloadTool(tool, getTempDir(), progress);
-
-    /*.then(function (filePath) {
-        console.log("Download complete: " + filePath);
-        console.log("Unpacking tool");
-        return downloader.installTool(tool, filePath, "installed");
-    })
-        .then(function () {
-            console.log("Installation complete\n");
-            return;
-        }, function (error) {
-            console.log(error);
-        });*/
-
 }
 
