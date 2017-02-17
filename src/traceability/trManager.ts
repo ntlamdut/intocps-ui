@@ -1,4 +1,3 @@
-///<reference path="../../typings/browser.d.ts"/>
 
 import childProcess = require("child_process"); 
 import {IntoCpsApp} from  "../IntoCpsApp"
@@ -46,23 +45,19 @@ class Neo4Jconfiguration {
             if (files.length > 0){ 
                 var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
                 this.active = true;
-            }else{
-                console.log(appsDirTemp);
-                if (fs.existsSync(appsDirTemp)){
-                    var files:Array<string> = fsFinder.from(appsDirTemp).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
-                    if (files.length > 0){ 
-                        var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
-                        this.active = true;
-                    }
-                }
             }
-        }else{
-                console.log("The path " + appsDir + " does not exist. Neo4J can not be found here.");
-                return "";
+        }
+        if (fs.existsSync(appsDirTemp)){
+            var files:Array<string> = fsFinder.from(appsDirTemp).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
+            if (files.length > 0){ 
+                var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
+                this.active = true;
+            }
         }
         if (!this.active){
-                console.log("Neo4J was not found. Please download neo4j to the folder " + appsDir);
-                return "";
+            var path = "";
+            console.log("Neo4J was not found. Please download neo4j to the folder " + appsDir);
+            return "";
         }
         return path;
     }
@@ -89,7 +84,12 @@ export class trManager{
     }
  
     public start(neo4JConfLoc:string, appDir:string, appsDirTemp:string){
-        this.neo4Jconf = new Neo4Jconfiguration( neo4JConfLoc, appDir, appsDirTemp);
+        if (!this.neo4Jconf || !this.neo4Jconf.active){
+            this.neo4Jconf = new Neo4Jconfiguration( neo4JConfLoc, appDir, appsDirTemp);
+        }else{
+            this.neo4Jconf.setConfigurationLocation(neo4JConfLoc); 
+            this.neo4Jconf.setBinaryLocation();
+        }
         if (this.neo4Jconf.active){
             this.running = true;
             this.neo4JProcess = this.startNeo4J();
@@ -104,10 +104,6 @@ export class trManager{
         }else{
             this.start(confLoc, appDir, appsDirTemp);
         }
-    }
-
-    private setDatabaseLocation(confLoc:string){
-        this.neo4Jconf.setConfigurationLocation(confLoc);
     }
 
     public connectDaemon(timeOut:number, counter?:number, err?:Error){
@@ -172,23 +168,18 @@ export class trManager{
     private startNeo4J():childProcess.ChildProcess{
         try{
             this.checkDataBase();
-            var spawn = require("child_process").execFile;
+            var spawn = require("child_process").spawn;
             var neo4JExecOptions:Object = {env:{ 
                                                     "NEO4J_BIN":this.neo4Jconf.binariesLocation,
                                                     "NEO4J_HOME":this.neo4Jconf.homeLocation,
                                                     "NEO4J_CONF":this.neo4Jconf.getConfigurationLocation(),
                                                 },
                                         detached: false, 
-                                        shell: true, 
-                                        cwd: this.neo4Jconf.binariesLocation,
-                                        killSignal:"SIGKILL"
+                                        shell: true,
+                                        cwd: this.neo4Jconf.binariesLocation
                                         };
             console.log("Starting Neo4J from path " + this.neo4Jconf.binariesLocation + ". With database configuration: " + this.neo4Jconf.getConfigurationLocation());
-            var command:string = "neo4j";
-            var localNeo4JProcess:childProcess.ChildProcess = spawn(command, ["console"], neo4JExecOptions,  ((error:any, stdout:any, stderr:any) => {
-                this.running = false;
-                console.log("Closing Neo4J");
-            }).bind(this)); 
+            var localNeo4JProcess:childProcess.ChildProcess = spawn("neo4j", ["console"], neo4JExecOptions); 
         }catch(err){
             this.errorOnNeo4JStart(err);
             return undefined;
@@ -218,8 +209,7 @@ export class trManager{
         var kill = require('tree-kill');
         kill(this.neo4JProcess.pid, 'SIGKILL', (function(nextCallback:Function, err: any) {
             if (err) { 
-                console.log("Failed to close Neo4J. " + "It was not possible to close Neo4J. Pid: " + this.neo4JProcess.pid +". Error message is ");
-                console.log(err);
+                console.log("Failed to close Neo4J. " + "It was not possible to close Neo4J. Pid: " + this.neo4JProcess.pid);
             }
             else {
                 this.neo4JProcess = null;
@@ -228,17 +218,4 @@ export class trManager{
             nextCallback();
         }).bind(this,nextCallback));
     };
-    private neo4JEnded(error:Error, stdout:string, stderr:string){
-        if (error){
-            console.log("Ended Neo4J due to the following error:" + stderr + "\n" + error.stack);
-        }else{
-            console.log(stdout);
-        }
-        return;
-    }
-
-    private printErg(error:Error, stdout:string, stderr:string){
-        console.log(stdout);
-        return;
-    }
 }

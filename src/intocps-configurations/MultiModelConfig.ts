@@ -179,25 +179,26 @@ export class MultiModelConfig implements ISerializable {
                     pairs.forEach(pair => {
                         if (pair.scalarVariable.isConfirmed) {
                             if (!isTypeCompatiple(sv.type, pair.scalarVariable.type)) {
-                                messages.push(new ErrorMessage(`Uncompatible types in connection. The output scalar variable "${sv.name}": ${sv.type} is connected to scalar variable "${pair.scalarVariable.name}": ${pair.scalarVariable.type}`));
+                                messages.push(new ErrorMessage(`Uncompatible types in connection. The output scalar variable "${instance.fmu.name}.${instance.name}.${sv.name}": ${sv.type} is connected to scalar variable "${pair.instance.fmu.name}.${pair.instance.name}.${pair.scalarVariable.name}": ${pair.scalarVariable.type}`));
                             }
                         } else {
-                            messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${pair.scalarVariable.name}" as connection input`));
+                            messages.push(new WarningMessage(`Use of unconfirmed "${instance.fmu.name}.${instance.name}.${sv.name}" as connection input`));
                         }
                     });
                 } else {
-                    messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${sv.name}" as connection output`));
+                    messages.push(new WarningMessage(`Use of unconfirmed S"${instance.fmu.name}.${instance.name}.${sv.name}" as connection output`));
                 }
             });
 
             //check parameters
             instance.initialValues.forEach((value, sv) => {
                 if (sv.isConfirmed) {
+                    
                     if (!isTypeCompatipleWithValue(sv.type, value)) {
-                        messages.push(new ErrorMessage(`Uncompatible types for parameter. ScalarVariable: "${sv.name}" ${ScalarVariableType[sv.type]}  Value: ${value} ${typeof(value)}`));
+                        messages.push(new ErrorMessage(`Uncompatible types for parameter. "${instance.fmu.name}.${instance.name}.${sv.name}" ${ScalarVariableType[sv.type]}  Value: ${value} ${typeof(value)}`));
                     }
                 } else {
-                    messages.push(new WarningMessage(`Use of unconfirmed ScalarVariable: "${sv.name}" as parameter`));
+                    messages.push(new WarningMessage(`Use of unconfirmed "${instance.fmu.name}.${instance.name}.${sv.name}" as parameter`));
                 }
             });
         });

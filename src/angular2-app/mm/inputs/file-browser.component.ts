@@ -48,7 +48,7 @@ export class FileBrowserComponent implements OnInit {
     onChange(path:string) {
         this.path = path;
 
-        fs.access(Path.normalize(`${this.basePath}/${this.path}`), fs.R_OK, error => {
+        fs.access(Path.normalize(`${this.basePath}/${this.path}`), fs.constants.R_OK, error => {
             this.pathChange.emit(Path.normalize(error ? this.path : `${this.basePath}/${this.path}`));
         });
     }

@@ -103,6 +103,8 @@ function launchCoe() {
     let installDir = intoCpsAppIns.getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
     let coePath = Path.join(installDir, "coe.jar");
     let childCwd = Path.join(installDir, "coe-working-dir");
+    let env: any = process.env;
+    env["RTT_OP_KEY"] = "TMS:19999:FMI";
 
     var mkdirp = require('mkdirp');
     mkdirp.sync(childCwd);
@@ -110,7 +112,8 @@ function launchCoe() {
     var child = spawn('java', ['-jar', coePath], {
         detached: true,
         shell: false,
-        cwd: childCwd
+        cwd: childCwd,
+        env: env
     });
     child.unref();
     globalChild = child;
