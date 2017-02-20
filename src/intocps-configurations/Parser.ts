@@ -53,25 +53,11 @@ export class Parser {
                     $.each(Object.keys(data[this.FMUS_TAG]), (j, key) => {
                         var description = "";
                         var path = data[this.FMUS_TAG][key];
-                        let fmuExists = false;
-                        let fmu: Fmu = (() => {
-                            // The path can be one of two things:
-                            // A full path if the FMU is not located within the project folder.
-                            // A name of the file if the FMU is located within the project folder, and then basepath should be appended.
-                            let pathToFmu = Parser.fileExists(path) ? path : Path.normalize(basePath + "/" + path);
-                            // If the FMU has been removed from the directory, then return the FMU without a path
-                            if (Parser.fileExists(pathToFmu)) {
-                                fmuExists = true;
-                                return new Fmu(key, pathToFmu)
+                        let correctedPath = Parser.fileExists(path) ? path : Path.normalize(basePath + "/" + path);
+                        let fmu = new Fmu(key, correctedPath);
 
-                            }
-                            else {
-                                return new Fmu(key);
-                            }
-                        })();
-                        if (fmuExists) {
-                            populates.push(fmu.populate());
-                        }
+
+                        populates.push(fmu.populate());
                         fmus.push(fmu);
                     });
                 }
@@ -208,7 +194,7 @@ export class Parser {
         return data[tag] !== undefined ? data[tag] : null;
     }
 
-    parseSimpleTagDefault(data: any, tag: string, defaultValue: any): any {
+     parseSimpleTagDefault(data: any, tag: string, defaultValue:any): any {
         return data[tag] !== undefined ? data[tag] : defaultValue;
     }
 
