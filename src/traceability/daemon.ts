@@ -1,14 +1,12 @@
+
 // for REST services
-import * as restify  from 'restify';
-//import restify = require('restify');
+import Express = require('express');
 // concurrency
 import * as Promise from 'bluebird';
-//import Promise = require("bluebird");
+
 // xml handling
 import * as xml2js from 'xml2js';
-//import xml2js = require('xml2js');
- 
-// var neo4j = require('neo4j'); 
+
 
 /**
  * Trace
@@ -35,14 +33,64 @@ export class Daemon {
   constructor(){
     this.isconnected = false;
   }
+
   public start(serverPort:number, allreadyInUseCallback:Function, setPortCallback:Function){
     this.db = require('./db');
 
     try {
-      var server = restify.createServer({
-        name: 'INTO-CPS-Traceability-Daemon' 
-      });
+      var app = Express();
+      app.locals.title= 'INTO-CPS-Traceability-Daemon';
+      var bodyParser = require('body-parser');
 
+      app.use(bodyParser.json());
+      //server.use(restify.queryParser({ mapParams: false }));
+
+      // ------- REST URLs: --------
+      app.post('/traces/push/json', (this.handlePostJSON).bind(this));
+      app.get('/traces/from/:source/json', (this.handleGETTraceFromJSON).bind(this));
+      app.get('/traces/to/:target/json', (this.handleGETTraceToJSON).bind(this));
+      app.get('/nodes/json', (this.handleGETNodeToJSON).bind(this));
+    
+      app.post('/traces/push/xml', (this.handlePostXML).bind(this));
+      app.get('/traces/from/:source/xml', (this.handleGETTraceFromXML).bind(this));
+      app.get('/traces/to/:target/xml', (this.handleGETTraceToXML).bind(this));
+
+      app.get('/database/cypher/:query/json', (this.handleCypherQuery).bind(this)); 
+     
+    //  server.get('/traces/test/methods', handleTestMethods);
+
+      app.get(new RegExp('^\/test\/(.+)\/json'), (this.handleMatch).bind(this));
+
+      // development error handler
+      // will print stacktrace
+      if (app.get('env') === 'development') {
+        app.use(function (err :any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+          res.status(err.code || 500)
+            .json({
+              status: 'error',
+              message: err
+            });
+        });
+      }
+      else {
+        // production error handler
+        // no stacktraces leaked to user
+        app.use(function (err :any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+          res.status(err.status || 500)
+            .json({
+              status: 'error',
+              message: err.message
+            });
+        });
+      }
+
+
+      var server = app.listen(serverPort, (function(localSetPortCallback:Function) {
+            console.log('Traceability daemon listening on port %s.', server.address().port);
+            this.port = server.address().port;
+            localSetPortCallback(server.address().port);
+      }).bind(this, setPortCallback));
+      // on already in use error use callback
       server.on('error', function(err:any){
         if (err.errno=== 'EADDRINUSE'){
           allreadyInUseCallback();
@@ -50,31 +98,6 @@ export class Daemon {
           throw(err);
         }
       });
-
-      server.use(restify.bodyParser());
-      server.use(restify.queryParser({ mapParams: false }));
-
-      // ------- REST URLs: --------
-      server.post('/traces/push/json', (this.handlePostJSON).bind(this));
-      server.get('/traces/from/:source/json', (this.handleGETTraceFromJSON).bind(this));
-      server.get('/traces/to/:target/json', (this.handleGETTraceToJSON).bind(this));
-      server.get('/nodes/json', (this.handleGETNodeToJSON).bind(this));
-    
-      server.post('/traces/push/xml', (this.handlePostXML).bind(this));
-      server.get('/traces/from/:source/xml', (this.handleGETTraceFromXML).bind(this));
-      server.get('/traces/to/:target/xml', (this.handleGETTraceToXML).bind(this));
-
-      server.get('/database/cypher/:query/json', (this.handleCypherQuery).bind(this)); 
-     
-    //  server.get('/traces/test/methods', handleTestMethods);
-
-      server.get(new RegExp('^\/test\/(.+)\/json'), (this.handleMatch).bind(this));
-
-      server.listen(serverPort, (function(localSetPortCallback:Function) {
-            console.log('Traceability daemon listening on port %s.', server.address().port);
-            this.port = server.address().port;
-            localSetPortCallback(server.address().port);
-      }).bind(this, setPortCallback));
     } catch (err) {
       console.log(err.message);
       console.log(err.stack); 
@@ -107,12 +130,11 @@ export class Daemon {
 
   // ------- functions ---------
 
-  private sendUnconnectedMessage(resp: restify.Response){
-    resp.send(503, "Unable to perform action. Daemon is not connected to neo4J."); 
-    return;
+  private sendUnconnectedMessage(resp: Express.Response){
+    resp.status(503).send("Unable to perform action. Daemon is not connected to neo4J.");
   }
 
-  private handleCypherQuery(req: restify.Request, resp: restify.Response, next: restify.Next){
+  private handleCypherQuery(req: Express.Request, resp: Express.Response, next: Express.NextFunction){
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
       return next();
@@ -120,80 +142,108 @@ export class Daemon {
     console.log("Cypher request received:");
     var cypherQuery:string=req.params.query;
     var cypherParams = req.query;
-    this.db.sendCypherResponse(cypherQuery, cypherParams).then(function (results: any) {
-      resp.send(results);
-    }).catch(this.reportError(resp, 500));
-    return next();
+    this.db.sendCypherResponse(cypherQuery, cypherParams)
+    .then(function (results: any) {
+      resp.status(200)
+        .json({
+          status: 'success',
+          data: results,
+          message: 'Retrieved cypher response'
+        });
+    })
+    .catch(function (err: any) {
+      return next(err);
+    });
   }
 
-  private handleMatch(req: restify.Request, resp: restify.Response, next: restify.Next) {
+  private handleMatch(req: Express.Request, resp: Express.Response, next: Express.NextFunction) {
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
       return next();
     }
-    resp.send(req.params[0] + " matched!")
-    return next();
+    resp.status(200)
+        .json({
+          status: 'success',
+          message: req.params[0] + " matched!"
+        });
   }
-  private handleGETTraceFromJSON(req: restify.Request, resp: restify.Response, next: restify.Next) {
+  
+  private handleGETTraceFromJSON(req: Express.Request, resp: Express.Response, next: Express.NextFunction) {
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
       return next();
     }
     console.log("GET request received:");
-    this.db.getRelationsFrom(req.params.source).then((function (results: TraceLink[]) {
+    this.db.getRelationsFrom(req.params.source)
+    .then((function (results: TraceLink[]) {
       resp.send(this.toRdfJson(this.toTriples(results)));
-    }).bind(this)).catch(this.reportError(resp, 500));
-    return next();
+    }).bind(this))
+    .catch(function (err: any) {
+      return next(err);
+    });
   }
 
-  private handleGETTraceFromXML(req: restify.Request, resp: restify.Response, next: restify.Next) {
+  private handleGETTraceFromXML(req: Express.Request, resp: Express.Response, next: Express.NextFunction) {
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
       return next();
     }
     console.log("GET request received:");
-    this.db.getRelationsFrom(req.params.source).then((function (results: TraceLink[]) {
+    this.db.getRelationsFrom(req.params.source)
+    .then((function (results: TraceLink[]) {
       resp.send(this.toRdfXml(this.toTriples(results)));
-    }).bind(this)).catch(this.reportError(resp, 500));
-    return next();
+    }).bind(this))
+    .catch(function (err: any) {
+      return next(err);
+    });
   }
 
-  private handleGETTraceToJSON(req: restify.Request, resp: restify.Response, next: restify.Next) {
+  private handleGETTraceToJSON(req: Express.Request, resp: Express.Response, next: Express.NextFunction) {
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
       return next();
     }
     console.log("GET request received:");
-    this.db.getRelationsTo(req.params.target).then((function (results: TraceLink[]) {
+    this.db.getRelationsTo(req.params.target)
+    .then((function (results: TraceLink[]) {
       resp.send(this.toRdfJson(this.toTriples(results)));
-    }).bind(this)).catch(this.reportError(resp, 500));
-    return next();
+    }).bind(this))
+    .catch(function (err: any) {
+      return next(err);
+    });
   }
 
-  private handleGETNodeToJSON(req: restify.Request, resp: restify.Response, next: restify.Next) {
+  private handleGETNodeToJSON(req: Express.Request, resp: Express.Response, next: Express.NextFunction) {
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
       return next();
     }
     console.log("GET request received:");
-    this.db.getNodeByParams(req.query).then(function (results: any) {
+    this.db.getNodeByParams(req.query)
+    .then((function (results: any) {
       resp.send(results);
-    }).catch(this.reportError(resp, 500));
-    return next();
+    }).bind(this))
+    .catch(function (err: any) {
+      return next(err);
+    });
   }
 
-  private handleGETTraceToXML(req: restify.Request, resp: restify.Response, next: restify.Next) {
+  private handleGETTraceToXML(req: Express.Request, resp: Express.Response, next: Express.NextFunction) {
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
       return next();
     }
     console.log("GET request received:");
-    this.db.getRelationsTo(req.params.target).then((function (results: TraceLink[]) {
+    this.db.getRelationsTo(req.params.target)
+    .then((function (results: TraceLink[]) {
       resp.send(this.toRdfXml(this.toTriples(results)));
-    }).bind(this)).catch(this.reportError(resp, 500));
-    return next();
+    }).bind(this))
+    .catch(function (err: any) {
+      return next(err);
+    });
   }
-  private handlePostJSON(req: restify.Request, resp: restify.Response, next: restify.Next) {
+  
+  private handlePostJSON(req: Express.Request, resp: Express.Response, next: Express.NextFunction) {
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
       return next();
@@ -202,31 +252,38 @@ export class Daemon {
     if (req.is('application/json')) {
       console.log("The content type is 'application/json'"); 
       var jsonObj = req.body; 
-      this.storeObject(jsonObj, resp).catch(this.reportError(resp, 500));
+      this.storeObject(jsonObj)
+      .then(function () {
+        resp.status(200).json({
+          status: 'success',
+          message: 'JSON object stored'
+        });
+      })
+      .catch(function (err) {
+        return next(err);
+      });
     }
     else {
-      resp.status(400);
-      resp.send("Invalid JSON data.");
+      resp.status(400).send("Invalid JSON data.");
     }
-    return next();
   }
 
-  private handlePostXML(req: restify.Request, resp: restify.Response, next: restify.Next) {
+  private handlePostXML(req: Express.Request, resp: Express.Response, next: Express.NextFunction) {
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
-      return next();
     }
     console.log("POST request received:");
     try {
       this.toJson(req.body, (function cb(err: Error, obj: Object) {
         if (err) throw err;
-        this.storeObject(obj, resp).catch(this.reportError(resp, 500));
+        this.storeObject(obj, resp)
+        .catch(function (err: any) {
+          return next(err);
+        });
       }).bind(this));
     } catch (err) {
-      resp.status(500);
-      resp.send(err.message);
+      return next(err);
     }
-    return next();
   }
 
   private reformat(old : any) {
@@ -242,12 +299,8 @@ export class Daemon {
 
 
   // stores the data object
-  private storeObject(jsonObj: Object, resp: restify.Response):Promise<any> {
-      var pr:Promise<any> = this.recordTrace(jsonObj);
-      pr.then(function () {
-        resp.send("POST request received.");
-      }).catch(this.reportError(resp, 500)); 
-      return pr;
+  private storeObject(jsonObj: Object):Promise<any> {
+      return this.recordTrace(jsonObj);
   }
 
   public recordTrace(jsonObj: Object):Promise<any>{
@@ -387,7 +440,7 @@ export class Daemon {
     return this.storeTriple(new Trace(sub, pred, obj));
   }
 
-  //function storeTriple(triple: Trace, resp: restify.Response) {
+  //function storeTriple(triple: Trace, resp: Express.Response) {
   private storeTriple(triple: Trace):Promise<any> {
     return this.storeNode(triple.source)
       // insert target node if not yet contained
@@ -406,12 +459,11 @@ export class Daemon {
   }
 
   // returns an error reporting function 
-  private reportError(resp: restify.Response, error: number) {
+  private reportError(resp: Express.Response, error: number) {
     return function (err: Error) {
-      resp.status(error);
-      resp.send(err.message);
       console.log(err.message);
       console.log(err.stack);
+      resp.status(error).write(err.message);
     }
   }
 
