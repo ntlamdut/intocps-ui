@@ -1,15 +1,16 @@
 ///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
 ///<reference path="../../typings/browser/ambient/w2ui/index.d.ts"/>
 
-import {IntoCpsAppEvents} from "../IntoCpsAppEvents";
-import {IntoCpsApp} from  "../IntoCpsApp";
-import {Project} from "./Project";
+import { IntoCpsAppEvents } from "../IntoCpsAppEvents";
+import { IntoCpsApp } from "../IntoCpsApp";
+import { Project } from "./Project";
+import { isResultValid } from "../intocps-configurations/ResultConfig";
 import * as fs from 'fs';
 import Path = require("path");
 const rimraf = require("rimraf");
-import {RTTester} from "../rttester/RTTester";
-import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
-import {Utilities} from "../utilities";
+import { RTTester } from "../rttester/RTTester";
+import { IntoCpsAppMenuHandler } from "../IntoCpsAppMenuHandler";
+import { Utilities } from "../utilities";
 import * as CopyTestProcedureDialog from "../rttester/CopyTestProcedureDialog";
 
 
@@ -353,8 +354,8 @@ export class BrowserController {
                 result.img = "into-cps-icon-projbrowser-dse-result";
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
-                     self.menuHandler.openHTMLInMainView(item.path,"DSE Results View");
-                
+                    self.menuHandler.openHTMLInMainView(item.path, "DSE Results View");
+
                     return null;
                 };
             }
@@ -438,7 +439,12 @@ export class BrowserController {
                 };
             }
             else if (path.endsWith(".csv")) {
-                result.img = "into-cps-icon-projbrowser-result";
+                if (isResultValid(path)) {
+                    result.img = "into-cps-icon-projbrowser-result";
+                }
+                else {
+                    result.img = "glyphicon glyphicon-remove";
+                }
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openWithSystemEditor(item.path);
