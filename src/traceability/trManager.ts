@@ -40,15 +40,21 @@ class Neo4Jconfiguration {
         return this.configurationLocation;
     }
     private getHomeLocation(appsDir:string, appsDirTemp:string):string{
+        var fileString:string;
+        if(process.platform==='darwin'){
+            fileString = "bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>";
+        }else{
+            fileString = "bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*";
+        }
         if (fs.existsSync(appsDir)){
-            var files:Array<string> = fsFinder.from(appsDir).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
+            var files:Array<string> = fsFinder.from(appsDir).findFiles(fileString);
             if (files.length > 0){ 
                 var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
                 this.active = true;
             }
         }
         if (fs.existsSync(appsDirTemp)){
-            var files:Array<string> = fsFinder.from(appsDirTemp).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
+            var files:Array<string> = fsFinder.from(appsDirTemp).findFiles(fileString);
             if (files.length > 0){ 
                 var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
                 this.active = true;

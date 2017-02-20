@@ -1,4 +1,3 @@
-///<reference path="../../typings/index.d.ts"/>
 
 // for REST services
 import Express = require('express');
