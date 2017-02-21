@@ -153,7 +153,7 @@ gulp.task("compile-ts", function () {
         .pipe(sourcemap.init())
         .pipe(tsProject());
 
-    return tsResult.js.pipe(uglify({preserveComments: 'license'}))
+    return tsResult.js//.pipe(uglify({preserveComments: 'license'}))
         .pipe(sourcemap.write())
         .pipe(gulp.dest(outputPath));
 });
