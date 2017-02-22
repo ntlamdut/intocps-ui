@@ -110,6 +110,7 @@ gulp.task('create-new-tag', function (cb) {
   });
 });
 
+
 gulp.task('prep-release', function (callback) {
   runSequence(
     'bump-rel',
@@ -147,13 +148,22 @@ gulp.task("clean", function () {
     ]);
 });
 
-// Compile TS->JS with sourcemaps. Also move it into the outputfolder
+// Compile and uglify. Only used for packaged app
+gulp.task("compile-ts-uglify", function() {
+    var tsResult = gulp.src(tsSrcs)
+        .pipe(tsProject());
+
+    return tsResult.js.pipe(uglify({preserveComments: 'license'}))
+        .pipe(gulp.dest(outputPath));
+});
+
+// Compile TS->JS with sourcemaps.
 gulp.task("compile-ts", function () {
     var tsResult = gulp.src(tsSrcs)
         .pipe(sourcemap.init())
         .pipe(tsProject());
 
-    return tsResult.js.pipe(uglify({preserveComments: 'license'}))
+    return tsResult.js
         .pipe(sourcemap.write())
         .pipe(gulp.dest(outputPath));
 });
@@ -214,12 +224,48 @@ gulp.task('copy-js', function () {
 // Grab non-npm dependencies
 gulp.task('init', ['install-ts-defs', 'install-bower-components']);
 
-//Build App
+//Build App for debugging
 gulp.task('build', ['compile-ts', 'compile-ng2', 'copy-js', 'copy-html', 'copy-css',
   'copy-bower', 'copy-fonts','copy-custom']);
 
-// Package app binaries
-gulp.task("package-darwin", function(callback) {
+//Prep App for packaging
+gulp.task('prep-pkg', ['compile-ts-uglify', 'compile-ng2', 'copy-js', 'copy-html', 'copy-css',
+  'copy-bower', 'copy-fonts','copy-custom']);
+
+//Build packages 
+gulp.task('package-win32', function (callback) {
+  runSequence(
+    'clean',
+    'prep-pkg',
+    'pkg-win32'
+  );
+});
+
+gulp.task('package-darwin', function (callback) {
+  runSequence(
+    'clean',
+    'prep-pkg',
+    'pkg-darwin'
+  );
+});
+
+gulp.task('package-linux', function (callback) {
+  runSequence(
+    'clean',
+    'prep-pkg',
+    'pkg-linux'
+  );
+});
+
+gulp.task('package-all', function (callback) {
+  runSequence(
+    'clean',
+    'prep-pkg',
+    'pkg-all'
+  );
+});
+
+gulp.task("pkg-darwin", function(callback) {
     var options = {
         dir: '.',
         name: packageJSON.name+'-'+packageJSON.version,
@@ -236,13 +282,14 @@ gulp.task("package-darwin", function(callback) {
             "ProductName": packageJSON.productName
         }
     };
+
     packager(options, function done (err, appPath) {
         if(err) { return console.log(err); }
         callback();
     });
 });
 
-gulp.task("package-win32", function(callback) {
+gulp.task("pkg-win32", function(callback) {
     var options = {
         dir: '.',
         name: packageJSON.name+'-'+packageJSON.version,
@@ -259,13 +306,14 @@ gulp.task("package-win32", function(callback) {
             "ProductName": packageJSON.productName
         }
     };
+    gulp.task('build-ugly',[]);
     packager(options, function done (err, appPath) {
         if(err) { return console.log(err); }
         callback();
     });
 });
 
-gulp.task("package-linux", function(callback) {
+gulp.task("pkg-linux", function(callback) {
     var options = {
         dir: '.',
         name: packageJSON.name+'-'+packageJSON.version,
@@ -287,7 +335,7 @@ gulp.task("package-linux", function(callback) {
     });
 });
 
-gulp.task('package-all',['package-win32','package-darwin','package-linux']);
+gulp.task('pkg-all',['pkg-win32','pkg-darwin','pkg-linux']);
 
 // Watch for changes and rebuild on the fly
 gulp.task('watch', function () {
