@@ -32,7 +32,6 @@ var gulp = require('gulp'),
     typings = require('gulp-typings'),
     bower = require('gulp-bower'),
     merge = require('merge-stream'),
-    electron = require('gulp-electron'),
     packager = require('electron-packager'),
     packageJSON = require('./package.json'),
     webpack = require('webpack'),
@@ -271,7 +270,6 @@ gulp.task("pkg-darwin", function(callback) {
         name: packageJSON.name+'-'+packageJSON.version,
         platform: "darwin",
         arch: "x64",
-        version: "1.2.1",
         overwrite:true,
         prune:true,
         icon: 'src/resources/into-cps/appicon/into-cps-logo.png.icns',
@@ -282,7 +280,6 @@ gulp.task("pkg-darwin", function(callback) {
             "ProductName": packageJSON.productName
         }
     };
-
     packager(options, function done (err, appPath) {
         if(err) { return console.log(err); }
         callback();
@@ -295,7 +292,6 @@ gulp.task("pkg-win32", function(callback) {
         name: packageJSON.name+'-'+packageJSON.version,
         platform: "win32",
         arch: "all",
-        version: "1.2.1",
         overwrite:true,
         prune:true,
         icon: 'src/resources/into-cps/appicon/into-cps-logo.png.ico',
@@ -318,7 +314,6 @@ gulp.task("pkg-linux", function(callback) {
         name: packageJSON.name+'-'+packageJSON.version,
         platform: "linux",
         arch: "x64",
-        version: "1.2.1",
         overwrite:true,
         prune:true,
         out: 'pkg',
