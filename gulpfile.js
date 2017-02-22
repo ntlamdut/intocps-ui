@@ -306,7 +306,6 @@ gulp.task("pkg-win32", function(callback) {
             "ProductName": packageJSON.productName
         }
     };
-    gulp.task('build-ugly',[]);
     packager(options, function done (err, appPath) {
         if(err) { return console.log(err); }
         callback();
