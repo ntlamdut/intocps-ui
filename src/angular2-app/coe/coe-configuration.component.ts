@@ -89,18 +89,16 @@ export class CoeConfigurationComponent {
                                 ? config.algorithm
                                 : new constructor()
                         );
-
                     // Create an array of formGroups for the algorithms
                     this.algorithms.forEach(algorithm => {
                         this.algorithmFormGroups.set(algorithm, algorithm.toFormGroup());
                     });
-
                     // Create an array of all output ports on all instances
                     this.outputPorts = this.config.multiModel.fmuInstances
                         .map(instance => instance.fmu.scalarVariables
                             .filter(sv => sv.causality === CausalityType.Output)
                             .map(sv => this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name)))
-                        .reduce((a, b) => a.concat(...b));
+                        .reduce((a, b) => a.concat(...b),[]);
 
                     // Create a form group for validation
                     this.form = new FormGroup({
@@ -110,7 +108,7 @@ export class CoeConfigurationComponent {
                         algorithm: this.algorithmFormGroups.get(this.config.algorithm)
                     }, null, lessThanValidator('startTime', 'endTime'));
                 });
-            }, error => this.zone.run(() => this.parseError = error));
+            }, error => this.zone.run(() => {this.parseError = error})).catch(error => console.error(`Error during parsing of config: ${error}`));
     }
 
     public setPostProcessingScript(config: CoSimulationConfig, path: string) {

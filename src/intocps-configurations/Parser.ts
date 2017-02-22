@@ -55,24 +55,27 @@ export class Parser {
                         var path = data[this.FMUS_TAG][key];
                         let fmuExists = false;
                         let fmu: Fmu = (() => {
-                            // The path can be one of two things:
-                            // A full path if the FMU is not located within the project folder.
-                            // A name of the file if the FMU is located within the project folder, and then basepath should be appended.
-                            let pathToFmu = Parser.fileExists(path) ? path : Path.normalize(basePath + "/" + path);
-                            // If the FMU has been removed from the directory, then return the FMU without a path
-                            if (Parser.fileExists(pathToFmu)) {
-                                fmuExists = true;
-                                return new Fmu(key, pathToFmu);
+                            if ((<string>path).length > 0) {
+                                // The path can be one of two things:
+                                // A full path if the FMU is not located within the project folder.
+                                // A name of the file if the FMU is located within the project folder, and then basepath should be appended.
+                                let pathToFmu = Parser.fileExists(path) ? path : Path.normalize(basePath + "/" + path);
+                                if (Parser.fileExists(pathToFmu)) {
+                                    fmuExists = true;
+                                    return new Fmu(key, pathToFmu);
+                                }
                             }
-                            else {
+                            if (!fmuExists) {
                                 return new Fmu(key);
                             }
+                            // If the FMU has been removed from the directory, then return the FMU without a path
+
                         })();
-                    if (fmuExists) {
-                        populates.push(fmu.populate());
-                    }
-                    fmus.push(fmu);
-                });
+                        if (fmuExists) {
+                            populates.push(fmu.populate());
+                        }
+                        fmus.push(fmu);
+                    });
     }
 } catch (e) {
     reject(e);
