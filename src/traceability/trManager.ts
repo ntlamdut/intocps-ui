@@ -165,10 +165,10 @@ export class trManager{
         }
         if (!fs.existsSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data")){
             fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data");
-            if (!fs.existsSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms")){
-                fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms");
-            } 
         }
+        if (!fs.existsSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms")){
+            fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms");
+        } 
         fs.writeFileSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms" + Path.sep + "auth", "intoCPSApp:SHA-256,9780635B5BC9974CCB47A230B20DEF8069A26E2B3EC954A76E4034B9308042B0,2ADAC311B595F9670EBA0424F5620BED:", {flag:'w'});
     }
     private startNeo4J():childProcess.ChildProcess{
