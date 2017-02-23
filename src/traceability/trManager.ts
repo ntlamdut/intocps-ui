@@ -41,7 +41,7 @@ class Neo4Jconfiguration {
     }
     private getHomeLocation(appsDir:string, appsDirTemp:string):string{
         var fileString:string;
-        if(process.platform==='darwin'){
+        if(process.platform == 'darwin' || process.platform == 'linux'){
             fileString = "bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>";
         }else{
             fileString = "bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*";
@@ -175,17 +175,23 @@ export class trManager{
         try{
             this.checkDataBase();
             var spawn = require("child_process").spawn;
-            var neo4JExecOptions:Object = {env:{ 
+            var neo4JExecOptions:Object = {env: Object.assign(process.env,
+                                                {
                                                     "NEO4J_BIN":this.neo4Jconf.binariesLocation,
                                                     "NEO4J_HOME":this.neo4Jconf.homeLocation,
                                                     "NEO4J_CONF":this.neo4Jconf.getConfigurationLocation(),
-                                                },
+                                                }),
                                         detached: false, 
                                         shell: true,
                                         cwd: this.neo4Jconf.binariesLocation
-                                        };
+                                    };
+            let argv: string[] = [];
+            if (process.platform == "linux")
+                argv.push("/usr/bin/bash");
+            argv.push(Path.join(this.neo4Jconf.binariesLocation, "neo4j"));
+            argv.push("console");
             console.log("Starting Neo4J from path " + this.neo4Jconf.binariesLocation + ". With database configuration: " + this.neo4Jconf.getConfigurationLocation());
-            var localNeo4JProcess:childProcess.ChildProcess = spawn("neo4j", ["console"], neo4JExecOptions); 
+            var localNeo4JProcess:childProcess.ChildProcess = spawn(argv[0], argv.splice(1), neo4JExecOptions);
         }catch(err){
             this.errorOnNeo4JStart(err);
             return undefined;
