@@ -11,8 +11,8 @@ import { FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormCo
 import { uniqueControlValidator } from "../shared/validators";
 import { NavigationService } from "../shared/navigation.service";
 import { WarningMessage } from "../../intocps-configurations/Messages";
-import * as GitConn from "./../../Traceability/git-connection"
-import {TraceMessager} from "./../../Traceability/trace-messenger"
+import * as GitConn from "./../../traceability/git-connection"
+import {TraceMessager} from "./../../traceability/trace-messenger"
 
 import * as Path from 'path';
 
