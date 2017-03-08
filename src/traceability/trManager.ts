@@ -151,7 +151,7 @@ export class trManager{
     private checkDataBase(){
         var confFileName:string = this.neo4Jconf.getConfigurationLocation() + Path.sep + "neo4j.conf";
         if(!fs.existsSync(this.neo4Jconf.getConfigurationLocation())){
-            fs.mkdir(this.neo4Jconf.getConfigurationLocation(), function (err:Error) { console.log("Unable to create database folder due to error: " + err.message);});
+            fs.mkdir(this.neo4Jconf.getConfigurationLocation(), function (err:Error) { console.log("Unable to create database folder " + this.neo4Jconf.getConfigurationLocation());});
         }
         if(!fs.existsSync(confFileName)){
             fs.writeFileSync(confFileName, fs.readFileSync(this.neo4Jconf.homeLocation + Path.sep + "conf" + Path.sep + "neo4j.conf"));
@@ -187,7 +187,7 @@ export class trManager{
                                     };
             let argv: string[] = [];
             if (process.platform == "linux")
-                argv.push("/usr/bin/bash");
+                argv.push("/bin/bash");
             argv.push(Path.join(this.neo4Jconf.binariesLocation, "neo4j"));
             argv.push("console");
             console.log("Starting Neo4J from path " + this.neo4Jconf.binariesLocation + ". With database configuration: " + this.neo4Jconf.getConfigurationLocation());
