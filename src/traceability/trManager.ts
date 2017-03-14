@@ -40,15 +40,21 @@ class Neo4Jconfiguration {
         return this.configurationLocation;
     }
     private getHomeLocation(appsDir:string, appsDirTemp:string):string{
+        var fileString:string;
+        if(process.platform == 'darwin' || process.platform == 'linux'){
+            fileString = "bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>";
+        }else{
+            fileString = "bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*";
+        }
         if (fs.existsSync(appsDir)){
-            var files:Array<string> = fsFinder.from(appsDir).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
+            var files:Array<string> = fsFinder.from(appsDir).findFiles(fileString);
             if (files.length > 0){ 
                 var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
                 this.active = true;
             }
         }
         if (fs.existsSync(appsDirTemp)){
-            var files:Array<string> = fsFinder.from(appsDirTemp).findFiles("bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*");
+            var files:Array<string> = fsFinder.from(appsDirTemp).findFiles(fileString);
             if (files.length > 0){ 
                 var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
                 this.active = true;
@@ -145,7 +151,7 @@ export class trManager{
     private checkDataBase(){
         var confFileName:string = this.neo4Jconf.getConfigurationLocation() + Path.sep + "neo4j.conf";
         if(!fs.existsSync(this.neo4Jconf.getConfigurationLocation())){
-            fs.mkdir(this.neo4Jconf.getConfigurationLocation(), function (err:Error) { console.log("Unable to create database folder due to error: " + err.message);});
+            fs.mkdir(this.neo4Jconf.getConfigurationLocation(), function (err:Error) { console.log("Unable to create database folder " + this.neo4Jconf.getConfigurationLocation());});
         }
         if(!fs.existsSync(confFileName)){
             fs.writeFileSync(confFileName, fs.readFileSync(this.neo4Jconf.homeLocation + Path.sep + "conf" + Path.sep + "neo4j.conf"));
@@ -159,27 +165,33 @@ export class trManager{
         }
         if (!fs.existsSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data")){
             fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data");
-            if (!fs.existsSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms")){
-                fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms");
-            } 
         }
+        if (!fs.existsSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms")){
+            fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms");
+        } 
         fs.writeFileSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms" + Path.sep + "auth", "intoCPSApp:SHA-256,9780635B5BC9974CCB47A230B20DEF8069A26E2B3EC954A76E4034B9308042B0,2ADAC311B595F9670EBA0424F5620BED:", {flag:'w'});
     }
     private startNeo4J():childProcess.ChildProcess{
         try{
             this.checkDataBase();
             var spawn = require("child_process").spawn;
-            var neo4JExecOptions:Object = {env:{ 
+            var neo4JExecOptions:Object = {env: Object.assign(process.env,
+                                                {
                                                     "NEO4J_BIN":this.neo4Jconf.binariesLocation,
                                                     "NEO4J_HOME":this.neo4Jconf.homeLocation,
                                                     "NEO4J_CONF":this.neo4Jconf.getConfigurationLocation(),
-                                                },
+                                                }),
                                         detached: false, 
                                         shell: true,
                                         cwd: this.neo4Jconf.binariesLocation
-                                        };
+                                    };
+            let argv: string[] = [];
+            if (process.platform == "linux")
+                argv.push("/bin/bash");
+            argv.push(Path.join(this.neo4Jconf.binariesLocation, "neo4j"));
+            argv.push("console");
             console.log("Starting Neo4J from path " + this.neo4Jconf.binariesLocation + ". With database configuration: " + this.neo4Jconf.getConfigurationLocation());
-            var localNeo4JProcess:childProcess.ChildProcess = spawn("neo4j", ["console"], neo4JExecOptions); 
+            var localNeo4JProcess:childProcess.ChildProcess = spawn(argv[0], argv.splice(1), neo4JExecOptions);
         }catch(err){
             this.errorOnNeo4JStart(err);
             return undefined;

@@ -150,6 +150,7 @@ export default class IntoCpsApp extends EventEmitter {
         let project = new Project(name, path, Path.normalize(path + "/.project.json"));
         project.save();
         this.setActiveProject(project);
+        this.trmanager.changeDataBase(Path.dirname(path), this.settings.getValue(SettingKeys.INSTALL_DIR), this.settings.getValue(SettingKeys.INSTALL_TMP_DIR));
     }
 
     loadProject(path: string): IProject {
