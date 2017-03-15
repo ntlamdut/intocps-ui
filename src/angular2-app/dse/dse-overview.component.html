@@ -1,5 +1,59 @@
-<div class="row">
-    <div class="col-md-6">
-        <label>TO DO</label>
-    </div>
+
+<div *ngIf="config">
+        <div class="col-md-6">
+            <h5>Search Algorithm</h5>
+            <div class="col-md-6">
+                {{config.searchAlgorithm.type}}
+            </div>
+        </div>
+
+        <hr>
+        <div class="col-md-6">
+            <h5>Parameter Constraints</h5>
+                <div class="col-md-6">
+                    {{config.paramConst}}
+                </div>
+        </div>
+
+        <hr>
+        <div class="col-md-6">
+            <h5>Parameters</h5>
+            <div *ngFor="let param of config.dseParameters" class="col-md-6">
+                    {{param.toString()}}
+            </div>
+        </div>
+
+        <hr>
+        <div class="col-md-6">
+            <h5>Objective Constraints</h5>
+        </div>
+        <div class="col-md-6">
+            {{config.objConst}}
+        </div>
+
+        <hr>
+        <div class="col-md-6">
+            <h5>Objectives</h5>
+            <div *ngFor="let obj of config.dseObjectives" class="col-md-6">
+                    {{obj.toString()}}
+            </div>
+        </div>
+
+
+        <hr>
+        <div class="col-md-6">
+            <h5>Ranking</h5>
+            <div class="col-md-6">
+                {{config.ranking.type}}
+                {{config.ranking.getDimensions()}}
+            </div>
+        </div>
+
+        <hr>
+        <div class="col-md-6">
+            <h5>Scenarios</h5>
+            <div class="col-md-6">
+                {{config.scenarios}}
+            </div>
+        </div>
 </div>
