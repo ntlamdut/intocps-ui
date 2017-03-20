@@ -182,11 +182,11 @@ export class MultiModelConfig implements ISerializable {
                                 messages.push(new ErrorMessage(`Uncompatible types in connection. The output scalar variable "${instance.fmu.name}.${instance.name}.${sv.name}": ${sv.type} is connected to scalar variable "${pair.instance.fmu.name}.${pair.instance.name}.${pair.scalarVariable.name}": ${pair.scalarVariable.type}`));
                             }
                         } else {
-                            messages.push(new WarningMessage(`Use of unconfirmed "${instance.fmu.name}.${instance.name}.${sv.name}" as connection input`));
+                            messages.push(new WarningMessage(`Use of unconfirmed scalar variable "${instance.fmu.name}.${instance.name}.${sv.name}" as connection input`));
                         }
                     });
                 } else {
-                    messages.push(new WarningMessage(`Use of unconfirmed S"${instance.fmu.name}.${instance.name}.${sv.name}" as connection output`));
+                    messages.push(new WarningMessage(`Use of unconfirmed scalar variable"${instance.fmu.name}.${instance.name}.${sv.name}" as connection output`));
                 }
             });
 
