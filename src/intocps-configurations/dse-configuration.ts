@@ -112,8 +112,6 @@ export class DseConfiguration implements ISerializable {
     save(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
-                console.log("Saving Search Algorithm " + this.searchAlgorithm.getName());
-                console.log(this);
                 fs.writeFile(this.sourcePath, JSON.stringify(this.toObject()), error => {
                     if (error)
                         reject(error);

@@ -9,7 +9,7 @@
 <h5> Config </h5>
 <form  *ngIf="config" class="form-horizontal" (ngSubmit)="onSubmit()">
 Config parsed
-	<!--button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
+	<button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
     </button>
 	<button *ngIf="editing" class="btn btn-default">
@@ -98,7 +98,7 @@ Config parsed
     </button>
 	<button *ngIf="editing" class="btn btn-default">
         <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
-    </button-->
+    </button>
 </form>
 <form  *ngIf="!config" class="form-horizontal" (ngSubmit)="onSubmit()">
 No Config parsed.
