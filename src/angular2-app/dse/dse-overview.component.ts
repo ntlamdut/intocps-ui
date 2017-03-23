@@ -30,22 +30,11 @@ export class DseOverviewComponent {
 
     parseConfig() {
        let project = IntoCpsApp.getInstance().getActiveProject();
-console.log("overview starting");
     
        DseConfiguration
            .parse(this.path)
-           .then(config => this.zone.run(() => this.config = config));
+           .then(config => 
+                this.zone.run(() => 
+                this.config = config));
     }
-    
-    // getOutputs() {
-    //    let outputs:OutputConnectionsPair[] = [];
-    
-    //    this.config.fmuInstances.forEach(instance => {
-    //        instance.outputsTo.forEach((connections, scalarVariable) => {
-    //            outputs.push(new OutputConnectionsPair(Serializer.getIdSv(instance, scalarVariable), connections));
-    //        });
-    //    });
-    
-    //    return outputs;
-    // }
 }

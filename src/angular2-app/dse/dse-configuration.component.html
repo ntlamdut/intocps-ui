@@ -1,20 +1,105 @@
-<div *ngIf="!online" class="alert alert-danger">
-    Co-Simulation Engine offline. No connection at {{url}}.
-    <button type="button" class="btn btn-sm btn-default" (click)="onCoeLaunchClick()"><span class="glyphicon glyphicon-link"></span> Launch</button>
-</div>
-<div *ngIf="online" class="alert alert-success">
-    Co-Simulation Engine, version {{version}}, online at {{url}}.
-</div>
-
-<div class="form-group">
-    <label class="control-label">Co-simulation Configuration</label>
-        <select [ngModel]="cosimConfig" (ngModelChange)="onConfigChange($event)" class="form-control">
-            <option *ngFor="let config of cosimConfig; let i = index" [selected]="i == 0" [ngValue]="config">{{experimentName(config)}}</option>
-        </select>
+<div *ngIf="parseError">
+	<div class="alert alert-danger alert-big">
+		<p>Error: Could not parse config.</p>
+		<p>Message: {{parseError}}</p>
+		<p>Path: {{path}}</p>
+	</div>
 </div>
 
-<div class="form-group">
-    <button type="button" [disabled]="!canRun()" (click)="runDse()" class="btn btn-default">
-        <span class="glyphicon glyphicon-play"></span> Simulate
+<h5> Config </h5>
+<form  *ngIf="config" class="form-horizontal" (ngSubmit)="onSubmit()">
+Config parsed
+	<!--button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
     </button>
-</div>
+	<button *ngIf="editing" class="btn btn-default">
+        <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+    </button>
+      
+	<hr>
+	
+	<h5>DSE Search Algorithm</h5>
+
+    <div class="form-group">
+		<label class="col-sm-5 col-md-4 control-label">Search Algorithm</label>
+		<div class="col-sm-7 col-md-8">
+			<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.getName()}}</p>
+			<select *ngIf="editing" [ngModel]="config.searchAlgorithm.getName()" (ngModelChange)="onAlgorithmChange($event)" [ngModelOptions]="{standalone:true}"
+					class="form-control">
+				<option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm.getName()}}</option>
+			</select>
+		</div>
+	</div>
+
+	<div *ngIf="config.searchAlgorithm.getName() == 'Genetic'">
+		<div class="form-horizontal">
+			<div class="form-group">
+				<label class="col-sm-5 col-md-4 control-label">Initial population</label>
+				<div class="col-sm-7 col-md-8">
+					<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.initialPopulation}}</p>
+					<input *ngIf="editing" name="initialPopulation" [(ngModel)]="config.searchAlgorithm.initialPopulation" class="form-control">
+					</div>
+			</div>
+
+			<div class="form-group">
+				<label class="col-sm-5 col-md-4 control-label">Random balanced</label>
+				<div class="col-sm-7 col-md-8">
+					<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.randomBalanced}}</p>
+					<input *ngIf="editing" name="randomBalanced" [(ngModel)]="config.searchAlgorithm.randomBalanced" class="form-control">
+					</div>
+			</div>
+
+			<div class="form-group">
+				<label class="col-sm-5 col-md-4 control-label">Termination rounds</label>
+				<div class="col-sm-7 col-md-8">
+					<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.terminationRounds}}</p>
+					<input *ngIf="editing" name="terminationRounds" [(ngModel)]="config.searchAlgorithm.terminationRounds" class="form-control">
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<hr>
+
+	<h4>DSE Search Parameters</h4>
+
+
+	<h5>Parameter Constraints <button *ngIf="editing" type="button" (click)="addParameterConstraint()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h5>
+
+	<div class="row" *ngFor="let p of config.paramConst">
+		<div class="col-md-3 form-group">
+			<p *ngIf="!editing" class="form-control-static">{{getParameterConstraint(p)}}</p>
+			<input *ngIf="editing" [ngModel]="getParameterConstraint(p)" (ngModelChange)="setParameterConstraint(p, $event)" [ngModelOptions]="{standalone:true}"
+				class="form-control input-fixed-size input-sm">
+		</div>
+		<div class="col-md-1 form-group">
+			<button *ngIf="editing" type="button" (click)="removeParameterConstraint(p)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
+		</div>
+	</div>
+
+	<hr>
+
+	<h5>DSE Objectives</h5>
+
+	<hr>
+
+	<h5>Ranking</h5>
+
+	<hr>
+
+	<h5>Scenarios</h5>
+
+	<hr>
+
+
+
+	<button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+    </button>
+	<button *ngIf="editing" class="btn btn-default">
+        <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+    </button-->
+</form>
+<form  *ngIf="!config" class="form-horizontal" (ngSubmit)="onSubmit()">
+No Config parsed.
+</form>

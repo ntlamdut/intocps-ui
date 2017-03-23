@@ -1,4 +1,4 @@
-import { DseConfiguration, IDseObjective, ObjectiveParam, ExternalScript, IDseAlgorithm, DseParameter, IDseRanking, ParetoRanking, GeneticSearch, ExhaustiveSearch} from "./dse-configuration"
+import { DseConfiguration,DseParameterConstraint, DseScenario, DseObjectiveConstraint,IDseObjective, ObjectiveParam, ExternalScript, IDseAlgorithm, DseParameter, IDseRanking, ParetoRanking, GeneticSearch, ExhaustiveSearch} from "./dse-configuration"
 export class DseParser{
     protected SEARCH_ALGORITHM_TAG: string = "algorithm"
     protected SEARCH_ALGORITHM_TYPE:string = "type"
@@ -20,14 +20,22 @@ export class DseParser{
 
     protected SCENARIOS_TAG: string = "scenarios"
     
-    parseSearchAlgorithm(data: any) : IDseAlgorithm {
+    parseSearchAlgorithm(data: any, dse:DseConfiguration) {
         let algorithm = data[this.SEARCH_ALGORITHM_TAG]
-        if(!algorithm) return;
+        if(!algorithm) {
+            let al = new ExhaustiveSearch();
+            dse.newSearchAlgortihm(al);
+            return;
+        };
         let type = algorithm[this.SEARCH_ALGORITHM_TYPE]
-        if(type === this.SEARCH_ALGORITHM_GENETIC)
-            return this.parseSearchAlgorithmGenetic(algorithm)
-        else if (type=== this.SEARCH_ALGORITHM_EXHAUSTIVE)
-            return new ExhaustiveSearch();
+        if(type === this.SEARCH_ALGORITHM_GENETIC){
+            let al = this.parseSearchAlgorithmGenetic(algorithm);
+            dse.newSearchAlgortihm(al);
+        }
+        else if (type=== this.SEARCH_ALGORITHM_EXHAUSTIVE){
+            let al = new ExhaustiveSearch();
+            dse.newSearchAlgortihm(al);
+        }
     }
 
     private parseSearchAlgorithmGenetic(algorithm: any) : IDseAlgorithm
@@ -38,12 +46,24 @@ export class DseParser{
         return new GeneticSearch(initialPopulation, randomBalanced, terminationRounds)
     }
 
-    parseObjectiveConstraint(data: any) : string {
-        return this.parseSimpleTag(data,this.OBJECTIVE_CONSTRAINT_TAG);
+    parseObjectiveConstraint(data: any, dse:DseConfiguration) {
+        let objConst = data[this.OBJECTIVE_CONSTRAINT_TAG];
+        let objConstList : DseObjectiveConstraint[] = [];
+        objConst.forEach(function(value:string) {
+            let newParamConstraint = new DseObjectiveConstraint(value);
+            objConstList.push(newParamConstraint);
+        })
+        dse.newObjectiveConstraint(objConstList);
     }
 
-    parseParameterConstraints(data: any) : string {
-        return this.parseSimpleTag(data,this.PARAMETER_CONSTRAINT_TAG);
+    parseParameterConstraints(data: any, dse:DseConfiguration) {
+        let paramConst = data[this.PARAMETER_CONSTRAINT_TAG];
+        let paramConstList : DseParameterConstraint[] = [];
+        paramConst.forEach(function(value:string) {
+            let newParamConstraint = new DseParameterConstraint(value);
+            paramConstList.push(newParamConstraint);
+        })
+        dse.newParameterConstraint(paramConstList);
     }
 
      //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
@@ -104,21 +124,14 @@ export class DseParser{
             let objEntries = data[id];
             //GET SCRIPT NAME
             let extName = objEntries[this.EXTERNAL_SCRIPT_FILE_TAG];
-console.log(extName);
             let paramList = objEntries[this.EXTERNAL_SCRIPT_PARAMS_TAG];
-console.log(paramList);
             let objParams : ObjectiveParam [] = [];
-console.log(objParams);
             //GET SCRIPT PARAMETERS
             $.each(Object.keys(paramList), (j, id2) => {
                 let pName = paramList[id2];
                 let newParam = new ObjectiveParam(id2, pName);
-console.log(id2 + ", "+ pName);
                 objParams.push(newParam);
-console.log(objParams);
             });
-
-console.log(objParams);
             dse.newExternalScript(extName, objParams);
 
                 //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
@@ -130,10 +143,10 @@ console.log(objParams);
 
 
 
-    parseRanking(data: any) : IDseRanking {
+    parseRanking(data: any, dse:DseConfiguration){
         let ranking = data[this.RANKING_TAG];
         let ranktype = ranking[this.RANKING_PARETO_TAG]
-        if(ranktype) return this.parseParetoRanking(ranktype);
+        if(ranktype) dse.newRanking(this.parseParetoRanking(ranktype));
         //check other rank types as added
     }
 
@@ -148,8 +161,14 @@ console.log(objParams);
     }
 
 
-    parseScenarios(data: any) : string [] {
-        return this.parseSimpleTag(data,this.SCENARIOS_TAG);
+    parseScenarios(data: any, dse:DseConfiguration) {
+        let scenarios = data[this.SCENARIOS_TAG];
+        let scenarioList : DseScenario[] = [];
+        scenarios.forEach(function(value:string) {
+            let newParamConstraint = new DseScenario(value);
+            scenarioList.push(newParamConstraint);
+        })
+        dse.newScenario(scenarioList);
     }
 
     parseSimpleTag(data: any, tag: string): any {
