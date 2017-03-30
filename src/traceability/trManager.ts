@@ -188,7 +188,11 @@ export class trManager{
             let argv: string[] = [];
             if (process.platform == "linux")
                 argv.push("/bin/bash");
-            argv.push(Path.join(this.neo4Jconf.binariesLocation, "neo4j"));
+            if (process.platform == "win32"){
+                argv.push("neo4j");
+            }else{
+                argv.push(Path.join(this.neo4Jconf.binariesLocation, "neo4j"));
+            }
             argv.push("console");
             console.log("Starting Neo4J from path " + this.neo4Jconf.binariesLocation + ". With database configuration: " + this.neo4Jconf.getConfigurationLocation());
             var localNeo4JProcess:childProcess.ChildProcess = spawn(argv[0], argv.splice(1), neo4JExecOptions);
