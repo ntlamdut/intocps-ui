@@ -3,10 +3,13 @@
 import Express = require('express');
 // concurrency
 import * as Promise from 'bluebird';
+import { IntoCpsApp } from "../IntoCpsApp";
 
 // xml handling
 import * as xml2js from 'xml2js';
-
+var validateMessage:Function = require('jsonschema').validate;
+import Path = require("path");
+var fs = require('fs');
 
 /**
  * Trace
@@ -29,10 +32,16 @@ export class Daemon {
   private db:any;
   public port:number;
   private neo4jURL:string;
+  private jsonSchema:Object;
+  private enableValidation:boolean;
+  private jsonSchemaPath:string;
 
   constructor(){
     this.isconnected = false;
-  }
+    this.enableValidation = false;
+    this.jsonSchemaPath = "./src/traceability/INTO-CPS-Traceability-Schema-V1.0.json";
+    this.readJsonSchema();
+}
 
   public start(serverPort:number, allreadyInUseCallback:Function, setPortCallback:Function){
     this.db = require('./db');
@@ -253,11 +262,23 @@ export class Daemon {
       console.log("The content type is 'application/json'"); 
       var jsonObj = req.body; 
       this.storeObject(jsonObj)
-      .then(function () {
+      .then(function (status:any) {
+        if (status){
+          if (status.errors){
+            if (status.errors.length != 0){
+              resp.status(400).json({
+                status: 'validation error',
+                message: status
+              });
+              return next();
+            }
+          }
+        }
         resp.status(200).json({
           status: 'success',
           message: 'JSON object stored'
         });
+        return next();
       })
       .catch(function (err) {
         return next(err);
@@ -303,7 +324,35 @@ export class Daemon {
       return this.recordTrace(jsonObj);
   }
 
+  private validateJsonInput(jsonObj:Object):any{
+      var validationResult:Object = '';
+      if (this.validateJsonInput){
+          validationResult = validateMessage(jsonObj, this.jsonSchema);
+      }
+      return validationResult;
+  }
+
+  private readJsonSchema(){
+      if (fs.existsSync(this.jsonSchemaPath)){
+        var schemaString:string = fs.readFileSync(this.jsonSchemaPath);
+        this.jsonSchema = JSON.parse(schemaString);
+        this.enableValidation = true;
+        console.log("Validation of traceability messages enabled.")
+      }else{
+        console.log("Unable to find JsonSchema at " + Path.join(__dirname, this.jsonSchemaPath) + ". Validation is disabled.")
+      }
+  }
+
   public recordTrace(jsonObj: Object):Promise<any>{
+      var validationResult:any = this.validateJsonInput(jsonObj);
+      var pr:Promise<any> = Promise.resolve(undefined);
+      if (validationResult.errors.length != 0){
+          console.log("Recieved message is not valid according to the JsonSchema and will not be recorded. JsonSchema was read from: ");
+          console.log(this.jsonSchemaPath);
+          console.log("Validation Errrors are:");
+          console.log(validationResult);
+          return pr.return(validationResult);
+      } 
       var objArray : Object[];
       if (!Array.isArray(jsonObj)) {
         objArray = [jsonObj];
@@ -311,7 +360,6 @@ export class Daemon {
       else { 
         objArray = jsonObj;
       }
-      var pr:Promise<any> = Promise.resolve(undefined);
       for (var index in objArray) {
         var obj :any = objArray[index];
         if ((<Object>obj).hasOwnProperty("$")) {
