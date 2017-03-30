@@ -12,32 +12,74 @@ export class DseConfiguration implements ISerializable {
     objConst : DseObjectiveConstraint []= [];
     paramConst : DseParameterConstraint []= [];
     dseParameters : DseParameter[] =[];
-    dseObjectives : IDseObjective[] = [];
+    extScrObjectives : ExternalScript[] = [];
+    intFunctObjectives : InternalFunction[] = [];
     ranking : IDseRanking = new ParetoRanking(new Map());
 
     toObject() {
+        let pConst : string [] = []; 
+        this.paramConst.forEach(function(p) {
+            pConst.push(p.constraint)
+        });
+
+        let oConst : string [] = []; 
+        this.objConst.forEach(function(o) {
+            oConst.push(o.constraint)
+        });
+
+        let scen : string [] = []; 
+        this.scenarios.forEach(function(s) {
+            scen.push(s.name)
+        });
+
+        let params : any = {};
+        this.dseParameters.forEach((p:DseParameter) =>{
+            params[p.param] = p.initialValues
+        });
+
+        let extScr : any = {};
+        let intFunc : any = {}; //INTERNAL FUNCTIONS NOT YET SUPPORTED
+        let objDefs : any = {};
+        this.extScrObjectives.forEach((o:ExternalScript) =>{
+            extScr[o.name] = o.toObject(); 
+        });
+        objDefs["externalScripts"] = extScr;
+        objDefs["internalFunctions"] = intFunc;
+
+
         return {
             algorithm: this.searchAlgorithm.toObject(),
-            objectiveConstraints: this.objConst,
-          //  objectiveDefinitions: this.dseObjectives.toObject(),
-            parameterConstraints: this.paramConst,
-          //  parameters: this.dseParameters.toObject(),
+            objectiveConstraints: oConst,
+            objectiveDefinitions: objDefs,
+            parameterConstraints: pConst,
+            parameters: params,
             ranking: this.ranking.toObject(),
-            scenarios: this.scenarios
+            scenarios: scen
         }
     }
 
 
     public newSearchAlgortihm(sa:IDseAlgorithm){
         this.searchAlgorithm = sa;
+    } 
+    
+    public addObjectiveConstraint(): DseObjectiveConstraint{
+        let newOC = new DseObjectiveConstraint("");
+        this.objConst.push(newOC);
+        return newOC;
     }
 
     public newObjectiveConstraint(oc: DseObjectiveConstraint[]){
         this.objConst = oc;
     }
 
-    getObjective(obName : string) {
-        return this.dseObjectives.find(v => v.name == obName) || null;
+
+    public removeObjectiveConstraint(oc: DseObjectiveConstraint){
+        this.objConst.splice(this.paramConst.indexOf(oc), 1);
+    }
+
+    getExtScrObjectives(obName : string) {
+        return this.extScrObjectives.find(v => v.name == obName) || null;
     }
 
     public addParameterConstraint(): DseParameterConstraint{
@@ -48,6 +90,16 @@ export class DseConfiguration implements ISerializable {
 
     public newParameterConstraint(pc:DseParameterConstraint[]){
         this.paramConst = pc;
+    }
+
+    public removeParameterConstraint(pc:DseParameterConstraint){
+        this.paramConst.splice(this.paramConst.indexOf(pc), 1);
+    }
+
+    public addParameter(){
+        let param = new DseParameter("");
+        this.dseParameters.push(param);
+        return param;
     }
 
     getParameter(paramName: string){
@@ -65,8 +117,13 @@ export class DseConfiguration implements ISerializable {
         return param;
     }
 
-    public newExternalScript(n:string, params : ObjectiveParam []){
-         this.dseObjectives.push(new ExternalScript(n, params));
+    public removeParameter(p:DseParameter){
+        let index = this.dseParameters.indexOf(p);
+        this.dseParameters.splice(index, 1);
+    }
+
+    public newExternalScript(n:string, file:string, params : ObjectiveParam []){
+         this.extScrObjectives.push(new ExternalScript(n, file, params));
     }
 
     public newRanking(r: IDseRanking){
@@ -75,6 +132,16 @@ export class DseConfiguration implements ISerializable {
 
     public newScenario(scen:DseScenario []){
          this.scenarios = scen;
+    }
+
+    public addScenario(): DseScenario{
+        let newS = new DseScenario("");
+        this.scenarios.push(newS);
+        return newS;
+    }
+
+    public removeScenario(s:DseScenario){
+        this.scenarios.splice(this.scenarios.indexOf(s), 1);
     }
 
     static parse(path: string): Promise<DseConfiguration> {
@@ -102,7 +169,8 @@ export class DseConfiguration implements ISerializable {
             parser.parseObjectiveConstraint(data, configuration);
             parser.parseParameterConstraints(data, configuration);
             parser.parseParameters(data, configuration);
-            parser.parseObjectives(data, configuration);
+            parser.parseExtScrObjectives(data, configuration);
+            parser.parseIntFuncsObjectives(data, configuration);
             parser.parseRanking(data,configuration);
             resolve(configuration)
         })
@@ -153,6 +221,20 @@ export class DseParameter{
         });
         return paramStr;
     }
+
+    addInitialValue(v:any){
+        this.initialValues.push(v);
+    }
+
+    removeInitialValue(v:any){
+        let index = this.initialValues.indexOf(v);
+        this.initialValues.splice(index, 1);
+    }
+
+    setInitialValue(oldVal:any, newVal:any){
+        let index = this.initialValues.indexOf(oldVal);
+        this.initialValues.splice(index, 1, newVal);
+    }
 }
 
 export class DseObjectiveConstraint{
@@ -174,7 +256,7 @@ export class DseObjectiveConstraint{
 
 export class DseParameterConstraint{
     constraint:string = ""
-    
+     
     constructor(c:string){
         this.constraint = c;
     }
@@ -184,9 +266,7 @@ export class DseParameterConstraint{
     }
 
     toObject() {
-        return {
-            type: this.constraint,
-        };
+        return this.constraint;
     }
 }
 
@@ -201,10 +281,12 @@ export interface IDseObjective{
 export class ExternalScript implements IDseObjective{
     type = "External Script";
     name = "";
+    fileName = "";
     parameterList : ObjectiveParam [];
 
-    constructor(n:string, params : ObjectiveParam []){
+    constructor(n:string, file:string, params : ObjectiveParam []){
         this.name = n;
+        this.fileName = file;
         this.parameterList = params;
     }
 
@@ -213,8 +295,14 @@ export class ExternalScript implements IDseObjective{
     }
 
     toObject() {
+        let params : any = {};
+        this.parameterList.forEach((p:ObjectiveParam) =>{
+            params[p.id] = p.value
+        });
+
         return {
-            type: this.type,
+            scriptFile : this.fileName,
+            scriptParameters: params,
         };
     }
 
@@ -228,6 +316,36 @@ export class ExternalScript implements IDseObjective{
     }
 };
 
+
+export class InternalFunction implements IDseObjective{
+    type = "Internal Function";
+    name = "";
+    funcType = "";
+    columnId = ""
+
+    constructor(n:string, fType:string, cId : ""){
+        this.name = n;
+        this.funcType = fType;
+        this.columnId = cId;
+    }
+
+    toFormGroup() {
+        return new FormGroup({});
+    }
+
+    toObject() {
+        return {
+            objectiveType : this.funcType,
+            columnID: this.columnId,
+        };
+    }
+
+    toString(){
+        let intFuncStr : String = this.name + ": " + this.columnId;
+        return intFuncStr;
+    }
+};
+
 export class ObjectiveParam{
     id: string;
     value : string;
@@ -238,6 +356,11 @@ export class ObjectiveParam{
     }
     toString(){
         return ("" + this.value);
+    }
+    toObject(){
+        return {
+            id: this.value,
+        };
     }
 }
 

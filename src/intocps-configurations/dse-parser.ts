@@ -97,18 +97,7 @@ export class DseParser{
     }
 
 
-     //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
-     //Utility method to obtain an instance from the multimodel by its string id encoding
-    private getObjective(dse: DseConfiguration, id: string): IDseObjective {
-       // let ids = this.parseId(id);
-
-       // let fmuName = ids[0];
-        //let instanceName = ids[1];
-        //let scalarVariableName = ids[2];
-        return dse.getObjective(id);
-    }
-
-    parseObjectives(data: any, dse:DseConfiguration){
+    parseExtScrObjectives(data: any, dse:DseConfiguration){
         if (Object.keys(data).indexOf(this.OBJECTIVES_TAG) >= 0) {
             let objData = data[this.OBJECTIVES_TAG];
             $.each(Object.keys(objData), (j, id) => {
@@ -132,7 +121,7 @@ export class DseParser{
                 let newParam = new ObjectiveParam(id2, pName);
                 objParams.push(newParam);
             });
-            dse.newExternalScript(extName, objParams);
+            dse.newExternalScript(id, extName, objParams);
 
                 //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
                 //var param = this.getParameter(dse, id);
@@ -141,7 +130,20 @@ export class DseParser{
     }
 
 
+    parseIntFuncsObjectives(data: any, dse:DseConfiguration){
+        if (Object.keys(data).indexOf(this.OBJECTIVES_TAG) >= 0) {
+            let objData = data[this.OBJECTIVES_TAG];
+            $.each(Object.keys(objData), (j, id) => {
+                if (id == this.INTERNAL_FUNCTION_TAG){
+                    this.parseInternalFunction(objData[id], dse);
+                }
+            });
+        }
+    }
 
+
+    private parseInternalFunction(data: any, dse:DseConfiguration){//To add
+    }
 
     parseRanking(data: any, dse:DseConfiguration){
         let ranking = data[this.RANKING_TAG];
