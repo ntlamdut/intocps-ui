@@ -117,7 +117,7 @@
 	<div class="row">
 		<div class="col-md-4"><label>Objective Name</label></div>
 		<div class="col-md-4"><label>File Name</label></div>
-		<div class="col-md-4"><label>Arguments</label></div>
+		<div class="col-md-3"><label>Arguments</label></div>
 	</div>
 
 	<div class="row" *ngFor="let e of config.extScrObjectives">
@@ -132,14 +132,14 @@
 			<input *ngIf="editing" [ngModel]="getExternalScriptFilename(e)" (ngModelChange)="setExternalScriptFileName(e, $event)" [ngModelOptions]="{standalone:true}"
 				class="form-control input-fixed-size input-sm">
 		</div>
-		<div class = "col-md-4">
+		<div class = "col-md-3">
 			<div class="row" *ngFor="let p of getExternalScriptParameters(e)">
 				<div class = "col-md-1">
 					<p *ngIf="!editing" class="form-control-static">{{p.id}}</p>
 					<input *ngIf="editing" [ngModel]="p.id" (ngModelChange)="setExternalScriptParameterId(e, p, $event)" [ngModelOptions]="{standalone:true}"
 						class="form-control input-fixed-size input-sm">
 				</div>
-				<div class = "col-md-3">
+				<div class = "col-md-2">
 					<p *ngIf="!editing" class="form-control-static">{{p.value}}</p>
 					<input *ngIf="editing" [ngModel]="p.value" (ngModelChange)="setExternalScriptParameterValue(e, p, $event)" [ngModelOptions]="{standalone:true}"
 						class="form-control input-fixed-size input-sm">
@@ -148,8 +148,9 @@
 			</div>
 		</div>
 
-		<hr>
-		 
+			<div class = "col-md-1">
+				<button *ngIf="editing" type="button" (click)="addExternalScriptParameter(e, '')" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-plus"></span>Add Argument</button>
+			</div>
 	</div>
 
 
