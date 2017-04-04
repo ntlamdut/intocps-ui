@@ -79,9 +79,9 @@
         </div>
         <div class="col-md-6">
             {{config.ranking.getType()}}
-            <div *ngFor="let k of config.ranking.getDimensionsAsMap().keys()">
+            <div *ngFor="let d of config.ranking.getDimensions()">
                 {{k}}
-                {{config.ranking.getDimensionValue(k)}}
+                {{d.getObjectiveName()}}
                 <br>
             </div>
         </div>

@@ -14,7 +14,7 @@ export class DseConfiguration implements ISerializable {
     dseParameters : DseParameter[] =[];
     extScrObjectives : ExternalScript[] = [];
     intFunctObjectives : InternalFunction[] = [];
-    ranking : IDseRanking = new ParetoRanking(new Map());
+    ranking : IDseRanking = new ParetoRanking([]);
 
     toObject() {
         let pConst : string [] = []; 
@@ -122,9 +122,20 @@ export class DseConfiguration implements ISerializable {
         this.dseParameters.splice(index, 1);
     }
 
+    public addExternalScript(){
+        let es = new ExternalScript("","",[]);
+        this.extScrObjectives.push(es);
+        return es;
+    }
     public newExternalScript(n:string, file:string, params : ObjectiveParam []){
          this.extScrObjectives.push(new ExternalScript(n, file, params));
     }
+
+    public removeExternalScript(e:ExternalScript){
+        let index = this.extScrObjectives.indexOf(e);
+        this.extScrObjectives.splice(index, 1);
+    }
+    
 
     public newRanking(r: IDseRanking){
         this.ranking = r;
@@ -135,9 +146,11 @@ export class DseConfiguration implements ISerializable {
     }
 
     public addScenario(): DseScenario{
-        let newS = new DseScenario("");
-        this.scenarios.push(newS);
-        return newS;
+        if(this.scenarios.length < 1){
+            let newS = new DseScenario("");
+            this.scenarios.push(newS);
+            return newS;
+        }
     }
 
     public removeScenario(s:DseScenario){
@@ -294,6 +307,32 @@ export class ExternalScript implements IDseObjective{
         return new FormGroup({});
     }
 
+    addParameter(v:string){
+        let newId = this.parameterList.length+1;
+        let newObj = new ObjectiveParam(newId.toString(), v);
+        this.parameterList.push(newObj);
+    }
+
+    removeParameter(v:any){
+        let index = this.parameterList.indexOf(v);
+        this.parameterList.splice(index, 1);
+    }
+
+    setParameterId(p:ObjectiveParam, newid:any){
+        let index = this.parameterList.indexOf(p);
+        let newObj = this.parameterList[index];
+        newObj.setId(newid);
+        this.parameterList.splice(index, 1, newObj);
+    }
+
+    setParameterValue(p:ObjectiveParam, newVal:any){
+        let index = this.parameterList.indexOf(p);
+        let newObj = this.parameterList[index];
+        newObj.setValue(newVal);
+        this.parameterList.splice(index, 1, newObj);
+    }
+
+
     toObject() {
         let params : any = {};
         this.parameterList.forEach((p:ObjectiveParam) =>{
@@ -354,6 +393,15 @@ export class ObjectiveParam{
         this.id = i;
         this.value = v;
     }
+
+    setId(newId :string){
+        this.id = newId
+    }
+
+    setValue(newvalue :string){
+        this.value = newvalue
+    }
+
     toString(){
         return ("" + this.value);
     }
@@ -372,10 +420,10 @@ export interface IDseRanking {
 }
 
 export class ParetoRanking implements IDseRanking {
-    type = "pareto ranking";
-    dimensions = new Map<String, any>();
+    type = "Pareto";
+    dimensions : ParetoDimension [] ;
 
-    constructor(dim : Map<String, any>) {
+    constructor(dim : ParetoDimension []){
         this.dimensions = dim;
     }
 
@@ -386,8 +434,8 @@ export class ParetoRanking implements IDseRanking {
     toObject() {
         let dim:any = {};
 
-        this.dimensions.forEach(function(value, key) {
-            dim[value] = key;
+        this.dimensions.forEach((d:ParetoDimension)=> {
+            dim[d.objectiveName] = d.direction;
         });
 
         return {
@@ -399,20 +447,46 @@ export class ParetoRanking implements IDseRanking {
         return this.type;
     }
 
-    getDimensionsAsMap(){
+    addDimension(objective:string, direction:any){
+        if (this.dimensions.length < 2){
+            let newDimension = new ParetoDimension(objective, direction);
+            this.dimensions.push(newDimension);
+        }
+    }
+
+    removeDimension(d:ParetoDimension){
+        let index = this.dimensions.indexOf(d);
+        this.dimensions.splice(index, 1);
+    }
+
+    getDimensions(){
         return this.dimensions;
     }
 
     getDimensionsAsString(){
         let dimensionStr : String = "";
-        this.dimensions.forEach(function(value, key) {
-            dimensionStr = dimensionStr + (key + ' = ' + value) + ", ";
+        this.dimensions.forEach((d:ParetoDimension) =>{
+            dimensionStr = dimensionStr + (d.objectiveName + ' = ' + d.direction) + ", ";
         });
         return dimensionStr;
     }
+}
 
-    getDimensionValue(k:string): any{
-        return this.dimensions.get(k);
+export class ParetoDimension{
+    objectiveName : string;
+    direction : string
+
+    constructor(n: string, d: string) {
+        this.objectiveName = n;
+        this.direction = d;
+    }
+
+    getObjectiveName(){
+        return this.objectiveName
+    }
+
+    getDirection(){
+        return this.direction
     }
 }
 

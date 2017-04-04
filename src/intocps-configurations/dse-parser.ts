@@ -1,4 +1,4 @@
-import { DseConfiguration,DseParameterConstraint, DseScenario, DseObjectiveConstraint,IDseObjective, ObjectiveParam, ExternalScript, IDseAlgorithm, DseParameter, IDseRanking, ParetoRanking, GeneticSearch, ExhaustiveSearch} from "./dse-configuration"
+import { ParetoDimension,DseConfiguration,DseParameterConstraint, DseScenario, DseObjectiveConstraint,IDseObjective, ObjectiveParam, ExternalScript, IDseAlgorithm, DseParameter, IDseRanking, ParetoRanking, GeneticSearch, ExhaustiveSearch} from "./dse-configuration"
 export class DseParser{
     protected SEARCH_ALGORITHM_TAG: string = "algorithm"
     protected SEARCH_ALGORITHM_TYPE:string = "type"
@@ -47,22 +47,28 @@ export class DseParser{
     }
 
     parseObjectiveConstraint(data: any, dse:DseConfiguration) {
-        let objConst = data[this.OBJECTIVE_CONSTRAINT_TAG];
         let objConstList : DseObjectiveConstraint[] = [];
-        objConst.forEach(function(value:string) {
-            let newParamConstraint = new DseObjectiveConstraint(value);
-            objConstList.push(newParamConstraint);
-        })
+        
+        if (Object.keys(data).indexOf(this.OBJECTIVE_CONSTRAINT_TAG) > 0){
+            let objConst = data[this.OBJECTIVE_CONSTRAINT_TAG];
+            objConst.forEach(function(value:string) {
+                let newParamConstraint = new DseObjectiveConstraint(value);
+                objConstList.push(newParamConstraint);
+            })
+        }
         dse.newObjectiveConstraint(objConstList);
     }
 
     parseParameterConstraints(data: any, dse:DseConfiguration) {
-        let paramConst = data[this.PARAMETER_CONSTRAINT_TAG];
         let paramConstList : DseParameterConstraint[] = [];
-        paramConst.forEach(function(value:string) {
-            let newParamConstraint = new DseParameterConstraint(value);
-            paramConstList.push(newParamConstraint);
-        })
+
+        if (Object.keys(data).indexOf(this.PARAMETER_CONSTRAINT_TAG) > 0){
+            let paramConst = data[this.PARAMETER_CONSTRAINT_TAG];
+            paramConst.forEach(function(value:string) {
+                let newParamConstraint = new DseParameterConstraint(value);
+                paramConstList.push(newParamConstraint);
+            })
+        }
         dse.newParameterConstraint(paramConstList);
     }
 
@@ -147,28 +153,44 @@ export class DseParser{
 
     parseRanking(data: any, dse:DseConfiguration){
         let ranking = data[this.RANKING_TAG];
+        if(!ranking){
+            dse.newRanking(this.newPareto());
+            return;
+        }
         let ranktype = ranking[this.RANKING_PARETO_TAG]
         if(ranktype) dse.newRanking(this.parseParetoRanking(ranktype));
         //check other rank types as added
     }
 
     private parseParetoRanking(data:any) : IDseRanking{
-        let paretoDimension: Map<String, any> = new Map<String, any>();
+        let paretoDimensions: ParetoDimension [] = [];
         $.each(Object.keys(data), (j, id) => {
             let value = data[id];
-            paretoDimension.set(id, value)
+            paretoDimensions.push(new ParetoDimension(id, value));
         });
         
-        return new ParetoRanking(paretoDimension);
+        return new ParetoRanking(paretoDimensions);
     }
+
+    private newPareto() : IDseRanking{
+        return new ParetoRanking([]);
+    }
+
 
 
     parseScenarios(data: any, dse:DseConfiguration) {
         let scenarios = data[this.SCENARIOS_TAG];
+
         let scenarioList : DseScenario[] = [];
+        if(!scenarios) {
+            let sc = new DseScenario("");
+            scenarioList.push(sc);
+            dse.newScenario(scenarioList);
+            return;
+        };
         scenarios.forEach(function(value:string) {
-            let newParamConstraint = new DseScenario(value);
-            scenarioList.push(newParamConstraint);
+            let newsc = new DseScenario(value);
+            scenarioList.push(newsc);
         })
         dse.newScenario(scenarioList);
     }

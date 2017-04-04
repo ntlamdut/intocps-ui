@@ -2,7 +2,7 @@ import { Component, Input, NgZone, Output, EventEmitter } from "@angular/core";
 import {Serializer} from "../../intocps-configurations/Parser";
 import {OutputConnectionsPair} from "../coe/models/Fmu";
 import IntoCpsApp from "../../IntoCpsApp";
-import {DseConfiguration,DseParameter, DseScenario, DseParameterConstraint, DseObjectiveConstraint,IDseAlgorithm, GeneticSearch, ExhaustiveSearch} from "../../intocps-configurations/dse-configuration";
+import {ParetoDimension, DseConfiguration, ParetoRanking, ExternalScript, DseParameter, DseScenario, DseParameterConstraint, DseObjectiveConstraint,IDseAlgorithm, GeneticSearch, ExhaustiveSearch} from "../../intocps-configurations/dse-configuration";
 import { WarningMessage } from "../../intocps-configurations/Messages";
 import { NavigationService } from "../shared/navigation.service";
 import { FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators } from "@angular/forms";
@@ -45,6 +45,13 @@ export class DseConfigurationComponent {
         ExhaustiveSearch,
         GeneticSearch
     ];
+
+    private paretoDirections = [
+        "Minimise",
+        "Maximise"
+    ];
+
+  
     constructor(private zone: NgZone, private navigationService: NavigationService) {
         this.navigationService.registerComponent(this);
     }
@@ -73,13 +80,13 @@ export class DseConfigurationComponent {
                         this.algorithmFormGroups.set(algorithm, algorithm.toFormGroup());
                     });
                     
-                    
                     // Create a form group for validation
                     this.form = new FormGroup({
                         searchAlgorithm :  this.algorithmFormGroups.get(this.config.searchAlgorithm),
                   //    params : new FormArray(this.config.dseParameters.map(c => new FormControl(c))),
                         paramConstraints : new FormArray(this.config.paramConst.map(c => new FormControl(c))),
                         objConstraints : new FormArray(this.config.objConst.map(c => new FormControl(c))),
+                        extscr : new FormArray(this.config.extScrObjectives.map(s => new FormControl(s))),
                         scenarios : new FormArray(this.config.scenarios.map(s => new FormControl(s)))
                     });
                 });
@@ -136,9 +143,11 @@ export class DseConfigurationComponent {
     }
 
 
+
     getSearchAlgorithm(){
         return this.config.searchAlgorithm.getName()
     }
+
 
 
     addParameter(){
@@ -207,8 +216,56 @@ export class DseConfigurationComponent {
 
 
     addExternalScript(){
-        //To add
+        let es = this.config.addExternalScript();
+       // let eArray = <FormArray>this.form.find('extscr');
+        
+      //  eArray.push(new FormControl(this.getParameterName(p)));
     }
+
+    getExternalScriptName(e: ExternalScript){
+        return e.name;
+    }
+
+    setExternalScriptName(p: ExternalScript, name: string) {
+        p.name = `${name}`;
+    }
+
+    getExternalScriptFilename(e: ExternalScript){
+        return e.fileName;
+    }
+
+    setExternalScriptFileName(p: ExternalScript, name: string) {
+        p.fileName = `${name}`;
+    }
+
+    getExternalScriptParameters(e: ExternalScript){
+        return e.parameterList;
+    }
+
+    addExternalScriptParameter(e: ExternalScript, value: any) {
+        e.addParameter(value);
+    }
+
+    setExternalScriptParameterId(e:ExternalScript, param: any, newId:any){
+        return e.setParameterId(param, newId);
+    }
+
+    setExternalScriptParameterValue(e:ExternalScript, param: any, newVal:any){
+        return e.setParameterValue(param, newVal);
+    }
+    removeExternalScriptParameter(e: ExternalScript, value: string) {
+        e.removeParameter(value);
+    }
+
+
+    removeExternalScript(e:ExternalScript){
+        this.config.removeExternalScript(e);
+       /// let pArray = <FormArray>this.form.find('extScr');
+       // let index = this.config.dseParameters.indexOf(p);
+        
+      //  pArray.removeAt(index);
+    }
+
     addinternalFunction(){
         //To add
     }
@@ -239,8 +296,39 @@ export class DseConfigurationComponent {
     }
 
 
+    getRankingMethod(){
+        return this.config.ranking.getType();
+    }
 
+    getRankingDimensions(){
+        return (<ParetoRanking> this.config.ranking).getDimensions();
+    }
 
+    getDimensionName(d:ParetoDimension){
+        return d.getObjectiveName()
+    }
+
+    setDimensionName(d:ParetoDimension, name: string){
+        d.objectiveName = name;
+    }
+
+    getDimensionDirection(d:ParetoDimension){
+        return d.getDirection()
+    }
+
+    setDimensionDirection(d :ParetoDimension, direct :string){
+        d.direction = direct;
+    }
+
+    removeParetoDimension(d:ParetoDimension){
+        (<ParetoRanking> this.config.ranking).removeDimension(d);
+    }
+
+    addParetoDimension(objective:string, direction:string){
+        if (this.config.ranking instanceof ParetoRanking){
+            (<ParetoRanking> this.config.ranking).addDimension(objective, direction);
+        }
+    }
 
     addScenario(){
         let s = this.config.addScenario();
