@@ -19,7 +19,7 @@ import * as fs from 'fs';
     ],
     directives: [
     ],
-    templateUrl: "./angular2-app/dse/dse-configuration.component.html"
+    templateUrl: "./angular2-app/dse/dse-simulation.component.html"
 })
 export class DseSimulationComponent implements OnInit, OnDestroy {
     private _path:string;
