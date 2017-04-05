@@ -4,8 +4,11 @@ import * as fs from "fs"
 import { DseParser } from "./dse-parser"
 import { Fmu, ScalarVariableType, ScalarVariable} from "../angular2-app/coe/models/Fmu";
 import {WarningMessage, ErrorMessage} from "./Messages";
+import { MultiModelConfig } from "./MultiModelConfig"
 
 export class DseConfiguration implements ISerializable {
+    
+
     sourcePath: string;
     searchAlgorithm: IDseAlgorithm = new ExhaustiveSearch(); //set as default
     scenarios: DseScenario[] = [];
@@ -15,6 +18,11 @@ export class DseConfiguration implements ISerializable {
     extScrObjectives : ExternalScript[] = [];
     intFunctObjectives : InternalFunction[] = [];
     ranking : IDseRanking = new ParetoRanking([]);
+
+    coeConfig:string = '';   
+    fmuRootPath:string ='';
+    multiModel: MultiModelConfig;
+
 
     toObject() {
         let pConst : string [] = []; 
@@ -157,13 +165,14 @@ export class DseConfiguration implements ISerializable {
         this.scenarios.splice(this.scenarios.indexOf(s), 1);
     }
 
-    static parse(path: string): Promise<DseConfiguration> {
+
+    static parse(path: string, projectRoot: string, fmuRootPath: string): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
             fs.access(path, fs.constants.R_OK, error => {
                 if (error) return reject(error);
                 fs.readFile(path, (error, content) => {
                     if (error) return reject(error);
-                    this.create(path, JSON.parse(content.toString()))
+                    this.create(path, projectRoot, fmuRootPath, JSON.parse(content.toString()))
                         .then(dseConfig => resolve(dseConfig))
                         .catch(error => reject(error));
                 });
@@ -171,12 +180,15 @@ export class DseConfiguration implements ISerializable {
         });
     }
 
-    static create(path:string, data: any): Promise<DseConfiguration> {
+    static create(path:string, projectRoot: string, fmuRootPath: string, data: any): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
+
             let parser = new DseParser();
             let configuration = new DseConfiguration();
             configuration.sourcePath = path;
+            configuration.multiModel = null;
 
+            configuration.fmuRootPath = fmuRootPath;
             parser.parseSearchAlgorithm(data, configuration);
             parser.parseScenarios(data, configuration);
             parser.parseObjectiveConstraint(data, configuration);
@@ -188,6 +200,17 @@ export class DseConfiguration implements ISerializable {
             resolve(configuration)
         })
 
+    }
+
+    setMultiModel(mmPath: string): Promise<DseConfiguration> {
+        return new Promise<DseConfiguration>((resolve, reject) => {
+            
+            MultiModelConfig
+                .parse(mmPath, this.fmuRootPath)
+                .then(multiModel => {
+                    this.multiModel = multiModel;
+                })
+        });
     }
 
     save(): Promise<void> {
@@ -353,6 +376,9 @@ export class ExternalScript implements IDseObjective{
         extScriptStr = extScriptStr + ")";
         return extScriptStr;
     }
+
+
+
 };
 
 

@@ -1,11 +1,18 @@
 import { Component, Input, NgZone, Output, EventEmitter } from "@angular/core";
 import {Serializer} from "../../intocps-configurations/Parser";
-import {OutputConnectionsPair} from "../coe/models/Fmu";
+import {
+    Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausalityCompatible, isTypeCompatiple,
+    Fmu, ScalarValuePair, ScalarVariableType
+} from "../coe/models/Fmu";
 import IntoCpsApp from "../../IntoCpsApp";
 import {ParetoDimension, DseConfiguration, ParetoRanking, ExternalScript, DseParameter, DseScenario, DseParameterConstraint, DseObjectiveConstraint,IDseAlgorithm, GeneticSearch, ExhaustiveSearch} from "../../intocps-configurations/dse-configuration";
 import { WarningMessage } from "../../intocps-configurations/Messages";
 import { NavigationService } from "../shared/navigation.service";
 import { FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators } from "@angular/forms";
+import {IProject} from "../../proj/IProject";
+import {Project} from "../../proj/Project";
+import * as Path from 'path';
+import * as fs from 'fs';
 
 @Component({
     selector: "dse-configuration",
@@ -22,8 +29,13 @@ export class DseConfigurationComponent {
     set path(path:string) {
         this._path = path;
 
-        if (path)
+        if (path){
+            let app: IntoCpsApp = IntoCpsApp.getInstance();
+            let p: string = app.getActiveProject().getRootFilePath();
+            this.cosimConfig = this.loadCosimConfigs(Path.join(p, Project.PATH_MULTI_MODELS));
+
             this.parseConfig();
+        }
     }
     get path():string {
         return this._path;
@@ -40,6 +52,12 @@ export class DseConfigurationComponent {
     parseError: string = null;
     
     config : DseConfiguration;
+    cosimConfig:string[] = [];
+    coeconfig:string = '';
+
+    private selectedParameterInstance: Instance;
+
+    private newParameter: ScalarVariable;
 
     private algorithmConstructors = [
         ExhaustiveSearch,
@@ -60,7 +78,7 @@ export class DseConfigurationComponent {
        let project = IntoCpsApp.getInstance().getActiveProject();
        
        DseConfiguration
-           .parse(this.path)
+           .parse(this.path, project.getRootFilePath(), project.getFmusPath())
            .then(config => {
                 this.zone.run(() => {
                     //this.parseError = null;
@@ -142,14 +160,91 @@ export class DseConfigurationComponent {
         this.editing = false;
     }
 
+    getFiles(path: string): string [] {
+        var fileList: string[] = [];
+        var files = fs.readdirSync(path);
+        for(var i in files){
+            var name = Path.join(path, files[i]);
+            if (fs.statSync(name).isDirectory()){
+                fileList = fileList.concat(this.getFiles(name));
+            } else {
+                fileList.push(name);
+            }
+        }
+    
+        return fileList;
+    }
 
+    loadCosimConfigs(path: string): string[] {
+        var files: string[] = this.getFiles(path);
+        return  files.filter(f => f.endsWith(".coe.json"));
+    }
+
+    experimentName(path: string): string {
+        let elems = path.split(Path.sep);
+        let mm: string = elems[elems.length-2];
+        let ex: string = elems[elems.length-3];
+        return mm + " | " + ex;
+    }
+
+    onConfigChange(config:string) {
+        this.coeconfig = config;
+        this.config.coeConfig = config;
+        let mmPath = Path.join(this.coeconfig, "..", "..", "mm.json");
+
+        if (!fs.existsSync(mmPath)) {
+            console.warn("Could not find mm at: " + mmPath + " initiating search or possible alternatives...")
+            //no we have the old style
+            fs.readdirSync(Path.join(this.coeconfig, "..", "..")).forEach(file => {
+                if (file.endsWith("mm.json")) {
+                    mmPath = Path.join(this.coeconfig, "..", "..", file);
+                    console.debug("Found old style mm at: " + mmPath);
+                    return;
+                }
+            });
+        }
+
+        this.config.setMultiModel(mmPath);
+    }
 
     getSearchAlgorithm(){
         return this.config.searchAlgorithm.getName()
     }
 
 
+    /* REUSED FROM MM-CONFIG */
 
+    selectParameterInstance(instance: Instance) {
+        this.selectedParameterInstance = instance;
+        this.newParameter = this.getParameters()[0];
+    }
+
+    getParameters() {
+        if (!this.selectedParameterInstance)
+            return [null];
+
+        return this.selectedParameterInstance.fmu.scalarVariables
+            .filter(variable => isCausalityCompatible(variable.causality, CausalityType.Parameter) && !this.selectedParameterInstance.initialValues.has(variable));
+    }
+
+    getInitialValues(): Array<ScalarValuePair> {
+        let initialValues: Array<ScalarValuePair> = [];
+
+        this.selectedParameterInstance.initialValues.forEach((value, variable) => {
+            initialValues.push(new ScalarValuePair(variable, value));
+        });
+
+        return initialValues;
+    }
+
+    getScalarTypeName(type: number) {
+        return ['Real', 'Bool', 'Int', 'String', 'Unknown'][type];
+    }
+
+
+
+
+    /* MAY NEED CHANGING - CHECK WHEN TESTING*/
     addParameter(){
         let p = this.config.addParameter();
        // let pArray = <FormArray>this.form.find('params');
