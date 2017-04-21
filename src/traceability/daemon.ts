@@ -4,6 +4,7 @@ import Express = require('express');
 // concurrency
 import * as Promise from 'bluebird';
 import { IntoCpsApp } from "../IntoCpsApp";
+// import * as http from "http";
 
 // xml handling
 import * as xml2js from 'xml2js';
@@ -39,7 +40,8 @@ export class Daemon {
   constructor(){
     this.isconnected = false;
     this.enableValidation = false;
-    this.jsonSchemaPath = "./src/traceability/INTO-CPS-Traceability-Schema-V1.0.json";
+    this.jsonSchemaPath = Path.join(__dirname, "../../src/traceability/INTO-CPS-Traceability-Schema-V1.0.json");
+//    console.log(this.jsonSchemaPath);
     this.readJsonSchema();
 }
 
@@ -333,13 +335,31 @@ export class Daemon {
   }
 
   private readJsonSchema(){
+      /*
+      var schemaURL:string = "http://wiki.eng.au.dk/download/attachments/3965867/INTO-CPS-Traceability-Schema-V1.0.json";
+      let request = require("request");
+      request({ url: schemaURL, json: true }, (function (
+          error: Error, response: http.IncomingMessage, body: any) {
+          if (!error && response.statusCode == 200) {
+              console.log("Schema:");
+              console.log(body);
+              console.log("Schema parsed:");
+              console.log(JSON.parse(body));
+              this.jsonSchema = JSON.parse(body);
+              this.enableValidation = true;
+              console.log("Validation of traceability messages enabled.")
+          } else {
+              console.log("Unable to find JsonSchema at " + schemaURL + ". Validation is disabled.");
+          }
+      }).bind(this));
+      */
       if (fs.existsSync(this.jsonSchemaPath)){
-        var schemaString:string = fs.readFileSync(this.jsonSchemaPath);
+        var schemaString:string = fs.readFileSync(this.jsonSchemaPath); 
         this.jsonSchema = JSON.parse(schemaString);
         this.enableValidation = true;
         console.log("Validation of traceability messages enabled.")
       }else{
-        console.log("Unable to find JsonSchema at " + Path.join(__dirname, this.jsonSchemaPath) + ". Validation is disabled.")
+        console.log("Unable to find JsonSchema at " + this.jsonSchemaPath + ". Validation is disabled.")
       }
   }
 

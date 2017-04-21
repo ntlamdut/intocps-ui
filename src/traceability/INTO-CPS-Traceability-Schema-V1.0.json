@@ -5,7 +5,7 @@
 	"properties": {
 		"rdf:RDF": {
 			"type": "object",
-			"maxProperties": 12,
+			"maxProperties": 6,
 			"properties": {
 				"xmlns:rdf": {
 					"type": "string",
@@ -52,7 +52,9 @@
 				"xmlns:rdf",
 				"xmlns:prov",
 				"messageFormatVersion",
-				"prov:Agent"
+				"prov:Agent",
+				"prov:Entity",
+				"prov:Activity"
 			],
 			"additionalProperties": false
 		}
@@ -212,6 +214,7 @@
 		},
 		"URIAgent": {
 			"type": "string",
+			"pattern": "^Agent\\:[a-z0-9._-]+@[a-z0-9._-]{2,}\\.[a-z]{2,4}$",
 			"additionalProperties": false
 		},
 		"RefEntities": {
