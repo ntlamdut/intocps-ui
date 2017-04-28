@@ -2,7 +2,7 @@ import { MultiModelConfig } from "./MultiModelConfig"
 import { Parser, Serializer } from "./Parser"
 import * as fs from "fs"
 import { Instance, ScalarVariable, InstanceScalarPair } from "../angular2-app/coe/models/Fmu";
-import { WarningMessage,ErrorMessage } from "./Messages";
+import { WarningMessage, ErrorMessage } from "./Messages";
 import { FormArray, FormGroup, FormControl, Validators } from "@angular/forms";
 import {
     numberValidator, integerValidator, lengthValidator,
@@ -23,6 +23,7 @@ export class CoSimulationConfig implements ISerializable {
 
     //optional livestream outputs
     livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
+    livestreamInterval : number = 0.0
     algorithm: ICoSimAlgorithm = new FixedStepAlgorithm();
     startTime: number = 0;
     endTime: number = 10;
@@ -30,33 +31,44 @@ export class CoSimulationConfig implements ISerializable {
     loggingOn: boolean = false;
     enableAllLogCategoriesPerInstance: boolean = false;
     overrideLogLevel: string = null;
+    postProcessingScript: string = "";
 
-
+    public getProjectRelativePath(path: string): string {
+        if (path.indexOf(this.projectRoot) === 0)
+            return path.substring(this.projectRoot.length + 1);
+        return path;
+    }
 
     toObject(): any {
         let livestream: any = {};
         this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
 
-        let path = this.multiModel.sourcePath;
-        if (path.indexOf(this.projectRoot) === 0)
-            path = path.substring(this.projectRoot.length + 1);
-
         return {
             startTime: Number(this.startTime),
             endTime: Number(this.endTime),
-            multimodel_path: path,
+            multimodel_path: this.getProjectRelativePath(this.multiModel.sourcePath),
             livestream: livestream,
+            livestreamInterval: Number(this.livestreamInterval),
             visible: this.visible,
             loggingOn: this.loggingOn,
             overrideLogLevel: this.overrideLogLevel,
             enableAllLogCategoriesPerInstance: this.enableAllLogCategoriesPerInstance,
-            algorithm: this.algorithm.toObject()
+            algorithm: this.algorithm.toObject(),
+            postProcessingScript: this.getProjectRelativePath(this.postProcessingScript)
         };
     }
+
+    saveOverride(): Promise<void> {
+        //we consider this an explicit user action. Allowing CRC override
+        this.multiModelCrc = checksum(fs.readFileSync(this.multiModel.sourcePath).toString(), "md5", "hex");
+        return this.save();
+    }
+
 
     save(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
+
                 fs.writeFile(this.sourcePath, JSON.stringify(this.toObject()), error => {
                     if (error)
                         reject(error);
@@ -70,16 +82,28 @@ export class CoSimulationConfig implements ISerializable {
     }
 
     validate(): WarningMessage[] {
-        // TODO
-        console.error("No validation is done on the cosim config");
 
-        let multiModelCrcMatch = this.multiModelCrc==undefined || this.multiModelCrc === checksum(fs.readFileSync(this.multiModel.sourcePath).toString(), "md5", "hex");
-        if (multiModelCrcMatch) {
-            return [];
+        //first re-check mm
+        let mmWarnings = this.multiModel.validate();
+        if (mmWarnings.length > 0) {
+            return mmWarnings;
         }
-        else {
-            return [new ErrorMessage("Multimodel crc check failed")];
+
+        let messages: WarningMessage[] = [];
+        // check this config
+        if (this.endTime <= 0) {
+            messages.push(new ErrorMessage("End time must be larger than 0. Actual: '" + this.endTime + "'"));
         }
+        if (this.startTime >= this.endTime) {
+            messages.push(new ErrorMessage("Start time '" + this.startTime + "'must be smaller than end time '" + this.endTime + "'"));
+        }
+
+        let multiModelCrcMatch = this.multiModelCrc == undefined || this.multiModelCrc === checksum(fs.readFileSync(this.multiModel.sourcePath).toString(), "md5", "hex");
+        if (!multiModelCrcMatch) {
+            return [new ErrorMessage("Multimodel crc check failed. Multimodel has changed.")];
+        }
+
+        return messages;
     }
 
     static create(path: string, projectRoot: string, fmuRootPath: string, data: any): Promise<CoSimulationConfig> {
@@ -110,12 +134,14 @@ export class CoSimulationConfig implements ISerializable {
                     config.startTime = parser.parseStartTime(data) || 0;
                     config.endTime = parser.parseEndTime(data) || 10;
                     config.livestream = parser.parseLivestream(data, multiModel);
+                    config.livestreamInterval =parseFloat( parser.parseSimpleTagDefault(data, "livestreamInterval", "0.0"));
                     config.algorithm = parser.parseAlgorithm(data, multiModel);
                     config.visible = parser.parseSimpleTagDefault(data, "visible", false);
                     config.loggingOn = parser.parseSimpleTagDefault(data, "loggingOn", false);
                     config.overrideLogLevel = parser.parseSimpleTagDefault(data, "overrideLogLevel", null);
                     config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data, "enableAllLogCategoriesPerInstance", false);
                     config.multiModelCrc = parser.parseMultiModelCrc(data);
+                    config.postProcessingScript = parser.parseSimpleTagDefault(data, "postProcessingScript", "");
 
                     resolve(config);
                 })
@@ -125,7 +151,7 @@ export class CoSimulationConfig implements ISerializable {
 
     static parse(path: string, projectRoot: string, fmuRootPath: string): Promise<CoSimulationConfig> {
         return new Promise<CoSimulationConfig>((resolve, reject) => {
-            fs.access(path, fs.R_OK, error => {
+            fs.access(path, fs.constants.R_OK, error => {
                 if (error) return reject(error);
 
                 fs.readFile(path, (error, content) => {

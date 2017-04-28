@@ -1,18 +1,19 @@
-import {Component, Input, EventEmitter, Output, NgZone} from "@angular/core";
-import {FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES, Validators, FormArray, FormControl, FormGroup} from "@angular/forms";
+import { Component, Input, EventEmitter, Output, NgZone } from "@angular/core";
+import { FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES, Validators, FormArray, FormControl, FormGroup } from "@angular/forms";
 import IntoCpsApp from "../../IntoCpsApp";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm,
     VariableStepAlgorithm, ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint,
     VariableStepConstraint
 } from "../../intocps-configurations/CoSimulationConfig";
-import {ScalarVariable, CausalityType, Instance, InstanceScalarPair} from "./models/Fmu";
-import {ZeroCrossingComponent} from "./inputs/zero-crossing.component";
-import {BoundedDifferenceComponent} from "./inputs/bounded-difference.component";
-import {SamplingRateComponent} from "./inputs/sampling-rate.component";
-import {numberValidator, lessThanValidator} from "../shared/validators";
-import {NavigationService} from "../shared/navigation.service";
-import {WarningMessage} from "../../intocps-configurations/Messages";
+import { ScalarVariable, CausalityType, Instance, InstanceScalarPair } from "./models/Fmu";
+import { ZeroCrossingComponent } from "./inputs/zero-crossing.component";
+import { BoundedDifferenceComponent } from "./inputs/bounded-difference.component";
+import { SamplingRateComponent } from "./inputs/sampling-rate.component";
+import { numberValidator, lessThanValidator } from "../shared/validators";
+import { NavigationService } from "../shared/navigation.service";
+import { WarningMessage } from "../../intocps-configurations/Messages";
+import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
 
 @Component({
     selector: "coe-configuration",
@@ -21,38 +22,39 @@ import {WarningMessage} from "../../intocps-configurations/Messages";
         REACTIVE_FORM_DIRECTIVES,
         ZeroCrossingComponent,
         BoundedDifferenceComponent,
-        SamplingRateComponent
+        SamplingRateComponent,
+        FileBrowserComponent
     ],
     templateUrl: "./angular2-app/coe/coe-configuration.component.html"
 })
 export class CoeConfigurationComponent {
-    private _path:string;
+    private _path: string;
 
     @Input()
-    set path(path:string) {
+    set path(path: string) {
         this._path = path;
 
         if (path)
             this.parseConfig();
     }
-    get path():string {
+    get path(): string {
         return this._path;
     }
 
     @Output()
     change = new EventEmitter<string>();
 
-    form:FormGroup;
-    algorithms:ICoSimAlgorithm[] = [];
+    form: FormGroup;
+    algorithms: ICoSimAlgorithm[] = [];
     algorithmFormGroups = new Map<ICoSimAlgorithm, FormGroup>();
-    outputPorts:Array<InstanceScalarPair> = [];
+    outputPorts: Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
-    editing:boolean = false;
-    parseError:string = null;
+    editing: boolean = false;
+    parseError: string = null;
     warnings: WarningMessage[] = [];
-    loglevels : string[] = ["Not set","ERROR" ,"WARN","INFO","DEBUG","TRACE" ];
+    loglevels: string[] = ["Not set", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
 
-    private config:CoSimulationConfig;
+    private config: CoSimulationConfig;
 
     private algorithmConstructors = [
         FixedStepAlgorithm,
@@ -65,7 +67,7 @@ export class CoeConfigurationComponent {
         SamplingRateConstraint
     ];
 
-    constructor(private zone:NgZone, private navigationService: NavigationService) {
+    constructor(private zone: NgZone, private navigationService: NavigationService) {
         this.navigationService.registerComponent(this);
     }
 
@@ -87,27 +89,30 @@ export class CoeConfigurationComponent {
                                 ? config.algorithm
                                 : new constructor()
                         );
-
                     // Create an array of formGroups for the algorithms
                     this.algorithms.forEach(algorithm => {
                         this.algorithmFormGroups.set(algorithm, algorithm.toFormGroup());
                     });
-
                     // Create an array of all output ports on all instances
                     this.outputPorts = this.config.multiModel.fmuInstances
                         .map(instance => instance.fmu.scalarVariables
-                                .filter(sv => sv.causality === CausalityType.Output)
-                                .map(sv => this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name)))
-                        .reduce((a, b) => a.concat(...b));
+                            .filter(sv => sv.causality === CausalityType.Output)
+                            .map(sv => this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name)))
+                        .reduce((a, b) => a.concat(...b),[]);
 
                     // Create a form group for validation
                     this.form = new FormGroup({
                         startTime: new FormControl(config.startTime, [Validators.required, numberValidator]),
                         endTime: new FormControl(config.endTime, [Validators.required, numberValidator]),
+                        livestreamInterval: new FormControl(config.livestreamInterval, [Validators.required, numberValidator]),
                         algorithm: this.algorithmFormGroups.get(this.config.algorithm)
                     }, null, lessThanValidator('startTime', 'endTime'));
                 });
-            }, error => this.zone.run(() => this.parseError = error));
+            }, error => this.zone.run(() => {this.parseError = error})).catch(error => console.error(`Error during parsing of config: ${error}`));
+    }
+
+    public setPostProcessingScript(config: CoSimulationConfig, path: string) {
+        config.postProcessingScript = config.getProjectRelativePath(path);
     }
 
     onNavigate(): boolean {
@@ -124,7 +129,7 @@ export class CoeConfigurationComponent {
         }
     }
 
-    onAlgorithmChange(algorithm:ICoSimAlgorithm) {
+    onAlgorithmChange(algorithm: ICoSimAlgorithm) {
         this.config.algorithm = algorithm;
 
         this.form.removeControl('algorithm');
@@ -136,23 +141,44 @@ export class CoeConfigurationComponent {
 
         this.warnings = this.config.validate();
 
-        if (this.warnings.length > 0) return;
+        let override = false;
 
-        this.config.save()
-            .then(() => this.change.emit(this.path));
+        if (this.warnings.length > 0) {
+
+             let remote = require("electron").remote;
+            let dialog = remote.dialog;
+            let res = dialog.showMessageBox({ title: 'Validation failed', message: 'Do you want to save anyway?', buttons: ["No", "Yes"] });
+
+            if (res == 0) {
+                return;
+            } else {
+                override = true;
+                this.warnings = [];
+            }
+        }
+
+        if (override) {
+            this.config.saveOverride()
+                .then(() => this.change.emit(this.path));
+        } else {
+            this.config.save()
+                .then(() => this.change.emit(this.path));
+        }
+
+
 
         this.editing = false;
     }
 
-    getOutputs(scalarVariables:Array<ScalarVariable>) {
+    getOutputs(scalarVariables: Array<ScalarVariable>) {
         return scalarVariables.filter(variable => (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local));
     }
 
     addConstraint() {
         if (!this.newConstraint) return;
 
-        let algorithm = <VariableStepAlgorithm> this.config.algorithm;
-        let formArray = <FormArray> this.form.find('algorithm').find('constraints');
+        let algorithm = <VariableStepAlgorithm>this.config.algorithm;
+        let formArray = <FormArray>this.form.find('algorithm').find('constraints');
 
         let constraint = new this.newConstraint();
 
@@ -160,16 +186,16 @@ export class CoeConfigurationComponent {
         formArray.push(constraint.toFormGroup());
     }
 
-    removeConstraint(constraint:VariableStepConstraint) {
-        let algorithm = <VariableStepAlgorithm> this.config.algorithm;
-        let formArray = <FormArray> this.form.find('algorithm').find('constraints');
+    removeConstraint(constraint: VariableStepConstraint) {
+        let algorithm = <VariableStepAlgorithm>this.config.algorithm;
+        let formArray = <FormArray>this.form.find('algorithm').find('constraints');
         let index = algorithm.constraints.indexOf(constraint);
 
         algorithm.constraints.splice(index, 1);
         formArray.removeAt(index);
     }
 
-    getConstraintName(constraint:any) {
+    getConstraintName(constraint: any) {
         if (constraint === ZeroCrossingConstraint || constraint instanceof ZeroCrossingConstraint)
             return "Zero Crossing";
 
@@ -180,7 +206,7 @@ export class CoeConfigurationComponent {
             return "Sampling Rate";
     }
 
-    isLivestreamChecked(instance:Instance, output:ScalarVariable) {
+    isLivestreamChecked(instance: Instance, output: ScalarVariable) {
         let variables = this.config.livestream.get(instance);
 
         if (!variables) return false;
@@ -188,7 +214,7 @@ export class CoeConfigurationComponent {
         return variables.indexOf(output) !== -1;
     }
 
-    onLivestreamChange(enabled:boolean, instance:Instance, output:ScalarVariable) {
+    onLivestreamChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
         let variables = this.config.livestream.get(instance);
 
         if (!variables) {

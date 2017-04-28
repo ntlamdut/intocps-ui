@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import * as fs from 'fs';
 import Path = require("path");
 let JSZip = require("jszip");
 import {Utilities} from "../../../utilities"
@@ -47,7 +47,7 @@ export class Fmu {
         let mdPath = Path.join(self.path,"modelDescription.xml")
         let checkFileExists = new Promise<Buffer>(function (resolve, reject) {
             try {
-                if (fs.accessSync(mdPath, fs.R_OK)) {
+                if (fs.accessSync(mdPath, fs.constants.R_OK)) {
                     reject();
                 }
                 self.pathNotFound = false;
@@ -86,7 +86,7 @@ export class Fmu {
     public populateFromZip(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
-                if (fs.accessSync(this.path, fs.R_OK))
+                if (fs.accessSync(this.path, fs.constants.R_OK))
                     return reject();
 
                 fs.readFile(this.path, (err, data) => {

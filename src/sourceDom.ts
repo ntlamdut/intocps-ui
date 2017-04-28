@@ -1,6 +1,3 @@
-/// <reference path="../typings/browser/ambient/github-electron/index.d.ts"/>
-/// <reference path="../typings/browser/ambient/node/index.d.ts"/>
-
 export class SourceDom {
     private path: string;
     data: any;
@@ -21,7 +18,7 @@ export class SourceDom {
     private load(path: string) : any {
         let fs = require("fs");
         try {
-            if (fs.accessSync(path, fs.R_OK)) {
+            if (fs.accessSync(path, fs.constants.R_OK)) {
                 return;
             }
             return fs.readFileSync(path, "utf8");

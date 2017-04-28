@@ -113,10 +113,8 @@ export class DseSimulationComponent implements OnInit, OnDestroy {
         let installDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
 
         let absoluteProjectPath = IntoCpsApp.getInstance().getActiveProject().getRootFilePath();
-        let dseFile = this._path.split(Project.PATH_DSE);
-        let experimentConfigName = Path.join(Project.PATH_DSE, dseFile[dseFile.length-1]);
-        let configFile = this.config.split(Project.PATH_MULTI_MODELS);
-        let multiModelConfigName = Path.join(Project.PATH_MULTI_MODELS, configFile[configFile.length-1]); 
+        let experimentConfigName = this._path.slice(absoluteProjectPath.length + 1, this._path.length);
+        let multiModelConfigName = this.config.slice(absoluteProjectPath.length + 1, this.config.length); 
 
         let scriptFile = Path.join(installDir, "dse", "Algorithm_exhaustive.py"); 
         var child = spawn("python", [scriptFile, absoluteProjectPath, experimentConfigName, multiModelConfigName], {
