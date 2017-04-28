@@ -55,7 +55,7 @@ export class CoeSimulationService {
         this.url = this.settings.get(SettingKeys.COE_URL);
 
         let currentDir = Path.dirname(this.config.sourcePath);
-        let dateString = new Date().toLocaleString().replace(/\//gi, "-").replace(/,/gi, "").replace(/ /gi, "_").replace(/:/gi, "-");
+        let dateString = new Date().toISOString().replace(/-/gi, "_").replace(/\./gi, "_").replace(/:/gi, "_");
         this.resultDir = Path.normalize(`${currentDir}/R_${dateString}`);
 
         this.initializeDatasets();
