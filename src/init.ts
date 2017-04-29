@@ -224,7 +224,7 @@ menuHandler.createMultiModel = (path) => {
             label       : 'Name',
             value       : ivname,
             attrs       : 'style="width: 200px"',
-            title       : 'New MM Project',
+            title       : 'New Multi-Model Project',
             ok_text     : 'Ok',
             cancel_text : 'Cancel',
             width       : 400,
@@ -240,7 +240,7 @@ menuHandler.createMultiModel = (path) => {
                 //console.log("RootMessage: " + JSON.stringify(message));    
                 } catch (error){
                     // TODO: Validate name! Distinguish names... Maybe with the help of the recent w2prompt :with
-                    w2alert('MM Project '+  value + ' already exists! Choose a different name.',"Error");
+                    w2alert('Multi-Model Project '+  value + ' already exists! Choose a different name.',"Error");
                 }
             }
         });
@@ -283,7 +283,7 @@ menuHandler.createMultiModelPlain = () => {
             label       : 'Name',
             value       : ivname,
             attrs       : 'style="width: 200px"',
-            title       : 'New MM Project',
+            title       : 'New Multi-Model Project',
             ok_text     : 'Ok',
             cancel_text : 'Cancel',
             width       : 400,
@@ -294,7 +294,7 @@ menuHandler.createMultiModelPlain = () => {
                 menuHandler.openMultiModel(mmPath);
                 } catch (error){
                     // TODO: Validate name! Distinguish names... Maybe with the help of the recent w2prompt :with
-                    w2alert('MM Project '+  value + ' already exists! Choose a different name.',"Error");
+                    w2alert('Multi-Model Project '+  value + ' already exists! Choose a different name.',"Error");
                 }
             }
     });
