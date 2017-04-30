@@ -17,7 +17,7 @@ export class IntoCpsAppMenuHandler {
     createDse: (path: string) => void;
     createDsePlain: (path: string) => void;
     createSysMLDSEConfig: (path: string) => void;
-    createMultiModel: (path: string) => void;
+    createMultiModel: (path: string, titleMsg? : string) => void;
     createCoSimConfiguration: (path: string) => void;
 
     createTDGProject: (path: string) => void;
@@ -30,7 +30,7 @@ export class IntoCpsAppMenuHandler {
 
     deletePath: (path: string)=>void;
     openWithSystemEditor: (path: string)=>void;
-    createMultiModelPlain: () =>void;
+    createMultiModelPlain: (titleMsg?: string) =>void;
     rename: (path:string)=>void;
 
     showTraceView: () =>void;

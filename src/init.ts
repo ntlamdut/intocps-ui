@@ -212,7 +212,7 @@ menuHandler.openFmu = () => {
 //};
 //
 
-menuHandler.createMultiModel = (path) => {
+menuHandler.createMultiModel = (path, msgTitle = 'New Multi-Model') => {
     let appInstance = IntoCpsApp.getInstance();
     let project = appInstance.getActiveProject();
 
@@ -223,25 +223,26 @@ menuHandler.createMultiModel = (path) => {
         w2prompt({
             label       : 'Name',
             value       : ivname,
-            attrs       : 'style="width: 200px"',
-            title       : 'New Multi-Model Project',
+            attrs       : 'style="width: 500px"',
+            title       : msgTitle,
             ok_text     : 'Ok',
             cancel_text : 'Cancel',
-            width       : 400,
+            width       : 500,
             height      : 200,
             callBack    : function (value : String) {
 
                 let content = fs.readFileSync(path, "UTF-8");
                 try {
-                let mmPath = <string>project.createMultiModel(value, content);
-                menuHandler.openMultiModel(mmPath);
+                    if (!value) {return;}
+                    let mmPath = <string>project.createMultiModel(value, content);
+                    menuHandler.openMultiModel(mmPath);
+                } catch (error){
+                    menuHandler.createMultiModel(path,'Multi-Model "'+  value + '" already exists! Choose a different name.');
+                    return;
+                }
                 //Create the trace 
                 let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath,path);
                 //console.log("RootMessage: " + JSON.stringify(message));    
-                } catch (error){
-                    // TODO: Validate name! Distinguish names... Maybe with the help of the recent w2prompt :with
-                    w2alert('Multi-Model Project '+  value + ' already exists! Choose a different name.',"Error");
-                }
             }
         });
     }
@@ -271,7 +272,7 @@ menuHandler.createDsePlain = () => {
     }
 }
 
-menuHandler.createMultiModelPlain = () => {
+menuHandler.createMultiModelPlain = (titleMsg : string = 'New Multi-Model Project') => {
     let project = IntoCpsApp.getInstance().getActiveProject();
 
     if (project) {
@@ -282,19 +283,19 @@ menuHandler.createMultiModelPlain = () => {
         w2prompt({
             label       : 'Name',
             value       : ivname,
-            attrs       : 'style="width: 200px"',
-            title       : 'New Multi-Model Project',
+            attrs       : 'style="width: 500px"',
+            title       : titleMsg,
             ok_text     : 'Ok',
             cancel_text : 'Cancel',
-            width       : 400,
+            width       : 500,
             height      : 200,
             callBack    : function (value : String) {
                 try {
-                let mmPath = <string>project.createMultiModel(value, "{}");
-                menuHandler.openMultiModel(mmPath);
-                } catch (error){
-                    // TODO: Validate name! Distinguish names... Maybe with the help of the recent w2prompt :with
-                    w2alert('Multi-Model Project '+  value + ' already exists! Choose a different name.',"Error");
+                   if (!value) {return;}
+                   let mmPath = <string>project.createMultiModel(value, "{}");
+                   menuHandler.openMultiModel(mmPath);
+                } catch (error){                   
+                   menuHandler.createMultiModelPlain('Multi-Model Project "'+  value + '" already exists! Choose a different name.');
                 }
             }
     });
