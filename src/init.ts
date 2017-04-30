@@ -272,7 +272,7 @@ menuHandler.createDsePlain = () => {
     }
 }
 
-menuHandler.createMultiModelPlain = (titleMsg : string = 'New Multi-Model Project') => {
+menuHandler.createMultiModelPlain = (titleMsg : string = 'New Multi-Model') => {
     let project = IntoCpsApp.getInstance().getActiveProject();
 
     if (project) {
@@ -295,7 +295,7 @@ menuHandler.createMultiModelPlain = (titleMsg : string = 'New Multi-Model Projec
                    let mmPath = <string>project.createMultiModel(value, "{}");
                    menuHandler.openMultiModel(mmPath);
                 } catch (error){                   
-                   menuHandler.createMultiModelPlain('Multi-Model Project "'+  value + '" already exists! Choose a different name.');
+                   menuHandler.createMultiModelPlain('Multi-Model "'+  value + '" already exists! Choose a different name.');
                 }
             }
     });
