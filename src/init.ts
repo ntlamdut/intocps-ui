@@ -26,6 +26,8 @@ interface MyWindow extends Window {
 }
 
 declare var window: MyWindow;
+declare var w2prompt: any;
+declare var w2alert: any;
 
 import * as Menus from "./menus";
 import { provideForms, disableDeprecatedForms } from "@angular/forms";
