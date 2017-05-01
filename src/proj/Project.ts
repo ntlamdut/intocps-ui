@@ -106,6 +106,8 @@ export class Project implements IProject {
     public createMultiModel(name: String, jsonContent: String): String {
         let path = Path.normalize(this.rootPath + "/" + Project.PATH_MULTI_MODELS + "/" + name);
 
+        if(fs.existsSync(path)) throw new Error('Multi-Model '+  name + ' already exists!');
+
         fs.mkdirSync(path);
 
         let fullpath = Path.normalize(path + "/mm.json");
