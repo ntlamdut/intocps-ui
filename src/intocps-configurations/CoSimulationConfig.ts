@@ -54,7 +54,8 @@ export class CoSimulationConfig implements ISerializable {
             overrideLogLevel: this.overrideLogLevel,
             enableAllLogCategoriesPerInstance: this.enableAllLogCategoriesPerInstance,
             algorithm: this.algorithm.toObject(),
-            postProcessingScript: this.getProjectRelativePath(this.postProcessingScript)
+            postProcessingScript: this.getProjectRelativePath(this.postProcessingScript),
+            multimodel_crc: this.multiModelCrc
         };
     }
 

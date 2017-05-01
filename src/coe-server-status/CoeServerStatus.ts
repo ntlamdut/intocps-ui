@@ -155,7 +155,7 @@ function launchCoe() {
 
 
         if (div.childElementCount > 600)
-            while (div.childElementCount > 500 && div.hasChildNodes()) {
+            while (div.childElementCount > 5000 && div.hasChildNodes()) {
                 div.removeChild(div.firstChild);
             }
         window.scrollTo(0, document.body.scrollHeight);

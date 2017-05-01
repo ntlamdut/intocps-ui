@@ -8,6 +8,7 @@ import * as Path from "path";
 import { BehaviorSubject } from "rxjs/Rx";
 import { Injectable, NgZone } from "@angular/core";
 import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
+import { storeResultCrc } from "../../intocps-configurations/ResultConfig";
 import * as http from "http"
 import * as fs from 'fs'
 import * as child_process from 'child_process'
@@ -242,6 +243,7 @@ export class CoeSimulationService {
                     this.fileSystem.copyFile(this.config.multiModel.sourcePath, mmConfigPath)
                 ]).then(() => {
                     this.progress = 100;
+                    storeResultCrc(resultPath,this.config);
                     this.executePostProcessingScript(resultPath);
                 });
             });
