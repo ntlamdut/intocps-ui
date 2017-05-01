@@ -55,7 +55,15 @@ export function isResultValid(outputPath: string): boolean {
     }
     let coeCrc = obj["coe_config_crc"];
     if (coeCrc != null) {
+        
         let coePath = Path.join(dir, "..", "coe.json")
+        if(!fs.existsSync(coePath))
+        {
+                //Backwards compatibility
+                let file = fs.readdirSync(Path.join(dir, "..")).find(file => file.endsWith("coe.json"));
+                coePath = Path.join(dir,"..",file);
+                console.debug("Found old style coe at: " + coePath);
+        }
         //console.debug("COE path: " + coePath);
         let crc = checksum(fs.readFileSync(coePath).toString(), "md5", "hex");
         //console.debug("crc: " + coeCrc + " == " + crc);
