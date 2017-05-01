@@ -219,9 +219,9 @@ menuHandler.createMultiModel = (path, msgTitle = 'New Multi-Model') => {
     let project = appInstance.getActiveProject();
 
     if (project) {
-        let name = Path.basename(path, ".sysml.json");
+        let name    = Path.basename(path, ".sysml.json");
         let ivname  = `mm-${name}`;
-
+        let mmPath  = null; 
         w2prompt({
             label       : 'Name',
             value       : ivname,
@@ -236,15 +236,17 @@ menuHandler.createMultiModel = (path, msgTitle = 'New Multi-Model') => {
                 let content = fs.readFileSync(path, "UTF-8");
                 try {
                     if (!value) {return;}
-                    let mmPath = <string>project.createMultiModel(value, content);
+                    mmPath = <string>project.createMultiModel(value, content);
                     menuHandler.openMultiModel(mmPath);
                 } catch (error){
                     menuHandler.createMultiModel(path,'Multi-Model "'+  value + '" already exists! Choose a different name.');
                     return;
                 }
                 //Create the trace 
-                let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath,path);
-                //console.log("RootMessage: " + JSON.stringify(message));    
+                if (mmPath) {
+                    let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath,path);
+                    //console.log("RootMessage: " + JSON.stringify(message));    
+                }
             }
         });
     }
