@@ -34,7 +34,7 @@ export class DseConfigurationComponent {
             let p: string = app.getActiveProject().getRootFilePath();
             this.cosimConfig = this.loadCosimConfigs(Path.join(p, Project.PATH_MULTI_MODELS));
 
-            this.parseConfig();
+            //this.parseConfig();
         }
     }
     get path():string {
@@ -48,8 +48,12 @@ export class DseConfigurationComponent {
     algorithms: IDseAlgorithm[] = [];
     algorithmFormGroups = new Map<IDseAlgorithm, FormGroup>();
     editing: boolean = false;
+    editingMM: boolean = false;
     warnings: WarningMessage[] = [];
     parseError: string = null;
+
+    mmSelected:boolean = false;
+    mmPath:string = '';
     
     config : DseConfiguration;
     cosimConfig:string[] = [];
@@ -74,11 +78,11 @@ export class DseConfigurationComponent {
         this.navigationService.registerComponent(this);
     }
 
-    parseConfig() {
+    parseConfig(mmPath : string) {
        let project = IntoCpsApp.getInstance().getActiveProject();
        
        DseConfiguration
-           .parse(this.path, project.getRootFilePath(), project.getFmusPath())
+           .parse(this.path, project.getRootFilePath(), project.getFmusPath(), mmPath)
            .then(config => {
                 this.zone.run(() => {
                     //this.parseError = null;
@@ -159,6 +163,16 @@ export class DseConfigurationComponent {
        
         this.editing = false;
     }
+    
+    onMMSubmit() {
+        if (!this.editingMM) return;
+        this.editingMM = false;
+        if (this.mmPath !='')
+        {
+            this.mmSelected = true;
+        }
+    }
+    
 
     getFiles(path: string): string [] {
         var fileList: string[] = [];
@@ -187,9 +201,12 @@ export class DseConfigurationComponent {
         return mm + " | " + ex;
     }
 
+    getMultiModelName():string{
+        return this.experimentName(this.mmPath);
+    }
+
     onConfigChange(config:string) {
         this.coeconfig = config;
-        this.config.coeConfig = config;
         let mmPath = Path.join(this.coeconfig, "..", "..", "mm.json");
 
         if (!fs.existsSync(mmPath)) {
@@ -203,8 +220,8 @@ export class DseConfigurationComponent {
                 }
             });
         }
-
-        this.config.setMultiModel(mmPath);
+        this.mmPath=mmPath;
+        this.parseConfig(mmPath);
     }
 
     getSearchAlgorithm(){
@@ -241,16 +258,35 @@ export class DseConfigurationComponent {
         return ['Real', 'Bool', 'Int', 'String', 'Unknown'][type];
     }
 
+    addParameter() {
+        if (!this.newParameter) return;
+
+        this.selectedParameterInstance.initialValues.set(this.newParameter, []);
+        this.newParameter = this.getParameters()[0];
 
 
+        // addParameter(){
+        //     let p = this.config.addInstance();
+        //    // let pArray = <FormArray>this.form.find('params');
+            
+        //   //  pArray.push(new FormControl(this.getParameterName(p)));
+        // }
+      }
 
-    /* MAY NEED CHANGING - CHECK WHEN TESTING*/
-    addParameter(){
-        let p = this.config.addParameter();
-       // let pArray = <FormArray>this.form.find('params');
-        
-      //  pArray.push(new FormControl(this.getParameterName(p)));
+    removeParameter(instance: Instance, parameter: ScalarVariable) {
+        instance.initialValues.delete(parameter);
+        this.newParameter = this.getParameters()[0];
+
+
+        // removeParameter(p:DseParameter){
+        //     this.config.removeParameter(p);
+        //    /// let pArray = <FormArray>this.form.find('params');
+        //    // let index = this.config.dseParameters.indexOf(p);
+            
+        //   //  pArray.removeAt(index);
+        // }
     }
+
 
     setParameterName(p: DseParameter, name: string) {
         p.param = `${name}`;
@@ -260,12 +296,19 @@ export class DseConfigurationComponent {
         return p.param;
     }
 
-    removeParameter(p:DseParameter){
-        this.config.removeParameter(p);
-       /// let pArray = <FormArray>this.form.find('params');
-       // let index = this.config.dseParameters.indexOf(p);
-        
-      //  pArray.removeAt(index);
+    setParameter(parameter: ScalarVariable, value: any) {
+        // if (parameter.type === ScalarVariableType.Real)
+        //     value = parseFloat(value);
+        // else if (parameter.type === ScalarVariableType.Int)
+        //     value = parseInt(value);
+        // else if (parameter.type === ScalarVariableType.Bool)
+        //     value = !!value;
+
+        this.selectedParameterInstance.initialValues.set(parameter, value);
+    }
+
+    dseParamExists(instance: Instance) :boolean{
+        return (0!=this.config.dseSearchParameters.indexOf(instance));
     }
 
     addParameterInitialValue(p: DseParameter, value: any) {

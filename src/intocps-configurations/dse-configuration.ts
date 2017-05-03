@@ -2,7 +2,11 @@ import { FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES, Validators, FormArray, FormC
 import { numberValidator } from "../angular2-app/shared/validators";
 import * as fs from "fs"
 import { DseParser } from "./dse-parser"
-import { Fmu, ScalarVariableType, ScalarVariable} from "../angular2-app/coe/models/Fmu";
+import {Serializer} from "./Parser";
+import {
+    Fmu, Instance, ScalarVariableType, isTypeCompatipleWithValue,
+    isTypeCompatiple, InstanceScalarPair, ScalarVariable
+} from "../angular2-app/coe/models/Fmu";
 import {WarningMessage, ErrorMessage} from "./Messages";
 import { MultiModelConfig } from "./MultiModelConfig"
 
@@ -15,13 +19,13 @@ export class DseConfiguration implements ISerializable {
     objConst : DseObjectiveConstraint []= [];
     paramConst : DseParameterConstraint []= [];
     dseParameters : DseParameter[] =[];
+    dseSearchParameters : Instance [] = [];
     extScrObjectives : ExternalScript[] = [];
     intFunctObjectives : InternalFunction[] = [];
     ranking : IDseRanking = new ParetoRanking([]);
 
-    coeConfig:string = '';   
     fmuRootPath:string ='';
-    multiModel: MultiModelConfig;
+    multiModel: MultiModelConfig = null;
 
 
     toObject() {
@@ -41,9 +45,27 @@ export class DseConfiguration implements ISerializable {
         });
 
         let params : any = {};
+        //TO DO: REPLACE WITM MM VERSION
         this.dseParameters.forEach((p:DseParameter) =>{
             params[p.param] = p.initialValues
         });
+
+        let dseparameters:any = {};
+
+        this.dseSearchParameters.forEach((instance: Instance) => {
+            instance.initialValues.forEach((value: any, sv: ScalarVariable) => {
+                let id: string = Serializer.getIdSv(instance, sv);
+
+                if(sv.type === ScalarVariableType.Bool)
+                    dseparameters[id] = value;//Boolean(value); NEED TO CHANGE TO AN ARRAY
+                else if(sv.type === ScalarVariableType.Int || sv.type === ScalarVariableType.Real)
+                    dseparameters[id] = value;//Number(value); NEED TO CHANGE TO AN ARRAY
+                else
+                    dseparameters[id] = value;
+            });
+        });
+
+
 
         let extScr : any = {};
         let intFunc : any = {}; //INTERNAL FUNCTIONS NOT YET SUPPORTED
@@ -60,7 +82,7 @@ export class DseConfiguration implements ISerializable {
             objectiveConstraints: oConst,
             objectiveDefinitions: objDefs,
             parameterConstraints: pConst,
-            parameters: params,
+            parameters: dseparameters,
             ranking: this.ranking.toObject(),
             scenarios: scen
         }
@@ -104,31 +126,67 @@ export class DseConfiguration implements ISerializable {
         this.paramConst.splice(this.paramConst.indexOf(pc), 1);
     }
 
-    public addParameter(){
-        let param = new DseParameter("");
-        this.dseParameters.push(param);
-        return param;
+
+
+
+    public getInstance(fmuName: string, instanceName: string) {
+        return this.dseSearchParameters.find(v => v.fmu.name == fmuName && v.name == instanceName) || null;
     }
 
-    getParameter(paramName: string){
-        return this.dseParameters.find(v => v.param == paramName) || null;
-    }
-    
-    public getParameterOrCreate(paramName: string) {
-        let param = this.getParameter(paramName);
+    public getInstanceOrCreate(fmuName: string, instanceName: string) {
+        let instance = this.getInstance(fmuName, instanceName);
 
-        //config does not contain this param
-        if (!param) {
-            param = new DseParameter(paramName)
-            this.dseParameters.push(param);
+        if (!instance) {
+            //multimodel does not contain this instance
+            let fmu = this.multiModel.getFmu(fmuName);
+
+            if (fmu) {
+                instance = new Instance(fmu, instanceName);
+                this.dseSearchParameters.push(instance);
+            }
         }
-        return param;
+
+        return instance;
     }
 
-    public removeParameter(p:DseParameter){
-        let index = this.dseParameters.indexOf(p);
-        this.dseParameters.splice(index, 1);
+    public addInstance(fmu:Fmu, name?:string) {
+        let instance = new Instance(fmu, name || `${fmu.name.replace(/[{}]/g, "")}Instance`);
+        this.dseSearchParameters.push(instance);
+
+        return instance;
     }
+
+    public removeInstance(instance: Instance) {
+        // Remove the instance
+        this.dseSearchParameters.splice(this.dseSearchParameters.indexOf(instance), 1);
+    }
+
+
+    //TRYING NEW PARAMETER REPRESENTATION
+    // public addParameter(){
+    //     let param = new DseParameter("");
+    //     this.dseParameters.push(param);
+    //     return param;
+    // }
+
+    // getParameter(paramName: string){
+    //     return this.dseParameters.find(v => v.param == paramName) || null;
+    // }
+
+    // public getParameterOrCreate(paramName: string) {
+    //     let param = this.getParameter(paramName);
+    //     //config does not contain this param
+    //     if (!param) {
+    //         param = new DseParameter(paramName)
+    //         this.dseParameters.push(param);
+    //     }
+    //     return param;
+    // }
+
+    // public removeParameter(p:DseParameter){
+    //     let index = this.dseParameters.indexOf(p);
+    //     this.dseParameters.splice(index, 1);
+    // }
 
     public addExternalScript(){
         let es = new ExternalScript("","",[]);
@@ -166,13 +224,13 @@ export class DseConfiguration implements ISerializable {
     }
 
 
-    static parse(path: string, projectRoot: string, fmuRootPath: string): Promise<DseConfiguration> {
+    static parse(path: string, projectRoot: string, fmuRootPath: string, mmPath: string): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
             fs.access(path, fs.constants.R_OK, error => {
                 if (error) return reject(error);
                 fs.readFile(path, (error, content) => {
                     if (error) return reject(error);
-                    this.create(path, projectRoot, fmuRootPath, JSON.parse(content.toString()))
+                    this.create(path, projectRoot, fmuRootPath, mmPath, JSON.parse(content.toString()))
                         .then(dseConfig => resolve(dseConfig))
                         .catch(error => reject(error));
                 });
@@ -180,24 +238,29 @@ export class DseConfiguration implements ISerializable {
         });
     }
 
-    static create(path:string, projectRoot: string, fmuRootPath: string, data: any): Promise<DseConfiguration> {
+    static create(path:string, projectRoot: string, fmuRootPath: string, mmPath: string, data: any): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
+            MultiModelConfig
+                .parse(mmPath, fmuRootPath)
+                .then(multiModel => {
+               
+                let parser = new DseParser();
+                let configuration = new DseConfiguration();
+                configuration.sourcePath = path;
 
-            let parser = new DseParser();
-            let configuration = new DseConfiguration();
-            configuration.sourcePath = path;
-            configuration.multiModel = null;
+                configuration.fmuRootPath = fmuRootPath;
 
-            configuration.fmuRootPath = fmuRootPath;
-            parser.parseSearchAlgorithm(data, configuration);
-            parser.parseScenarios(data, configuration);
-            parser.parseObjectiveConstraint(data, configuration);
-            parser.parseParameterConstraints(data, configuration);
-            parser.parseParameters(data, configuration);
-            parser.parseExtScrObjectives(data, configuration);
-            parser.parseIntFuncsObjectives(data, configuration);
-            parser.parseRanking(data,configuration);
-            resolve(configuration)
+                configuration.multiModel = multiModel;
+                parser.parseSearchAlgorithm(data, configuration);
+                parser.parseScenarios(data, configuration);
+                parser.parseObjectiveConstraint(data, configuration);
+                parser.parseParameterConstraints(data, configuration);
+                parser.parseParameters(data, configuration);
+                parser.parseExtScrObjectives(data, configuration);
+                parser.parseIntFuncsObjectives(data, configuration);
+                parser.parseRanking(data,configuration);
+                resolve(configuration)
+             })
         })
 
     }
@@ -205,11 +268,7 @@ export class DseConfiguration implements ISerializable {
     setMultiModel(mmPath: string): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
             
-            MultiModelConfig
-                .parse(mmPath, this.fmuRootPath)
-                .then(multiModel => {
-                    this.multiModel = multiModel;
-                })
+            
         });
     }
 

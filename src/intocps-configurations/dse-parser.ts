@@ -1,4 +1,7 @@
 import { ParetoDimension,DseConfiguration,DseParameterConstraint, DseScenario, DseObjectiveConstraint,IDseObjective, ObjectiveParam, ExternalScript, IDseAlgorithm, DseParameter, IDseRanking, ParetoRanking, GeneticSearch, ExhaustiveSearch} from "./dse-configuration"
+import { Fmu, InstanceScalarPair, Instance, ScalarVariable, CausalityType } from "../angular2-app/coe/models/Fmu";
+
+
 export class DseParser{
     protected SEARCH_ALGORITHM_TAG: string = "algorithm"
     protected SEARCH_ALGORITHM_TYPE:string = "type"
@@ -74,13 +77,13 @@ export class DseParser{
 
      //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
      //Utility method to obtain an instance from the multimodel by its string id encoding
-    private getParameter(dse: DseConfiguration, id: string): DseParameter {
-       // let ids = this.parseId(id);
+    private getParameter(dse: DseConfiguration, id: string): Instance {
+        let ids = this.parseId(id);
 
-       // let fmuName = ids[0];
-        //let instanceName = ids[1];
-        //let scalarVariableName = ids[2];
-        return dse.getParameterOrCreate(id);
+        let fmuName = ids[0];
+        let instanceName = ids[1];
+        let scalarVariableName = ids[2];
+        return dse.getInstanceOrCreate(fmuName, instanceName);
     }
 
     parseParameters(data: any, dse:DseConfiguration){
