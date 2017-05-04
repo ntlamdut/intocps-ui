@@ -5,7 +5,7 @@ import {
     Fmu, ScalarValuePair, ScalarVariableType
 } from "../coe/models/Fmu";
 import IntoCpsApp from "../../IntoCpsApp";
-import {ParetoDimension, DseConfiguration, ParetoRanking, ExternalScript, DseParameter, DseScenario, DseParameterConstraint, DseObjectiveConstraint,IDseAlgorithm, GeneticSearch, ExhaustiveSearch} from "../../intocps-configurations/dse-configuration";
+import {ParetoDimension, InternalFunction, DseConfiguration, ParetoRanking, ExternalScript, DseParameter, DseScenario, DseParameterConstraint, DseObjectiveConstraint,IDseAlgorithm, GeneticSearch, ExhaustiveSearch} from "../../intocps-configurations/dse-configuration";
 import { WarningMessage } from "../../intocps-configurations/Messages";
 import { NavigationService } from "../shared/navigation.service";
 import { FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators } from "@angular/forms";
@@ -57,6 +57,7 @@ export class DseConfigurationComponent {
     
     config : DseConfiguration;
     cosimConfig:string[] = [];
+    objNames:string[] = [];
     coeconfig:string = '';
 
     private selectedParameterInstance: Instance;
@@ -68,9 +69,15 @@ export class DseConfigurationComponent {
         GeneticSearch
     ];
 
+    private internalFunctionTypes = [
+        "max",
+        "min",
+        "mean"
+    ];
+
     private paretoDirections = [
-        "Minimise",
-        "Maximise"
+        "-",
+        "+"
     ];
 
   
@@ -88,7 +95,7 @@ export class DseConfigurationComponent {
                     //this.parseError = null;
 
                     this.config = config;
-                    
+                    this.objNames = this.getObjectiveNames();
 
                     // Create an array of the algorithm from the coe config and a new instance of all other algorithms
                     this.algorithms = this.algorithmConstructors
@@ -105,7 +112,7 @@ export class DseConfigurationComponent {
                     // Create a form group for validation
                     this.form = new FormGroup({
                         searchAlgorithm :  this.algorithmFormGroups.get(this.config.searchAlgorithm),
-                  //    params : new FormArray(this.config.dseParameters.map(c => new FormControl(c))),
+                        //params : new FormArray(this.config.dseParameters.map(c => new FormControl(c))),
                         paramConstraints : new FormArray(this.config.paramConst.map(c => new FormControl(c))),
                         objConstraints : new FormArray(this.config.objConst.map(c => new FormControl(c))),
                         extscr : new FormArray(this.config.extScrObjectives.map(s => new FormControl(s))),
@@ -230,7 +237,6 @@ export class DseConfigurationComponent {
 
 
     /* REUSED FROM MM-CONFIG */
-
     selectParameterInstance(instance: Instance) {
         this.selectedParameterInstance = instance;
         this.newParameter = this.getParameters()[0];
@@ -263,28 +269,11 @@ export class DseConfigurationComponent {
 
         this.selectedParameterInstance.initialValues.set(this.newParameter, []);
         this.newParameter = this.getParameters()[0];
-
-
-        // addParameter(){
-        //     let p = this.config.addInstance();
-        //    // let pArray = <FormArray>this.form.find('params');
-            
-        //   //  pArray.push(new FormControl(this.getParameterName(p)));
-        // }
       }
 
     removeParameter(instance: Instance, parameter: ScalarVariable) {
         instance.initialValues.delete(parameter);
         this.newParameter = this.getParameters()[0];
-
-
-        // removeParameter(p:DseParameter){
-        //     this.config.removeParameter(p);
-        //    /// let pArray = <FormArray>this.form.find('params');
-        //    // let index = this.config.dseParameters.indexOf(p);
-            
-        //   //  pArray.removeAt(index);
-        // }
     }
 
 
@@ -296,19 +285,144 @@ export class DseConfigurationComponent {
         return p.param;
     }
 
-    setParameter(parameter: ScalarVariable, value: any) {
-        // if (parameter.type === ScalarVariableType.Real)
-        //     value = parseFloat(value);
-        // else if (parameter.type === ScalarVariableType.Int)
-        //     value = parseInt(value);
-        // else if (parameter.type === ScalarVariableType.Bool)
-        //     value = !!value;
+    setDSEParameter(instance: Instance, variableName:string, newValue: any) {
+        //MUST MAKE NEWVALUE INTO AN ARRAY/PARSE AS ABOVE!!!! 
+        if (!newValue.includes(",")){
+            if (instance.fmu.getScalarVariable(variableName).type === ScalarVariableType.Real)
+                newValue = parseFloat(newValue);
+            else if (instance.fmu.getScalarVariable(variableName).type === ScalarVariableType.Int)
+                newValue = parseInt(newValue);
+            else if (instance.fmu.getScalarVariable(variableName).type === ScalarVariableType.Bool)
+                newValue = !!newValue;
+        }
+        else{
+            newValue = this.parseArray(instance.fmu.getScalarVariable(variableName).type, newValue);
+        }
 
-        this.selectedParameterInstance.initialValues.set(parameter, value);
+        let varExistsInDSE = false
+        let instanceExistsInDSE = false
+
+        for (let dseParam of this.config.dseSearchParameters) {
+            if (dseParam.name === instance.name) {
+                instanceExistsInDSE = true
+                dseParam.initialValues.forEach((value, variable) => {
+                    if (variable.name === variableName){
+                          dseParam.initialValues.set(variable, newValue)
+                          varExistsInDSE = true
+                    }
+                })
+            }
+        }
+        if(!instanceExistsInDSE){
+            let newInstance = this.addDSEParameter(instance);            
+            newInstance.initialValues.set(instance.fmu.getScalarVariable(variableName), newValue);
+        }
+        if(!varExistsInDSE){
+            for (let dseParam of this.config.dseSearchParameters) {
+                if (dseParam.name === instance.name) {
+                    dseParam.initialValues.set(instance.fmu.getScalarVariable(variableName), newValue);
+                }
+            }        
+        }
     }
 
-    dseParamExists(instance: Instance) :boolean{
-        return (0!=this.config.dseSearchParameters.indexOf(instance));
+    addDSEParameter(instance: Instance):Instance{
+        let newInstance = instance
+        this.config.dseSearchParameters.push(newInstance);            
+        return newInstance;
+    }
+    
+    removeDSEParameter(instance: Instance, variableName:string) {
+        for (let dseParam of this.config.dseSearchParameters) {
+            if (dseParam.name === instance.name) {
+                dseParam.initialValues.delete(instance.fmu.getScalarVariable(variableName));
+            }
+        }
+    }
+
+    parseArray(tp : ScalarVariableType, value: any):any []{
+        let newArray = value.split(",")
+        for(let v of newArray){
+            if (tp === ScalarVariableType.Real)
+                newArray.splice(newArray.indexOf(v),1, parseFloat(v));
+            else if (tp === ScalarVariableType.Int)
+                newArray.splice(newArray.indexOf(v),1, parseInt(v));
+            else if (tp === ScalarVariableType.Bool)
+                newArray.splice(newArray.indexOf(v),1, !!v);
+        }
+        return newArray
+    }
+
+    //Utility method to obtain an instance from the multimodel by its string id encoding
+    private getParameter(dse: DseConfiguration, id: string): Instance {
+        let ids = this.parseId(id);
+
+        let fmuName = ids[0];
+        let instanceName = ids[1];
+        let scalarVariableName = ids[2];
+        return dse.getInstanceOrCreate(fmuName, instanceName);
+    }
+
+    parseId(id: string): string[] {
+        //is must have the form: '{' + fmuName '}' + '.' instance-name + '.' + scalar-variable
+        // restriction is that instance-name cannot have '.'
+
+        let indexEndCurlyBracket = id.indexOf('}');
+        if (indexEndCurlyBracket <= 0) {
+            throw "Invalid id";
+        }
+
+        let fmuName = id.substring(0, indexEndCurlyBracket + 1);
+        var rest = id.substring(indexEndCurlyBracket + 1);
+        var dotIndex = rest.indexOf('.');
+        if (dotIndex < 0) {
+            throw "Missing dot after fmu name";
+        }
+        rest = rest.substring(dotIndex + 1);
+        //this is instance-name start index 0
+
+        dotIndex = rest.indexOf('.');
+        if (dotIndex < 0) {
+            throw "Missing dot after instance name";
+        }
+        let instanceName = rest.substring(0, dotIndex);
+        let scalarVariableName = rest.substring(dotIndex + 1);
+
+        return [fmuName, instanceName, scalarVariableName];
+    }
+
+    dseParamExists(instance: Instance, variableName:string) :boolean{    
+        let paramFound = false;
+        
+        for (let dseParam of this.config.dseSearchParameters) {
+            if (dseParam.name === instance.name) {
+                dseParam.initialValues.forEach((value, variable) => {
+                    if (variable.name === variableName){
+                        paramFound = true;
+                    }
+                })
+            }
+        }
+        return paramFound;
+    }
+
+
+    getDseParamValue(instance: Instance, variableName:string) :any{    
+        let result = "ERROR";
+        for (let dseParam of this.config.dseSearchParameters) {
+            if (dseParam.name === instance.name) {
+                dseParam.initialValues.forEach((value, variable) => {
+                    if (variable.name === variableName){
+                        result = value;
+                    }
+                })
+            }
+        }
+        return result;
+    }
+
+    testOp(instance: Instance, variableName:string) : string{
+        return instance.name + " " + variableName;
     }
 
     addParameterInitialValue(p: DseParameter, value: any) {
@@ -355,9 +469,6 @@ export class DseConfigurationComponent {
 
     addExternalScript(){
         let es = this.config.addExternalScript();
-       // let eArray = <FormArray>this.form.find('extscr');
-        
-      //  eArray.push(new FormControl(this.getParameterName(p)));
     }
 
     getExternalScriptName(e: ExternalScript){
@@ -395,20 +506,61 @@ export class DseConfigurationComponent {
         e.removeParameter(value);
     }
 
-
     removeExternalScript(e:ExternalScript){
         this.config.removeExternalScript(e);
-       /// let pArray = <FormArray>this.form.find('extScr');
-       // let index = this.config.dseParameters.indexOf(p);
+    }
+
+
+
+    addInternalFunction(){
+        let intf = this.config.addInternalFunction();
+    }
+
+    removeInternalFunction(i:InternalFunction){
+        this.config.removeInternalFunction(i);
+    }
+
+    getInternalFunctionName(i: InternalFunction){
+        return i.name;
+    }
+
+    setInternalFunctionName(i: InternalFunction, name: string) {
+        i.name = `${name}`;
+    }
+
+    getInternalFunctionColumnName(i: InternalFunction){
+        return i.columnId;
+    }
+
+    setInternalFunctionColumnName(i: InternalFunction, name: string) {
+        i.columnId = `${name}`;
+    }
+
+    getInternalFunctionObjectiveType(i: InternalFunction){
+        return i.funcType;
+    }
+
+    setInternalFunctionObjectiveType(i: InternalFunction, name: string) {
+        i.funcType = `${name}`;
+    }
+
+
+
+    getObjectiveNames():string []{
+        let objNames = [""];
+        this.config.extScrObjectives.forEach((o:ExternalScript) =>{
+            objNames.push(o.name)
+        });
+        this.config.intFunctObjectives.forEach((o:InternalFunction) =>{
+            objNames.push(o.name)
+        });
         
-      //  pArray.removeAt(index);
+        return objNames;
     }
 
-    addinternalFunction(){
-        //To add
+    onDimensionChange(pd: ParetoDimension, d:string){
+        pd.objectiveName = d;
     }
-
-
 
     addObjectiveConstraint(){
         let oc = this.config.addObjectiveConstraint();

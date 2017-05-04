@@ -73,6 +73,10 @@ export class DseConfiguration implements ISerializable {
         this.extScrObjectives.forEach((o:ExternalScript) =>{
             extScr[o.name] = o.toObject(); 
         });
+
+        this.intFunctObjectives.forEach((o:InternalFunction) =>{
+            intFunc[o.name] = o.toObject(); 
+        });
         objDefs["externalScripts"] = extScr;
         objDefs["internalFunctions"] = intFunc;
 
@@ -161,33 +165,6 @@ export class DseConfiguration implements ISerializable {
         this.dseSearchParameters.splice(this.dseSearchParameters.indexOf(instance), 1);
     }
 
-
-    //TRYING NEW PARAMETER REPRESENTATION
-    // public addParameter(){
-    //     let param = new DseParameter("");
-    //     this.dseParameters.push(param);
-    //     return param;
-    // }
-
-    // getParameter(paramName: string){
-    //     return this.dseParameters.find(v => v.param == paramName) || null;
-    // }
-
-    // public getParameterOrCreate(paramName: string) {
-    //     let param = this.getParameter(paramName);
-    //     //config does not contain this param
-    //     if (!param) {
-    //         param = new DseParameter(paramName)
-    //         this.dseParameters.push(param);
-    //     }
-    //     return param;
-    // }
-
-    // public removeParameter(p:DseParameter){
-    //     let index = this.dseParameters.indexOf(p);
-    //     this.dseParameters.splice(index, 1);
-    // }
-
     public addExternalScript(){
         let es = new ExternalScript("","",[]);
         this.extScrObjectives.push(es);
@@ -202,6 +179,23 @@ export class DseConfiguration implements ISerializable {
         this.extScrObjectives.splice(index, 1);
     }
     
+
+    public addInternalFunction(){
+        let intF = new InternalFunction("","","");
+        this.intFunctObjectives.push(intF);
+        return intF;
+    }
+
+    public newInternalFunction(name:string, columnId:string, objTp:string){
+         this.intFunctObjectives.push(new InternalFunction(name, columnId, objTp));
+    }
+
+    public removeInternalFunction(i:InternalFunction){
+        let index = this.intFunctObjectives.indexOf(i);
+        this.intFunctObjectives.splice(index, 1);
+    }
+
+
 
     public newRanking(r: IDseRanking){
         this.ranking = r;
@@ -447,7 +441,7 @@ export class InternalFunction implements IDseObjective{
     funcType = "";
     columnId = ""
 
-    constructor(n:string, fType:string, cId : ""){
+    constructor(n:string, cId : string, fType:string){
         this.name = n;
         this.funcType = fType;
         this.columnId = cId;
@@ -459,8 +453,8 @@ export class InternalFunction implements IDseObjective{
 
     toObject() {
         return {
-            objectiveType : this.funcType,
             columnID: this.columnId,
+            objectiveType : this.funcType,
         };
     }
 

@@ -28,8 +28,6 @@
 </form>
 		<hr>
 		<hr>
-		<hr>
-		<hr>
 
 <form *ngIf="mmSelected" class="form-horizontal" (ngSubmit)="onSubmit()">
 	<button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
@@ -80,44 +78,12 @@
 		</div>
 
 		<hr>
-		<hr>
-
-		<!--h4>Search Parameters<button *ngIf="editing" type="button" (click)="addParameter()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Parameter</button></h4>
-
-		<div class="row">
-			<div class="col-md-4"><label>Multi-model Parameter</label></div>
-			<div class="col-md-4"><label>Initial Values</label></div>
-		</div>
-
-		<div class="row" *ngFor="let p of config.dseParameters">
-			<div class="col-md-4">
-				<p *ngIf="!editing" class="form-control-static">{{getParameterName(p)}}</p>
-				<input *ngIf="editing" [ngModel]="getParameterName(p)" (ngModelChange)="setParameterName(p, $event)" [ngModelOptions]="{standalone:true}"
-					class="form-control input-fixed-size input-sm">
-				<button *ngIf="editing" type="button" (click)="addParameterInitialValue(p, '')" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Value</button>
-			</div>
-			<div class ="col-md-4">
-				<div class="row" *ngFor="let val of getParameterIntialValues(p)">
-					<p *ngIf="!editing" class="form-control-static">{{val}}</p>
-					<input *ngIf="editing" [ngModel]="val" (ngModelChange)="setParameterIntialValues(p, val, $event)" [ngModelOptions]="{standalone:true}"
-						class="form-control input-fixed-size input-sm">
-					<button *ngIf="editing" type="button" (click)="removeParameterInitialValue(p, val)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span>Remove Value</button>
-				</div>
-			</div>
-			<div class="col-md-1">
-				<button *ngIf="editing" type="button" (click)="removeParameter(p)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span>Remove Parameter</button>
-			</div>
-		</div>
-		
-		
-		<hr>
-		<hr-->
 
 
 	<h4>Experiment parameters</h4>
 
 		<div *ngIf="config.multiModel != null" class="row">
-			<div class="col-md-3">
+			<div class="col-md-4">
 				<h5><label>Instance</label></h5>
 
 				<ul class="list-group">
@@ -125,7 +91,7 @@
 						class="list-group-item">{{instance.fmu.name}}.{{instance.name}}</a>
 				</ul>
 			</div>
-			<div class="col-md-9">
+			<div class="col-md-8">
 				<div class="row">
 					<div class="col-md-6">
 						<h5><label>Parameters</label></h5>
@@ -144,13 +110,7 @@
 					</div>
 				</div>
 
-				<!-- NEEDS TO CHECK IN DSE CONFIG FIRST. IF THERE, THEN READ THAT, OTHERWISE LOOK IN MM -->
-				<div *ngIf="selectedParameterInstance && dseParamExists(selectedParameterInstance)">
-					IS A DSE
-				</div>
-
-				<!-- NEEDS TO CHECK IN DSE CONFIG FIRST. IF THERE, THEN READ THAT, OTHERWISE LOOK IN MM -->
-				<div *ngIf="selectedParameterInstance && !dseParamExists(selectedParameterInstance)">
+				<div *ngIf="selectedParameterInstance">
 					<div *ngFor="let initialValue of getInitialValues(); let i=index" class="row">
 						<div class="col-md-2">
 							<p class="form-control-static">
@@ -160,12 +120,22 @@
 							</p>
 						</div>
 						<div class="col-md-10">
-							<p *ngIf="!editing" class="form-control-static">{{initialValue.value}}</p>
-							<div *ngIf="editing" class="input-group">
-								<input [value]="initialValue.value" (change)="setParameter(initialValue.scalarVariable, $event.target.value)" class="form-control input-sm">
-								<!--span class="input-group-btn">
-									<button type="button" (click)="removeParameter(selectedParameterInstance, initialValue.scalarVariable)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span></button>
-								</span-->
+
+							<!-- NEEDS TO CHECK IN DSE CONFIG FIRST. IF THERE, THEN READ THAT, OTHERWISE LOOK IN MM -->
+							<div *ngIf="dseParamExists(selectedParameterInstance, initialValue.scalarVariable.name)">
+								<p *ngIf="!editing" class="form-control-static">{{getDseParamValue(selectedParameterInstance, initialValue.scalarVariable.name)}}</p>
+								<div *ngIf="editing" class="input-group">
+									<input [value]="getDseParamValue(selectedParameterInstance, initialValue.scalarVariable.name)" (change)="setDSEParameter(selectedParameterInstance, initialValue.scalarVariable.name, $event.target.value)" class="form-control input-sm">
+									<span class="input-group-btn">
+										<button type="button" (click)="removeDSEParameter(selectedParameterInstance, initialValue.scalarVariable.name)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span>Remove DSE Parameter</button>
+									</span>
+								</div>
+							</div>
+							<div *ngIf="!dseParamExists(selectedParameterInstance, initialValue.scalarVariable.name)">
+								<p *ngIf="!editing" class="form-control-static">{{initialValue.value}}</p>
+								<div *ngIf="editing" class="input-group">
+									<input [value]="initialValue.value" (change)="setDSEParameter(selectedParameterInstance, initialValue.scalarVariable.name, $event.target.value)" class="form-control input-sm">
+								</div>
 							</div>
 						</div>
 					</div>
@@ -175,17 +145,13 @@
 
 
 		<hr>
-		<hr>
 
 
 		<h4>Parameter Constraints <button *ngIf="editing" type="button" (click)="addParameterConstraint()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Constraint</button></h4>
 
-		<div class="row">
-			<div class="col-md-4"><label>Constraint</label></div>
-		</div>
 		
 		<div class="row" *ngFor="let p of config.paramConst">
-			<div class ="col-md-4">
+			<div class ="col-md-6">
 				<p *ngIf="!editing" class="form-control-static">{{getParameterConstraint(p)}}</p>
 				<input *ngIf="editing" [ngModel]="getParameterConstraint(p)" (ngModelChange)="setParameterConstraint(p, $event)" [ngModelOptions]="{standalone:true}"
 					class="form-control input-fixed-size">
@@ -197,25 +163,24 @@
 
 
 		<hr>
-		<hr>
 
 
-		<h4>External Script Objectives <button *ngIf="editing" type="button" (click)="addExternalScript()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button> </h4>
+		<h4>External Script Objectives <button *ngIf="editing" type="button" (click)="addExternalScript()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add External Script Objective</button> </h4>
 		
 		<div class="row">
-			<div class="col-md-4"><label>Objective Name</label></div>
-			<div class="col-md-4"><label>File Name</label></div>
+			<div class="col-md-3"><label>Objective Name</label></div>
+			<div class="col-md-3"><label>File Name</label></div>
 			<div class="col-md-3"><label>Arguments</label></div>
 		</div>
 
 		<div class="row" *ngFor="let e of config.extScrObjectives">
-			<div class = "col-md-4">
+			<div class = "col-md-3">
 				<p *ngIf="!editing" class="form-control-static">{{getExternalScriptName(e)}}</p>
 				<input *ngIf="editing" [ngModel]="getExternalScriptName(e)" (ngModelChange)="setExternalScriptName(e, $event)" [ngModelOptions]="{standalone:true}"
 					class="form-control input-fixed-size input-sm">
 				<button *ngIf="editing" type="button" (click)="removeExternalScript(e)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span>Remove External Script</button>
 			</div>
-			<div class = "col-md-4">
+			<div class = "col-md-3">
 				<p *ngIf="!editing" class="form-control-static">{{getExternalScriptFilename(e)}}</p>
 				<input *ngIf="editing" [ngModel]="getExternalScriptFilename(e)" (ngModelChange)="setExternalScriptFileName(e, $event)" [ngModelOptions]="{standalone:true}"
 					class="form-control input-fixed-size input-sm">
@@ -243,21 +208,49 @@
 
 
 		<hr>
-		<hr>
 
-		<h4>Internal Function Objectives<button *ngIf="editing" type="button" (click)="addinternalFunction()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button> </h4>
+		<h4>Internal Function Objectives<button *ngIf="editing" type="button" (click)="addInternalFunction()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Internal Function Objective</button></h4>
 
-		<hr>
+		<div class="row">
+			<div class="col-md-3"><label>Objective Name</label></div>
+			<div class="col-md-3"><label>Output ID</label></div>
+			<div class="col-md-3"><label>Objective Type</label></div>
+		</div>
+
+		<div class="row" *ngFor="let i of config.intFunctObjectives">
+			<div class = "col-md-3">
+				<p *ngIf="!editing" class="form-control-static">{{getExternalScriptName(i)}}</p>
+				<input *ngIf="editing" [ngModel]="getExternalScriptName(i)" (ngModelChange)="setExternalScriptName(i, $event)" [ngModelOptions]="{standalone:true}"
+					class="form-control input-fixed-size input-sm">
+				<button *ngIf="editing" type="button" (click)="removeInternalFunction(i)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span>Remove External Script</button>
+			</div>
+			<div class = "col-md-3">
+				<p *ngIf="!editing" class="form-control-static">{{getInternalFunctionColumnName(i)}}</p>
+				<input *ngIf="editing" [ngModel]="getInternalFunctionColumnName(i)" (ngModelChange)="setInternalFunctionColumnName(i, $event)" [ngModelOptions]="{standalone:true}"
+					class="form-control input-fixed-size input-sm">
+			</div>
+			<div class = "col-md-3">
+				<p *ngIf="!editing" class="form-control-static">{{getInternalFunctionObjectiveType(i)}}</p>
+				<!--input *ngIf="editing" [ngModel]="getInternalFunctionObjectiveType(i)" (ngModelChange)="setInternalFunctionObjectiveType(i, $event)" [ngModelOptions]="{standalone:true}"
+					class="form-control input-fixed-size input-sm"-->
+
+				<select *ngIf="editing" [ngModel]="getInternalFunctionObjectiveType(i)" (ngModelChange)="setInternalFunctionObjectiveType(i, $event)" [ngModelOptions]="{standalone:true}"
+								class="form-control">
+					<option *ngFor="let ift of internalFunctionTypes" [ngValue]="ift">{{ift}}</option>
+				</select>		
+			</div>
+		</div>
+
+
+
+
 		<hr>
 
 		<h4>Objective Constraints <button *ngIf="editing" type="button" (click)="addObjectiveConstraint()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Constraint</button> </h4>
 
-		<div class="row">
-			<div class="col-md-4"><label>Constraint</label></div>
-		</div>
 
 		<div class="row" *ngFor="let o of config.objConst">
-			<div class="col-md-4">
+			<div class="col-md-6">
 				<p *ngIf="!editing" class="form-control-static">{{getObjectiveConstraint(o)}}</p>
 				<input *ngIf="editing" [ngModel]="getObjectiveConstraint(o)" (ngModelChange)="setObjectiveConstraint(o, $event)" [ngModelOptions]="{standalone:true}"
 					class="form-control input-fixed-size input-sm">
@@ -268,14 +261,13 @@
 		</div>
 
 		<hr>
-		<hr>
 
 		<h4>Ranking</h4>
 
 
 		<div class="row">
 				<div class="col-md-3"><label>Ranking Method</label></div>
-				<div *ngIf="getRankingMethod() == 'Pareto'" class="col-md-6"><label>Dimensions</label></div>
+				<div *ngIf="getRankingMethod() == 'Pareto'" class="col-md-7"><label>Dimensions</label></div>
 		</div>
 		
 		<div class="row">
@@ -283,19 +275,21 @@
 				{{getRankingMethod()}}
 				<button *ngIf="editing && getRankingMethod() == 'Pareto'" type="button" (click)="addParetoDimension('','')" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Dimension</button>
 			</div>
-			<div class = "col-md-6">
+			<div class = "col-md-7">
 			<div *ngIf="getRankingMethod() == 'Pareto'">
 				<div class="row" *ngFor="let d of getRankingDimensions()">
-					<div class = "col-md-3">
+					<div class = "col-md-5">
 						<p *ngIf="!editing" class="form-control-static">{{getDimensionName(d)}}</p>
-						<input *ngIf="editing" [ngModel]="getDimensionName(d)" (ngModelChange)="setDimensionName(d, $event)" [ngModelOptions]="{standalone:true}"
-							class="form-control input-fixed-size input-sm">
+						<select *ngIf="editing"  [ngModel]="objNames" (ngModelChange)="onDimensionChange(d, $event)"  [ngModelOptions]="{standalone:true}" class="form-control">
+							<option *ngFor="let o of objNames" [ngValue]="o">{{o.toString()}}</option>
+						</select>
 					</div>
-					<div class = "col-md-3">
-
+					<div class = "col-md-2">
 						<p *ngIf="!editing" class="form-control-static">{{getDimensionDirection(d)}}</p>
-						<input *ngIf="editing" [ngModel]="getDimensionDirection(d)" (ngModelChange)="setDimensionDirection(d, $event)" [ngModelOptions]="{standalone:true}"
-							class="form-control input-fixed-size input-sm">			
+						<select *ngIf="editing" [ngModel]="getDimensionDirection(d)" (ngModelChange)="setDimensionDirection(d, $event)" [ngModelOptions]="{standalone:true}"
+								class="form-control">
+							<option *ngFor="let pd of paretoDirections" [ngValue]="pd">{{pd}}</option>
+						</select>	
 						<button *ngIf="editing" type="button" (click)="removeParetoDimension(d)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span>Remove Dimension</button>
 					</div>
 				</div>

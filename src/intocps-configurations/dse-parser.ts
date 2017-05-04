@@ -14,6 +14,8 @@ export class DseParser{
     protected EXTERNAL_SCRIPT_FILE_TAG: string = "scriptFile"
     protected EXTERNAL_SCRIPT_PARAMS_TAG: string = "scriptParameters"
     protected INTERNAL_FUNCTION_TAG: string = "internalFunctions"
+    protected INTERNAL_FUNCTION_COLUMN_TAG: string = "columnID"
+    protected INTERNAL_FUNCTION_OBJECTIVE_TYPE_TAG: string = "objectiveType"
 
     protected PARAMETER_CONSTRAINT_TAG: string = "parameterConstraints"
     protected PARAMETERS_TAG: string = "parameters"
@@ -75,7 +77,6 @@ export class DseParser{
         dse.newParameterConstraint(paramConstList);
     }
 
-     //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
      //Utility method to obtain an instance from the multimodel by its string id encoding
     private getParameter(dse: DseConfiguration, id: string): Instance {
         let ids = this.parseId(id);
@@ -98,9 +99,8 @@ export class DseParser{
                 let instanceName = ids[1];
                 let scalarVariableName = ids[2];
 
-                //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
                 var param = this.getParameter(dse, id);
-                Array.prototype.push.apply(param.initialValues, values);
+                param.initialValues.set(param.fmu.getScalarVariable(scalarVariableName), values);
             });
         }
     }
@@ -152,6 +152,14 @@ export class DseParser{
 
 
     private parseInternalFunction(data: any, dse:DseConfiguration){//To add
+        $.each(Object.keys(data), (j, id) => {
+            let objEntries = data[id];
+            //GET SCRIPT NAME
+            let columnID = objEntries[this.INTERNAL_FUNCTION_COLUMN_TAG];
+            let objTp = objEntries[this.INTERNAL_FUNCTION_OBJECTIVE_TYPE_TAG];
+            
+            dse.newInternalFunction(id, columnID, objTp);
+         });
     }
 
     parseRanking(data: any, dse:DseConfiguration){
@@ -162,7 +170,7 @@ export class DseParser{
         }
         let ranktype = ranking[this.RANKING_PARETO_TAG]
         if(ranktype) dse.newRanking(this.parseParetoRanking(ranktype));
-        //check other rank types as added
+        //check other rank types as added to backend
     }
 
     private parseParetoRanking(data:any) : IDseRanking{
