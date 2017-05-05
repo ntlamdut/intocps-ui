@@ -8,7 +8,6 @@
 
 <form class="form-horizontal" (ngSubmit)="onMMSubmit()">
 	<h4>Experiment Multi-model</h4>
-
 	<div class="form-group">
    		<label class="col-md-3 control-label">Co-simulation experiment</label>
     	<div class="col-md-9">
@@ -26,8 +25,10 @@
 		</div>
 	</div>
 </form>
-		<hr>
-		<hr>
+
+<hr>
+<hr>
+
 
 <form *ngIf="mmSelected" class="form-horizontal" (ngSubmit)="onSubmit()">
 	<button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
@@ -80,8 +81,7 @@
 		<hr>
 
 
-	<h4>Experiment parameters</h4>
-
+		<h4>Experiment parameters</h4>
 		<div *ngIf="config.multiModel != null" class="row">
 			<div class="col-md-4">
 				<h5><label>Instance</label></h5>
@@ -148,8 +148,6 @@
 
 
 		<h4>Parameter Constraints <button *ngIf="editing" type="button" (click)="addParameterConstraint()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Constraint</button></h4>
-
-		
 		<div class="row" *ngFor="let p of config.paramConst">
 			<div class ="col-md-6">
 				<p *ngIf="!editing" class="form-control-static">{{getParameterConstraint(p)}}</p>
@@ -166,7 +164,6 @@
 
 
 		<h4>External Script Objectives <button *ngIf="editing" type="button" (click)="addExternalScript()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add External Script Objective</button> </h4>
-		
 		<div class="row">
 			<div class="col-md-3"><label>Objective Name</label></div>
 			<div class="col-md-3"><label>File Name</label></div>
@@ -206,11 +203,9 @@
 				</div>
 		</div>
 
-
 		<hr>
 
 		<h4>Internal Function Objectives<button *ngIf="editing" type="button" (click)="addInternalFunction()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Internal Function Objective</button></h4>
-
 		<div class="row">
 			<div class="col-md-3"><label>Objective Name</label></div>
 			<div class="col-md-3"><label>Output ID</label></div>
@@ -231,9 +226,6 @@
 			</div>
 			<div class = "col-md-3">
 				<p *ngIf="!editing" class="form-control-static">{{getInternalFunctionObjectiveType(i)}}</p>
-				<!--input *ngIf="editing" [ngModel]="getInternalFunctionObjectiveType(i)" (ngModelChange)="setInternalFunctionObjectiveType(i, $event)" [ngModelOptions]="{standalone:true}"
-					class="form-control input-fixed-size input-sm"-->
-
 				<select *ngIf="editing" [ngModel]="getInternalFunctionObjectiveType(i)" (ngModelChange)="setInternalFunctionObjectiveType(i, $event)" [ngModelOptions]="{standalone:true}"
 								class="form-control">
 					<option *ngFor="let ift of internalFunctionTypes" [ngValue]="ift">{{ift}}</option>
@@ -242,13 +234,9 @@
 		</div>
 
 
-
-
 		<hr>
 
 		<h4>Objective Constraints <button *ngIf="editing" type="button" (click)="addObjectiveConstraint()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Constraint</button> </h4>
-
-
 		<div class="row" *ngFor="let o of config.objConst">
 			<div class="col-md-6">
 				<p *ngIf="!editing" class="form-control-static">{{getObjectiveConstraint(o)}}</p>
@@ -260,11 +248,11 @@
 			</div>
 		</div>
 
+
 		<hr>
 
+
 		<h4>Ranking</h4>
-
-
 		<div class="row">
 				<div class="col-md-3"><label>Ranking Method</label></div>
 				<div *ngIf="getRankingMethod() == 'Pareto'" class="col-md-7"><label>Dimensions</label></div>
@@ -300,7 +288,6 @@
 		<hr>
 		
 		<h4>Scenario<button *ngIf="editing" type="button" (click)="addScenario()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span></button></h4>
-
 		<div class="row" *ngFor="let s of config.scenarios">
 			<div class="col-md-9">
 				<p *ngIf="!editing" class="form-control-static">{{getScenario(s)}}</p>

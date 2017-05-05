@@ -10,9 +10,11 @@ export class DseParser{
     
     protected OBJECTIVE_CONSTRAINT_TAG: string = "objectiveConstraints"
     protected OBJECTIVES_TAG: string = "objectiveDefinitions"
+
     protected EXTERNAL_SCRIPT_TAG: string = "externalScripts"
     protected EXTERNAL_SCRIPT_FILE_TAG: string = "scriptFile"
     protected EXTERNAL_SCRIPT_PARAMS_TAG: string = "scriptParameters"
+
     protected INTERNAL_FUNCTION_TAG: string = "internalFunctions"
     protected INTERNAL_FUNCTION_COLUMN_TAG: string = "columnID"
     protected INTERNAL_FUNCTION_OBJECTIVE_TYPE_TAG: string = "objectiveType"
@@ -24,7 +26,8 @@ export class DseParser{
     protected RANKING_PARETO_TAG: string = "pareto"
 
     protected SCENARIOS_TAG: string = "scenarios"
-    
+
+
     parseSearchAlgorithm(data: any, dse:DseConfiguration) {
         let algorithm = data[this.SEARCH_ALGORITHM_TAG]
         if(!algorithm) {
@@ -51,6 +54,7 @@ export class DseParser{
         return new GeneticSearch(initialPopulation, randomBalanced, terminationRounds)
     }
 
+
     parseObjectiveConstraint(data: any, dse:DseConfiguration) {
         let objConstList : DseObjectiveConstraint[] = [];
         
@@ -76,6 +80,7 @@ export class DseParser{
         }
         dse.newParameterConstraint(paramConstList);
     }
+
 
      //Utility method to obtain an instance from the multimodel by its string id encoding
     private getParameter(dse: DseConfiguration, id: string): Instance {
@@ -106,6 +111,7 @@ export class DseParser{
     }
 
 
+
     parseExtScrObjectives(data: any, dse:DseConfiguration){
         if (Object.keys(data).indexOf(this.OBJECTIVES_TAG) >= 0) {
             let objData = data[this.OBJECTIVES_TAG];
@@ -131,12 +137,9 @@ export class DseParser{
                 objParams.push(newParam);
             });
             dse.newExternalScript(id, extName, objParams);
-
-                //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
-                //var param = this.getParameter(dse, id);
-               // Array.prototype.push.apply(param.initialValues, values);
             });
     }
+
 
 
     parseIntFuncsObjectives(data: any, dse:DseConfiguration){
@@ -150,8 +153,7 @@ export class DseParser{
         }
     }
 
-
-    private parseInternalFunction(data: any, dse:DseConfiguration){//To add
+    private parseInternalFunction(data: any, dse:DseConfiguration){
         $.each(Object.keys(data), (j, id) => {
             let objEntries = data[id];
             //GET SCRIPT NAME
@@ -161,6 +163,7 @@ export class DseParser{
             dse.newInternalFunction(id, columnID, objTp);
          });
     }
+
 
     parseRanking(data: any, dse:DseConfiguration){
         let ranking = data[this.RANKING_TAG];
@@ -206,6 +209,7 @@ export class DseParser{
         dse.newScenario(scenarioList);
     }
 
+
     parseSimpleTag(data: any, tag: string): any {
         return data[tag] !== undefined ? data[tag] : null;
     }
@@ -237,5 +241,4 @@ export class DseParser{
 
         return [fmuName, instanceName, scalarVariableName];
     }
-
 }

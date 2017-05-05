@@ -69,16 +69,9 @@ export class DseConfigurationComponent {
         GeneticSearch
     ];
 
-    private internalFunctionTypes = [
-        "max",
-        "min",
-        "mean"
-    ];
+    private internalFunctionTypes = ["max", "min","mean"];
 
-    private paretoDirections = [
-        "-",
-        "+"
-    ];
+    private paretoDirections = ["-", "+"];
 
   
     constructor(private zone: NgZone, private navigationService: NavigationService) {
@@ -92,8 +85,6 @@ export class DseConfigurationComponent {
            .parse(this.path, project.getRootFilePath(), project.getFmusPath(), mmPath)
            .then(config => {
                 this.zone.run(() => {
-                    //this.parseError = null;
-
                     this.config = config;
                     this.objNames = this.getObjectiveNames();
 
@@ -286,7 +277,6 @@ export class DseConfigurationComponent {
     }
 
     setDSEParameter(instance: Instance, variableName:string, newValue: any) {
-        //MUST MAKE NEWVALUE INTO AN ARRAY/PARSE AS ABOVE!!!! 
         if (!newValue.includes(",")){
             if (instance.fmu.getScalarVariable(variableName).type === ScalarVariableType.Real)
                 newValue = parseFloat(newValue);
@@ -421,9 +411,6 @@ export class DseConfigurationComponent {
         return result;
     }
 
-    testOp(instance: Instance, variableName:string) : string{
-        return instance.name + " " + variableName;
-    }
 
     addParameterInitialValue(p: DseParameter, value: any) {
         p.addInitialValue(value);
@@ -440,6 +427,7 @@ export class DseConfigurationComponent {
     removeParameterInitialValue(p: DseParameter, value: string) {
         p.removeInitialValue(value);
     }
+
 
 
     addParameterConstraint(){
@@ -546,22 +534,6 @@ export class DseConfigurationComponent {
 
 
 
-    getObjectiveNames():string []{
-        let objNames = [""];
-        this.config.extScrObjectives.forEach((o:ExternalScript) =>{
-            objNames.push(o.name)
-        });
-        this.config.intFunctObjectives.forEach((o:InternalFunction) =>{
-            objNames.push(o.name)
-        });
-        
-        return objNames;
-    }
-
-    onDimensionChange(pd: ParetoDimension, d:string){
-        pd.objectiveName = d;
-    }
-
     addObjectiveConstraint(){
         let oc = this.config.addObjectiveConstraint();
         let ocArray = <FormArray>this.form.find('objConstraints');
@@ -586,8 +558,21 @@ export class DseConfigurationComponent {
     }
 
 
+
     getRankingMethod(){
         return this.config.ranking.getType();
+    }
+
+    getObjectiveNames():string []{
+        let objNames = [""];
+        this.config.extScrObjectives.forEach((o:ExternalScript) =>{
+            objNames.push(o.name)
+        });
+        this.config.intFunctObjectives.forEach((o:InternalFunction) =>{
+            objNames.push(o.name)
+        });
+        
+        return objNames;
     }
 
     getRankingDimensions(){
@@ -600,6 +585,10 @@ export class DseConfigurationComponent {
 
     setDimensionName(d:ParetoDimension, name: string){
         d.objectiveName = name;
+    }
+
+    onDimensionChange(pd: ParetoDimension, d:string){
+        pd.objectiveName = d;
     }
 
     getDimensionDirection(d:ParetoDimension){
@@ -619,6 +608,7 @@ export class DseConfigurationComponent {
             (<ParetoRanking> this.config.ranking).addDimension(objective, direction);
         }
     }
+
 
     addScenario(){
         let s = this.config.addScenario();

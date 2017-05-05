@@ -45,7 +45,6 @@ export class DseConfiguration implements ISerializable {
         });
 
         let params : any = {};
-        //TO DO: REPLACE WITM MM VERSION
         this.dseParameters.forEach((p:DseParameter) =>{
             params[p.param] = p.initialValues
         });
@@ -57,18 +56,17 @@ export class DseConfiguration implements ISerializable {
                 let id: string = Serializer.getIdSv(instance, sv);
 
                 if(sv.type === ScalarVariableType.Bool)
-                    dseparameters[id] = value;//Boolean(value); NEED TO CHANGE TO AN ARRAY
+                    dseparameters[id] = value;
                 else if(sv.type === ScalarVariableType.Int || sv.type === ScalarVariableType.Real)
-                    dseparameters[id] = value;//Number(value); NEED TO CHANGE TO AN ARRAY
+                    dseparameters[id] = value;
                 else
                     dseparameters[id] = value;
             });
         });
 
 
-
         let extScr : any = {};
-        let intFunc : any = {}; //INTERNAL FUNCTIONS NOT YET SUPPORTED
+        let intFunc : any = {}; 
         let objDefs : any = {};
         this.extScrObjectives.forEach((o:ExternalScript) =>{
             extScr[o.name] = o.toObject(); 
@@ -93,10 +91,54 @@ export class DseConfiguration implements ISerializable {
     }
 
 
+    static parse(path: string, projectRoot: string, fmuRootPath: string, mmPath: string): Promise<DseConfiguration> {
+        return new Promise<DseConfiguration>((resolve, reject) => {
+            fs.access(path, fs.constants.R_OK, error => {
+                if (error) return reject(error);
+                fs.readFile(path, (error, content) => {
+                    if (error) return reject(error);
+                    this.create(path, projectRoot, fmuRootPath, mmPath, JSON.parse(content.toString()))
+                        .then(dseConfig => resolve(dseConfig))
+                        .catch(error => reject(error));
+                });
+            });
+        });
+    }
+
+    static create(path:string, projectRoot: string, fmuRootPath: string, mmPath: string, data: any): Promise<DseConfiguration> {
+        return new Promise<DseConfiguration>((resolve, reject) => {
+            MultiModelConfig
+                .parse(mmPath, fmuRootPath)
+                .then(multiModel => {
+               
+                let parser = new DseParser();
+                let configuration = new DseConfiguration();
+                configuration.sourcePath = path;
+
+                configuration.fmuRootPath = fmuRootPath;
+
+                configuration.multiModel = multiModel;
+                parser.parseSearchAlgorithm(data, configuration);
+                parser.parseScenarios(data, configuration);
+                parser.parseObjectiveConstraint(data, configuration);
+                parser.parseParameterConstraints(data, configuration);
+                parser.parseParameters(data, configuration);
+                parser.parseExtScrObjectives(data, configuration);
+                parser.parseIntFuncsObjectives(data, configuration);
+                parser.parseRanking(data,configuration);
+                resolve(configuration)
+             })
+        })
+
+    }
+
+
+
     public newSearchAlgortihm(sa:IDseAlgorithm){
         this.searchAlgorithm = sa;
     } 
-    
+
+
     public addObjectiveConstraint(): DseObjectiveConstraint{
         let newOC = new DseObjectiveConstraint("");
         this.objConst.push(newOC);
@@ -107,14 +149,12 @@ export class DseConfiguration implements ISerializable {
         this.objConst = oc;
     }
 
-
     public removeObjectiveConstraint(oc: DseObjectiveConstraint){
         this.objConst.splice(this.paramConst.indexOf(oc), 1);
     }
 
-    getExtScrObjectives(obName : string) {
-        return this.extScrObjectives.find(v => v.name == obName) || null;
-    }
+
+
 
     public addParameterConstraint(): DseParameterConstraint{
         let newPC = new DseParameterConstraint("");
@@ -161,8 +201,14 @@ export class DseConfiguration implements ISerializable {
     }
 
     public removeInstance(instance: Instance) {
-        // Remove the instance
         this.dseSearchParameters.splice(this.dseSearchParameters.indexOf(instance), 1);
+    }
+
+
+
+
+    getExtScrObjectives(obName : string) {
+        return this.extScrObjectives.find(v => v.name == obName) || null;
     }
 
     public addExternalScript(){
@@ -180,6 +226,8 @@ export class DseConfiguration implements ISerializable {
     }
     
 
+
+
     public addInternalFunction(){
         let intF = new InternalFunction("","","");
         this.intFunctObjectives.push(intF);
@@ -194,6 +242,7 @@ export class DseConfiguration implements ISerializable {
         let index = this.intFunctObjectives.indexOf(i);
         this.intFunctObjectives.splice(index, 1);
     }
+
 
 
 
@@ -218,53 +267,6 @@ export class DseConfiguration implements ISerializable {
     }
 
 
-    static parse(path: string, projectRoot: string, fmuRootPath: string, mmPath: string): Promise<DseConfiguration> {
-        return new Promise<DseConfiguration>((resolve, reject) => {
-            fs.access(path, fs.constants.R_OK, error => {
-                if (error) return reject(error);
-                fs.readFile(path, (error, content) => {
-                    if (error) return reject(error);
-                    this.create(path, projectRoot, fmuRootPath, mmPath, JSON.parse(content.toString()))
-                        .then(dseConfig => resolve(dseConfig))
-                        .catch(error => reject(error));
-                });
-            });
-        });
-    }
-
-    static create(path:string, projectRoot: string, fmuRootPath: string, mmPath: string, data: any): Promise<DseConfiguration> {
-        return new Promise<DseConfiguration>((resolve, reject) => {
-            MultiModelConfig
-                .parse(mmPath, fmuRootPath)
-                .then(multiModel => {
-               
-                let parser = new DseParser();
-                let configuration = new DseConfiguration();
-                configuration.sourcePath = path;
-
-                configuration.fmuRootPath = fmuRootPath;
-
-                configuration.multiModel = multiModel;
-                parser.parseSearchAlgorithm(data, configuration);
-                parser.parseScenarios(data, configuration);
-                parser.parseObjectiveConstraint(data, configuration);
-                parser.parseParameterConstraints(data, configuration);
-                parser.parseParameters(data, configuration);
-                parser.parseExtScrObjectives(data, configuration);
-                parser.parseIntFuncsObjectives(data, configuration);
-                parser.parseRanking(data,configuration);
-                resolve(configuration)
-             })
-        })
-
-    }
-
-    setMultiModel(mmPath: string): Promise<DseConfiguration> {
-        return new Promise<DseConfiguration>((resolve, reject) => {
-            
-            
-        });
-    }
 
     save(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
@@ -295,12 +297,8 @@ export class DseConfiguration implements ISerializable {
 }
 
 export class DseParameter{
-    // initial parameter values
-    //initialValues: Map<ScalarVariable, any[]> = new Map<ScalarVariable, any[]>();
     initialValues: any[] = [];
 
-    //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
-    //constructor(public fmu: Fmu, public name: string) {}
     constructor(public param: string) {}
 
     toString(){
