@@ -23,7 +23,7 @@ export class CoSimulationConfig implements ISerializable {
 
     //optional livestream outputs
     livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
-    livestreamInterval : number = 0.0
+    livestreamInterval: number = 0.0
     algorithm: ICoSimAlgorithm = new FixedStepAlgorithm();
     startTime: number = 0;
     endTime: number = 10;
@@ -32,6 +32,10 @@ export class CoSimulationConfig implements ISerializable {
     enableAllLogCategoriesPerInstance: boolean = false;
     overrideLogLevel: string = null;
     postProcessingScript: string = "";
+    parallelSimulation: boolean = false;
+    stabalization: boolean = false;
+    global_absolute_tolerance: number = 0.0;
+    global_relative_tolerance: number = 0.0;
 
     public getProjectRelativePath(path: string): string {
         if (path.indexOf(this.projectRoot) === 0)
@@ -55,7 +59,11 @@ export class CoSimulationConfig implements ISerializable {
             enableAllLogCategoriesPerInstance: this.enableAllLogCategoriesPerInstance,
             algorithm: this.algorithm.toObject(),
             postProcessingScript: this.getProjectRelativePath(this.postProcessingScript),
-            multimodel_crc: this.multiModelCrc
+            multimodel_crc: this.multiModelCrc,
+            parallelSimulation: this.parallelSimulation,
+            stabalizationEnabled: this.stabalization,
+            global_absolute_tolerance: Number(this.global_absolute_tolerance),
+            global_relative_tolerance: Number(this.global_relative_tolerance)
         };
     }
 
@@ -135,7 +143,7 @@ export class CoSimulationConfig implements ISerializable {
                     config.startTime = parser.parseStartTime(data) || 0;
                     config.endTime = parser.parseEndTime(data) || 10;
                     config.livestream = parser.parseLivestream(data, multiModel);
-                    config.livestreamInterval =parseFloat( parser.parseSimpleTagDefault(data, "livestreamInterval", "0.0"));
+                    config.livestreamInterval = parseFloat(parser.parseSimpleTagDefault(data, "livestreamInterval", "0.0"));
                     config.algorithm = parser.parseAlgorithm(data, multiModel);
                     config.visible = parser.parseSimpleTagDefault(data, "visible", false);
                     config.loggingOn = parser.parseSimpleTagDefault(data, "loggingOn", false);
@@ -143,6 +151,12 @@ export class CoSimulationConfig implements ISerializable {
                     config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data, "enableAllLogCategoriesPerInstance", false);
                     config.multiModelCrc = parser.parseMultiModelCrc(data);
                     config.postProcessingScript = parser.parseSimpleTagDefault(data, "postProcessingScript", "");
+
+                    config.parallelSimulation = parser.parseSimpleTagDefault(data, "parallelSimulation", false);
+                    config.stabalization = parser.parseSimpleTagDefault(data, "stabalizationEnabled", false);
+                    config.global_absolute_tolerance = parseFloat(parser.parseSimpleTagDefault(data, "global_absolute_tolerance", 0.0));
+                    config.global_relative_tolerance = parseFloat(parser.parseSimpleTagDefault(data, "global_relative_tolerance", 0.01));
+
 
                     resolve(config);
                 })

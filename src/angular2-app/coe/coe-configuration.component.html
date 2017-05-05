@@ -22,7 +22,7 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.visible}}</p>
 				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.visible"
-					(change)="config.visible=$event.target.checked" />
+				 (change)="config.visible=$event.target.checked" />
 			</div>
 		</div>
 
@@ -31,7 +31,7 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.loggingOn}}</p>
 				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.loggingOn"
-					(change)="config.loggingOn=$event.target.checked" />
+				 (change)="config.loggingOn=$event.target.checked" />
 			</div>
 		</div>
 
@@ -40,7 +40,7 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.enableAllLogCategoriesPerInstance}}</p>
 				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="enableAllLogCategoriesPerInstance" class="form-control"
-					[checked]="config.enableAllLogCategoriesPerInstance" (change)="config.enableAllLogCategoriesPerInstance=$event.target.checked"
+				 [checked]="config.enableAllLogCategoriesPerInstance" (change)="config.enableAllLogCategoriesPerInstance=$event.target.checked"
 				/>
 			</div>
 		</div>
@@ -51,11 +51,53 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.overrideLogLevel}}</p>
 				<select *ngIf="editing" [ngModel]="config.overrideLogLevel" (ngModelChange)="config.overrideLogLevel=$event" [ngModelOptions]="{standalone:true}"
-					class="form-control">
+				 class="form-control">
 					<option *ngFor="let name of loglevels" [ngValue]="name">{{name}}</option>
 					</select>
 			</div>
 		</div>
+
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Use parallelization</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.parallelSimulation}}</p>
+				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.parallelSimulation"
+				 (change)="config.parallelSimulation=$event.target.checked" />
+			</div>
+		</div>
+
+	<hr>
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Stabalization (successive substitution)</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.stabalization}}</p>
+				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.stabalization"
+				 (change)="config.stabalization=$event.target.checked" />
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Global Absolute Tolerance</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.global_absolute_tolerance}}</p>
+				<input *ngIf="editing" name="global_absolute_tolerance" [(ngModel)]="config.global_absolute_tolerance" class="form-control">
+				<div *ngIf="form.hasError('required', 'global_absolute_tolerance')" class="alert alert-danger">This field is required.</div>
+				<div *ngIf="form.hasError('invalidNumber', 'global_absolute_tolerance')" class="alert alert-danger">Only numbers are allowed.</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Global Relative Tolerance</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.global_relative_tolerance}}</p>
+				<input *ngIf="editing" name="global_relative_tolerance" [(ngModel)]="config.global_relative_tolerance" class="form-control">
+				<div *ngIf="form.hasError('required', 'global_relative_tolerance')" class="alert alert-danger">This field is required.</div>
+				<div *ngIf="form.hasError('invalidNumber', 'global_relative_tolerance')" class="alert alert-danger">Only numbers are allowed.</div>
+			</div>
+		</div>
+	<hr>
+
+
 
 		<div class="form-group">
 			<label class="col-sm-5 col-md-4 control-label">Post-processing script ($1=*.csv, $2=total time)</label>
@@ -96,7 +138,7 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.algorithm.name}}</p>
 				<select *ngIf="editing" [ngModel]="config.algorithm" (ngModelChange)="onAlgorithmChange($event)" [ngModelOptions]="{standalone:true}"
-					class="form-control">
+				 class="form-control">
 					<option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm.name}}</option>
 					</select>
 			</div>
@@ -175,13 +217,13 @@
 				</div>
 				<div class="panel-body">
 					<zero-crossing [editing]="editing" [ports]="outputPorts" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
-						*ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
+					 *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
 
-						<bounded-difference [editing]="editing" [ports]="outputPorts" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
-							*ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
+					<bounded-difference [editing]="editing" [ports]="outputPorts" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
+					 *ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
 
-							<sampling-rate [editing]="editing" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
-								*ngIf="constraint.type === 'samplingrate'"></sampling-rate>
+					<sampling-rate [editing]="editing" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
+					 *ngIf="constraint.type === 'samplingrate'"></sampling-rate>
 				</div>
 			</div>
 		</div>
@@ -191,16 +233,16 @@
 
 	<label>Livestream Configuration</label>
 
-		<div class="form-group">
-			<label class="col-sm-5 col-md-4 control-label">Live log interval (reduce this if graph is too slow, 0=all)</label>
-			<div class="col-sm-7 col-md-8">
-				<p *ngIf="!editing" class="form-control-static">{{config.livestreamInterval}}</p>
-				<input *ngIf="editing" name="livestreamInterval" [(ngModel)]="config.livestreamInterval" class="form-control" >
-				<div *ngIf="form.hasError('required', 'livestreamInterval')" class="alert alert-danger">This field is required.</div>
-				<div *ngIf="form.hasError('invalidNumber', 'livestreamInterval')" class="alert alert-danger">Only numbers are allowed.</div>
-		
-			</div>
+	<div class="form-group">
+		<label class="col-sm-5 col-md-4 control-label">Live log interval (reduce this if graph is too slow, 0=all)</label>
+		<div class="col-sm-7 col-md-8">
+			<p *ngIf="!editing" class="form-control-static">{{config.livestreamInterval}}</p>
+			<input *ngIf="editing" name="livestreamInterval" [(ngModel)]="config.livestreamInterval" class="form-control">
+			<div *ngIf="form.hasError('required', 'livestreamInterval')" class="alert alert-danger">This field is required.</div>
+			<div *ngIf="form.hasError('invalidNumber', 'livestreamInterval')" class="alert alert-danger">Only numbers are allowed.</div>
+
 		</div>
+	</div>
 
 
 	<div class="form-horizontal">
