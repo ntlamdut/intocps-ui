@@ -4,7 +4,10 @@ import {
     Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausalityCompatible, isTypeCompatiple,
     Fmu, ScalarValuePair, ScalarVariableType
 } from "../coe/models/Fmu";
+import {CoeSimulationService} from "../coe/coe-simulation.service";
 import IntoCpsApp from "../../IntoCpsApp";
+import {Http} from "@angular/http";
+import {SettingsService, SettingKeys} from "../shared/settings.service";
 import {ParetoDimension, InternalFunction, DseConfiguration, ParetoRanking, ExternalScript, DseParameter, DseScenario, DseParameterConstraint, DseObjectiveConstraint,IDseAlgorithm, GeneticSearch, ExhaustiveSearch} from "../../intocps-configurations/dse-configuration";
 import { WarningMessage } from "../../intocps-configurations/Messages";
 import { NavigationService } from "../shared/navigation.service";
@@ -13,16 +16,20 @@ import {IProject} from "../../proj/IProject";
 import {Project} from "../../proj/Project";
 import * as Path from 'path';
 import * as fs from 'fs';
+import {coeServerStatusHandler} from "../../menus";
 
 @Component({
     selector: "dse-configuration",
+    providers: [
+        CoeSimulationService
+    ],
     templateUrl: "./angular2-app/dse/dse-configuration.component.html",
     directives: [
         FORM_DIRECTIVES,
         REACTIVE_FORM_DIRECTIVES
     ]    
 })
-export class DseConfigurationComponent {
+export class DseConfigurationComponent implements OnInit, OnDestroy {
     private _path:string;
 
     @Input()
@@ -35,6 +42,8 @@ export class DseConfigurationComponent {
             this.cosimConfig = this.loadCosimConfigs(Path.join(p, Project.PATH_MULTI_MODELS));
 
             //this.parseConfig();
+            if(this.coeSimulation)
+                this.coeSimulation.reset();
         }
     }
     get path():string {
@@ -60,6 +69,14 @@ export class DseConfigurationComponent {
     objNames:string[] = [];
     coeconfig:string = '';
 
+    online:boolean = false;
+    url:string = '';
+    version:string = '';
+    dseWarnings:WarningMessage[] = [];
+    coeWarnings:WarningMessage[] = [];
+
+    private onlineInterval:number;
+    
     private selectedParameterInstance: Instance;
 
     private newParameter: ScalarVariable;
@@ -74,8 +91,12 @@ export class DseConfigurationComponent {
     private paretoDirections = ["-", "+"];
 
   
-    constructor(private zone: NgZone, private navigationService: NavigationService) {
+    constructor(private coeSimulation:CoeSimulationService,
+        private http:Http,
+        private zone:NgZone,
+        private settings:SettingsService, private navigationService: NavigationService) {
         this.navigationService.registerComponent(this);
+        
     }
 
     parseConfig(mmPath : string) {
@@ -633,4 +654,62 @@ export class DseConfigurationComponent {
         sArray.removeAt(index);
     }
 
+
+
+
+    ngOnInit() {
+        this.url = this.settings.get(SettingKeys.COE_URL) || "localhost:8082";
+        this.onlineInterval = setInterval(() => this.isCoeOnline(), 2000);
+        this.isCoeOnline();
+    }
+
+    ngOnDestroy() {
+        clearInterval(this.onlineInterval);
+    }
+
+    canRun() {
+        return this.online
+            && this.coeconfig != ""
+            && this.dseWarnings.length === 0
+            && this.coeWarnings.length === 0;
+    }
+
+    runDse() {
+        var spawn = require('child_process').spawn;
+        let installDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
+
+        let absoluteProjectPath = IntoCpsApp.getInstance().getActiveProject().getRootFilePath();
+        let experimentConfigName = this._path.slice(absoluteProjectPath.length + 1, this._path.length);
+        let multiModelConfigName = this.coeconfig.slice(absoluteProjectPath.length + 1, this.coeconfig.length); 
+
+        let scriptFile = Path.join(installDir, "dse", "Algorithm_exhaustive.py"); 
+        var child = spawn("python", [scriptFile, absoluteProjectPath, experimentConfigName, multiModelConfigName], {
+            detached: true,
+            shell: false,
+            // cwd: childCwd
+        });
+        child.unref();
+
+        child.stdout.on('data', function (data: any) {
+            console.log('dse/stdout: ' + data);
+        });
+        child.stderr.on('data', function (data: any) {
+            console.log('dse/stderr: ' + data);
+        });
+    }
+
+    isCoeOnline() {
+        this.http
+            .get(`http://${this.url}/version`)
+            .timeout(2000)
+            .map(response => response.json())
+            .subscribe((data:any) => {
+                this.online = true;
+                this.version = data.version;
+            }, () => this.online = false);
+    }
+
+    onCoeLaunchClick() {
+        coeServerStatusHandler.openWindow("autolaunch");
+    }
 }

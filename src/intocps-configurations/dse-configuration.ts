@@ -27,7 +27,7 @@ export class DseConfiguration implements ISerializable {
     fmuRootPath:string ='';
     multiModel: MultiModelConfig = null;
 
-
+    //Method for outputting DSEConfig object to json.
     toObject() {
         let pConst : string [] = []; 
         this.paramConst.forEach(function(p) {
@@ -44,13 +44,12 @@ export class DseConfiguration implements ISerializable {
             scen.push(s.name)
         });
 
-        let params : any = {};
-        this.dseParameters.forEach((p:DseParameter) =>{
-            params[p.param] = p.initialValues
-        });
+        // let params : any = {};
+        // this.dseParameters.forEach((p:DseParameter) =>{
+        //     params[p.param] = p.initialValues
+        // });
 
         let dseparameters:any = {};
-
         this.dseSearchParameters.forEach((instance: Instance) => {
             instance.initialValues.forEach((value: any, sv: ScalarVariable) => {
                 let id: string = Serializer.getIdSv(instance, sv);
