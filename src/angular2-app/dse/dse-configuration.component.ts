@@ -86,9 +86,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         GeneticSearch
     ];
 
-    private geneticPopulationDistribution = ["random", "uniform"];
+    private geneticPopulationDistribution = ["random"];//To add in when backend works["random", "uniform"];
 
-    private geneticParentSelectionStrategy = ["random", "algorithmObjectiveSpace","algorithmDesignSpace"];
+    private geneticParentSelectionStrategy = ["random"];//["random", "algorithmObjectiveSpace","algorithmDesignSpace"];
 
     private internalFunctionTypes = ["max", "min","mean"];
 
