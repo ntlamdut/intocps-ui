@@ -1,4 +1,7 @@
 import { ParetoDimension,DseConfiguration,DseParameterConstraint, DseScenario, DseObjectiveConstraint,IDseObjective, ObjectiveParam, ExternalScript, IDseAlgorithm, DseParameter, IDseRanking, ParetoRanking, GeneticSearch, ExhaustiveSearch} from "./dse-configuration"
+import { Fmu, InstanceScalarPair, Instance, ScalarVariable, CausalityType } from "../angular2-app/coe/models/Fmu";
+
+
 export class DseParser{
     protected SEARCH_ALGORITHM_TAG: string = "algorithm"
     protected SEARCH_ALGORITHM_TYPE:string = "type"
@@ -7,10 +10,14 @@ export class DseParser{
     
     protected OBJECTIVE_CONSTRAINT_TAG: string = "objectiveConstraints"
     protected OBJECTIVES_TAG: string = "objectiveDefinitions"
+
     protected EXTERNAL_SCRIPT_TAG: string = "externalScripts"
     protected EXTERNAL_SCRIPT_FILE_TAG: string = "scriptFile"
     protected EXTERNAL_SCRIPT_PARAMS_TAG: string = "scriptParameters"
+
     protected INTERNAL_FUNCTION_TAG: string = "internalFunctions"
+    protected INTERNAL_FUNCTION_COLUMN_TAG: string = "columnID"
+    protected INTERNAL_FUNCTION_OBJECTIVE_TYPE_TAG: string = "objectiveType"
 
     protected PARAMETER_CONSTRAINT_TAG: string = "parameterConstraints"
     protected PARAMETERS_TAG: string = "parameters"
@@ -19,14 +26,17 @@ export class DseParser{
     protected RANKING_PARETO_TAG: string = "pareto"
 
     protected SCENARIOS_TAG: string = "scenarios"
-    
+
+
     parseSearchAlgorithm(data: any, dse:DseConfiguration) {
         let algorithm = data[this.SEARCH_ALGORITHM_TAG]
+        //If no algorithm set, assume is exhaustive
         if(!algorithm) {
             let al = new ExhaustiveSearch();
             dse.newSearchAlgortihm(al);
             return;
         };
+        //Get algorithm type
         let type = algorithm[this.SEARCH_ALGORITHM_TYPE]
         if(type === this.SEARCH_ALGORITHM_GENETIC){
             let al = this.parseSearchAlgorithmGenetic(algorithm);
@@ -39,18 +49,22 @@ export class DseParser{
     }
 
     private parseSearchAlgorithmGenetic(algorithm: any) : IDseAlgorithm
-    {
+    {   
         let initialPopulation : number = parseFloat(algorithm["initialPopulation"]);
-        let randomBalanced : string = algorithm["randomBalanced"];
-        let terminationRounds : number = parseFloat(algorithm["terminationRounds"]);
-        return new GeneticSearch(initialPopulation, randomBalanced, terminationRounds)
+        let initialPopulationDistribution : string = algorithm["initialPopulationDistribution"];
+        let mutationProbability : number = parseFloat(algorithm["mutationProbability"]);
+        let parentSelectionStrategy : string = algorithm["parentSelectionStrategy"];
+        let maxGenerationsWithoutImprovement : number = parseFloat(algorithm["maxGenerationsWithoutImprovement"]);
+        return new GeneticSearch(initialPopulation, initialPopulationDistribution, mutationProbability, parentSelectionStrategy,maxGenerationsWithoutImprovement)
     }
+
 
     parseObjectiveConstraint(data: any, dse:DseConfiguration) {
         let objConstList : DseObjectiveConstraint[] = [];
         
         if (Object.keys(data).indexOf(this.OBJECTIVE_CONSTRAINT_TAG) > 0){
             let objConst = data[this.OBJECTIVE_CONSTRAINT_TAG];
+            //For each constraint string, create a DseObjectiveConstraint object and add to the list
             objConst.forEach(function(value:string) {
                 let newParamConstraint = new DseObjectiveConstraint(value);
                 objConstList.push(newParamConstraint);
@@ -65,6 +79,7 @@ export class DseParser{
         if (Object.keys(data).indexOf(this.PARAMETER_CONSTRAINT_TAG) > 0){
             let paramConst = data[this.PARAMETER_CONSTRAINT_TAG];
             paramConst.forEach(function(value:string) {
+            //For each constraint string, create a DseParameterConstraint object and add to the list
                 let newParamConstraint = new DseParameterConstraint(value);
                 paramConstList.push(newParamConstraint);
             })
@@ -72,32 +87,32 @@ export class DseParser{
         dse.newParameterConstraint(paramConstList);
     }
 
-     //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
-     //Utility method to obtain an instance from the multimodel by its string id encoding
-    private getParameter(dse: DseConfiguration, id: string): DseParameter {
-       // let ids = this.parseId(id);
 
-       // let fmuName = ids[0];
-        //let instanceName = ids[1];
-        //let scalarVariableName = ids[2];
-        return dse.getParameterOrCreate(id);
-    }
+    // //Utility method to obtain an instance from the multimodel by its string id encoding
+    // private getParameter(dse: DseConfiguration, id: string): Instance {
+    //     let ids = this.parseId(id);
+
+    //     let fmuName = ids[0];
+    //     let instanceName = ids[1];
+    //     let scalarVariableName = ids[2];
+    //     return dse.getInstanceOrCreate(fmuName, instanceName);
+    // }
 
     parseParameters(data: any, dse:DseConfiguration){
         if (Object.keys(data).indexOf(this.PARAMETERS_TAG) >= 0) {
             let parameterData = data[this.PARAMETERS_TAG];
+            //for each dse parameter...
             $.each(Object.keys(parameterData), (j, id) => {
                 let values = parameterData[id];
 
                 let ids = this.parseId(id);
-
                 let fmuName = ids[0];
                 let instanceName = ids[1];
                 let scalarVariableName = ids[2];
 
-                //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
-                var param = this.getParameter(dse, id);
-                Array.prototype.push.apply(param.initialValues, values);
+                //Either get a pre-parsed instance and add the new value, or create a new one 
+                var param = dse.getInstanceOrCreate(fmuName, instanceName);
+                param.initialValues.set(param.fmu.getScalarVariable(scalarVariableName), values);
             });
         }
     }
@@ -106,6 +121,7 @@ export class DseParser{
     parseExtScrObjectives(data: any, dse:DseConfiguration){
         if (Object.keys(data).indexOf(this.OBJECTIVES_TAG) >= 0) {
             let objData = data[this.OBJECTIVES_TAG];
+            //For each external script objective in the json, parse it
             $.each(Object.keys(objData), (j, id) => {
                 if (id == this.EXTERNAL_SCRIPT_TAG){
                     this.parseExternalScript(objData[id], dse);
@@ -127,18 +143,17 @@ export class DseParser{
                 let newParam = new ObjectiveParam(id2, pName);
                 objParams.push(newParam);
             });
+            //add the new external script
             dse.newExternalScript(id, extName, objParams);
-
-                //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
-                //var param = this.getParameter(dse, id);
-               // Array.prototype.push.apply(param.initialValues, values);
-            });
+        });
     }
+
 
 
     parseIntFuncsObjectives(data: any, dse:DseConfiguration){
         if (Object.keys(data).indexOf(this.OBJECTIVES_TAG) >= 0) {
             let objData = data[this.OBJECTIVES_TAG];
+            //For each internal function objective in the json, parse it
             $.each(Object.keys(objData), (j, id) => {
                 if (id == this.INTERNAL_FUNCTION_TAG){
                     this.parseInternalFunction(objData[id], dse);
@@ -147,19 +162,29 @@ export class DseParser{
         }
     }
 
-
-    private parseInternalFunction(data: any, dse:DseConfiguration){//To add
+    private parseInternalFunction(data: any, dse:DseConfiguration){
+        $.each(Object.keys(data), (j, id) => {
+            let objEntries = data[id];
+            //GET SCRIPT NAME
+            let columnID = objEntries[this.INTERNAL_FUNCTION_COLUMN_TAG];
+            let objTp = objEntries[this.INTERNAL_FUNCTION_OBJECTIVE_TYPE_TAG];
+            
+            //add the new internal function
+            dse.newInternalFunction(id, columnID, objTp);
+         });
     }
+
 
     parseRanking(data: any, dse:DseConfiguration){
         let ranking = data[this.RANKING_TAG];
         if(!ranking){
+            //assume is Pareto if not defined.
             dse.newRanking(this.newPareto());
             return;
         }
         let ranktype = ranking[this.RANKING_PARETO_TAG]
         if(ranktype) dse.newRanking(this.parseParetoRanking(ranktype));
-        //check other rank types as added
+        //check other rank types as added to backend
     }
 
     private parseParetoRanking(data:any) : IDseRanking{
@@ -195,6 +220,7 @@ export class DseParser{
         dse.newScenario(scenarioList);
     }
 
+
     parseSimpleTag(data: any, tag: string): any {
         return data[tag] !== undefined ? data[tag] : null;
     }
@@ -226,5 +252,4 @@ export class DseParser{
 
         return [fmuName, instanceName, scalarVariableName];
     }
-
 }

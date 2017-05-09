@@ -2,20 +2,32 @@ import { FORM_DIRECTIVES, REACTIVE_FORM_DIRECTIVES, Validators, FormArray, FormC
 import { numberValidator } from "../angular2-app/shared/validators";
 import * as fs from "fs"
 import { DseParser } from "./dse-parser"
-import { Fmu, ScalarVariableType, ScalarVariable} from "../angular2-app/coe/models/Fmu";
+import {Serializer} from "./Parser";
+import {
+    Fmu, Instance, ScalarVariableType, isTypeCompatipleWithValue,
+    isTypeCompatiple, InstanceScalarPair, ScalarVariable
+} from "../angular2-app/coe/models/Fmu";
 import {WarningMessage, ErrorMessage} from "./Messages";
+import { MultiModelConfig } from "./MultiModelConfig"
 
 export class DseConfiguration implements ISerializable {
+    
+
     sourcePath: string;
     searchAlgorithm: IDseAlgorithm = new ExhaustiveSearch(); //set as default
     scenarios: DseScenario[] = [];
     objConst : DseObjectiveConstraint []= [];
     paramConst : DseParameterConstraint []= [];
     dseParameters : DseParameter[] =[];
+    dseSearchParameters : Instance [] = [];
     extScrObjectives : ExternalScript[] = [];
     intFunctObjectives : InternalFunction[] = [];
     ranking : IDseRanking = new ParetoRanking([]);
 
+    fmuRootPath:string ='';
+    multiModel: MultiModelConfig = null;
+
+    //Method for outputting DSEConfig object to json.
     toObject() {
         let pConst : string [] = []; 
         this.paramConst.forEach(function(p) {
@@ -32,16 +44,35 @@ export class DseConfiguration implements ISerializable {
             scen.push(s.name)
         });
 
-        let params : any = {};
-        this.dseParameters.forEach((p:DseParameter) =>{
-            params[p.param] = p.initialValues
+        // let params : any = {};
+        // this.dseParameters.forEach((p:DseParameter) =>{
+        //     params[p.param] = p.initialValues
+        // });
+
+        let dseparameters:any = {};
+        this.dseSearchParameters.forEach((instance: Instance) => {
+            instance.initialValues.forEach((value: any, sv: ScalarVariable) => {
+                let id: string = Serializer.getIdSv(instance, sv);
+
+                if(sv.type === ScalarVariableType.Bool)
+                    dseparameters[id] = value;
+                else if(sv.type === ScalarVariableType.Int || sv.type === ScalarVariableType.Real)
+                    dseparameters[id] = value;
+                else
+                    dseparameters[id] = value;
+            });
         });
 
+
         let extScr : any = {};
-        let intFunc : any = {}; //INTERNAL FUNCTIONS NOT YET SUPPORTED
+        let intFunc : any = {}; 
         let objDefs : any = {};
         this.extScrObjectives.forEach((o:ExternalScript) =>{
             extScr[o.name] = o.toObject(); 
+        });
+
+        this.intFunctObjectives.forEach((o:InternalFunction) =>{
+            intFunc[o.name] = o.toObject(); 
         });
         objDefs["externalScripts"] = extScr;
         objDefs["internalFunctions"] = intFunc;
@@ -52,17 +83,61 @@ export class DseConfiguration implements ISerializable {
             objectiveConstraints: oConst,
             objectiveDefinitions: objDefs,
             parameterConstraints: pConst,
-            parameters: params,
+            parameters: dseparameters,
             ranking: this.ranking.toObject(),
             scenarios: scen
         }
     }
 
 
+    static parse(path: string, projectRoot: string, fmuRootPath: string, mmPath: string): Promise<DseConfiguration> {
+        return new Promise<DseConfiguration>((resolve, reject) => {
+            fs.access(path, fs.constants.R_OK, error => {
+                if (error) return reject(error);
+                fs.readFile(path, (error, content) => {
+                    if (error) return reject(error);
+                    this.create(path, projectRoot, fmuRootPath, mmPath, JSON.parse(content.toString()))
+                        .then(dseConfig => resolve(dseConfig))
+                        .catch(error => reject(error));
+                });
+            });
+        });
+    }
+
+    static create(path:string, projectRoot: string, fmuRootPath: string, mmPath: string, data: any): Promise<DseConfiguration> {
+        return new Promise<DseConfiguration>((resolve, reject) => {
+            MultiModelConfig
+                .parse(mmPath, fmuRootPath)
+                .then(multiModel => {
+               
+                let parser = new DseParser();
+                let configuration = new DseConfiguration();
+                configuration.sourcePath = path;
+
+                configuration.fmuRootPath = fmuRootPath;
+
+                configuration.multiModel = multiModel;
+                parser.parseSearchAlgorithm(data, configuration);
+                parser.parseScenarios(data, configuration);
+                parser.parseObjectiveConstraint(data, configuration);
+                parser.parseParameterConstraints(data, configuration);
+                parser.parseParameters(data, configuration);
+                parser.parseExtScrObjectives(data, configuration);
+                parser.parseIntFuncsObjectives(data, configuration);
+                parser.parseRanking(data,configuration);
+                resolve(configuration)
+             })
+        })
+
+    }
+
+
+
     public newSearchAlgortihm(sa:IDseAlgorithm){
         this.searchAlgorithm = sa;
     } 
-    
+
+
     public addObjectiveConstraint(): DseObjectiveConstraint{
         let newOC = new DseObjectiveConstraint("");
         this.objConst.push(newOC);
@@ -73,14 +148,12 @@ export class DseConfiguration implements ISerializable {
         this.objConst = oc;
     }
 
-
     public removeObjectiveConstraint(oc: DseObjectiveConstraint){
         this.objConst.splice(this.paramConst.indexOf(oc), 1);
     }
 
-    getExtScrObjectives(obName : string) {
-        return this.extScrObjectives.find(v => v.name == obName) || null;
-    }
+
+
 
     public addParameterConstraint(): DseParameterConstraint{
         let newPC = new DseParameterConstraint("");
@@ -96,30 +169,45 @@ export class DseConfiguration implements ISerializable {
         this.paramConst.splice(this.paramConst.indexOf(pc), 1);
     }
 
-    public addParameter(){
-        let param = new DseParameter("");
-        this.dseParameters.push(param);
-        return param;
+
+
+
+    public getInstance(fmuName: string, instanceName: string) {
+        return this.dseSearchParameters.find(v => v.fmu.name == fmuName && v.name == instanceName) || null;
     }
 
-    getParameter(paramName: string){
-        return this.dseParameters.find(v => v.param == paramName) || null;
-    }
-    
-    public getParameterOrCreate(paramName: string) {
-        let param = this.getParameter(paramName);
+    public getInstanceOrCreate(fmuName: string, instanceName: string) {
+        let instance = this.getInstance(fmuName, instanceName);
 
-        //config does not contain this param
-        if (!param) {
-            param = new DseParameter(paramName)
-            this.dseParameters.push(param);
+        if (!instance) {
+            //multimodel does not contain this instance
+            let fmu = this.multiModel.getFmu(fmuName);
+
+            if (fmu) {
+                instance = new Instance(fmu, instanceName);
+                this.dseSearchParameters.push(instance);
+            }
         }
-        return param;
+
+        return instance;
     }
 
-    public removeParameter(p:DseParameter){
-        let index = this.dseParameters.indexOf(p);
-        this.dseParameters.splice(index, 1);
+    public addInstance(fmu:Fmu, name?:string) {
+        let instance = new Instance(fmu, name || `${fmu.name.replace(/[{}]/g, "")}Instance`);
+        this.dseSearchParameters.push(instance);
+
+        return instance;
+    }
+
+    public removeInstance(instance: Instance) {
+        this.dseSearchParameters.splice(this.dseSearchParameters.indexOf(instance), 1);
+    }
+
+
+
+
+    getExtScrObjectives(obName : string) {
+        return this.extScrObjectives.find(v => v.name == obName) || null;
     }
 
     public addExternalScript(){
@@ -136,6 +224,26 @@ export class DseConfiguration implements ISerializable {
         this.extScrObjectives.splice(index, 1);
     }
     
+
+
+
+    public addInternalFunction(){
+        let intF = new InternalFunction("","","");
+        this.intFunctObjectives.push(intF);
+        return intF;
+    }
+
+    public newInternalFunction(name:string, columnId:string, objTp:string){
+         this.intFunctObjectives.push(new InternalFunction(name, columnId, objTp));
+    }
+
+    public removeInternalFunction(i:InternalFunction){
+        let index = this.intFunctObjectives.indexOf(i);
+        this.intFunctObjectives.splice(index, 1);
+    }
+
+
+
 
     public newRanking(r: IDseRanking){
         this.ranking = r;
@@ -157,38 +265,7 @@ export class DseConfiguration implements ISerializable {
         this.scenarios.splice(this.scenarios.indexOf(s), 1);
     }
 
-    static parse(path: string): Promise<DseConfiguration> {
-        return new Promise<DseConfiguration>((resolve, reject) => {
-            fs.access(path, fs.constants.R_OK, error => {
-                if (error) return reject(error);
-                fs.readFile(path, (error, content) => {
-                    if (error) return reject(error);
-                    this.create(path, JSON.parse(content.toString()))
-                        .then(dseConfig => resolve(dseConfig))
-                        .catch(error => reject(error));
-                });
-            });
-        });
-    }
 
-    static create(path:string, data: any): Promise<DseConfiguration> {
-        return new Promise<DseConfiguration>((resolve, reject) => {
-            let parser = new DseParser();
-            let configuration = new DseConfiguration();
-            configuration.sourcePath = path;
-
-            parser.parseSearchAlgorithm(data, configuration);
-            parser.parseScenarios(data, configuration);
-            parser.parseObjectiveConstraint(data, configuration);
-            parser.parseParameterConstraints(data, configuration);
-            parser.parseParameters(data, configuration);
-            parser.parseExtScrObjectives(data, configuration);
-            parser.parseIntFuncsObjectives(data, configuration);
-            parser.parseRanking(data,configuration);
-            resolve(configuration)
-        })
-
-    }
 
     save(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
@@ -219,12 +296,8 @@ export class DseConfiguration implements ISerializable {
 }
 
 export class DseParameter{
-    // initial parameter values
-    //initialValues: Map<ScalarVariable, any[]> = new Map<ScalarVariable, any[]>();
     initialValues: any[] = [];
 
-    //FULL VERSION NEEDS KNOWLEDGE OF MULTI-MODEL IN USE
-    //constructor(public fmu: Fmu, public name: string) {}
     constructor(public param: string) {}
 
     toString(){
@@ -353,6 +426,9 @@ export class ExternalScript implements IDseObjective{
         extScriptStr = extScriptStr + ")";
         return extScriptStr;
     }
+
+
+
 };
 
 
@@ -362,7 +438,7 @@ export class InternalFunction implements IDseObjective{
     funcType = "";
     columnId = ""
 
-    constructor(n:string, fType:string, cId : ""){
+    constructor(n:string, cId : string, fType:string){
         this.name = n;
         this.funcType = fType;
         this.columnId = cId;
@@ -374,8 +450,8 @@ export class InternalFunction implements IDseObjective{
 
     toObject() {
         return {
-            objectiveType : this.funcType,
             columnID: this.columnId,
+            objectiveType : this.funcType,
         };
     }
 
@@ -505,8 +581,10 @@ export class GeneticSearch implements IDseAlgorithm {
 
     constructor(
         public initialPopulation: number = 0,
-        public randomBalanced: string = "random",
-        public terminationRounds: number = 0) {
+        public initialPopulationDistribution: string = "random",
+        public mutationProbability : number = 0,
+        public parentSelectionStrategy : string = "random",
+        public maxGenerationsWithoutImprovement : number = 0) {
     }
 
     getName(){
@@ -516,8 +594,10 @@ export class GeneticSearch implements IDseAlgorithm {
     toFormGroup() {
         return new FormGroup({
             initialPopulation: new FormControl(this.initialPopulation, [Validators.required, numberValidator]),
-            randomBalanced: new FormControl(this.randomBalanced, [Validators.required]),
-            terminationRounds: new FormControl(this.terminationRounds, [Validators.required, numberValidator])
+            initialPopulationDistribution: new FormControl(this.initialPopulationDistribution, [Validators.required]),
+            mutationProbability: new FormControl(this.mutationProbability, [Validators.required, numberValidator]),
+            parentSelectionStrategy: new FormControl(this.parentSelectionStrategy, [Validators.required]),
+            maxGenerationsWithoutImprovement: new FormControl(this.maxGenerationsWithoutImprovement, [Validators.required, numberValidator])
         });
     }
 
@@ -525,8 +605,10 @@ export class GeneticSearch implements IDseAlgorithm {
         return {
             type: this.type,
             initialPopulation: Number(this.initialPopulation),
-            randomBalanced: String(this.randomBalanced),
-            terminationRounds: Number(this.terminationRounds)
+            initialPopulationDistribution: String(this.initialPopulationDistribution),
+            mutationProbability: Number(this.mutationProbability),
+            parentSelectionStrategy: String(this.parentSelectionStrategy),
+            maxGenerationsWithoutImprovement: Number(this.maxGenerationsWithoutImprovement)
         };
     }
 }
