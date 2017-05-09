@@ -8,6 +8,7 @@ import * as Path from "path";
 import { BehaviorSubject } from "rxjs/Rx";
 import { Injectable, NgZone } from "@angular/core";
 import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
+import { storeResultCrc } from "../../intocps-configurations/ResultConfig";
 import * as http from "http"
 import * as fs from 'fs'
 import * as child_process from 'child_process'
@@ -55,7 +56,20 @@ export class CoeSimulationService {
         this.url = this.settings.get(SettingKeys.COE_URL);
 
         let currentDir = Path.dirname(this.config.sourcePath);
-        let dateString = new Date().toLocaleString().replace(/\//gi, "-").replace(/,/gi, "").replace(/ /gi, "_").replace(/:/gi, "-");
+        let now        = new Date();
+        let nowAsUTC   = new Date(Date.UTC(now.getFullYear(),
+                                           now.getMonth(),
+                                           now.getDate(),
+                                           now.getHours(),
+                                           now.getMinutes(),
+                                           now.getSeconds(),
+                                           now.getMilliseconds()));
+
+        let dateString = nowAsUTC.toISOString().replace(/-/gi, "_")
+                                               .replace(/T/gi, "-")
+                                               .replace(/Z/gi, "")
+                                               .replace(/:/gi, "_")
+                                               .replace(/\./gi, "_"); 
         this.resultDir = Path.normalize(`${currentDir}/R_${dateString}`);
 
         this.initializeDatasets();
@@ -229,6 +243,7 @@ export class CoeSimulationService {
                     this.fileSystem.copyFile(this.config.multiModel.sourcePath, mmConfigPath)
                 ]).then(() => {
                     this.progress = 100;
+                    storeResultCrc(resultPath,this.config);
                     this.executePostProcessingScript(resultPath);
                 });
             });
