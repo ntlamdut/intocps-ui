@@ -49,11 +49,13 @@ export class DseParser{
     }
 
     private parseSearchAlgorithmGenetic(algorithm: any) : IDseAlgorithm
-    {
+    {   
         let initialPopulation : number = parseFloat(algorithm["initialPopulation"]);
-        let randomBalanced : string = algorithm["randomBalanced"];
-        let terminationRounds : number = parseFloat(algorithm["terminationRounds"]);
-        return new GeneticSearch(initialPopulation, randomBalanced, terminationRounds)
+        let initialPopulationDistribution : string = algorithm["initialPopulationDistribution"];
+        let mutationProbability : number = parseFloat(algorithm["mutationProbability"]);
+        let parentSelectionStrategy : string = algorithm["parentSelectionStrategy"];
+        let maxGenerationsWithoutImprovement : number = parseFloat(algorithm["maxGenerationsWithoutImprovement"]);
+        return new GeneticSearch(initialPopulation, initialPopulationDistribution, mutationProbability, parentSelectionStrategy,maxGenerationsWithoutImprovement)
     }
 
 

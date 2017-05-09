@@ -41,12 +41,12 @@
 		<h3>DSE Configuration Setup</h3>
 		<h4>DSE Search Algorithms</h4>
 		<div class="form-group">
-			<label class="col-md-3 control-label">Search Algorithm</label>
-			<div class="col-md-9">
+			<label class="col-sm-5 col-md-4 control-label">Search Algorithm</label>
+			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.getName()}}</p>
 				<select *ngIf="editing" [ngModel]="config.searchAlgorithm.getName()" (ngModelChange)="onAlgorithmChange($event)" [ngModelOptions]="{standalone:true}"
 						class="form-control">
-					<option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm.getName()}}</option>
+					<option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm}}</option>
 				</select>
 			</div>
 		</div>
@@ -62,18 +62,40 @@
 				</div>
 
 				<div class="form-group">
-					<label class="col-sm-5 col-md-4 control-label">Random balanced</label>
+					<label class="col-sm-5 col-md-4 control-label">Initial Population Distribution</label>
 					<div class="col-sm-7 col-md-8">
-						<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.randomBalanced}}</p>
-						<input *ngIf="editing" name="randomBalanced" [(ngModel)]="config.searchAlgorithm.randomBalanced" class="form-control">
+						<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.initialPopulationDistribution}}</p>
+						<select *ngIf="editing" [ngModel]="config.searchAlgorithm.initialPopulationDistribution" (ngModelChange)="setGeneticpopDist($event)" [ngModelOptions]="{standalone:true}"
+								class="form-control">
+							<option *ngFor="let pd of geneticPopulationDistribution" [ngValue]="pd">{{pd}}</option>
+						</select>	
 					</div>
 				</div>
 
 				<div class="form-group">
-					<label class="col-sm-5 col-md-4 control-label">Termination rounds</label>
+					<label class="col-sm-5 col-md-4 control-label">Mutation Probability</label>
 					<div class="col-sm-7 col-md-8">
-						<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.terminationRounds}}</p>
-						<input *ngIf="editing" name="terminationRounds" [(ngModel)]="config.searchAlgorithm.terminationRounds" class="form-control">
+						<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.mutationProbability}}</p>
+						<input *ngIf="editing" name="mutationProbability" [(ngModel)]="config.searchAlgorithm.mutationProbability" class="form-control">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-5 col-md-4 control-label">Parent Selection Strategy</label>
+					<div class="col-sm-7 col-md-8">
+						<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.parentSelectionStrategy}}</p>
+						<select *ngIf="editing" [ngModel]="config.searchAlgorithm.parentSelectionStrategy" (ngModelChange)="setParentSelectionStrategy($event)" [ngModelOptions]="{standalone:true}"
+								class="form-control">
+							<option *ngFor="let pss of geneticParentSelectionStrategy" [ngValue]="pss">{{pss}}</option>
+						</select>	
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-5 col-md-4 control-label">Max Generations Without Improvement</label>
+					<div class="col-sm-7 col-md-8">
+						<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.maxGenerationsWithoutImprovement}}</p>
+						<input *ngIf="editing" name="maxGenerationsWithoutImprovement" [(ngModel)]="config.searchAlgorithm.maxGenerationsWithoutImprovement" class="form-control">
 					</div>
 				</div>
 			</div>

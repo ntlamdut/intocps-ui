@@ -581,8 +581,10 @@ export class GeneticSearch implements IDseAlgorithm {
 
     constructor(
         public initialPopulation: number = 0,
-        public randomBalanced: string = "random",
-        public terminationRounds: number = 0) {
+        public initialPopulationDistribution: string = "random",
+        public mutationProbability : number = 0,
+        public parentSelectionStrategy : string = "random",
+        public maxGenerationsWithoutImprovement : number = 0) {
     }
 
     getName(){
@@ -592,8 +594,10 @@ export class GeneticSearch implements IDseAlgorithm {
     toFormGroup() {
         return new FormGroup({
             initialPopulation: new FormControl(this.initialPopulation, [Validators.required, numberValidator]),
-            randomBalanced: new FormControl(this.randomBalanced, [Validators.required]),
-            terminationRounds: new FormControl(this.terminationRounds, [Validators.required, numberValidator])
+            initialPopulationDistribution: new FormControl(this.initialPopulationDistribution, [Validators.required]),
+            mutationProbability: new FormControl(this.mutationProbability, [Validators.required, numberValidator]),
+            parentSelectionStrategy: new FormControl(this.parentSelectionStrategy, [Validators.required]),
+            maxGenerationsWithoutImprovement: new FormControl(this.maxGenerationsWithoutImprovement, [Validators.required, numberValidator])
         });
     }
 
@@ -601,8 +605,10 @@ export class GeneticSearch implements IDseAlgorithm {
         return {
             type: this.type,
             initialPopulation: Number(this.initialPopulation),
-            randomBalanced: String(this.randomBalanced),
-            terminationRounds: Number(this.terminationRounds)
+            initialPopulationDistribution: String(this.initialPopulationDistribution),
+            mutationProbability: Number(this.mutationProbability),
+            parentSelectionStrategy: String(this.parentSelectionStrategy),
+            maxGenerationsWithoutImprovement: Number(this.maxGenerationsWithoutImprovement)
         };
     }
 }

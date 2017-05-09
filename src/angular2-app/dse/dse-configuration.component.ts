@@ -86,6 +86,10 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         GeneticSearch
     ];
 
+    private geneticPopulationDistribution = ["random", "uniform"];
+
+    private geneticParentSelectionStrategy = ["random", "algorithmObjectiveSpace","algorithmDesignSpace"];
+
     private internalFunctionTypes = ["max", "min","mean"];
 
     private paretoDirections = ["-", "+"];
@@ -247,6 +251,14 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return this.config.searchAlgorithm.getName()
     }
 
+
+    setGeneticpopDist(dist: string) {
+        (<GeneticSearch>this.config.searchAlgorithm).initialPopulationDistribution = dist;
+    }
+
+    setParentSelectionStrategy(strat: string) {
+        (<GeneticSearch>this.config.searchAlgorithm).parentSelectionStrategy = strat;
+    }
 
     /* REUSED FROM MM-CONFIG */
     selectParameterInstance(instance: Instance) {
@@ -682,7 +694,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         let experimentConfigName = this._path.slice(absoluteProjectPath.length + 1, this._path.length);
         let multiModelConfigName = this.coeconfig.slice(absoluteProjectPath.length + 1, this.coeconfig.length); 
 
-        let scriptFile = Path.join(installDir, "dse", "Algorithm_exhaustive.py"); 
+        let scriptFile = Path.join(installDir, "dse", "Algorithm_selector.py"); 
         var child = spawn("python", [scriptFile, absoluteProjectPath, experimentConfigName, multiModelConfigName], {
             detached: true,
             shell: false,
