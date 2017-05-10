@@ -19,7 +19,7 @@ import * as fs from 'fs';
     ],
     directives: [
     ],
-    templateUrl: "./angular2-app/dse/dse-simulation.component.html"
+    templateUrl: "./angular2-app/dse/dse-configuration.component.html"
 })
 export class DseSimulationComponent implements OnInit, OnDestroy {
     private _path:string;
@@ -116,7 +116,7 @@ export class DseSimulationComponent implements OnInit, OnDestroy {
         let experimentConfigName = this._path.slice(absoluteProjectPath.length + 1, this._path.length);
         let multiModelConfigName = this.config.slice(absoluteProjectPath.length + 1, this.config.length); 
 
-        let scriptFile = Path.join(installDir, "dse", "Algorithm_selector.py"); 
+        let scriptFile = Path.join(installDir, "dse", "Algorithm_exhaustive.py"); 
         var child = spawn("python", [scriptFile, absoluteProjectPath, experimentConfigName, multiModelConfigName], {
             detached: true,
             shell: false,
