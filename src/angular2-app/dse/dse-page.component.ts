@@ -1,20 +1,14 @@
 import {Component, Input} from "@angular/core";
 import {DseSimulationComponent} from "./dse-simulation.component";
-import {DseOverviewComponent} from "./dse-overview.component";
-import {DseConfigurationComponent} from "./dse-configuration.component";
-import {DseConfiguration} from "../../intocps-configurations/dse-configuration";
-import IntoCpsApp from "../../IntoCpsApp";
 import {PanelComponent} from "../shared/panel.component";
 
 @Component({
     selector: "dse-page",
+    templateUrl: "./angular2-app/dse/dse-page.component.html",
     directives: [
         PanelComponent,
-        DseSimulationComponent,
-        DseConfigurationComponent,
-        DseOverviewComponent
-    ],
-    templateUrl: "./angular2-app/dse/dse-page.component.html"
+        DseSimulationComponent
+    ]
 })
 export class DsePageComponent {
     @Input()
