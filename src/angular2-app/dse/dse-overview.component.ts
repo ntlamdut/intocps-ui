@@ -29,12 +29,12 @@ export class DseOverviewComponent {
     }
 
     parseConfig() {
-       let project = IntoCpsApp.getInstance().getActiveProject();
+    //    let project = IntoCpsApp.getInstance().getActiveProject();
     
-       DseConfiguration
-           .parse(this.path)
-           .then(config => 
-                this.zone.run(() => 
-                this.config = config));
+    //    DseConfiguration
+    //        .parse(this.path)
+    //        .then(config => 
+    //             this.zone.run(() => 
+    //             this.config = config));
     }
 }
