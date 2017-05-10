@@ -35,7 +35,7 @@ export default class IntoCpsApp extends EventEmitter {
         this.createDirectoryStructure(intoCpsAppFolder);
         // Set calculated default values
         let defaultValues = SettingKeys.DEFAULT_VALUES;
-        let defaultProjectFolderPath = Path.join(this.app.getPath('home'), "into-cps-projects");
+        let defaultProjectFolderPath = Path.join(this.app.getPath('documents'), "into-cps-projects");
         defaultValues[SettingKeys.INSTALL_TMP_DIR] = Path.join(defaultProjectFolderPath, "install_downloads");
         defaultValues[SettingKeys.INSTALL_DIR] = Path.join(defaultProjectFolderPath, "install");
         defaultValues[SettingKeys.DEFAULT_PROJECTS_FOLDER_PATH] = defaultProjectFolderPath;
