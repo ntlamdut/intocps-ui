@@ -127,7 +127,8 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
         this.hasHttpError = hasError;
         this.httpErrorMessage = message;
-
+        if(hasError)
+            this.simulating = false;
     }
 
     postScriptOutputHandler(hasError: boolean, message: string) {

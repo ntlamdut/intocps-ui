@@ -26,6 +26,8 @@ interface MyWindow extends Window {
 }
 
 declare var window: MyWindow;
+declare var w2prompt: any;
+declare var w2alert: any;
 
 import * as Menus from "./menus";
 import { provideForms, disableDeprecatedForms } from "@angular/forms";
@@ -212,18 +214,41 @@ menuHandler.openFmu = () => {
 //};
 //
 
-menuHandler.createMultiModel = (path) => {
+menuHandler.createMultiModel = (path, msgTitle = 'New Multi-Model') => {
     let appInstance = IntoCpsApp.getInstance();
     let project = appInstance.getActiveProject();
 
     if (project) {
-        let name = Path.basename(path, ".sysml.json");
-        let content = fs.readFileSync(path, "UTF-8");
-        let mmPath = <string>project.createMultiModel(`mm-${name} (${Math.floor(Math.random() * 100)})`, content);
-        menuHandler.openMultiModel(mmPath);
-        //Create the trace 
-        let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath,path);
-        //console.log("RootMessage: " + JSON.stringify(message));    
+        let name    = Path.basename(path, ".sysml.json");
+        let ivname  = `mm-${name}`;
+        let mmPath  = null; 
+        w2prompt({
+            label       : 'Name',
+            value       : ivname,
+            attrs       : 'style="width: 500px"',
+            title       : msgTitle,
+            ok_text     : 'Ok',
+            cancel_text : 'Cancel',
+            width       : 500,
+            height      : 200,
+            callBack    : function (value : String) {
+
+                let content = fs.readFileSync(path, "UTF-8");
+                try {
+                    if (!value) {return;}
+                    mmPath = <string>project.createMultiModel(value, content);
+                    menuHandler.openMultiModel(mmPath);
+                } catch (error){
+                    menuHandler.createMultiModel(path,'Multi-Model "'+  value + '" already exists! Choose a different name.');
+                    return;
+                }
+                //Create the trace 
+                if (mmPath) {
+                    let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath,path);
+                    //console.log("RootMessage: " + JSON.stringify(message));    
+                }
+            }
+        });
     }
 };
 
@@ -251,14 +276,37 @@ menuHandler.createDsePlain = () => {
     }
 }
 
-menuHandler.createMultiModelPlain = () => {
+menuHandler.createMultiModelPlain = (titleMsg : string = 'New Multi-Model') => {
     let project = IntoCpsApp.getInstance().getActiveProject();
 
     if (project) {
-        let mmPath = <string>project.createMultiModel(`mm-new (${Math.floor(Math.random() * 100)})`, "{}");
-        menuHandler.openMultiModel(mmPath);
+
+        let ivname  = `mm-new`;
+        
+
+        w2prompt({
+            label       : 'Name',
+            value       : ivname,
+            attrs       : 'style="width: 500px"',
+            title       : titleMsg,
+            ok_text     : 'Ok',
+            cancel_text : 'Cancel',
+            width       : 500,
+            height      : 200,
+            callBack    : function (value : String) {
+                try {
+                   if (!value) {return;}
+                   let mmPath = <string>project.createMultiModel(value, "{}");
+                   menuHandler.openMultiModel(mmPath);
+                } catch (error){                   
+                   menuHandler.createMultiModelPlain('Multi-Model "'+  value + '" already exists! Choose a different name.');
+                }
+            }
+    });
+
     }
 };
+
 
 menuHandler.createCoSimConfiguration = (path) => {
     let project = IntoCpsApp.getInstance().getActiveProject();
