@@ -271,7 +271,7 @@ menuHandler.createDsePlain = () => {
         let dseConfig = new DseConfiguration()
         let dseObject = dseConfig.toObject();
         let dseJson = JSON.stringify(dseObject);
-        let dsePath = <string>project.createDse("dse-" + name + " (" + Math.floor(Math.random() * 100) + ")", dseJson);
+        let dsePath = <string>project.createDse("dse-" + name + "-(" + Math.floor(Math.random() * 100) + ")", dseJson);
         menuHandler.openDseView(dsePath);
     }
 }

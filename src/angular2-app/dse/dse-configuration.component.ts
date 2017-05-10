@@ -1,4 +1,4 @@
-import { Component, Input, NgZone, Output, EventEmitter } from "@angular/core";
+import { Component, Input, NgZone, Output, EventEmitter, OnInit, OnDestroy } from "@angular/core";
 import {Serializer} from "../../intocps-configurations/Parser";
 import {
     Instance, ScalarVariable, CausalityType, InstanceScalarPair, isCausalityCompatible, isTypeCompatiple,
@@ -490,6 +490,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
 
     addExternalScript(){
         let es = this.config.addExternalScript();
+        this.objNames = this.getObjectiveNames();
     }
 
     getExternalScriptName(e: ExternalScript){
@@ -498,6 +499,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
 
     setExternalScriptName(p: ExternalScript, name: string) {
         p.name = `${name}`;
+        this.objNames = this.getObjectiveNames();
     }
 
     getExternalScriptFilename(e: ExternalScript){
@@ -529,16 +531,19 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
 
     removeExternalScript(e:ExternalScript){
         this.config.removeExternalScript(e);
+        this.objNames = this.getObjectiveNames();
     }
 
 
 
     addInternalFunction(){
         let intf = this.config.addInternalFunction();
+        this.objNames = this.getObjectiveNames();
     }
 
     removeInternalFunction(i:InternalFunction){
         this.config.removeInternalFunction(i);
+        this.objNames = this.getObjectiveNames();
     }
 
     getInternalFunctionName(i: InternalFunction){
@@ -547,6 +552,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
 
     setInternalFunctionName(i: InternalFunction, name: string) {
         i.name = `${name}`;
+        this.objNames = this.getObjectiveNames();
     }
 
     getInternalFunctionColumnName(i: InternalFunction){
