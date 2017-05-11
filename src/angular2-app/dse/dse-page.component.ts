@@ -1,5 +1,4 @@
 import {Component, Input} from "@angular/core";
-import {DseSimulationComponent} from "./dse-simulation.component";
 import {DseOverviewComponent} from "./dse-overview.component";
 import {DseConfigurationComponent} from "./dse-configuration.component";
 import {DseConfiguration} from "../../intocps-configurations/dse-configuration";
@@ -10,7 +9,6 @@ import {PanelComponent} from "../shared/panel.component";
     selector: "dse-page",
     directives: [
         PanelComponent,
-        DseSimulationComponent,
         DseConfigurationComponent,
         DseOverviewComponent
     ],
