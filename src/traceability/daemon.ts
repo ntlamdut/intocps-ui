@@ -40,7 +40,7 @@ export class Daemon {
   constructor(){
     this.isconnected = false;
     this.enableValidation = false;
-    this.jsonSchemaPath = Path.join(__dirname, "../../src/traceability/INTO-CPS-Traceability-Schema-V1.1.json");
+    this.jsonSchemaPath = Path.join(__dirname, "../../src/traceability/INTO-CPS-Traceability-Schema-V1.2.json");
 //    console.log(this.jsonSchemaPath);
     this.readJsonSchema();
 }
