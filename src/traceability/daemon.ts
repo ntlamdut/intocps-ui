@@ -53,7 +53,7 @@ export class Daemon {
       app.locals.title= 'INTO-CPS-Traceability-Daemon';
       var bodyParser = require('body-parser');
 
-      app.use(bodyParser.json());
+      app.use(bodyParser.json({limit: '50mb'}));
       //server.use(restify.queryParser({ mapParams: false }));
 
       // ------- REST URLs: --------
