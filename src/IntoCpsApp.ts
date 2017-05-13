@@ -10,7 +10,7 @@ import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {SettingKeys} from "./settings//SettingKeys";
 import {EventEmitter} from "events";
 import {trManager} from "./traceability/trManager"
-
+import {Utilities} from "./utilities"
 
 // constants
 let topBarNameId: string = "activeTabTitle";
@@ -35,7 +35,8 @@ export default class IntoCpsApp extends EventEmitter {
         this.createDirectoryStructure(intoCpsAppFolder);
         // Set calculated default values
         let defaultValues = SettingKeys.DEFAULT_VALUES;
-        let defaultProjectFolderPath = Path.join(this.app.getPath('home'), "into-cps-projects");
+        let projRoot = Utilities.getSystemPlatform() == "windows" ? this.app.getPath('documents') : this.app.getPath('home');
+        let defaultProjectFolderPath = Path.join(projRoot, "into-cps-projects");
         defaultValues[SettingKeys.INSTALL_TMP_DIR] = Path.join(defaultProjectFolderPath, "install_downloads");
         defaultValues[SettingKeys.INSTALL_DIR] = Path.join(defaultProjectFolderPath, "install");
         defaultValues[SettingKeys.DEFAULT_PROJECTS_FOLDER_PATH] = defaultProjectFolderPath;
