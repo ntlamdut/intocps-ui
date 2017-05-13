@@ -63,7 +63,7 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.url = this.settings.get(SettingKeys.COE_URL) || "localhost:8082";
-        this.onlineInterval = setInterval(() => this.isCoeOnline(), 2000);
+        this.onlineInterval = window.setInterval(() => this.isCoeOnline(), 2000);
         this.isCoeOnline();
     }
 
