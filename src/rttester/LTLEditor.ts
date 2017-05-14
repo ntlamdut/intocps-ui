@@ -1,8 +1,3 @@
-
-///<reference path="../../typings/browser/ambient/sql.js/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/ace/index.d.ts"/>
-
-
 import { ViewController } from "../iViewController";
 import { IntoCpsApp } from "../IntoCpsApp";
 import Path = require("path");

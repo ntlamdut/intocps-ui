@@ -7,17 +7,16 @@
 var outputPath = 'dist/',
     htmlSrcs = ['src/**/*.html'],
     jsSrcs = 'src/**/*.js',
-    tsSrcs = ['src/**/*.ts', 'typings/browser/**/*.ts'],
+    tsSrcs = ['src/**/*.ts'],
     bowerFolder = 'bower_components',
     resourcesFolder = 'src/resources',
-    typingsFolder = 'typings',
     cssSrcs = [
         'src/styles.css',
         bowerFolder + '/bootstrap/dist/css/bootstrap.css',
         resourcesFolder + '/w2ui-1.5/w2ui.min.css'],
     bowerSrcs = "",
     customResources= [resourcesFolder+'/into-cps/**/*'],
-    configJsons = ['./bower.json', './package.json', 'typings.json']
+    configJsons = ['./bower.json', './package.json']
     ;
 
 // Gulp plugins
@@ -29,7 +28,6 @@ var gulp = require('gulp'),
     mainBowerFiles = require('main-bower-files'),
     filter = require('gulp-filter'),
     debug = require('gulp-debug'),
-    typings = require('gulp-typings'),
     bower = require('gulp-bower'),
     merge = require('merge-stream'),
     packager = require('electron-packager'),
@@ -89,7 +87,7 @@ gulp.task('bump-dev', function(){
 });
 
 gulp.task('commit-changes', function () {
-  return gulp.src(['./bower.json', './package.json', 'typings.json'])
+  return gulp.src(['./bower.json', './package.json'])
     .pipe(git.add())
     .pipe(git.commit('[GULP] Bump version number'));
 });
@@ -127,12 +125,6 @@ gulp.task('prep-release', function (callback) {
       }
       callback(error);
     });
-});
-
-// Install typings
-gulp.task("install-ts-defs", function () {
-    gulp.src("./typings.json")
-        .pipe(typings());
 });
 
 // Install bower components
@@ -221,7 +213,7 @@ gulp.task('copy-js', function () {
 });
 
 // Grab non-npm dependencies
-gulp.task('init', ['install-ts-defs', 'install-bower-components']);
+gulp.task('init', ['install-bower-components']);
 
 //Build App for debugging
 gulp.task('build', ['compile-ts', 'compile-ng2', 'copy-js', 'copy-html', 'copy-css',
