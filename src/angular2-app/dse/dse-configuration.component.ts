@@ -17,6 +17,7 @@ import {Project} from "../../proj/Project";
 import * as Path from 'path';
 import * as fs from 'fs';
 import {coeServerStatusHandler} from "../../menus";
+import {OutputConnectionsPair} from "../coe/models/Fmu";
 
 @Component({
     selector: "dse-configuration",
@@ -66,6 +67,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
     
     config : DseConfiguration;
     cosimConfig:string[] = [];
+    mmOutputs:string[] = [];
     objNames:string[] = [];
     coeconfig:string = '';
 
@@ -92,6 +94,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
 
     private internalFunctionTypes = ["max", "min","mean"];
 
+    private externalScriptParamTp = ["model output", "constant", "simulation value"];
+    private simulationValue = ["step-size", "time"];
+
     private paretoDirections = ["-", "+"];
 
   
@@ -112,6 +117,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
                 this.zone.run(() => {
                     this.config = config;
                     this.objNames = this.getObjectiveNames();
+                    this.mmOutputs = this.loadMMOutputs();
 
                     // Create an array of the algorithm from the coe config and a new instance of all other algorithms
                     this.algorithms = this.algorithmConstructors
@@ -414,6 +420,18 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return [fmuName, instanceName, scalarVariableName];
     }
 
+    loadMMOutputs():string[]{
+        let outputs :string []= [];
+
+        this.config.multiModel.fmuInstances.forEach(instance => {
+            instance.outputsTo.forEach((connections, scalarVariable) => {
+                outputs.push(Serializer.getIdSv(instance, scalarVariable));
+            });
+        });
+
+        return outputs;
+    }
+
     dseParamExists(instance: Instance, variableName:string) :boolean{    
         let paramFound = false;
         
@@ -514,8 +532,8 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return e.parameterList;
     }
 
-    addExternalScriptParameter(e: ExternalScript, value: any) {
-        e.addParameter(value);
+    addExternalScriptParameter(e: ExternalScript, value: any, tp: string) {
+        e.addParameter(value, tp);
     }
 
     setExternalScriptParameterId(e:ExternalScript, param: any, newId:any){
@@ -525,6 +543,11 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
     setExternalScriptParameterValue(e:ExternalScript, param: any, newVal:any){
         return e.setParameterValue(param, newVal);
     }
+
+    setExternalScriptParameterType(e:ExternalScript, param: any, newTp:string){
+        return e.setParameterType(param, newTp);
+    }
+
     removeExternalScriptParameter(e: ExternalScript, value: string) {
         e.removeParameter(value);
     }
