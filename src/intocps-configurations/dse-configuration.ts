@@ -380,9 +380,9 @@ export class ExternalScript implements IDseObjective{
         return new FormGroup({});
     }
 
-    addParameter(v:string){
+    addParameter(v:string, tp: string){
         let newId = this.parameterList.length+1;
-        let newObj = new ObjectiveParam(newId.toString(), v);
+        let newObj = new ObjectiveParam(newId.toString(), v,tp);
         this.parameterList.push(newObj);
     }
 
@@ -402,6 +402,13 @@ export class ExternalScript implements IDseObjective{
         let index = this.parameterList.indexOf(p);
         let newObj = this.parameterList[index];
         newObj.setValue(newVal);
+        this.parameterList.splice(index, 1, newObj);
+    }
+
+    setParameterType(p:ObjectiveParam, newTp:any){
+        let index = this.parameterList.indexOf(p);
+        let newObj = this.parameterList[index];
+        newObj.setType(newTp);
         this.parameterList.splice(index, 1, newObj);
     }
 
@@ -464,14 +471,20 @@ export class InternalFunction implements IDseObjective{
 export class ObjectiveParam{
     id: string;
     value : string;
+    type : string;
 
-    constructor(i : string, v : string){
+    constructor(i : string, v : string, t:string){
         this.id = i;
         this.value = v;
+        this.type = t;
     }
 
     setId(newId :string){
         this.id = newId
+    }
+
+    setType(tp : string){
+        this.type = tp;
     }
 
     setValue(newvalue :string){

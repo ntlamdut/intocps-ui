@@ -140,7 +140,16 @@ export class DseParser{
             //GET SCRIPT PARAMETERS
             $.each(Object.keys(paramList), (j, id2) => {
                 let pName = paramList[id2];
-                let newParam = new ObjectiveParam(id2, pName);
+                let pTp = "";
+                if(pName.charAt(0)=='{'){
+                    pTp = "model output"
+                }
+                else if (pName == "time" || pName == "step-size"){
+                    pTp = "simulation value"
+                } 
+                else pTp = "constant";
+
+                let newParam = new ObjectiveParam(id2, pName, pTp);
                 objParams.push(newParam);
             });
             //add the new external script
