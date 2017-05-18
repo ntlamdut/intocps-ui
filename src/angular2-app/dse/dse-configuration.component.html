@@ -46,7 +46,7 @@
 				<p *ngIf="!editing" class="form-control-static">{{config.searchAlgorithm.getName()}}</p>
 				<select *ngIf="editing" [ngModel]="config.searchAlgorithm.getName()" (ngModelChange)="onAlgorithmChange($event)" [ngModelOptions]="{standalone:true}"
 						class="form-control">
-					<option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm.getName()}}</option>
+					<option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm.name}}</option>
 				</select>
 			</div>
 		</div>
@@ -232,8 +232,6 @@
 							</select>
 						</div>
 						<div *ngIf="editing && p.type=='model output'">
-							Model Output
-
 							<select *ngIf="editing" [ngModel]="p.value" (ngModelChange)="setExternalScriptParameterValue(e, p, $event)" [ngModelOptions]="{standalone:true}"
 								class="form-control">
 								<option *ngFor="let mmout of mmOutputs" [ngValue]="mmout">{{mmout}}</option>
@@ -254,7 +252,7 @@
 		<h4>Internal Function Objectives<button *ngIf="editing" type="button" (click)="addInternalFunction()" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plus"></span>Add Internal Function Objective</button></h4>
 		<div class="row">
 			<div class="col-md-3"><label>Objective Name</label></div>
-			<div class="col-md-3"><label>Output ID</label></div>
+			<div class="col-md-4"><label>Output ID</label></div>
 			<div class="col-md-3"><label>Objective Type</label></div>
 		</div>
 
@@ -265,10 +263,12 @@
 					class="form-control input-fixed-size input-sm">
 				<button *ngIf="editing" type="button" (click)="removeInternalFunction(i)" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-remove"></span>Remove Internal Function Objective</button>
 			</div>
-			<div class = "col-md-3">
+			<div class = "col-md-4">
 				<p *ngIf="!editing" class="form-control-static">{{getInternalFunctionColumnName(i)}}</p>
-				<input *ngIf="editing" [ngModel]="getInternalFunctionColumnName(i)" (ngModelChange)="setInternalFunctionColumnName(i, $event)" [ngModelOptions]="{standalone:true}"
-					class="form-control input-fixed-size input-sm">
+				<select *ngIf="editing" [ngModel]="getInternalFunctionColumnName(i)" (ngModelChange)="setInternalFunctionColumnName(i, $event)" [ngModelOptions]="{standalone:true}"
+					class="form-control">
+					<option *ngFor="let mmout of mmOutputs" [ngValue]="mmout">{{mmout}}</option>
+				</select>
 			</div>
 			<div class = "col-md-3">
 				<p *ngIf="!editing" class="form-control-static">{{getInternalFunctionObjectiveType(i)}}</p>
