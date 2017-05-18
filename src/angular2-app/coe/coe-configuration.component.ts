@@ -105,7 +105,9 @@ export class CoeConfigurationComponent {
                         startTime: new FormControl(config.startTime, [Validators.required, numberValidator]),
                         endTime: new FormControl(config.endTime, [Validators.required, numberValidator]),
                         livestreamInterval: new FormControl(config.livestreamInterval, [Validators.required, numberValidator]),
-                        algorithm: this.algorithmFormGroups.get(this.config.algorithm)
+                        algorithm: this.algorithmFormGroups.get(this.config.algorithm),
+                        global_absolute_tolerance: new FormControl(config.global_absolute_tolerance, [Validators.required, numberValidator]),
+                        global_relative_tolerance: new FormControl(config.global_relative_tolerance, [Validators.required, numberValidator])
                     }, null, lessThanValidator('startTime', 'endTime'));
                 });
             }, error => this.zone.run(() => {this.parseError = error})).catch(error => console.error(`Error during parsing of config: ${error}`));
