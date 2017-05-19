@@ -432,6 +432,10 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return outputs;
     }
 
+    customTrackBy(index: number, obj: any): any {
+        return index;
+    }
+
     dseParamExists(instance: Instance, variableName:string) :boolean{    
         let paramFound = false;
         

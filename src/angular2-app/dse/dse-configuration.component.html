@@ -134,7 +134,7 @@
 				</div>
 
 				<div *ngIf="selectedParameterInstance">
-					<div *ngFor="let initialValue of getInitialValues(); let i=index" class="row">
+					<div *ngFor="let initialValue of getInitialValues(); let i=index; trackBy:customTrackBy" class="row">
 						<div class="col-md-2">
 							<p class="form-control-static">
 								<span class="label label-info">{{getScalarTypeName(initialValue.scalarVariable.type)}}</span> {{initialValue.scalarVariable.name}}
