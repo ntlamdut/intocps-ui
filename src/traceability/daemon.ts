@@ -40,7 +40,7 @@ export class Daemon {
   constructor(){
     this.isconnected = false;
     this.enableValidation = false;
-    this.jsonSchemaPath = Path.join(__dirname, "../../src/traceability/INTO-CPS-Traceability-Schema-V1.2.json");
+    this.jsonSchemaPath = Path.join(__dirname, "../../src/traceability/INTO-CPS-Traceability-Schema-V1.3.json");
 //    console.log(this.jsonSchemaPath);
     this.readJsonSchema();
 }
@@ -357,7 +357,7 @@ export class Daemon {
         var schemaString:string = fs.readFileSync(this.jsonSchemaPath); 
         this.jsonSchema = JSON.parse(schemaString);
         this.enableValidation = true;
-        console.log("Validation of traceability messages enabled.")
+        console.log("Validation of traceability messages enabled. Now validating against file " + Path.basename(this.jsonSchemaPath) + ".");
       }else{
         console.log("Unable to find JsonSchema at " + this.jsonSchemaPath + ". Validation is disabled.")
       }
