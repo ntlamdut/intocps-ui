@@ -1,6 +1,3 @@
-///<reference path="../../typings/browser/ambient/jquery/index.d.ts"/>
-///<reference path="../../typings/browser/ambient/w2ui/index.d.ts"/>
-
 import { IntoCpsAppEvents } from "../IntoCpsAppEvents";
 import { IntoCpsApp } from "../IntoCpsApp";
 import { Project } from "./Project";
