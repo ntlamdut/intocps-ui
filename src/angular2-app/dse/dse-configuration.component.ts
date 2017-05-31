@@ -141,8 +141,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
                         scenarios : new FormArray(this.config.scenarios.map(s => new FormControl(s)))
                     });
                 });
-           })
-            //}, error => this.zone.run(() => {this.parseError = error})).catch(error => console.error(`Error during parsing of config: ${error}`));
+           }, error => this.zone.run(() => {this.parseError = error})).catch(error => console.error(`Error during parsing of config: ${error}`));
     }
 
     onNavigate(): boolean {
@@ -716,7 +715,10 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return this.online
             && this.coeconfig != ""
             && this.dseWarnings.length === 0
-            && this.coeWarnings.length === 0;
+            && this.coeWarnings.length === 0
+            && this.config.dseSearchParameters.length > 1 
+            && (this.config.extScrObjectives.length + this.config.intFunctObjectives.length) > 2
+            && (<ParetoRanking> this.config.ranking).dimensions.length == 2;
     }
 
     runDse() {

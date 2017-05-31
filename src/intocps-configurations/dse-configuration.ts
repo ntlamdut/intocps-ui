@@ -110,25 +110,24 @@ export class DseConfiguration implements ISerializable {
                 .parse(mmPath, fmuRootPath)
                 .then(multiModel => {
                
-                let parser = new DseParser();
-                let configuration = new DseConfiguration();
-                configuration.sourcePath = path;
+                    let parser = new DseParser();
+                    let configuration = new DseConfiguration();
+                    configuration.sourcePath = path;
 
-                configuration.fmuRootPath = fmuRootPath;
+                    configuration.fmuRootPath = fmuRootPath;
 
-                configuration.multiModel = multiModel;
-                parser.parseSearchAlgorithm(data, configuration);
-                parser.parseScenarios(data, configuration);
-                parser.parseObjectiveConstraint(data, configuration);
-                parser.parseParameterConstraints(data, configuration);
-                parser.parseParameters(data, configuration);
-                parser.parseExtScrObjectives(data, configuration);
-                parser.parseIntFuncsObjectives(data, configuration);
-                parser.parseRanking(data,configuration);
-                resolve(configuration)
-             })
-        })
-
+                    configuration.multiModel = multiModel;
+                    parser.parseSearchAlgorithm(data, configuration);
+                    parser.parseScenarios(data, configuration);
+                    parser.parseObjectiveConstraint(data, configuration);
+                    parser.parseParameterConstraints(data, configuration);
+                    parser.parseParameters(data, configuration);
+                    parser.parseExtScrObjectives(data, configuration);
+                    parser.parseIntFuncsObjectives(data, configuration);
+                    parser.parseRanking(data,configuration);
+                    resolve(configuration)
+                }).catch(error => reject(error));
+            })
     }
 
 
@@ -183,6 +182,10 @@ export class DseConfiguration implements ISerializable {
             //multimodel does not contain this instance
             let fmu = this.multiModel.getFmu(fmuName);
 
+            if (fmu == null)
+            {
+                throw "The FMU " + fmuName + " does not exist in the selected multimodel. PLease review the DSE configuration in a text editor.";
+            }
             if (fmu) {
                 instance = new Instance(fmu, instanceName);
                 this.dseSearchParameters.push(instance);
