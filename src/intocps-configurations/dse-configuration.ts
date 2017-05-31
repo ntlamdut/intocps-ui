@@ -184,7 +184,7 @@ export class DseConfiguration implements ISerializable {
 
             if (fmu == null)
             {
-                throw "The FMU " + fmuName + " does not exist in the selected multimodel. PLease review the DSE configuration in a text editor.";
+                throw "The FMU " + fmuName + " does not exist in the selected multimodel. Please review the DSE configuration in a text editor.";
             }
             if (fmu) {
                 instance = new Instance(fmu, instanceName);
