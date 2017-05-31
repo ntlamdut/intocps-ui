@@ -88,15 +88,12 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         GeneticSearch
     ];
 
+    //Collection of arrays to use for drop-boxes. Some may be expanded as the backend is developed
     private geneticPopulationDistribution = ["random"];//To add in when backend works["random", "uniform"];
-
     private geneticParentSelectionStrategy = ["random"];//["random", "algorithmObjectiveSpace","algorithmDesignSpace"];
-
     private internalFunctionTypes = ["max", "min","mean"];
-
     private externalScriptParamTp = ["model output", "constant", "simulation value"];
     private simulationValue = ["step-size", "time"];
-
     private paretoDirections = ["-", "+"];
 
   
@@ -105,7 +102,6 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         private zone:NgZone,
         private settings:SettingsService, private navigationService: NavigationService) {
         this.navigationService.registerComponent(this);
-        
     }
 
     parseConfig(mmPath : string) {
@@ -116,6 +112,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
            .then(config => {
                 this.zone.run(() => {
                     this.config = config;
+                    //retrieve information to use for validation purposes
                     this.objNames = this.getObjectiveNames();
                     this.mmOutputs = this.loadMMOutputs();
 
@@ -134,7 +131,6 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
                     // Create a form group for validation
                     this.form = new FormGroup({
                         searchAlgorithm :  this.algorithmFormGroups.get(this.config.searchAlgorithm),
-                        //params : new FormArray(this.config.dseParameters.map(c => new FormControl(c))),
                         paramConstraints : new FormArray(this.config.paramConst.map(c => new FormControl(c))),
                         objConstraints : new FormArray(this.config.objConst.map(c => new FormControl(c))),
                         extscr : new FormArray(this.config.extScrObjectives.map(s => new FormControl(s))),
@@ -156,13 +152,6 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         } else {
             return confirm("The changes to the configuration are invalid and can not be saved. Continue anyway?");
         }
-    }
-
-    onAlgorithmChange(algorithm: IDseAlgorithm) {
-        this.config.searchAlgorithm = algorithm;
-
-        this.form.removeControl('algorithm');
-        this.form.addControl('algorithm', this.algorithmFormGroups.get(algorithm));
     }
 
     onSubmit() {
@@ -191,7 +180,10 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
        
         this.editing = false;
     }
-    
+
+    /*
+     * Method to state that the multi-model has been chosen for the DSE config
+     */
     onMMSubmit() {
         if (!this.editingMM) return;
         this.editingMM = false;
@@ -252,6 +244,16 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         this.parseConfig(mmPath);
     }
 
+    /*
+     * Method for updating the DSE algorithm
+     */
+    onAlgorithmChange(algorithm: IDseAlgorithm) {
+        this.config.searchAlgorithm = algorithm;
+
+        this.form.removeControl('algorithm');
+        this.form.addControl('algorithm', this.algorithmFormGroups.get(algorithm));
+    }
+
     getSearchAlgorithm(){
         return this.config.searchAlgorithm.getName()
     }
@@ -271,6 +273,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         this.newParameter = this.getParameters()[0];
     }
 
+    /*
+     * Get the parameters for a selected FMU instance (selected instance set as a state variable)
+     */
     getParameters() {
         if (!this.selectedParameterInstance)
             return [null];
@@ -279,6 +284,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
             .filter(variable => isCausalityCompatible(variable.causality, CausalityType.Parameter) && !this.selectedParameterInstance.initialValues.has(variable));
     }
 
+    /*
+     * Get the initial values for a selected FMU instance (selected instance set as a state variable)
+     */
     getInitialValues(): Array<ScalarValuePair> {
         let initialValues: Array<ScalarValuePair> = [];
 
@@ -293,6 +301,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return ['Real', 'Bool', 'Int', 'String', 'Unknown'][type];
     }
 
+    /*
+     * Add a new DSE parameter
+     */
     addParameter() {
         if (!this.newParameter) return;
 
@@ -300,11 +311,13 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         this.newParameter = this.getParameters()[0];
       }
 
+    /*
+     * Remove the given DSE search parameter
+     */
     removeParameter(instance: Instance, parameter: ScalarVariable) {
         instance.initialValues.delete(parameter);
         this.newParameter = this.getParameters()[0];
     }
-
 
     setParameterName(p: DseParameter, name: string) {
         p.param = `${name}`;
@@ -314,6 +327,10 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return p.param;
     }
 
+    /*
+     * Set the initial values for a DSE parameter. Will check types of values and also ensure 
+     * parameter of choice is recorded in the DSE config.
+     */ 
     setDSEParameter(instance: Instance, variableName:string, newValue: any) {
         if (!newValue.includes(",")){
             if (instance.fmu.getScalarVariable(variableName).type === ScalarVariableType.Real)
@@ -391,6 +408,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return dse.getInstanceOrCreate(fmuName, instanceName);
     }
 
+    /*
+     * Parse an FMU id
+     */
     parseId(id: string): string[] {
         //is must have the form: '{' + fmuName '}' + '.' instance-name + '.' + scalar-variable
         // restriction is that instance-name cannot have '.'
@@ -419,6 +439,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return [fmuName, instanceName, scalarVariableName];
     }
 
+    /*
+     * Method to produce an array of outputs in the chosen multi-model
+     */
     loadMMOutputs():string[]{
         let outputs :string []= [];
 
@@ -628,6 +651,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return this.config.ranking.getType();
     }
 
+    /*
+     * Method to provide an array of all objective names
+     */
     getObjectiveNames():string []{
         let objNames = [""];
         this.config.extScrObjectives.forEach((o:ExternalScript) =>{
@@ -711,6 +737,10 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         clearInterval(this.onlineInterval);
     }
 
+    /*
+     * Method to check if can run a DSE. Will check if the COE is online, if there are any warnings
+     * and also some DSE-specific elements
+     */
     canRun() {
         return this.online
             && this.coeconfig != ""
@@ -729,6 +759,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         let experimentConfigName = this._path.slice(absoluteProjectPath.length + 1, this._path.length);
         let multiModelConfigName = this.coeconfig.slice(absoluteProjectPath.length + 1, this.coeconfig.length); 
 
+        //Using algorithm selector script allows any algortithm to be used in a DSE config.
         let scriptFile = Path.join(installDir, "dse", "Algorithm_selector.py"); 
         var child = spawn("python", [scriptFile, absoluteProjectPath, experimentConfigName, multiModelConfigName], {
             detached: true,
