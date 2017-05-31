@@ -88,16 +88,6 @@ export class DseParser{
     }
 
 
-    // //Utility method to obtain an instance from the multimodel by its string id encoding
-    // private getParameter(dse: DseConfiguration, id: string): Instance {
-    //     let ids = this.parseId(id);
-
-    //     let fmuName = ids[0];
-    //     let instanceName = ids[1];
-    //     let scalarVariableName = ids[2];
-    //     return dse.getInstanceOrCreate(fmuName, instanceName);
-    // }
-
     parseParameters(data: any, dse:DseConfiguration){
         if (Object.keys(data).indexOf(this.PARAMETERS_TAG) >= 0) {
             let parameterData = data[this.PARAMETERS_TAG];

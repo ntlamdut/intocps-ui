@@ -18,7 +18,6 @@ export class DseConfiguration implements ISerializable {
     scenarios: DseScenario[] = [];
     objConst : DseObjectiveConstraint []= [];
     paramConst : DseParameterConstraint []= [];
-    dseParameters : DseParameter[] =[];
     dseSearchParameters : Instance [] = [];
     extScrObjectives : ExternalScript[] = [];
     intFunctObjectives : InternalFunction[] = [];
@@ -43,11 +42,6 @@ export class DseConfiguration implements ISerializable {
         this.scenarios.forEach(function(s) {
             scen.push(s.name)
         });
-
-        // let params : any = {};
-        // this.dseParameters.forEach((p:DseParameter) =>{
-        //     params[p.param] = p.initialValues
-        // });
 
         let dseparameters:any = {};
         this.dseSearchParameters.forEach((instance: Instance) => {
