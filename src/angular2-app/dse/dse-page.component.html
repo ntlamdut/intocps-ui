@@ -1,7 +1,3 @@
-<panel [title]="'DSE Configuration Overview'" [open]="false">
-    <dse-overview #overview [path]="path"></dse-overview>
-</panel>
-
 <panel [title]="'DSE Configuration'">
-    <dse-configuration [path]="path" (change)="overview.parseConfig()"></dse-configuration>
+    <dse-configuration [path]="path"></dse-configuration>
 </panel>
