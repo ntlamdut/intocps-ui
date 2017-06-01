@@ -211,7 +211,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
 
     loadCosimConfigs(path: string): string[] {
         var files: string[] = this.getFiles(path);
-        return  files.filter(f => f.endsWith(".coe.json"));
+        return  files.filter(f => f.endsWith("coe.json"));
     }
 
     experimentName(path: string): string {
