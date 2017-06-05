@@ -26,7 +26,11 @@ export class DseConfiguration implements ISerializable {
     fmuRootPath:string ='';
     multiModel: MultiModelConfig = null;
 
-    //Method for outputting DSEConfig object to json.
+    /*
+     * Method for outputting DSEConfig object to json. Method will use instance variables and their
+     * toObject() methods. The final return statement creates the json file with corresponding 
+     * json tags.
+     */
     toObject() {
         let pConst : string [] = []; 
         this.paramConst.forEach(function(p) {
@@ -57,17 +61,18 @@ export class DseConfiguration implements ISerializable {
             });
         });
 
-
+        //need to combine external scripts and internal functions into objective definitions 
         let extScr : any = {};
-        let intFunc : any = {}; 
-        let objDefs : any = {};
         this.extScrObjectives.forEach((o:ExternalScript) =>{
             extScr[o.name] = o.toObject(); 
         });
 
+        let intFunc : any = {}; 
         this.intFunctObjectives.forEach((o:InternalFunction) =>{
             intFunc[o.name] = o.toObject(); 
         });
+
+        let objDefs : any = {};
         objDefs["externalScripts"] = extScr;
         objDefs["internalFunctions"] = intFunc;
 
@@ -84,6 +89,11 @@ export class DseConfiguration implements ISerializable {
     }
 
 
+    /*
+     * Method to start parsing of the DSE configuration located at the given path. Method will first access and then
+     * begin reading the config file at the path and then using the create method will create a new
+     * DSEConfiguration object.
+     */
     static parse(path: string, projectRoot: string, fmuRootPath: string, mmPath: string): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
             fs.access(path, fs.constants.R_OK, error => {
@@ -98,6 +108,11 @@ export class DseConfiguration implements ISerializable {
         });
     }
 
+    /*
+     * Called by the parse method, this create method will create and return a new DseConfiguration object by first parsing
+     * the chosen multi-model for the DSE and then using various methods of the DseParser class for the seperate elements of
+     * the DSE configuration. 
+     */ 
     static create(path:string, projectRoot: string, fmuRootPath: string, mmPath: string, data: any): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
             MultiModelConfig
