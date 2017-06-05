@@ -42,7 +42,6 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
             let p: string = app.getActiveProject().getRootFilePath();
             this.cosimConfig = this.loadCosimConfigs(Path.join(p, Project.PATH_MULTI_MODELS));
 
-            //this.parseConfig();
             if(this.coeSimulation)
                 this.coeSimulation.reset();
         }
@@ -211,7 +210,7 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
 
     loadCosimConfigs(path: string): string[] {
         var files: string[] = this.getFiles(path);
-        return  files.filter(f => f.endsWith(".coe.json"));
+        return  files.filter(f => f.endsWith("coe.json"));
     }
 
     experimentName(path: string): string {
@@ -258,12 +257,13 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         return this.config.searchAlgorithm.getName()
     }
 
-
     setGeneticpopDist(dist: string) {
+        //assume is a genetic search 
         (<GeneticSearch>this.config.searchAlgorithm).initialPopulationDistribution = dist;
     }
 
     setParentSelectionStrategy(strat: string) {
+        //assume is a genetic search 
         (<GeneticSearch>this.config.searchAlgorithm).parentSelectionStrategy = strat;
     }
 
@@ -347,6 +347,8 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         let varExistsInDSE = false
         let instanceExistsInDSE = false
 
+        //Need to determine if the DSE configuration knows firstly about the FMU instance, and then 
+        //if it does AND has existing values for the given parameter, add the new value to the initial values.
         for (let dseParam of this.config.dseSearchParameters) {
             if (dseParam.name === instance.name) {
                 instanceExistsInDSE = true
@@ -358,10 +360,13 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
                 })
             }
         }
+        //If the config does not know about this instance, it is added with the given initial values
         if(!instanceExistsInDSE){
             let newInstance = this.addDSEParameter(instance);            
             newInstance.initialValues.set(instance.fmu.getScalarVariable(variableName), newValue);
         }
+        //If the config knows about the instance but NOT the parameter values, they are added to the 
+        //instance in the DSE config.
         if(!varExistsInDSE){
             for (let dseParam of this.config.dseSearchParameters) {
                 if (dseParam.name === instance.name) {
@@ -371,6 +376,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
+    /*
+     * Record a new instance in the list of DSE parameters
+     */ 
     addDSEParameter(instance: Instance):Instance{
         let newInstance = instance
         this.config.dseSearchParameters.push(newInstance);            
@@ -751,6 +759,11 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
             && (<ParetoRanking> this.config.ranking).dimensions.length == 2;
     }
 
+    /*
+     * Method to run a DSE with the current DSE configuration. Assumes that the DSE can be run. 
+     * The method does not need to send the DSEConfiguration object, simply the correct paths. It relies upon the
+     * config being saved to json format correctly.
+     */
     runDse() {
         var spawn = require('child_process').spawn;
         let installDir = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);

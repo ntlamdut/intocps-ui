@@ -125,12 +125,12 @@ export class DseConfiguration implements ISerializable {
     }
 
 
-
+    //Set search algorithm
     public newSearchAlgortihm(sa:IDseAlgorithm){
         this.searchAlgorithm = sa;
     } 
 
-
+    //Method to add a blank objective constraint to the config
     public addObjectiveConstraint(): DseObjectiveConstraint{
         let newOC = new DseObjectiveConstraint("");
         this.objConst.push(newOC);
@@ -148,6 +148,7 @@ export class DseConfiguration implements ISerializable {
 
 
 
+    //Method to add a blank parameter constraint to the config
     public addParameterConstraint(): DseParameterConstraint{
         let newPC = new DseParameterConstraint("");
         this.paramConst.push(newPC);
@@ -165,21 +166,26 @@ export class DseConfiguration implements ISerializable {
 
 
 
+    //Method to get an FMU instance (has same FMU and instance name) from the collection of 
+    //DSE search parameters
     public getInstance(fmuName: string, instanceName: string) {
         return this.dseSearchParameters.find(v => v.fmu.name == fmuName && v.name == instanceName) || null;
     }
 
+    //Method to either obtain an FMU instance from the DSE or MM configs
     public getInstanceOrCreate(fmuName: string, instanceName: string) {
         let instance = this.getInstance(fmuName, instanceName);
 
+        //DSE config does not contatin the instance
         if (!instance) {
-            //multimodel does not contain this instance
             let fmu = this.multiModel.getFmu(fmuName);
-
+            
+            //multimodel does not contain this instance
             if (fmu == null)
             {
                 throw "The FMU " + fmuName + " does not exist in the selected multimodel. Please review the DSE configuration in a text editor.";
             }
+            //multi-model DOES contain the insntnce, so add to the DSE config
             if (fmu) {
                 instance = new Instance(fmu, instanceName);
                 this.dseSearchParameters.push(instance);
@@ -292,6 +298,9 @@ export class DseConfiguration implements ISerializable {
     }
 }
 
+/*
+ * Class for DSE Parameter data type. paremeters have a name and a collection of initial values.
+ */
 export class DseParameter{
     initialValues: any[] = [];
 
@@ -320,6 +329,10 @@ export class DseParameter{
     }
 }
 
+
+/*
+ * DSE obbjective constraint class - stores the constraint as a string.
+ */
 export class DseObjectiveConstraint{
     constraint:string = ""
     
@@ -337,6 +350,9 @@ export class DseObjectiveConstraint{
 }
 
 
+/*
+ * DSE parameter constraint class - stores the constraint as a string.
+ */
 export class DseParameterConstraint{
     constraint:string = ""
      
@@ -354,6 +370,9 @@ export class DseParameterConstraint{
 }
 
 
+/*
+ * Interface for a DSE Objective. Objectives will have a name and a type.
+ */
 export interface IDseObjective{
     toFormGroup(): FormGroup;
     toObject(): { [key: string]: any };
@@ -361,6 +380,11 @@ export interface IDseObjective{
     name: string;
 }
 
+
+/*
+ * External script class implements the IDSEObjective class. In addition, has the parameters (also refered 
+ * to as arguements) and a filename.
+ */
 export class ExternalScript implements IDseObjective{
     type = "External Script";
     name = "";
@@ -430,12 +454,14 @@ export class ExternalScript implements IDseObjective{
         extScriptStr = extScriptStr + ")";
         return extScriptStr;
     }
-
-
-
 };
 
 
+
+/*
+ * Internal Function script class implements the IDSEObjective class. In addition, has the column ID (also
+ * known as model output) and the funtion type.
+ */
 export class InternalFunction implements IDseObjective{
     type = "Internal Function";
     name = "";
@@ -465,6 +491,10 @@ export class InternalFunction implements IDseObjective{
     }
 };
 
+
+/*
+ * Objective Parameter/argument has an ID (they are ordered), a value and a type/
+ */
 export class ObjectiveParam{
     id: string;
     value : string;
@@ -498,6 +528,10 @@ export class ObjectiveParam{
     }
 }
 
+
+/*
+ * DSE Ranking interface. Has a type variable by default and methods for making into an object.
+ */
 export interface IDseRanking {
     toFormGroup(): FormGroup;
     toObject(): { [key: string]: any };
@@ -505,6 +539,11 @@ export interface IDseRanking {
     getType():string;
 }
 
+
+/*
+ * Pareto Ranking class implements the IDSERanking interface. Pareto ranking has a collection of dimensions (currently only
+ * 2 dimensions are permitted). 
+ */
 export class ParetoRanking implements IDseRanking {
     type = "Pareto";
     dimensions : ParetoDimension [] ;
@@ -558,6 +597,10 @@ export class ParetoRanking implements IDseRanking {
     }
 }
 
+
+/*
+ * The ParetoDimension class has parameters for the objective name and direction to maximize/minimize.
+ */
 export class ParetoDimension{
     objectiveName : string;
     direction : string
@@ -576,6 +619,10 @@ export class ParetoDimension{
     }
 }
 
+
+/*
+ * DSE Algorithm interface states that an algorithm must have a name and type.
+ */
 export interface IDseAlgorithm {
     toFormGroup(): FormGroup;
     getName():string;
@@ -585,6 +632,10 @@ export interface IDseAlgorithm {
 }
 
 
+/*
+ * The genetic search algorithm expands upon the IDSEAlgorithm interface with a collection of additional
+ * values for the genetic search algorithm.  
+ */
 export class GeneticSearch implements IDseAlgorithm {
     type = "genetic";
     name = "Genetic";
@@ -623,6 +674,11 @@ export class GeneticSearch implements IDseAlgorithm {
     }
 }
 
+
+/*
+ * The Exhaustive Search class implements the IDSEAlgorithm, setting the default values to 'exhaustive'. The
+ * exhaustive algorithm requires no additional information.
+ */
 export class ExhaustiveSearch implements IDseAlgorithm {
     type = "exhaustive";
     name = "Exhaustive";
@@ -646,6 +702,9 @@ export class ExhaustiveSearch implements IDseAlgorithm {
 }
 
 
+/*
+ * The DSE Scenario class simply comprises a string.
+ */
 export class DseScenario {
     name:string = ""
     
