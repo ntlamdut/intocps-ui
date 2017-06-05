@@ -28,6 +28,11 @@ export class DseParser{
     protected SCENARIOS_TAG: string = "scenarios"
 
 
+    /*
+     * Method for parsing DSE search algorithms. If no algorithm is defined, will assume is 
+     * an exhaustive. Exhaustive searching requires no additional parsing, if genetic is 
+     * found, then will require further parsing.
+     */
     parseSearchAlgorithm(data: any, dse:DseConfiguration) {
         let algorithm = data[this.SEARCH_ALGORITHM_TAG]
         //If no algorithm set, assume is exhaustive
@@ -48,6 +53,10 @@ export class DseParser{
         }
     }
 
+
+    /*
+     * Genetic algorithm parsing simply parses various floats and strings and creates a GeneticSearch object.
+     */
     private parseSearchAlgorithmGenetic(algorithm: any) : IDseAlgorithm
     {   
         let initialPopulation : number = parseFloat(algorithm["initialPopulation"]);
@@ -59,6 +68,9 @@ export class DseParser{
     }
 
 
+    /*
+     * Objective constraint parsing method. Adds a list of objective constraint objects to the DSE config
+     */
     parseObjectiveConstraint(data: any, dse:DseConfiguration) {
         let objConstList : DseObjectiveConstraint[] = [];
         
@@ -73,6 +85,10 @@ export class DseParser{
         dse.newObjectiveConstraint(objConstList);
     }
 
+
+    /*
+     * Parameter constraint parsing method. Adds a list of parameters constraint objects to the DSE config
+     */
     parseParameterConstraints(data: any, dse:DseConfiguration) {
         let paramConstList : DseParameterConstraint[] = [];
 
@@ -88,6 +104,10 @@ export class DseParser{
     }
 
 
+
+    /*
+     * Method to parse a collection of parameters, ensures parameters are added to the DSE config.
+     */
     parseParameters(data: any, dse:DseConfiguration){
         if (Object.keys(data).indexOf(this.PARAMETERS_TAG) >= 0) {
             let parameterData = data[this.PARAMETERS_TAG];
@@ -108,6 +128,11 @@ export class DseParser{
     }
 
 
+
+    /*
+     * Method to parse a collection of external script objectives. Iterates through the 
+     * collection and calls auxiallary method.
+     */
     parseExtScrObjectives(data: any, dse:DseConfiguration){
         if (Object.keys(data).indexOf(this.OBJECTIVES_TAG) >= 0) {
             let objData = data[this.OBJECTIVES_TAG];
@@ -120,6 +145,10 @@ export class DseParser{
         }
     }
 
+
+    /*
+     * Method to parse a single external script objective. Adds the external script to the DSE config.
+     */
     private parseExternalScript(data: any, dse:DseConfiguration){
         $.each(Object.keys(data), (j, id) => {
             let objEntries = data[id];
@@ -149,6 +178,11 @@ export class DseParser{
 
 
 
+
+    /*
+     * Method to parse a collection of internal function objectives. Iterates through the 
+     * collection and calls auxiallary method.
+     */
     parseIntFuncsObjectives(data: any, dse:DseConfiguration){
         if (Object.keys(data).indexOf(this.OBJECTIVES_TAG) >= 0) {
             let objData = data[this.OBJECTIVES_TAG];
@@ -161,6 +195,10 @@ export class DseParser{
         }
     }
 
+
+    /*
+     * Method to parse a single internal function objective. Adds the internal function to the DSE config.
+     */
     private parseInternalFunction(data: any, dse:DseConfiguration){
         $.each(Object.keys(data), (j, id) => {
             let objEntries = data[id];
@@ -174,6 +212,11 @@ export class DseParser{
     }
 
 
+
+    /*
+     * Method to parse the DSE ranking. Currently if no ranking is defined, assumes will be a pareto rank.
+     * Only pareto ranking is supported. Adds the parsed ranking to the DSE config.
+     */
     parseRanking(data: any, dse:DseConfiguration){
         let ranking = data[this.RANKING_TAG];
         if(!ranking){
@@ -186,13 +229,16 @@ export class DseParser{
         //check other rank types as added to backend
     }
 
+
+    /*
+     * Method to parse Pareto ranking. Will add Pareto dimensions to a new Pareto ranking object.
+     */
     private parseParetoRanking(data:any) : IDseRanking{
         let paretoDimensions: ParetoDimension [] = [];
         $.each(Object.keys(data), (j, id) => {
             let value = data[id];
             paretoDimensions.push(new ParetoDimension(id, value));
         });
-        
         return new ParetoRanking(paretoDimensions);
     }
 
@@ -201,7 +247,10 @@ export class DseParser{
     }
 
 
-
+    /*
+     * Method for parsing the scenario list. If no scenarios are defined, an empty list is used.
+     * Alternativly each scenario is added to a list added to the DSE config.
+     */
     parseScenarios(data: any, dse:DseConfiguration) {
         let scenarios = data[this.SCENARIOS_TAG];
 
