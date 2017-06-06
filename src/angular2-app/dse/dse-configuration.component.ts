@@ -754,9 +754,9 @@ export class DseConfigurationComponent implements OnInit, OnDestroy {
             && this.coeconfig != ""
             && this.dseWarnings.length === 0
             && this.coeWarnings.length === 0
-            && this.config.dseSearchParameters.length > 1 
-            && (this.config.extScrObjectives.length + this.config.intFunctObjectives.length) > 2
-            && (<ParetoRanking> this.config.ranking).dimensions.length == 2;
+            //&& this.config.dseSearchParameters.length > 1 
+            && (this.config.extScrObjectives.length + this.config.intFunctObjectives.length) >= 2;
+            //&& (<ParetoRanking> this.config.ranking).dimensions.length == 2;
     }
 
     /*
