@@ -26,64 +26,13 @@ export class DseConfiguration implements ISerializable {
     fmuRootPath:string ='';
     multiModel: MultiModelConfig = null;
 
-    //Method for outputting DSEConfig object to json.
-    toObject() {
-        let pConst : string [] = []; 
-        this.paramConst.forEach(function(p) {
-            pConst.push(p.constraint)
-        });
-
-        let oConst : string [] = []; 
-        this.objConst.forEach(function(o) {
-            oConst.push(o.constraint)
-        });
-
-        let scen : string [] = []; 
-        this.scenarios.forEach(function(s) {
-            scen.push(s.name)
-        });
-
-        let dseparameters:any = {};
-        this.dseSearchParameters.forEach((instance: Instance) => {
-            instance.initialValues.forEach((value: any, sv: ScalarVariable) => {
-                let id: string = Serializer.getIdSv(instance, sv);
-
-                if(sv.type === ScalarVariableType.Bool)
-                    dseparameters[id] = value;
-                else if(sv.type === ScalarVariableType.Int || sv.type === ScalarVariableType.Real)
-                    dseparameters[id] = value;
-                else
-                    dseparameters[id] = value;
-            });
-        });
 
 
-        let extScr : any = {};
-        let intFunc : any = {}; 
-        let objDefs : any = {};
-        this.extScrObjectives.forEach((o:ExternalScript) =>{
-            extScr[o.name] = o.toObject(); 
-        });
-
-        this.intFunctObjectives.forEach((o:InternalFunction) =>{
-            intFunc[o.name] = o.toObject(); 
-        });
-        objDefs["externalScripts"] = extScr;
-        objDefs["internalFunctions"] = intFunc;
-
-
-        return {
-            algorithm: this.searchAlgorithm.toObject(),
-            objectiveConstraints: oConst,
-            objectiveDefinitions: objDefs,
-            parameterConstraints: pConst,
-            parameters: dseparameters,
-            ranking: this.ranking.toObject(),
-            scenarios: scen
-        }
-    }
-
-
+    /*
+     * Method to start parsing of the DSE configuration located at the given path. Method will first access and then
+     * begin reading the config file at the path and then using the create method will create a new
+     * DSEConfiguration object.
+     */
     static parse(path: string, projectRoot: string, fmuRootPath: string, mmPath: string): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
             fs.access(path, fs.constants.R_OK, error => {
@@ -98,6 +47,11 @@ export class DseConfiguration implements ISerializable {
         });
     }
 
+    /*
+     * Called by the parse method, this create method will create and return a new DseConfiguration object by first parsing
+     * the chosen multi-model for the DSE and then using various methods of the DseParser class for the seperate elements of
+     * the DSE configuration. 
+     */ 
     static create(path:string, projectRoot: string, fmuRootPath: string, mmPath: string, data: any): Promise<DseConfiguration> {
         return new Promise<DseConfiguration>((resolve, reject) => {
             MultiModelConfig
@@ -129,6 +83,8 @@ export class DseConfiguration implements ISerializable {
     public newSearchAlgortihm(sa:IDseAlgorithm){
         this.searchAlgorithm = sa;
     } 
+
+
 
     //Method to add a blank objective constraint to the config
     public addObjectiveConstraint(): DseObjectiveConstraint{
@@ -213,6 +169,10 @@ export class DseConfiguration implements ISerializable {
         return this.extScrObjectives.find(v => v.name == obName) || null;
     }
 
+    /*
+     * Collection of methods for the creation of empty external scripts, new scripts and 
+     * removing external scripts 
+     */
     public addExternalScript(){
         let es = new ExternalScript("","",[]);
         this.extScrObjectives.push(es);
@@ -230,6 +190,10 @@ export class DseConfiguration implements ISerializable {
 
 
 
+    /*
+     * Collection of methods for the creation of empty internal functions, new scripts and 
+     * removing internal functions 
+     */
     public addInternalFunction(){
         let intF = new InternalFunction("","","");
         this.intFunctObjectives.push(intF);
@@ -248,10 +212,20 @@ export class DseConfiguration implements ISerializable {
 
 
 
+    /*
+     *Method for setting DSE ranking 
+     */
     public newRanking(r: IDseRanking){
         this.ranking = r;
     }
 
+
+
+    
+    /*
+     * Collection of methods for the creation of empty scenarios, new scenarios and 
+     * removing sencarios
+     */
     public newScenario(scen:DseScenario []){
          this.scenarios = scen;
     }
@@ -269,7 +243,9 @@ export class DseConfiguration implements ISerializable {
     }
 
 
-
+    /*
+     * Save the DSE config - using the toObject method of this class. 
+     */
     save(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
@@ -286,7 +262,69 @@ export class DseConfiguration implements ISerializable {
     }
 
 
-   validate(): WarningMessage[] {
+    /*
+     * Method for outputting DSEConfig object to json. Method will use instance variables and their
+     * toObject() methods. The final return statement creates the json file with corresponding 
+     * json tags.
+     */
+    toObject() {
+        let pConst : string [] = []; 
+        this.paramConst.forEach(function(p) {
+            pConst.push(p.constraint)
+        });
+
+        let oConst : string [] = []; 
+        this.objConst.forEach(function(o) {
+            oConst.push(o.constraint)
+        });
+
+        let scen : string [] = []; 
+        this.scenarios.forEach(function(s) {
+            scen.push(s.name)
+        });
+
+        let dseparameters:any = {};
+        this.dseSearchParameters.forEach((instance: Instance) => {
+            instance.initialValues.forEach((value: any, sv: ScalarVariable) => {
+                let id: string = Serializer.getIdSv(instance, sv);
+
+                if(sv.type === ScalarVariableType.Bool)
+                    dseparameters[id] = value;
+                else if(sv.type === ScalarVariableType.Int || sv.type === ScalarVariableType.Real)
+                    dseparameters[id] = value;
+                else
+                    dseparameters[id] = value;
+            });
+        });
+
+        //need to combine external scripts and internal functions into objective definitions 
+        let extScr : any = {};
+        this.extScrObjectives.forEach((o:ExternalScript) =>{
+            extScr[o.name] = o.toObject(); 
+        });
+
+        let intFunc : any = {}; 
+        this.intFunctObjectives.forEach((o:InternalFunction) =>{
+            intFunc[o.name] = o.toObject(); 
+        });
+
+        let objDefs : any = {};
+        objDefs["externalScripts"] = extScr;
+        objDefs["internalFunctions"] = intFunc;
+
+
+        return {
+            algorithm: this.searchAlgorithm.toObject(),
+            objectiveConstraints: oConst,
+            objectiveDefinitions: objDefs,
+            parameterConstraints: pConst,
+            parameters: dseparameters,
+            ranking: this.ranking.toObject(),
+            scenarios: scen
+        }
+    }
+
+    validate(): WarningMessage[] {
         let messages: WarningMessage[] = [];
 
         //Check each element of DseConfiguration
