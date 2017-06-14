@@ -24,8 +24,8 @@ class MsgCreator {
     public setDefaultRootEntries() {
         this.serializedObject["xmlns:rdf"] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
         this.serializedObject["xmlns:prov"] = "http://www.w3.org/ns/prov#";
-        this.serializedObject["xmlns:intocps"] = "http://www.w3.org/ns/intocps#";
-        this.serializedObject["messageFormatVersion"] = "0.2"
+        //this.serializedObject["xmlns:intocps"] = "http://www.w3.org/ns/intocps#";
+        this.serializedObject["messageFormatVersion"] = "1.3"
         return this;
     }
 
@@ -37,13 +37,13 @@ class MsgCreator {
 
     public setActivity(activity: any) {
         if (activity)
-            this.serializedObject["prov:activity"] = activity;
+            this.serializedObject["prov:Activity"] = activity;
         return this;
     }
 
     public setEntities(entities: any) {
         if (entities)
-            this.serializedObject["prov:entity"] = entities;
+            this.serializedObject["prov:Entity"] = entities;
         return this;
     }
 
@@ -79,66 +79,66 @@ class MsgCreator {
 
     public setAgent(agent: any) {
         if (agent)
-            this.serializedObject["prov:agent"] = agent;
+            this.serializedObject["prov:Agent"] = agent;
         return this;
     }
 
     public setTime(time: string) {
         if (time)
-            this.serializedObject["intocps:time"] = time;
+            this.serializedObject["time"] = time;
         return this;
     }
     public setType(type: string) {
         if (type)
-            this.serializedObject["intocps:type"] = type;
+            this.serializedObject["type"] = type;
         return this;
     }
 
     public setHash(hash: string) {
         if (hash)
-            this.serializedObject["intocps:hash"] = hash;
+            this.serializedObject["hash"] = hash;
         return this;
     }
 
     public setPath(path: string) {
         if (path)
-            this.serializedObject["intocps:path"] = path;
+            this.serializedObject["path"] = path;
         return this;
     }
 
     public setCommit(commit: string) {
         if (commit)
-            this.serializedObject["intocps:commit"] = commit;
+            this.serializedObject["commit"] = commit;
         return this;
     }
 
     public setComment(comment: string) {
         if (comment)
-            this.serializedObject["intocps:comment"] = comment;
+            this.serializedObject["comment"] = comment;
         return this;
     }
 
     public setUrl(url: string) {
         if (url)
-            this.serializedObject["intocps:url"] = url;
+            this.serializedObject["url"] = url;
         return this;
     }
 
     public setVersion(version: string) {
         if (version)
-            this.serializedObject["intocps:version"] = version;
+            this.serializedObject["version"] = version;
         return this;
     }
 
     public setName(name: string) {
         if (name)
-            this.serializedObject["intocps:name"] = name;
+            this.serializedObject["name"] = name;
         return this;
     }
 
     public setEmail(email: string) {
         if (email)
-            this.serializedObject["intocps:email"] = email;
+            this.serializedObject["email"] = email;
         return this;
     }
 }
@@ -149,12 +149,16 @@ export class RootMessage {
     public agents: Array<EntityAgent> = new Array<EntityAgent>();
 
     public serialize(): any {
-        return MsgCreator.CreateMsg()
+
+         var root:any = {};
+        root["rdf:RDF"] =  MsgCreator.CreateMsg()
             .setDefaultRootEntries()
-            .setActivity(this.activity ? this.activity.serialize() : null)
+            .setActivity(this.activity ? [this.activity.serialize()] : null)
             .setEntities(this.entities ? this.entities.map((entity) => entity.serialize()) : null)
             .setAgent(this.agents ? this.agents.map((agent) => agent.serialize()) : null)
             .getSerializedObject();
+
+            return root;
     }
 }
 
@@ -223,7 +227,7 @@ export class Activity {
     }
 }
 
-type TypeOptions = "configuration" | "source"|"result"| "simulation";
+type TypeOptions = "architectureConfiguration" |"architectureModelling"|"fmu"| "file"|"simulationResult"| "simulationConfiguration"| "simulationModelling" | "simulationConfigurationCreation"|"simulation"|"architectureConfigurationCreation";
 
 export class EntityFile implements Entity {
     //rdf
@@ -381,7 +385,7 @@ export class EntityAgent implements Entity {
         var agent = GitConn.GitCommands.getUserData();
         this.name = agent.username;
         this.email = agent.email.length > 0 ? agent.email : null;
-        this.about = `Agent:${this.name}`;
+        this.about = `Agent:${this.email}`;
     }
 
     public getAbout() { return this.about; }
