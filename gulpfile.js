@@ -305,7 +305,7 @@ gulp.task("pkg-linux", function(callback) {
         dir: '.',
         name: packageJSON.name+'-'+packageJSON.version,
         platform: "linux",
-        arch: "x64",
+        arch: "ia32,x64",
         overwrite:true,
         prune:true,
         out: 'pkg',
