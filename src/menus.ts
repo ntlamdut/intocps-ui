@@ -31,6 +31,10 @@ let reportIssueHandler = new DialogHandler("https://github.com/into-cps/intocps-
 reportIssueHandler.externalUrl = true;
 
 
+let userManualUrl = IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.USER_MANUAL);
+let userManualHandler = new DialogHandler(userManualUrl, 600, 600, null, null, null);
+userManualHandler.externalUrl = true;
+
 let fetchProjectFromGitHandler = new DialogHandler("proj/ProjectFetcher.html", 500, 300, null, null, null);
 let openExamplesFromGitHandler = new DialogHandler("examples/examples.html", 500, 400, null, null, null);
 let openSettingsHandler = new DialogHandler("settings/settings.html", 500, 600, null, null, null);
@@ -225,6 +229,12 @@ export function configureIntoCpsMenu() {
         label: 'Report Issue',
         click: function (item: any, focusedWindow: any) {
           reportIssueHandler.openWindow();
+        }
+      });
+      m.submenu.splice(m.submenu.length - 1, 0, {
+        label: 'Download User Manual',
+        click: function (item: any, focusedWindow: any) {
+          userManualHandler.openWindow();
         }
       });
     }

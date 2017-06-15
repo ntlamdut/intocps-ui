@@ -19,8 +19,10 @@ export namespace SettingKeys {
     export var DEV_EXAMPLE_REPO = "dev_example_site";
     export var DEFAULT_PROJECTS_FOLDER_PATH = "default_projects_folder_path";
     export var ENABLE_TRACEABILITY = "enable_traceability";
+    export var USER_MANUAL_URL = "user_manual_url";
 
     export var DEFAULT_VALUES: { [key: string]: any; } = {};
+    DEFAULT_VALUES[USER_MANUAL_URL] =' https://github.com/into-cps/into-cps.github.io/raw/master/manuals/INTO-CPS_User_Manual.pdf';
     DEFAULT_VALUES[RTTESTER_INSTALL_DIR] = 'C:/opt/rt-tester';
     DEFAULT_VALUES[RTTESTER_MBT_INSTALL_DIR] = "C:/opt/rtt-mbt";
     DEFAULT_VALUES[RTTESTER_RTTUI] = "C:/Program Files (x86)/Verified/RTTUI3/bin/rttui3.exe";
