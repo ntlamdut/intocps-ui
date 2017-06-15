@@ -57,6 +57,15 @@
 			</div>
 		</div>
 
+			<div class="form-group">
+			<label class="col-sm-5 col-md-4 control-label">Slowdown simulation to real-time</label>
+			<div class="col-sm-7 col-md-8">
+				<p *ngIf="!editing" class="form-control-static">{{config.simulationProgramDelay}}</p>
+				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.simulationProgramDelay"
+				 (change)="config.simulationProgramDelay=$event.target.checked" />
+			</div>
+		</div>
+
 		<div class="form-group">
 			<label class="col-sm-5 col-md-4 control-label">Use parallelization</label>
 			<div class="col-sm-7 col-md-8">

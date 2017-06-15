@@ -123,7 +123,7 @@ export class trManager{
             }else{
                 reason = "Maybe timeout to small."
             }
-            console.log("Unable to connect Daemon to Neo4J. Tried " + counter + "times for in total " + timeOut + "Milliseconds. Reason: " + reason);
+            console.log("Unable to connect Daemon to Neo4J. Tried " + counter + "times for in total " + timeOut + " Milliseconds. Reason: " + reason);
             return;
         }
         var neo4jURL:string = "http://" + this.neo4Jconf.username + ":" + this.neo4Jconf.password + "@localhost:" + this.neo4Jconf.port;
