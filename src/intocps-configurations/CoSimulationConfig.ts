@@ -36,6 +36,7 @@ export class CoSimulationConfig implements ISerializable {
     stabalization: boolean = false;
     global_absolute_tolerance: number = 0.0;
     global_relative_tolerance: number = 0.0;
+    simulationProgramDelay: boolean = false;
 
     public getProjectRelativePath(path: string): string {
         if (path.indexOf(this.projectRoot) === 0)
@@ -63,7 +64,8 @@ export class CoSimulationConfig implements ISerializable {
             parallelSimulation: this.parallelSimulation,
             stabalizationEnabled: this.stabalization,
             global_absolute_tolerance: Number(this.global_absolute_tolerance),
-            global_relative_tolerance: Number(this.global_relative_tolerance)
+            global_relative_tolerance: Number(this.global_relative_tolerance),
+            simulationProgramDelay:this.simulationProgramDelay
         };
     }
 
@@ -152,6 +154,7 @@ export class CoSimulationConfig implements ISerializable {
                     config.multiModelCrc = parser.parseMultiModelCrc(data);
                     config.postProcessingScript = parser.parseSimpleTagDefault(data, "postProcessingScript", "");
 
+                    config.simulationProgramDelay = parser.parseSimpleTagDefault(data, "simulationProgramDelay", false);
                     config.parallelSimulation = parser.parseSimpleTagDefault(data, "parallelSimulation", false);
                     config.stabalization = parser.parseSimpleTagDefault(data, "stabalizationEnabled", false);
                     config.global_absolute_tolerance = parseFloat(parser.parseSimpleTagDefault(data, "global_absolute_tolerance", 0.0));
