@@ -231,7 +231,7 @@
     },
     "URIEntity": {
       "type": "string",
-      "pattern": "^Entity\\.(\\w)+:([a-zA-Z0-9\\\/.\\-_])+(:([a-zA-Z0-9.-_])+)?#[0-9a-f]{5,40}$",
+      "pattern": "^Entity\\.(\\w)+:([a-zA-Z0-9\\\/.\\-_])+(:([a-zA-Z0-9.-_])+)?#([0-9a-f]{5,40}|[0])$",
       "additionalProperties": false
     },
     "URITool": {
@@ -385,7 +385,7 @@
         },
         "hash": {
           "type": "string",
-          "pattern": "^[0-9a-f]{5,40}$"
+          "pattern": "^([0-9a-f]{5,40}|[0])$"
         },
         "type": {
           "$ref": "#/definitions/EntityType"
