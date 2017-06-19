@@ -227,8 +227,25 @@ export function configureIntoCpsMenu() {
           reportIssueHandler.openWindow();
         }
       });
+      m.submenu.splice(m.submenu.length - 1, 0, {
+        label: 'Videos',
+        submenu: [
+          { label: 'Running Co-Simulation',
+            click: function (item: any, focusedWindow: any) {
+              let vidHandler = new DialogHandler("https://youtu.be/oNTjzDocT2Q", 800, 600, null, null, null);
+              vidHandler.externalUrl = true;
+              vidHandler.openWindow();
+            }
+          },
+          { label: 'Show All',
+            click: function (item: any, focusedWindow: any) {
+              let vidHandler = new DialogHandler("https://www.youtube.com/channel/UCHfzhFYht6sKiqarjqbmtaQ", 800, 600, null, null, null);
+              vidHandler.externalUrl = true;
+              vidHandler.openWindow();
+            }
+          }]
+      });
     }
-
   });
 
 
