@@ -22,7 +22,7 @@ export class TraceMessager {
     private static finishTrace(filePath: Array<string>, object: Object) {
         console.log("trace: " + JSON.stringify(object));
         this.appInstance.recordTrace(object);
-        filePath.forEach(fp => GitConn.GitCommands.commitFile(fp));
+        filePath.forEach(fp => {GitConn.GitCommands.addFile(fp);/*GitConn.GitCommands.commitFile(fp)*/});
     }
 
     public static submitSysMLToMultiModelMessage(mmPath: string, sysmlPath: string): any {
