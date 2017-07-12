@@ -243,8 +243,8 @@
 	<label>Livestream Configuration</label>
 
 	<div class="form-group">
-		<label class="col-sm-5 col-md-4 control-label">Live log interval (reduce this if graph is too slow, 0=all)</label>
-		<div class="col-sm-7 col-md-8">
+		<label class="col-sm-5 col-md-4 control-label config">Live log interval (reduce this if graph is too slow, 0=all)</label>
+		<div class="col-sm-7 col-md-8 form-group">
 			<p *ngIf="!editing" class="form-control-static">{{config.livestreamInterval}}</p>
 			<input *ngIf="editing" name="livestreamInterval" [(ngModel)]="config.livestreamInterval" class="form-control">
 			<div *ngIf="form.hasError('required', 'livestreamInterval')" class="alert alert-danger">This field is required.</div>
@@ -253,24 +253,69 @@
 		</div>
 	</div>
 
+	<hr>
 
-	<div class="form-horizontal">
-		<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
-			<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
-			<div class="col-sm-7 col-md-8">
-				<div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
-					<label>
-                        <input type="checkbox"
-                               [disabled]="!editing"
-                               [checked]="isLivestreamChecked(instance, output)"
-                               (change)="onLivestreamChange($event.target.checked, instance, output)">
+	<label>LiveStream Variables</label>
 
-                        {{output.name}}
-                    </label>
-				</div>
+	<div class="form-forizontal">
+
+
+		<div *ngIf="editing" class="form-group">
+			<label class="col-sm-5 col-md-4 control-label" style="text-align: right">Filter</label>
+			<div class="col-sm-7 col-md-8 form-group">
+				<input #box (keyup)="search(box.value)" class="form-control">
 			</div>
 		</div>
+
+		<div *ngIf="editing" class="form-group">
+			<div id="result-research" class="form-horizontal"></div>
+			<div class="form-horizontal" id="toremove">
+					<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
+						<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
+						<div class="col-sm-7 col-md-8">
+							<div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
+								<label>
+									<input type="checkbox"
+										[disabled]="!editing"
+										[checked]="isLivestreamChecked(instance, output)"
+										(change)="onLivestreamChange($event.target.checked, instance, output)">
+
+									{{output.name}}
+								</label>
+							</div>
+						</div>
+					</div>
+			</div>
+		</div>
+
+			
+		<div *ngIf="!editing" class="form-group">	
+			<div class="form-horizontal">
+					<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
+						<label class="col-sm-5 col-md-4 control-label" id="{{instance.fmu.name}}label" (click)="func(instance.fmu.name)">{{instance.fmu.name}}.{{instance.name}}</label>
+						<div class="col-sm-7 col-md-8" id="{{instance.fmu.name}}">
+							<div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
+								<label>
+									<input type="checkbox"
+										[disabled]="!editing"
+										[checked]="isLivestreamChecked(instance, output)"
+										(change)="onLivestreamChange($event.target.checked, instance, output)">
+
+									{{output.name}}
+								</label>
+							</div>
+						</div>
+					</div>
+			</div>
+		</div>
+
+
 	</div>
+
+
+	
+
+	
 
 	<hr>
 

@@ -29,6 +29,7 @@ import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
 })
 export class CoeConfigurationComponent {
     private _path: string;
+    private searchName: string = '';
 
     @Input()
     set path(path: string) {
@@ -231,6 +232,97 @@ export class CoeConfigurationComponent {
 
             if (variables.length == 0)
                 this.config.livestream.delete(instance);
+        }
+    }
+
+    private func = function(id : any){
+        console.log("func"); console.log(document.getElementById(id).style.display)
+        if(document.getElementById(id).style.display=="none"){
+            document.getElementById(id).style.display="initial";
+        }else{
+            document.getElementById(id).style.display="none";
+        }
+    }
+
+    search(name : string){
+        //console.log(name.length);
+
+        //console.log(document.getElementsByClassName("col-sm-5 col-md-4 control-label config").length);
+
+        var myNode = document.getElementById("result-research");
+
+        while (myNode.firstChild) {
+                myNode.removeChild(myNode.firstChild);
+        }
+
+        /*for(let k =0; k < document.getElementsByClassName("col-sm-5 col-md-4 control-label config").length-1; k++){
+            
+            document.getElementsByClassName("col-sm-5 col-md-4 control-label config")[0].remove();
+        }*/
+
+        for(let instance of this.config.multiModel.fmuInstances){
+
+            if(document.getElementById("toremove")){ document.getElementById("toremove").remove();}
+            
+            var inst = document.createElement("div");
+            console.log("new instance");
+            inst.className = "form-group";
+
+            var label = document.createElement("div")
+            label.innerHTML = instance.fmu.name + "." + instance.name;
+            label.style.fontWeight = "bold";
+            label.className = "col-sm-5 col-md-4 control-label";
+            
+            
+            /*inst.style.display = "flex";
+            inst.style.flexDirection = "column";*/
+
+           
+            var div = document.createElement("div");
+            div.className = "col-sm-7 col-md-8";
+            
+
+
+            for(let output of this.getOutputs(instance.fmu.scalarVariables)){
+                if(output.name.includes(name)){
+                    console.log(output.name);
+                    var answer = document.createElement('input');
+                    answer.setAttribute('type', 'checkbox');
+                    answer.disabled = !this.editing;
+                    answer.checked = this.isLivestreamChecked(instance, output);
+                    answer.onchange = function() {
+                        if(answer.checked) {
+                            // Checkbox is checked.
+                            console.log(answer.innerText + " checked")
+                            this.onLivestreamChange(true, instance, output);
+                        } else {
+                            // Checkbox is not checked.
+                            console.log(answer.innerText + " unchecked")
+                            this.onLivestreamChange(false, instance, output);
+                        }
+                    }.bind(this);
+
+                    var lab = document.createElement("label");
+                    lab.appendChild(answer);
+                    lab.appendChild(document.createTextNode(output.name));
+
+                    var check = document.createElement("div");
+                    check.className = "checkbox";
+
+                    check.appendChild(lab);
+
+                    
+                    div.appendChild(check);
+                    
+                }  
+            
+            }
+
+            inst.appendChild(label);
+            inst.appendChild(div);
+            document.getElementById("result-research").appendChild(inst);
+            /*document.getElementById("result-research").style.display = "flex";
+            document.getElementById("result-research").style.flexDirection = "column";*/
         }
     }
 }
