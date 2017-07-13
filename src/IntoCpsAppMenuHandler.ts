@@ -34,4 +34,5 @@ export class IntoCpsAppMenuHandler {
     rename: (path:string)=>void;
 
     showTraceView: () =>void;
+    exportOvertureFmu: (type: string, path: string)=>void;
 }
