@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "INTO-CPS Traceability JSON Schema Version 1.3",
+  "description": "INTO-CPS Traceability JSON Schema",
+  "version":"1.3.1",
   "type": "object",
   "properties": {
     "rdf:RDF": {
@@ -25,9 +26,10 @@
         "messageFormatVersion": {
           "type": "string",
           "enum": [
-            "1.3"
+            "1.3",
+            "1.3.1"
           ],
-          "default": "1.3"
+          "default": "1.3.1"
         },
         "prov:Agent": {
           "type": "array",
@@ -239,7 +241,7 @@
     },
     "URIActivity": {
       "type": "string",
-      "pattern": "^Activity\\.(\\w)+:([0-9]){4}\\-([0-1][0-9])\\-([0-3][0-9])T([0-2][0-9]):([0-5][0-9]):([0-5][0-9])Z#[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+      "pattern": "^Activity\\.(\\w)+:([0-9]){4}\\-([0-1][0-9])\\-([0-3][0-9])T([0-2][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9][0-9][0-9])?Z#[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
       "additionalProperties": false
     },
     "URIAgent": {
