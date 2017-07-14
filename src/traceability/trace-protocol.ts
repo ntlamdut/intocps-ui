@@ -118,7 +118,6 @@ class MsgCreator {
         return this;
     }
 
-            this.serializedObject["comment"] = comment;
     public setUrl(url: string) {
         if (url)
             this.serializedObject["url"] = url;
