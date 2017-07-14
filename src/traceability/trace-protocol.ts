@@ -227,8 +227,32 @@ export class Activity {
     }
 }
 
-type TypeOptions = "architectureConfiguration" |"architectureModelling"|"fmu"| "file"|"simulationResult"| "simulationConfiguration"| "simulationModelling" | "simulationConfigurationCreation"|"simulation"|"architectureConfigurationCreation";
-type ActivityTypeOptions = "configurationCreation" | "simulationConfigurationCreation" | "simulation"
+type TypeOptions = "architectureConfiguration" |"architectureModelling"|"fmu"| "file"|"simulationResult"| "simulationConfiguration"| "simulationModelling" | "simulationConfigurationCreation"|"simulation";
+type ActivityTypeOptions = "architectureConfigurationCreation"|
+        "architectureModelling"|
+        "codeGeneration"|
+        "configurationCreation"|
+        "designNoteCreation"|
+        "dse"|
+        "dseAnalysisCreation"|
+        "dseConfigurationCreation"|
+        "fmuExport"|
+        "fmuExportForHiL"|
+        "modelDescriptionExport"|
+        "modelChecking"|
+        "modelDescriptionImport"|
+        "requirementsManagement"|
+        "simulation"|
+        "simulationConfigurationCreation"|
+        "simulationModelling"|
+        "testCreation"|
+		    "defineTestModel"|
+		    "defineTestObjectives"|
+		    "runTest"|
+		    "defineMCModel"|
+		    "defineCTAbstraction"|
+		    "defineMCQuery"|
+		    "runMCQuery";
 export class EntityFile implements Entity {
     //rdf
     //required

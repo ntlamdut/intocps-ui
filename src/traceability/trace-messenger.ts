@@ -157,9 +157,8 @@ export class TraceMessager {
                 path: this.getUriRelativeToProjectRoot(coePath),
                 type: "simulationConfiguration",
                 wasGeneratedBy: activity,
-                wasAttributedTo: ea
                 wasAttributedTo: ea,
-                comment: "Derived multi model configuration from SysML configuration"
+                commit: "Derived multi model configuration from SysML configuration"
             });
             let serializedMessage = rootMessage.serialize();
             this.finishTrace([coePath], serializedMessage);
