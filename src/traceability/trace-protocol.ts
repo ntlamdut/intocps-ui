@@ -34,10 +34,16 @@ class MsgCreator {
             this.serializedObject["rdf:about"] = about;
         return this;
     }
-
-    public setActivity(activity: any) {
-        if (activity)
+    public setActivity(activity: any){
+        if(activity)
+        {
             this.serializedObject["prov:Activity"] = activity;
+            return this;
+        }
+    }
+    public setActivities(activities: any) {
+        if (activities)
+            this.serializedObject["prov:Activity"] = activities;
         return this;
     }
 
@@ -112,12 +118,7 @@ class MsgCreator {
         return this;
     }
 
-    public setComment(comment: string) {
-        if (comment)
             this.serializedObject["comment"] = comment;
-        return this;
-    }
-
     public setUrl(url: string) {
         if (url)
             this.serializedObject["url"] = url;
@@ -145,18 +146,18 @@ class MsgCreator {
 
 export class RootMessage {
     public entities: Array<Entity> = new Array<Entity>();
-    public activity: Activity;
+    public activities: Array<Activity> = new Array<Activity>();
     public agents: Array<EntityAgent> = new Array<EntityAgent>();
 
     public serialize(): any {
 
          var root:any = {};
         root["rdf:RDF"] =  MsgCreator.CreateMsg()
-            .setDefaultRootEntries()
-            .setActivity(this.activity ? [this.activity.serialize()] : null)
-            .setEntities(this.entities ? this.entities.map((entity) => entity.serialize()) : null)
-            .setAgent(this.agents ? this.agents.map((agent) => agent.serialize()) : null)
-            .getSerializedObject();
+                .setDefaultRootEntries()
+                .setActivities(this.activities.length > 0 ? this.activities.map((activity) => activity.serialize()) : null)
+                .setEntities(this.entities.length > 0 ? this.entities.map((entity) => entity.serialize()) : null)
+                .setAgent(this.agents.length > 0 ? this.agents.map((agent) => agent.serialize()) : null)
+                .getSerializedObject()
 
             return root;
     }
@@ -171,7 +172,7 @@ export class Activity {
     // required
     public time: string;
     // required
-    public type: TypeOptions;
+    public type: ActivityTypeOptions;
 
     //prov
     // optional
@@ -188,7 +189,7 @@ export class Activity {
     }
 
     public setTimeToNow() {
-        this.time = (new Date()).toISOString();
+        this.time = (new Date()).toISOString().split('.')[0]+"Z";
     }
 
     public calcAndSetAbout() {
@@ -228,13 +229,12 @@ export class Activity {
 }
 
 type TypeOptions = "architectureConfiguration" |"architectureModelling"|"fmu"| "file"|"simulationResult"| "simulationConfiguration"| "simulationModelling" | "simulationConfigurationCreation"|"simulation"|"architectureConfigurationCreation";
-
+type ActivityTypeOptions = "configurationCreation" | "simulationConfigurationCreation" | "simulation"
 export class EntityFile implements Entity {
     //rdf
     //required
     private about: string;
-    
-    //intocps
+
     // required
     public type: TypeOptions;
     // required
@@ -244,8 +244,6 @@ export class EntityFile implements Entity {
     // optional
     public commit: string;
     // optional
-    public comment: string;
-    // optional
     public url: string;
 
     //prov
@@ -254,7 +252,7 @@ export class EntityFile implements Entity {
     // optional referring to an activity
     public wasGeneratedBy: Activity;
     // optional referring to an earlier version if one exists
-    public wasDerivedFrom: EntityFile;
+    public wasDerivedFrom: Array<EntityFile> = new Array<EntityFile>();
 
     public calcAbout() {
         this.about = `Entity.${this.type}:${this.path}#${this.hash}`;
@@ -300,11 +298,11 @@ export class EntityFile implements Entity {
                 .setHash(this.hash)
                 .setPath(this.path)
                 .setCommit(this.commit)
-                .setComment(this.comment)
                 .setUrl(this.url)
                 .setWasAttributedTo(this.wasAttributedTo ? this.wasAttributedTo.shortSerialize() : null)
                 .setWasGeneratedBy(this.wasGeneratedBy ? this.wasGeneratedBy.shortSerialize() : null)
-                .setWasDerivedFrom(this.wasDerivedFrom ? MsgCreator.CreateMsg().setEntities(this.wasDerivedFrom.shortSerialize()).getSerializedObject() : null)
+                .setWasDerivedFrom(this.wasDerivedFrom.length > 0 ? MsgCreator.CreateMsg().setEntities(this.wasDerivedFrom.map
+                ((entity) => entity.shortSerialize())).getSerializedObject() : null)
                 .getSerializedObject();
         else return {}
     }
@@ -320,11 +318,10 @@ interface EntityFileConfig {
     hash?: string
     path?: string
     commit?: string
-    comment?: string
     url?: string
     wasAttributedTo?: EntityAgent
     wasGeneratedBy?: Activity
-    wasDerivedFrom?: EntityFile
+    wasDerivedFrom?: Array<EntityFile>
 }
 
 
@@ -332,7 +329,6 @@ export class EntityTool implements Entity {
     //rdf
     // required
     private about: string;
-    //intocps
     // required
     private version: string = IntoCpsApp.getInstance().app.getVersion();
     // required
@@ -375,7 +371,6 @@ export class EntityAgent implements Entity {
     //rdf
     private about: string;
 
-    //intocps
     // required
     public name: string;
     // optional
@@ -384,14 +379,18 @@ export class EntityAgent implements Entity {
     constructor() {
         var agent = GitConn.GitCommands.getUserData();
         this.name = agent.username;
-        this.email = agent.email.length > 0 ? agent.email : null;
+        if(!agent.email) 
+            console.error("It was not possible to create the agent for traceability, as no email is configured.")
+        else {
+            this.email = agent.email.length > 0 ? agent.email : null;
         this.about = `Agent:${this.email}`;
+        }
     }
 
     public getAbout() { return this.about; }
 
     private canBeSerialized() {
-        if (!(this.about && this.name)) {
+        if (!(this.about && this.email)) {
             console.error(`It was not possible to serialize the EntityAgent. One of the following values are not allowed: about[${this.about}], or/and name[${this.name}]`)
             return false
         }
