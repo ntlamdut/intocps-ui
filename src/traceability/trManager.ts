@@ -90,6 +90,13 @@ export class trManager {
         return this.daemon.port;
     }
 
+    public sendCypherQuery(query:string, params?:any){
+        if (!params){
+            params = {};
+        }
+        return this.daemon.sendCypherResponse(query, params);
+    }
+
     public recordTrace(jsonObj: Object) {
         if (!this.enabled) {
             return {};

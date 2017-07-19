@@ -1,0 +1,61 @@
+<div class="row">
+    <div class="col-md-4">
+        <label>Simulation Time</label>
+    </div>
+    <div class="col-md-4">
+        <label>Result URI</label>
+    </div>
+</div>
+
+
+<div *ngIf="resultsAvailible">
+    <div *ngFor="let result of simResultList">
+        <div class="row">
+            <hr>
+            <div class="col-md-4">
+                <h5>{{result.time}}</h5>
+            </div>
+            <div class="col-md-4">
+                <h5>{{result.resultUri}}</h5>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-default" (click)="findSourcesFor = result">
+                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> List simulation sources
+                </button>    
+            </div>
+        </div>
+        <div *ngIf="sourcesAvailible">
+            <div *ngIf="result.listSources">
+                <div class="row">
+                    <div class="col-md-1">
+                    </div>
+                    <div class="col-md-11" style="background-color:LightGrey ">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>Used File</label>
+                            </div>
+                            <div class="col-md-4">
+                                <label>URI</label>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Hash</label>
+                            </div>
+                        </div>
+                        <div *ngFor="let source of sourceList" class="row">
+                            <hr>
+                            <div class="col-md-4">
+                                <h5>{{source.path}}</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>{{source.uri}}</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>{{source.hash}}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
