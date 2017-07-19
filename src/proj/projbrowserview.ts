@@ -614,7 +614,15 @@ export class BrowserController {
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.showTraceView();
                     });
-                result.menuEntries = [menuGraph];
+                let menuOpenTr = menuEntry("Trace Results", "glyphicon glyphicon-asterisk",
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.openTraceability();
+                    });
+                result.menuEntries = [menuGraph, menuOpenTr];
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openTraceability();
+
+                };
             } else if (Path.basename(path) == "downloads") {
                 // skip the project download folder
                 return;

@@ -34,4 +34,5 @@ export class IntoCpsAppMenuHandler {
     rename: (path:string)=>void;
 
     showTraceView: () =>void;
+    openTraceability: () =>void;
 }

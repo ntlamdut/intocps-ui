@@ -33,6 +33,7 @@ import * as Menus from "./menus";
 import { provideForms, disableDeprecatedForms } from "@angular/forms";
 import { CoeViewController } from "./angular2-app/coe/CoeViewController";
 import { MmViewController } from "./angular2-app/mm/MmViewController";
+import { TrViewController } from "./angular2-app/tr/TrViewController";
 import { DseViewController } from "./angular2-app/dse/DseViewController";
 
 class InitializationController {
@@ -154,6 +155,10 @@ menuHandler.openHTMLInMainView = (path: string, title: string) => {
 
 menuHandler.openMultiModel = (path: string) => {
     openView(null, view => new MmViewController(view, path));
+};
+
+menuHandler.openTraceability = () => {
+    openView(null, view => new TrViewController(view));
 };
 
 menuHandler.openDseView = (path: string) => {
