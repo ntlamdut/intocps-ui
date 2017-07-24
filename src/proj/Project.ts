@@ -11,7 +11,10 @@ export class Project implements IProject {
     name: string;
     rootPath: string;
     configPath: string;
-
+    /**
+     * The maximum number to be concatenated to filenames when a fresh name is needed
+     */
+    MAX_NEW_FILENAME: number = 100; 
 
 
     PATH_FMUS: String = "FMUs";
@@ -166,7 +169,37 @@ export class Project implements IProject {
     }
 
 
+    public freshMultiModelName(name : string): string { 
+        return this.freshFilename(Path.normalize(this.rootPath + "/" + Project.PATH_MULTI_MODELS),name); 
+    }
 
+
+    /**
+     * Returns a fresh filename inside folder path with name as a prefix. 
+     * @param {string} path 
+     * @param {string} name 
+     */
+    private freshFilename(path: string, name: string) : string
+    {
+        var filepath : string;
+        var newname : string = name; 
+
+        for (var i = 1; i < this.MAX_NEW_FILENAME; i++)
+            {
+                filepath = Path.format({ dir : path,
+                                         base : newname, 
+                                         root : null, 
+                                         name : null, 
+                                         ext : null
+                                        });
+
+                if(!fs.existsSync(filepath)) return newname;        
+
+                newname = name + i;
+            }
+            
+        return name;
+    }
 
 
 

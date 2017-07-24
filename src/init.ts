@@ -220,7 +220,7 @@ menuHandler.createMultiModel = (path, msgTitle = 'New Multi-Model') => {
 
     if (project) {
         let name    = Path.basename(path, ".sysml.json");
-        let ivname  = `mm-${name}`;
+        let ivname  = project.freshMultiModelName(`mm-${name}`);
         let mmPath  = null; 
         w2prompt({
             label       : 'Name',
@@ -281,8 +281,7 @@ menuHandler.createMultiModelPlain = (titleMsg : string = 'New Multi-Model') => {
 
     if (project) {
 
-        let ivname  = `mm-new`;
-        
+        let ivname  =  project.freshMultiModelName(`mm-new`);  
 
         w2prompt({
             label       : 'Name',
