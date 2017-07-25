@@ -2,42 +2,48 @@ import {OnInit, Component, Input, NgZone} from "@angular/core";
 //import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
 //import {Serializer} from "../../intocps-configurations/Parser";
 import IntoCpsApp from "../../IntoCpsApp";
-import {PanelComponent} from "../shared/panel.component";
-const findAllSimQuery:string = "match (n{type:'simulationResult'})-[:prov_wgb]->(m) return n.uri, m.time, m.type";
-
-@Component({
-    selector: "tr-overview",
-    directives: [
-        PanelComponent,
-        TrOverviewComponent],
-    templateUrl: "./angular2-app/tr/tr-overview.component.html"
-})
-
 
 export class TrOverviewComponent{
-    public simResultList:Array<simResult>;
-    public sourceList:Array<simSource>;
+    public mainObjectPropertyName1:string;
+    public mainObjectPropertyName2:string;
+    public mainObjectPropertyID1:string;
+    public mainObjectPropertyID2:string;
+    public mainObjectPropertyID3:string;
+
+    public subObjectPropertyName1:string;
+    public subObjectPropertyName2:string;
+    public subObjectPropertyName3:string;
+    public subObjectPropertyID1:string;
+    public subObjectPropertyID2:string;
+    public subObjectPropertyID3:string;
+
+    public findAllMainObjects:string;
+    public findAllSubObjectsPart1:string;
+    public findAllSubObjectsPart2:string;
+
+
+    public mainObjecList:Array<subObject>;
+    public subObjecList:Array<subObject>;
     private intoApp:IntoCpsApp;
     private zone:NgZone;
     private resultsAvailible:Boolean;
     private sourcesAvailible:Boolean;
-    public _findSourcesFor:simResult;
+    public _findSourcesFor:subObject;
 
     constructor(zone:NgZone) {
         this.resultsAvailible = false;
         this.sourcesAvailible = false;
         this.zone = zone;
         this.intoApp = IntoCpsApp.getInstance();
-        this.updateSimResults();
     }
     @Input()
-    set findSourcesFor(findSourcesFor:simResult) {
+    set findSourcesFor(findSourcesFor:subObject) {
         this._findSourcesFor = findSourcesFor;
         if (findSourcesFor.listSources){
             findSourcesFor.listSources = false;
         }else{
-            for(var resInd in this.simResultList){
-                this.simResultList[resInd].listSources = false;
+            for(var resInd in this.mainObjecList){
+                this.mainObjecList[resInd].listSources = false;
             }
             findSourcesFor.listSources = true;
         }
@@ -49,65 +55,59 @@ export class TrOverviewComponent{
     }
 
     getResults(){
-        return this.simResultList;
+        return this.mainObjecList;
     }
 
 
-    private updateSimResults(){
+    protected updatemainObjects(){
         this.resultsAvailible = false;
-        this.simResultList = Array<simResult>();
-        this.intoApp.trmanager.sendCypherQuery(findAllSimQuery)
-            .then(this.parseSimResults.bind(this));
+        this.mainObjecList = Array<subObject>();
+        this.intoApp.trmanager.sendCypherQuery(this.findAllMainObjects)
+            .then(this.parsemainObjects.bind(this));
     }
 
     private getSourceQuery(startUri:string):string{
-        return "match({uri:'" + startUri + "'})-[:prov_wgb]->(simulation)-[:prov_wgb|:prov_used]-(entity) return entity.uri, entity.path, entity.hash";
+        return this.findAllSubObjectsPart1 + startUri + this.findAllSubObjectsPart2;
     }
 
     private updateSources(){
         this.sourcesAvailible = false;
-        this.sourceList = Array<simSource>();
-        this.intoApp.trmanager.sendCypherQuery(this.getSourceQuery(this._findSourcesFor.resultUri))
+        this.subObjecList = Array<subObject>();
+        this.intoApp.trmanager.sendCypherQuery(this.getSourceQuery(this._findSourcesFor.subObjectProperty2))
             .then(this.parseSourceResults.bind(this));
     }
 
-    private parseSimResults(results: any[]){
+    private parsemainObjects(results: any[]){
         for(var result in results){
-            this.simResultList.push(new simResult(results[result]));
+            this.mainObjecList.push(new subObject(results[result], this.mainObjectPropertyID1, this.mainObjectPropertyID2, this.mainObjectPropertyID3));
         }
         this.zone.run(() => this.resultsAvailible = true);
     }
 
     private parseSourceResults(results: any){
         for(var result in results){
-            this.sourceList.push(new simSource(results[result]));
+            this.subObjecList.push(new subObject(results[result], this.subObjectPropertyID1, this.subObjectPropertyID2, this.subObjectPropertyID3));
         }
         this.zone.run(() => this.sourcesAvailible = true);
     }
 
 }
 
-class simSource {
-    public uri:string;
-    public path:string;
-    public hash:string;
-    constructor(resultObject:any){
-        this.uri = resultObject["entity.uri"];
-        this.path = resultObject["entity.path"];
-        this.hash = resultObject["entity.hash"];
-    }
-    
-}
-
-class simResult {
+class subObject {
     public listSources:Boolean;
-    public time:string;
-    public resultUri:string;
-    public type:string;
-    constructor(resultObject:any){
-        this.time = resultObject["m.time"];
-        this.resultUri = resultObject["n.uri"];
-        this.type = resultObject["m.type"];
+    public subObjectPropertyID1:string;
+    public subObjectPropertyID2:string;
+    public subObjectPropertyID3:string;
+    public subObjectProperty1:string;
+    public subObjectProperty2:string;
+    public subObjectProperty3:string;
+    constructor(resultObject:any, subObjectPropertyID1:string, subObjectPropertyID2:string, subObjectPropertyID3:string){
+        this.subObjectPropertyID1 = subObjectPropertyID1;
+        this.subObjectPropertyID2 = subObjectPropertyID2;
+        this.subObjectPropertyID3 = subObjectPropertyID3;
+        this.subObjectProperty1 = resultObject[this.subObjectPropertyID1];
+        this.subObjectProperty2 = resultObject[this.subObjectPropertyID2];
+        this.subObjectProperty3 = resultObject[this.subObjectPropertyID3];
         this.listSources = false;
     }
     

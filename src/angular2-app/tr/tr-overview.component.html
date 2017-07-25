@@ -1,22 +1,22 @@
 <div class="row">
     <div class="col-md-4">
-        <label>Simulation Time</label>
+        <label>{{mainObjectPropertyName1}}</label>
     </div>
     <div class="col-md-4">
-        <label>Result URI</label>
+        <label>{{mainObjectPropertyName2}}</label>
     </div>
 </div>
 
 
 <div *ngIf="resultsAvailible">
-    <div *ngFor="let result of simResultList">
+    <div *ngFor="let result of mainObjecList">
         <div class="row">
             <hr>
             <div class="col-md-4">
-                <h5>{{result.time}}</h5>
+                <h5>{{result.subObjectProperty1}}</h5>
             </div>
             <div class="col-md-4">
-                <h5>{{result.resultUri}}</h5>
+                <h5>{{result.subObjectProperty2}}</h5>
             </div>
             <div class="col-md-4">
                 <button class="btn btn-default" (click)="findSourcesFor = result">
@@ -32,25 +32,25 @@
                     <div class="col-md-11" style="background-color:LightGrey ">
                         <div class="row">
                             <div class="col-md-4">
-                                <label>Used File</label>
+                                <label>{{subObjectPropertyName1}}</label>
                             </div>
                             <div class="col-md-4">
-                                <label>URI</label>
+                                <label>{{subObjectPropertyName2}}</label>
                             </div>
                             <div class="col-md-4">
-                                <label>Hash</label>
+                                <label>{{subObjectPropertyName3}}</label>
                             </div>
                         </div>
-                        <div *ngFor="let source of sourceList" class="row">
+                        <div *ngFor="let source of subObjecList" class="row">
                             <hr>
                             <div class="col-md-4">
-                                <h5>{{source.path}}</h5>
+                                <h5>{{source.subObjectProperty1}}</h5>
                             </div>
                             <div class="col-md-4">
-                                <h5>{{source.uri}}</h5>
+                                <h5>{{source.subObjectProperty2}}</h5>
                             </div>
                             <div class="col-md-4">
-                                <h5>{{source.hash}}</h5>
+                                <h5>{{source.subObjectProperty3}}</h5>
                             </div>
                         </div>
                     </div>

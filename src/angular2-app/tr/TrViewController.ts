@@ -28,3 +28,23 @@ export class TrViewController extends ViewController {
         return false;
     }
 }
+export class TrFMUViewController extends ViewController {
+    constructor(private view: HTMLDivElement) {
+        super(view);
+    }
+
+    initialize() {
+        $(this.view).css('height',0);
+        IntoCpsApp.setTopName('Trace Requirements');
+        window.ng2app.openFMUTraceability();
+    }
+
+    deInitialize() {
+        if (window.ng2app.navigationService.canNavigate()) {
+            window.ng2app.closeAll();
+            $(this.view).css('height',"calc(100% - 80px)");
+            return true;
+        }
+        return false;
+    }
+}

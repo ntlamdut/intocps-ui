@@ -35,4 +35,5 @@ export class IntoCpsAppMenuHandler {
 
     showTraceView: () =>void;
     openTraceability: () =>void;
+    openFMUTraceability: () => void;
 }

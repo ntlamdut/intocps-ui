@@ -618,7 +618,11 @@ export class BrowserController {
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.openTraceability();
                     });
-                result.menuEntries = [menuGraph, menuOpenTr];
+                let menuOpenTrFMU = menuEntry("Trace Requirements", "glyphicon glyphicon-asterisk",
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.openFMUTraceability();
+                    });
+                result.menuEntries = [menuGraph, menuOpenTr, menuOpenTrFMU];
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openTraceability();
 
