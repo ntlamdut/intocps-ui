@@ -5,6 +5,7 @@ import {HTTP_PROVIDERS, Http} from "@angular/http";
 import {SettingsService} from "./shared/settings.service";
 import {MmPageComponent} from "./mm/mm-page.component";
 import {TrPageComponent} from "./tr/tr-page.component";
+import {TrFMUPageComponent} from "./tr/tr-fmuPage.component";
 import {DsePageComponent} from "./dse/dse-page.component";
 import {CoSimulationConfig} from "../intocps-configurations/CoSimulationConfig";
 import IntoCpsApp from "../IntoCpsApp";
@@ -27,7 +28,8 @@ declare let window: MyWindow;
         MmPageComponent,
         CoePageComponent,
         DsePageComponent,
-        TrPageComponent
+        TrPageComponent,
+        TrFMUPageComponent
     ],
     providers: [
         HTTP_PROVIDERS,
@@ -39,7 +41,8 @@ declare let window: MyWindow;
         <mm-page *ngIf="page === 'multiModel'" [path]="path"></mm-page>
         <coe-page *ngIf="page === 'coe'" [path]="path"></coe-page>
         <dse-page *ngIf="page === 'dse'" [path]="path"></dse-page>
-        <tr-page *ngIf="page === 'tr'" [path]="path"></tr-page>`
+        <tr-page *ngIf="page === 'tr'" [path]="path"></tr-page>
+        <tr-FMUpage *ngIf="page === 'trFMU'" [path]="path"></tr-FMUpage>`
 })
 export class AppComponent implements OnInit {
     private page:string;
@@ -80,6 +83,12 @@ export class AppComponent implements OnInit {
     openTraceability():void {
         this.zone.run(() => {
             this.page = "tr";
+        });
+    }
+
+    openFMUTraceability():void {
+        this.zone.run(() => {
+            this.page = "trFMU";
         });
     }
 
