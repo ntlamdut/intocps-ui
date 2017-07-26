@@ -31,6 +31,7 @@ export class TrFUMsComponent extends TrOverviewComponent{
         this.findAllMainObjects = "match(n{type:'fmu'}) return n.uri, n.path";
         this.findAllSubObjectsPart1 = "match (activity)<-[:prov_wgb]-({uri:'";
         this.findAllSubObjectsPart2 = "'})-[:oslc_satisfies]->(element) return element.uri, element.hash, activity.time, element.type order by activity.time desc";
+        this.listSubObjectsName = "List requirements";
         this.updatemainObjects();
     }
 }

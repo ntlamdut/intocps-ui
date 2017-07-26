@@ -20,6 +20,7 @@ export class TrOverviewComponent{
     public findAllMainObjects:string;
     public findAllSubObjectsPart1:string;
     public findAllSubObjectsPart2:string;
+    public listSubObjectsName:string;
 
 
     public mainObjecList:Array<subObject>;
