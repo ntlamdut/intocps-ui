@@ -10,7 +10,7 @@ import {PanelComponent} from "../shared/panel.component";
         TrFUMsComponent
 //        MmOverviewComponent
     ],
-    templateUrl: "./angular2-app/tr/tr-page.component.html",
+    templateUrl: "./angular2-app/tr/trFMU-page.component.html",
 })
 export class TrFMUPageComponent {
 //    @Input()
