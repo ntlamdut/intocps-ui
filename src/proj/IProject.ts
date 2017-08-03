@@ -16,4 +16,5 @@ export interface IProject {
     getSettings(): ProjectSettings;
 
     freshMultiModelName(name : String): String;
+    freshFilename(path: string, name: string) : string
 }

@@ -19,7 +19,7 @@ import * as fs from 'fs';
 import * as Path from 'path';
 import { DseConfiguration } from "./intocps-configurations/dse-configuration"
 
-import {TraceMessager} from "./traceability/trace-messenger"
+import { TraceMessager } from "./traceability/trace-messenger"
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -219,32 +219,32 @@ menuHandler.createMultiModel = (path, msgTitle = 'New Multi-Model') => {
     let project = appInstance.getActiveProject();
 
     if (project) {
-        let name    = Path.basename(path, ".sysml.json");
-        let ivname  = project.freshMultiModelName(`mm-${name}`);
-        let mmPath  = null; 
+        let name = Path.basename(path, ".sysml.json");
+        let ivname = project.freshMultiModelName(`mm-${name}`);
+        let mmPath = null;
         w2prompt({
-            label       : 'Name',
-            value       : ivname,
-            attrs       : 'style="width: 500px"',
-            title       : msgTitle,
-            ok_text     : 'Ok',
-            cancel_text : 'Cancel',
-            width       : 500,
-            height      : 200,
-            callBack    : function (value : String) {
+            label: 'Name',
+            value: ivname,
+            attrs: 'style="width: 500px"',
+            title: msgTitle,
+            ok_text: 'Ok',
+            cancel_text: 'Cancel',
+            width: 500,
+            height: 200,
+            callBack: function (value: String) {
 
                 let content = fs.readFileSync(path, "UTF-8");
                 try {
-                    if (!value) {return;}
+                    if (!value) { return; }
                     mmPath = <string>project.createMultiModel(value, content);
                     menuHandler.openMultiModel(mmPath);
-                } catch (error){
-                    menuHandler.createMultiModel(path,'Multi-Model "'+  value + '" already exists! Choose a different name.');
+                } catch (error) {
+                    menuHandler.createMultiModel(path, 'Multi-Model "' + value + '" already exists! Choose a different name.');
                     return;
                 }
                 //Create the trace 
                 if (mmPath) {
-                    let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath,path);
+                    let message = TraceMessager.submitSysMLToMultiModelMessage(mmPath, path);
                     //console.log("RootMessage: " + JSON.stringify(message));    
                 }
             }
@@ -276,44 +276,69 @@ menuHandler.createDsePlain = () => {
     }
 }
 
-menuHandler.createMultiModelPlain = (titleMsg : string = 'New Multi-Model') => {
+menuHandler.createMultiModelPlain = (titleMsg: string = 'New Multi-Model') => {
     let project = IntoCpsApp.getInstance().getActiveProject();
 
     if (project) {
-
-        let ivname  =  project.freshMultiModelName(`mm-new`);  
-
+        let ivname = project.freshMultiModelName(`mm-new`);
         w2prompt({
-            label       : 'Name',
-            value       : ivname,
-            attrs       : 'style="width: 500px"',
-            title       : titleMsg,
-            ok_text     : 'Ok',
-            cancel_text : 'Cancel',
-            width       : 500,
-            height      : 200,
-            callBack    : function (value : String) {
+            label: 'Name',
+            value: ivname,
+            attrs: 'style="width: 500px"',
+            title: titleMsg,
+            ok_text: 'Ok',
+            cancel_text: 'Cancel',
+            width: 500,
+            height: 200,
+            callBack: function (value: String) {
                 try {
-                   if (!value) {return;}
-                   let mmPath = <string>project.createMultiModel(value, "{}");
-                   menuHandler.openMultiModel(mmPath);
-                } catch (error){                   
-                   menuHandler.createMultiModelPlain('Multi-Model "'+  value + '" already exists! Choose a different name.');
+                    if (!value) { return; }
+                    let mmPath = <string>project.createMultiModel(value, "{}");
+                    menuHandler.openMultiModel(mmPath);
+                } catch (error) {
+                    menuHandler.createMultiModelPlain('Multi-Model "' + value + '" already exists! Choose a different name.');
                 }
             }
-    });
+        });
 
     }
 };
 
 
 menuHandler.createCoSimConfiguration = (path) => {
-    let project = IntoCpsApp.getInstance().getActiveProject();
+
+    let appInstance = IntoCpsApp.getInstance();
+    let project = appInstance.getActiveProject();
 
     if (project) {
-        let coePath = project.createCoSimConfig(path, `co-sim-${Math.floor(Math.random() * 100)}`, null).toString();
-        menuHandler.openCoeView(coePath);
-        let message = TraceMessager.submitCoeConfigMessage(path,coePath);
+        //let name    = Path.basename(path, ".sysml.json");
+        let ivname = project.freshFilename(Path.dirname(path), `co-sim`);
+
+        let msgTitle = 'New Co-Simulation Configuration';
+        w2prompt({
+            label: 'Name',
+            value: ivname,
+            attrs: 'style="width: 500px"',
+            title: msgTitle,
+            ok_text: 'Ok',
+            cancel_text: 'Cancel',
+            width: 500,
+            height: 200,
+            callBack: function (value: String) {
+                try {
+                    if (!value) { return; }
+
+                    let coePath = project.createCoSimConfig(path, value, null).toString();
+                    menuHandler.openCoeView(coePath);
+
+                    if (coePath) {
+                        let message = TraceMessager.submitCoeConfigMessage(path, coePath);
+                    }
+                } catch (error) {
+                    return;
+                }
+            }
+        });
     }
 };
 
@@ -357,7 +382,7 @@ menuHandler.showTraceView = () => {
     let renameHandler = new DialogHandler("traceability/traceHints.html", 600, 800, null, null, null);
 
     renameHandler.openWindow();
-    menuHandler.openHTMLInMainView("http://localhost:7474/browser/","Traceability Graph View");
+    menuHandler.openHTMLInMainView("http://localhost:7474/browser/", "Traceability Graph View");
 };
 
 

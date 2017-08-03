@@ -179,7 +179,7 @@ export class Project implements IProject {
      * @param {string} path 
      * @param {string} name 
      */
-    private freshFilename(path: string, name: string) : string
+    public freshFilename(path: string, name: string) : string
     {
         var filepath : string;
         var newname : string = name; 
@@ -195,7 +195,7 @@ export class Project implements IProject {
 
                 if(!fs.existsSync(filepath)) return newname;        
 
-                newname = name + i;
+                newname = name +'-'+ i;
             }
             
         return name;
