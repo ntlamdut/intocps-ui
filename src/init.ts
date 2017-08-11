@@ -17,9 +17,10 @@ import { bootstrap } from '@angular/platform-browser-dynamic';
 import { AppComponent } from './angular2-app/app.component';
 import * as fs from 'fs';
 import * as Path from 'path';
-import { DseConfiguration } from "./intocps-configurations/dse-configuration";
+import { DseConfiguration } from "./intocps-configurations/dse-configuration"
+import * as ShowdownHelper  from "./showdownHelper";
 import {Overture} from "./overture";
-import {TraceMessager} from "./traceability/trace-messenger";
+import {TraceMessager} from "./traceability/trace-messenger"
 import { StatusBarHandler, PreviewHandler } from "./bottom"
 
 interface MyWindow extends Window {
@@ -97,6 +98,11 @@ class InitializationController {
             var appVer = (<HTMLSpanElement>document.getElementById('appVersion'));
             appVer.innerText = IntoCpsApp.getInstance().app.getVersion();
 
+            let divReadme = (<HTMLDivElement>document.getElementById("mainReadmeView"));
+
+            let  readmePath = Path.join( IntoCpsApp.getInstance().getActiveProject().getRootFilePath(),"Readme.md");
+            divReadme.innerHTML=ShowdownHelper.getHtml(readmePath);
+            
             // Start Angular 2 application
             bootstrap(AppComponent, [disableDeprecatedForms(), provideForms()]);
         });
