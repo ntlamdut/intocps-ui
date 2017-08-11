@@ -25,6 +25,10 @@ export class GitCommands{
         this.execGitCmd(`git commit -m "autocommit" "${path}"`);
     }
 
+     public static addFile(path: string){
+        this.execGitCmd(`git add -f "${path}"`);
+    }
+
     public static execGitCmd(gitCmd: string)
     {
         return execSync(gitCmd,{cwd:appInstance.getActiveProject().getRootFilePath()});

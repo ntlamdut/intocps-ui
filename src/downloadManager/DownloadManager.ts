@@ -221,10 +221,26 @@ function showVersion(version: string, data: any) {
                         //Start the download
                         downloader.downloadTool(tool, getTempDir(), progressFunction(tool.name, component)).then(function (filePath) {
                             console.log("Download complete: " + filePath);
-                            dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
-                            if (downloader.toolRequiresUnpack(tool)) {
+                            const { shell } = require('electron');
+
+                            if (downloader.checkToolAction(tool, downloader.DownloadAction.UNPACK)) {
                                 let installDirectory = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.INSTALL_DIR)
                                 downloader.unpackTool(filePath, installDirectory);
+                                shell.showItemInFolder(installDirectory);
+                            } else if (downloader.checkToolAction(tool, downloader.DownloadAction.LAUNCH)) {
+                                dialog.showMessageBox({ type: 'question', buttons: buttons, message: "Accept launch of installer: " + Path.basename(filePath) + " downloaded for: " + tool.name + " (" + tool.version + ")" }, function (buttonInstall: any) {
+                                    if (buttonInstall == 1)//yes
+                                    {
+                                        shell.openExternal(filePath);
+                                    }
+                                });
+
+                            } else if (downloader.checkToolAction(tool, downloader.DownloadAction.SHOW)) {
+                                shell.showItemInFolder(filePath);
+                            } else if (downloader.checkToolAction(tool, downloader.DownloadAction.NONE)) {
+                                //do nothing
+                            } else {
+                                dialog.showMessageBox({ type: 'info', buttons: ["OK"], message: "Download completed: " + filePath }, function (button: any) { });
                             }
                         }, function (error) { dialog.showErrorBox("Invalid Checksum", error); });
                     });

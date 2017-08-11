@@ -14,4 +14,7 @@ export interface IProject {
     createCoSimConfig(multimodelConfigPath: string, name: String, jsonContent: String): string;
 
     getSettings(): ProjectSettings;
+
+    freshMultiModelName(name : String): String;
+    freshFilename(path: string, name: string) : string
 }
