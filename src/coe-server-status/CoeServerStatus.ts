@@ -3,6 +3,7 @@ import { SettingKeys } from "../settings/SettingKeys";
 import { remote, ipcRenderer } from "electron";
 import * as Path from 'path';
 import * as child_process from 'child_process'
+import fs = require('fs');
 
 var globalChild: any;
 var intoCpsAppIns = IntoCpsApp.getInstance();
@@ -98,7 +99,12 @@ function launchCoe() {
     var spawn = child_process.spawn;
 
     let installDir = intoCpsAppIns.getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
-    let coePath = Path.join(installDir, "coe.jar");
+    var coePath = Path.join(installDir, "coe.jar");
+    let overrideCoePath = intoCpsAppIns.getSettings().getValue(SettingKeys.COE_JAR_PATH);
+    if(fs.existsSync(overrideCoePath))
+    {
+        coePath = overrideCoePath;
+    }
     let childCwd = Path.join(installDir, "coe-working-dir");
     let env: any = process.env;
     env["RTT_OP_KEY"] = "TMS:19999:FMI";
