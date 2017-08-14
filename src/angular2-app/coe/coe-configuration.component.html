@@ -281,7 +281,8 @@
 									[checked]="isLivestreamChecked(instance, output)"
 									(change)="onLivestreamChange($event.target.checked, instance, output)">
 
-								{{output.name}}
+									<span *ngIf="isLocal(output)" class="text-warning" style="color:#f0ad4e!important">{{output.name}}</span>
+									<span *ngIf="!isLocal(output)" >{{output.name}}</span>
 							</label>
 						
 						</div>
