@@ -29,7 +29,7 @@ import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
 })
 export class CoeConfigurationComponent {
     private _path: string;
-    private searchName: string = '';
+    
 
     @Input()
     set path(path: string) {
@@ -51,6 +51,7 @@ export class CoeConfigurationComponent {
     outputPorts: Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
     editing: boolean = false;
+    searchName: string = 'Valve';
     parseError: string = null;
     warnings: WarningMessage[] = [];
     loglevels: string[] = ["Not set", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
