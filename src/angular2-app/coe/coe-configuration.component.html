@@ -263,53 +263,29 @@
 		<div *ngIf="editing" class="form-group">
 			<label class="col-sm-5 col-md-4 control-label" style="text-align: right">Filter</label>
 			<div class="col-sm-7 col-md-8 form-group">
-				<input #box (keyup)="search(box.value)" class="form-control">
+				<input #box (keyup)="onKey($event)" class="form-control">
 			</div>
 		</div>
 
-		<div *ngIf="editing" class="form-group">
-			<div id="result-research" class="form-horizontal"></div>
-			<div class="form-horizontal" id="toremove">
-					<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
-						<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
-						<div class="col-sm-7 col-md-8">
-							<div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
-								<label>
-									<input type="checkbox"
-										[disabled]="!editing"
-										[checked]="isLivestreamChecked(instance, output)"
-										(change)="onLivestreamChange($event.target.checked, instance, output)">
-
-									{{output.name}}
-								</label>
-							</div>
-						</div>
-					</div>
-			</div>
-		</div>
-
-			
-		<div *ngIf="!editing" class="form-group">	
+		<div class="form-group">
 			<div class="form-horizontal">
-					<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
-						<label class="col-sm-5 col-md-4 control-label" id="{{instance.fmu.name}}label" (click)="func(instance.fmu.name)">{{instance.fmu.name}}.{{instance.name}}</label>
-						<div class="col-sm-7 col-md-8" id="{{instance.fmu.name}}">
-							<div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
-								<label>
-									<input type="checkbox"
-										[disabled]="!editing"
-										[checked]="isLivestreamChecked(instance, output)"
-										(change)="onLivestreamChange($event.target.checked, instance, output)">
+				<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
+					<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
+					<div class="col-sm-7 col-md-8">
+						<div class="checkbox" *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
+							<label *ngIf="output.name.includes(this.searchName)">
+								<input type="checkbox"
+									[disabled]="!editing"
+									[checked]="isLivestreamChecked(instance, output)"
+									(change)="onLivestreamChange($event.target.checked, instance, output)">
 
-									{{output.name}}
-								</label>
-							</div>
+								{{output.name}}
+							</label>
 						</div>
 					</div>
+				</div>
 			</div>
 		</div>
-
-
 	</div>
 
 
