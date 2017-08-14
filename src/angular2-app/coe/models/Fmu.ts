@@ -183,6 +183,8 @@ export class Fmu {
             thisNode = iterator.iterateNext();
         }
 
+        this.scalarVariables.sort((a,b)=>a.name.localeCompare(b.name));
+
 
          iterator = document.evaluate('fmiModelDescription/LogCategories/*[@name]/@name', oDOM, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
 
@@ -192,6 +194,8 @@ export class Fmu {
             this.logCategories.push(thisNode.nodeValue);
              thisNode = iterator.iterateNext();
         }
+
+        this.logCategories.sort((a,b)=>a.localeCompare(b));
     }
 
     public getScalarVariable(name: string): ScalarVariable {

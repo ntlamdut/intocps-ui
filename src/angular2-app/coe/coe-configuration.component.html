@@ -9,11 +9,11 @@
 <form *ngIf="config" [formGroup]="form" (ngSubmit)="onSubmit()" #configForm="ngForm">
 
 	<button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
-        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
-    </button>
+    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+  </button>
 	<button *ngIf="editing" class="btn btn-default" [disabled]="!configForm.form.valid">
-        <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
-    </button>
+    <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+  </button>
 
 	<div class="form-horizontal">
 
@@ -22,7 +22,7 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.visible}}</p>
 				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.visible"
-				 (change)="config.visible=$event.target.checked" />
+							 (change)="config.visible=$event.target.checked" />
 			</div>
 		</div>
 
@@ -31,7 +31,7 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.loggingOn}}</p>
 				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.loggingOn"
-				 (change)="config.loggingOn=$event.target.checked" />
+							 (change)="config.loggingOn=$event.target.checked" />
 			</div>
 		</div>
 
@@ -40,8 +40,8 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.enableAllLogCategoriesPerInstance}}</p>
 				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="enableAllLogCategoriesPerInstance" class="form-control"
-				 [checked]="config.enableAllLogCategoriesPerInstance" (change)="config.enableAllLogCategoriesPerInstance=$event.target.checked"
-				/>
+							 [checked]="config.enableAllLogCategoriesPerInstance" (change)="config.enableAllLogCategoriesPerInstance=$event.target.checked"
+							 />
 			</div>
 		</div>
 
@@ -51,18 +51,18 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.overrideLogLevel}}</p>
 				<select *ngIf="editing" [ngModel]="config.overrideLogLevel" (ngModelChange)="config.overrideLogLevel=$event" [ngModelOptions]="{standalone:true}"
-				 class="form-control">
+								class="form-control">
 					<option *ngFor="let name of loglevels" [ngValue]="name">{{name}}</option>
-					</select>
+				</select>
 			</div>
 		</div>
 
-			<div class="form-group">
+		<div class="form-group">
 			<label class="col-sm-5 col-md-4 control-label">Slowdown simulation to real-time</label>
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.simulationProgramDelay}}</p>
 				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.simulationProgramDelay"
-				 (change)="config.simulationProgramDelay=$event.target.checked" />
+							 (change)="config.simulationProgramDelay=$event.target.checked" />
 			</div>
 		</div>
 
@@ -71,17 +71,17 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.parallelSimulation}}</p>
 				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.parallelSimulation"
-				 (change)="config.parallelSimulation=$event.target.checked" />
+							 (change)="config.parallelSimulation=$event.target.checked" />
 			</div>
 		</div>
 
-	<hr>
+		<hr>
 		<div class="form-group">
 			<label class="col-sm-5 col-md-4 control-label">Stabilization (successive substitution)</label>
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.stabalization}}</p>
 				<input *ngIf="editing" type="checkbox" [disabled]="!editing" name="fmu-visible" class="form-control" [checked]="config.stabalization"
-				 (change)="config.stabalization=$event.target.checked" />
+							 (change)="config.stabalization=$event.target.checked" />
 			</div>
 		</div>
 
@@ -104,7 +104,7 @@
 				<div *ngIf="form.hasError('invalidNumber', 'global_relative_tolerance')" class="alert alert-danger">Only numbers are allowed.</div>
 			</div>
 		</div>
-	<hr>
+		<hr>
 
 
 
@@ -147,9 +147,9 @@
 			<div class="col-sm-7 col-md-8">
 				<p *ngIf="!editing" class="form-control-static">{{config.algorithm.name}}</p>
 				<select *ngIf="editing" [ngModel]="config.algorithm" (ngModelChange)="onAlgorithmChange($event)" [ngModelOptions]="{standalone:true}"
-				 class="form-control">
+								class="form-control">
 					<option *ngFor="let algorithm of algorithms" [ngValue]="algorithm">{{algorithm.name}}</option>
-					</select>
+				</select>
 			</div>
 		</div>
 	</div>
@@ -207,12 +207,12 @@
 				<div class="col-sm-7 col-md-8">
 					<div *ngIf="editing" class="input-group">
 						<select [(ngModel)]="newConstraint" [ngModelOptions]="{standalone:true}" class="form-control">
-                            <option *ngFor="let constraint of constraintConstructors" [ngValue]="constraint">{{getConstraintName(constraint)}}</option>
-                        </select>
+              <option *ngFor="let constraint of constraintConstructors" [ngValue]="constraint">{{getConstraintName(constraint)}}</option>
+            </select>
 						<span class="input-group-btn">
-                            <button type="button" (click)="addConstraint(newConstraint.value)" class="btn btn-default">
-                                <span class="glyphicon glyphicon-plus"></span> Add
-						</button>
+              <button type="button" (click)="addConstraint(newConstraint.value)" class="btn btn-default">
+                <span class="glyphicon glyphicon-plus"></span> Add
+							</button>
 						</span>
 					</div>
 				</div>
@@ -226,13 +226,13 @@
 				</div>
 				<div class="panel-body">
 					<zero-crossing [editing]="editing" [ports]="outputPorts" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
-					 *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
+												 *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
 
 					<bounded-difference [editing]="editing" [ports]="outputPorts" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
-					 *ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
+															*ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
 
 					<sampling-rate [editing]="editing" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
-					 *ngIf="constraint.type === 'samplingrate'"></sampling-rate>
+												 *ngIf="constraint.type === 'samplingrate'"></sampling-rate>
 				</div>
 			</div>
 		</div>
@@ -289,9 +289,9 @@
 	</div>
 
 
-	
 
-	
+
+
 
 	<hr>
 
@@ -302,9 +302,9 @@
 	</div>
 
 	<button *ngIf="!editing" class="btn btn-default" (click)="editing = true">
-        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
-    </button>
+    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+  </button>
 	<button *ngIf="editing" class="btn btn-default" [disabled]="!configForm.form.valid">
-        <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
-    </button>
+    <span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Save
+  </button>
 </form>

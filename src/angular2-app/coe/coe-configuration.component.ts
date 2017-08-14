@@ -177,6 +177,10 @@ export class CoeConfigurationComponent {
         return scalarVariables.filter(variable => (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local));
     }
 
+    restrictToCheckedLiveStream(instance: Instance, scalarVariables: Array<ScalarVariable>){
+        return scalarVariables.filter(variable => this.isLivestreamChecked(instance,variable));
+    }
+
     addConstraint() {
         if (!this.newConstraint) return;
 
@@ -215,6 +219,11 @@ export class CoeConfigurationComponent {
         if (!variables) return false;
 
         return variables.indexOf(output) !== -1;
+    }
+
+    isLocal(variable: ScalarVariable):boolean
+    {
+        return variable.causality === CausalityType.Local
     }
 
     onLivestreamChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
