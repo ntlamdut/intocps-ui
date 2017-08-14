@@ -294,6 +294,12 @@ export class BrowserController {
             self.menuHandler.rename(item.path);
         });
 
+        let menuReveal = menuEntry("Show In Folder", "glyphicon glyphicon-pencil", function (item: ProjectBrowserItem) {
+            console.info("Reveal path: " + item.path);
+            const { shell } = require('electron');
+            shell.showItemInFolder(item.path);
+        });
+
         // Default menu entries
         result.menuEntries = [menuEntryDelete];
 
@@ -392,6 +398,7 @@ export class BrowserController {
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openFmu(item.path);
                 };
+                result.menuEntries.push(menuReveal);
             }
             else if (path.endsWith(".sysml.json")) {
                 result.img = "into-cps-icon-projbrowser-modelio";
@@ -427,6 +434,7 @@ export class BrowserController {
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openWithSystemEditor(item.path);
                 };
+                result.menuEntries.push(menuReveal);
             }
             else if (path.endsWith(".mo")) {
                 result.img = "into-cps-icon-projbrowser-openmodelica";
@@ -434,6 +442,7 @@ export class BrowserController {
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openWithSystemEditor(item.path);
                 };
+                result.menuEntries.push(menuReveal);
             }
             else if (path.endsWith(".csv")) {
                 if (isResultValid(path)) {
@@ -446,6 +455,7 @@ export class BrowserController {
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openWithSystemEditor(item.path);
                 };
+                result.menuEntries.push(menuReveal);
             } else {
                 return null;
             }
@@ -597,6 +607,7 @@ export class BrowserController {
             else if (this.isOvertureProject(path)) {
                 result.img = "into-cps-icon-projbrowser-overture";
                 result.expanded = false;
+                result.menuEntries.push(menuReveal);
             }
             else if (Path.basename(path) == Project.PATH_DSE) {
                 let menuEntryCreate = menuEntry("Create Design Space Exploration Config", "glyphicon glyphicon-asterisk",
@@ -617,6 +628,7 @@ export class BrowserController {
             else if (this.isResultFolder(path)) {
                 result.img = 'icon-folder';
                 result.menuEntries = [menuEntryDelete];
+                result.menuEntries.push(menuReveal);
             }
         }
         if (result != null) {
