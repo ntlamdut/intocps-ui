@@ -531,13 +531,8 @@ export class BrowserController {
                     }
                 }
                 else {
-                    if (pathComponents.length == 3) {
-                        if (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures") {
+                    if (pathComponents.length == 3 && (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
                             result.img = "into-cps-icon-rtt-tla";
-                        } else {
-                            // Hide other directories
-                            return null;
-                        }
                     }
                     else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
                         result.img = "into-cps-icon-rtt-mbt-test-procedure";
@@ -592,7 +587,7 @@ export class BrowserController {
                     }
                 }
             }
-            else if (pathComponents[0] == Project.PATH_MULTI_MODELS) {
+            else if (pathComponents.length==1 && pathComponents[0] == Project.PATH_MULTI_MODELS) {
                 let menuEntryCreate = menuEntry("New Multi-Model", "glyphicon glyphicon-asterisk",
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.createMultiModelPlain();
