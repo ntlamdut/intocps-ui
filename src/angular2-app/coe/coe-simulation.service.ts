@@ -56,20 +56,20 @@ export class CoeSimulationService {
         this.url = this.settings.get(SettingKeys.COE_URL);
 
         let currentDir = Path.dirname(this.config.sourcePath);
-        let now        = new Date();
-        let nowAsUTC   = new Date(Date.UTC(now.getFullYear(),
-                                           now.getMonth(),
-                                           now.getDate(),
-                                           now.getHours(),
-                                           now.getMinutes(),
-                                           now.getSeconds(),
-                                           now.getMilliseconds()));
+        let now = new Date();
+        let nowAsUTC = new Date(Date.UTC(now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            now.getHours(),
+            now.getMinutes(),
+            now.getSeconds(),
+            now.getMilliseconds()));
 
         let dateString = nowAsUTC.toISOString().replace(/-/gi, "_")
-                                               .replace(/T/gi, "-")
-                                               .replace(/Z/gi, "")
-                                               .replace(/:/gi, "_")
-                                               .replace(/\./gi, "_"); 
+            .replace(/T/gi, "-")
+            .replace(/Z/gi, "")
+            .replace(/:/gi, "_")
+            .replace(/\./gi, "_");
         this.resultDir = Path.normalize(`${currentDir}/R_${dateString}`);
 
         this.initializeDatasets();
@@ -243,7 +243,7 @@ export class CoeSimulationService {
                     this.fileSystem.copyFile(this.config.multiModel.sourcePath, mmConfigPath)
                 ]).then(() => {
                     this.progress = 100;
-                    storeResultCrc(resultPath,this.config);
+                    storeResultCrc(resultPath, this.config);
                     this.executePostProcessingScript(resultPath);
                 });
             });
@@ -295,22 +295,23 @@ export class CoeSimulationService {
             return;
 
 
+        let scriptNormalized = Path.normalize(Path.join(this.config.projectRoot, script));
         var scriptExists = false;
         try {
-            fs.accessSync(script, fs.constants.R_OK);
+            fs.accessSync(scriptNormalized, fs.constants.R_OK);
             scriptExists = true;
 
         } catch (e) {
 
         }
 
-        if (!scriptExists) {
-            script = Path.normalize(Path.join(this.config.projectRoot, script));
+        if (scriptExists) {
+            script = scriptNormalized;
         }
 
         var spawn = child_process.spawn;
 
-        var child = spawn(script, [outputFile, "" + this.config.endTime], {
+        var child = spawn(script, ["\"" + outputFile + "\"", "" + this.config.endTime], {
             detached: true,
             shell: true,
             cwd: Path.dirname(outputFile)
