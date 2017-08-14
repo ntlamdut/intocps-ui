@@ -23,6 +23,7 @@ export class CoSimulationConfig implements ISerializable {
 
     //optional livestream outputs
     livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
+    logVariables: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
     livestreamInterval: number = 0.0
     algorithm: ICoSimAlgorithm = new FixedStepAlgorithm();
     startTime: number = 0;
@@ -39,7 +40,9 @@ export class CoSimulationConfig implements ISerializable {
     simulationProgramDelay: boolean = false;
 
     public getProjectRelativePath(path: string): string {
-        if (path.indexOf(this.projectRoot) === 0)
+        if(path==".")
+            return "";
+        if (path.length>0 && path.indexOf(this.projectRoot) === 0)
             return path.substring(this.projectRoot.length + 1);
         return path;
     }
@@ -47,6 +50,8 @@ export class CoSimulationConfig implements ISerializable {
     toObject(): any {
         let livestream: any = {};
         this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
+        let logVariables: any = {};
+        this.logVariables.forEach((svs, instance) => logVariables[Serializer.getId(instance)] = svs.map(sv => sv.name));
 
         return {
             startTime: Number(this.startTime),
@@ -54,12 +59,13 @@ export class CoSimulationConfig implements ISerializable {
             multimodel_path: this.getProjectRelativePath(this.multiModel.sourcePath),
             livestream: livestream,
             livestreamInterval: Number(this.livestreamInterval),
+            logVariables: logVariables,
             visible: this.visible,
             loggingOn: this.loggingOn,
             overrideLogLevel: this.overrideLogLevel,
             enableAllLogCategoriesPerInstance: this.enableAllLogCategoriesPerInstance,
             algorithm: this.algorithm.toObject(),
-            postProcessingScript: this.getProjectRelativePath(this.postProcessingScript),
+            postProcessingScript: this.postProcessingScript,
             multimodel_crc: this.multiModelCrc,
             parallelSimulation: this.parallelSimulation,
             stabalizationEnabled: this.stabalization,
@@ -145,6 +151,7 @@ export class CoSimulationConfig implements ISerializable {
                     config.startTime = parser.parseStartTime(data) || 0;
                     config.endTime = parser.parseEndTime(data) || 10;
                     config.livestream = parser.parseLivestream(data, multiModel);
+                    config.logVariables = parser.parseLogVariables(data, multiModel);
                     config.livestreamInterval = parseFloat(parser.parseSimpleTagDefault(data, "livestreamInterval", "0.0"));
                     config.algorithm = parser.parseAlgorithm(data, multiModel);
                     config.visible = parser.parseSimpleTagDefault(data, "visible", false);

@@ -276,7 +276,7 @@
 						<div *ngIf="editing" class="form-group">
 							<label class="col-sm-5 col-md-4 control-label" style="text-align: right">Filter</label>
 							<div class="col-sm-7 col-md-8 form-group">
-								<input #box (keyup)="onKey($event)" class="form-control">
+								<input #box (keyup)="onLiveStreamKey($event)" class="form-control">
 							</div>
 						</div>
 
@@ -286,8 +286,8 @@
 									<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
 									<div class="col-sm-7 col-md-8">
 										<div *ngFor="let output of (editing ? getOutputs(instance.fmu.scalarVariables) : restrictToCheckedLiveStream(instance,getOutputs(instance.fmu.scalarVariables)) )">
-											
-											<div class="checkbox" *ngIf="output.name.includes(searchName)">
+
+											<div class="checkbox" *ngIf="output.name.includes(liveStreamSearchName)">
 												<label>
 																								<input type="checkbox"
 																											 [disabled]="!editing"
@@ -306,6 +306,55 @@
 					</div>
 				</div>
 			</div>
+
+			<div class="panel panel-info">
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<a data-toggle="collapse" data-parent="#accordion" href="#logVariables-collapse">
+										Output Log</a>
+						</h4>
+					</div>
+					<div id="logVariables-collapse" class="panel-collapse collapse">
+						
+	
+						<label>Additional Variables</label>
+	All connected outputs are logged by default.
+						<div class="form-forizontal">
+	
+	
+							<div *ngIf="editing" class="form-group">
+								<label class="col-sm-5 col-md-4 control-label" style="text-align: right">Filter</label>
+								<div class="col-sm-7 col-md-8 form-group">
+									<input #box (keyup)="onLogVariablesKey($event)" class="form-control">
+								</div>
+							</div>
+	
+							<div class="form-group">
+								<div class="form-horizontal">
+									<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
+										<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
+										<div class="col-sm-7 col-md-8">
+											<div *ngFor="let output of (editing ? getOutputs(instance.fmu.scalarVariables) : restrictToCheckedLogVariables(instance,getOutputs(instance.fmu.scalarVariables)) )">
+	
+												<div class="checkbox" *ngIf="output.name.includes(logVariablesSearchName)">
+													<label>
+																									<input type="checkbox"
+																												 [disabled]="!editing"
+																												 [checked]="isLogVariableChecked(instance, output)"
+																												 (change)="onLogVariableChange($event.target.checked, instance, output)">
+							
+																										<span *ngIf="isLocal(output)" class="text-warning" style="color:#f0ad4e!important" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
+																										<span *ngIf="!isLocal(output)" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
+																								</label>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 
 			<div class="panel panel-info">
 				<div class="panel-heading">

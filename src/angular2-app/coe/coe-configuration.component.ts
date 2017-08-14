@@ -51,7 +51,8 @@ export class CoeConfigurationComponent {
     outputPorts: Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
     editing: boolean = false;
-    searchName: string = '';
+    liveStreamSearchName: string = '';
+    logVariablesSearchName: string = '';
     parseError: string = null;
     warnings: WarningMessage[] = [];
     loglevels: string[] = ["Not set", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
@@ -182,6 +183,11 @@ export class CoeConfigurationComponent {
         return scalarVariables.filter(variable => this.isLivestreamChecked(instance,variable));
     }
 
+    
+    restrictToCheckedLogVariables(instance: Instance, scalarVariables: Array<ScalarVariable>){
+        return scalarVariables.filter(variable => this.isLogVariableChecked(instance,variable));
+    }
+
     addConstraint() {
         if (!this.newConstraint) return;
 
@@ -222,6 +228,15 @@ export class CoeConfigurationComponent {
         return variables.indexOf(output) !== -1;
     }
 
+    
+    isLogVariableChecked(instance: Instance, output: ScalarVariable) {
+        let variables = this.config.logVariables.get(instance);
+
+        if (!variables) return false;
+
+        return variables.indexOf(output) !== -1;
+    }
+
     isLocal(variable: ScalarVariable):boolean
     {
         return variable.causality === CausalityType.Local
@@ -248,8 +263,30 @@ export class CoeConfigurationComponent {
                 this.config.livestream.delete(instance);
         }
     }
+
     
-    onKey(event : any){
-        this.searchName = event.target.value;
+    onLogVariableChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
+        let variables = this.config.logVariables.get(instance);
+
+        if (!variables) {
+            variables = [];
+            this.config.logVariables.set(instance, variables);
+        }
+
+        if (enabled)
+            variables.push(output);
+        else {
+            variables.splice(variables.indexOf(output), 1);
+
+            if (variables.length == 0)
+                this.config.logVariables.delete(instance);
+        }
+    }
+    
+    onLiveStreamKey(event : any){
+        this.liveStreamSearchName = event.target.value;
+    }
+    onLogVariablesKey(event : any){
+        this.logVariablesSearchName = event.target.value;
     }
 }
