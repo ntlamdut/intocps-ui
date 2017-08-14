@@ -273,19 +273,17 @@
 					<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
 					<div class="col-sm-7 col-md-8">
 						<div *ngFor="let output of getOutputs(instance.fmu.scalarVariables)">
-						<div class="checkbox" *ngIf="output.name.includes(searchName)">
-						
-							<label>
-								<input type="checkbox"
-									[disabled]="!editing"
-									[checked]="isLivestreamChecked(instance, output)"
-									(change)="onLivestreamChange($event.target.checked, instance, output)">
+							<div class="checkbox" *ngIf="output.name.includes(searchName)">
+								<label>
+									<input type="checkbox"
+										[disabled]="!editing"
+										[checked]="isLivestreamChecked(instance, output)"
+										(change)="onLivestreamChange($event.target.checked, instance, output)">
 
-									<span *ngIf="isLocal(output)" class="text-warning" style="color:#f0ad4e!important">{{output.name}}</span>
-									<span *ngIf="!isLocal(output)" >{{output.name}}</span>
-							</label>
-						
-						</div>
+										<span *ngIf="isLocal(output)" class="text-warning" style="color:#f0ad4e!important">{{output.name}}</span>
+										<span *ngIf="!isLocal(output)" >{{output.name}}</span>
+								</label>
+							</div>
 						</div>
 					</div>
 				</div>

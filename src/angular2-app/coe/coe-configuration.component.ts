@@ -51,7 +51,7 @@ export class CoeConfigurationComponent {
     outputPorts: Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
     editing: boolean = false;
-    searchName: string = 'Valve';
+    searchName: string = '';
     parseError: string = null;
     warnings: WarningMessage[] = [];
     loglevels: string[] = ["Not set", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
