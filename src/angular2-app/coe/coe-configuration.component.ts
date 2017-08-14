@@ -6,7 +6,7 @@ import {
     VariableStepAlgorithm, ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint,
     VariableStepConstraint
 } from "../../intocps-configurations/CoSimulationConfig";
-import { ScalarVariable, CausalityType, Instance, InstanceScalarPair } from "./models/Fmu";
+import { ScalarVariable, CausalityType, Instance, InstanceScalarPair, ScalarVariableType } from "./models/Fmu";
 import { ZeroCrossingComponent } from "./inputs/zero-crossing.component";
 import { BoundedDifferenceComponent } from "./inputs/bounded-difference.component";
 import { SamplingRateComponent } from "./inputs/sampling-rate.component";
@@ -225,6 +225,10 @@ export class CoeConfigurationComponent {
     isLocal(variable: ScalarVariable):boolean
     {
         return variable.causality === CausalityType.Local
+    }
+
+    getScalarVariableTypeName(type: ScalarVariableType){
+        return ScalarVariableType[type];
     }
 
     onLivestreamChange(enabled: boolean, instance: Instance, output: ScalarVariable) {

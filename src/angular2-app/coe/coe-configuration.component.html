@@ -280,8 +280,8 @@
 										[checked]="isLivestreamChecked(instance, output)"
 										(change)="onLivestreamChange($event.target.checked, instance, output)">
 
-										<span *ngIf="isLocal(output)" class="text-warning" style="color:#f0ad4e!important">{{output.name}}</span>
-										<span *ngIf="!isLocal(output)" >{{output.name}}</span>
+										<span *ngIf="isLocal(output)" class="text-warning" style="color:#f0ad4e!important" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
+										<span *ngIf="!isLocal(output)" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
 								</label>
 							</div>
 						</div>
