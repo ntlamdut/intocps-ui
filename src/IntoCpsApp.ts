@@ -2,15 +2,16 @@ import * as Path from 'path';
 import * as fs from 'fs';
 
 
-import {ISettingsValues} from "./settings/ISettingsValues";
-import {Settings} from "./settings/settings";
-import {IProject} from "./proj/IProject";
-import {Project} from "./proj/Project";
-import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
-import {SettingKeys} from "./settings//SettingKeys";
-import {EventEmitter} from "events";
-import {trManager} from "./traceability/trManager"
-import {Utilities} from "./utilities"
+import { ISettingsValues } from "./settings/ISettingsValues";
+import { Settings } from "./settings/settings";
+import { IProject } from "./proj/IProject";
+import { Project } from "./proj/Project";
+import { IntoCpsAppEvents } from "./IntoCpsAppEvents";
+import { SettingKeys } from "./settings//SettingKeys";
+import { EventEmitter } from "events";
+import { trManager } from "./traceability/trManager"
+import { Utilities } from "./utilities"
+import { CoeProcess } from "./coe-server-status/CoeProcess";
 
 // constants
 let topBarNameId: string = "activeTabTitle";
@@ -19,7 +20,8 @@ export default class IntoCpsApp extends EventEmitter {
     app: Electron.App;
     platform: String
     window: Electron.BrowserWindow;
-    trmanager:trManager;
+    trmanager: trManager;
+    coeProcess: CoeProcess = null;
 
     settings: Settings;
 
@@ -60,7 +62,7 @@ export default class IntoCpsApp extends EventEmitter {
             this.settings.setValue(SettingKeys.EXAMPLE_REPO, this.settings.getValue(SettingKeys.DEV_EXAMPLE_REPO));
         }
 
-        this.trmanager = new trManager(this.settings.setSetting.bind(this.settings),this.getSettings().getValue(SettingKeys.ENABLE_TRACEABILITY));
+        this.trmanager = new trManager(this.settings.setSetting.bind(this.settings), this.getSettings().getValue(SettingKeys.ENABLE_TRACEABILITY));
         let activeProjectPath = this.settings.getSetting(SettingKeys.ACTIVE_PROJECT);
         if (activeProjectPath) {
             try {
@@ -75,13 +77,19 @@ export default class IntoCpsApp extends EventEmitter {
                 console.warn("Unable to set active project from settings: " + activeProjectPath);
             }
         }
+        this.coeProcess = new CoeProcess(this.settings);
+
+    }
+
+    public getCoeProcess(): CoeProcess {
+        return this.coeProcess;
     }
 
     public setWindow(win: Electron.BrowserWindow) {
         this.window = win;
     }
 
-    public recordTrace(jsonObj: Object){
+    public recordTrace(jsonObj: Object) {
         this.trmanager.recordTrace(jsonObj);
     }
 
@@ -99,7 +107,7 @@ export default class IntoCpsApp extends EventEmitter {
                 console.log(`Npm start user data path: ${path}`);
                 return path;
             }
-        } ();
+        }();
 
         return Path.normalize(userPath + "/intoCpsApp");
     }
@@ -155,7 +163,7 @@ export default class IntoCpsApp extends EventEmitter {
     }
 
     loadProject(path: string): IProject {
-        console.info("Loading project from: " + path); 
+        console.info("Loading project from: " + path);
         let config = Path.normalize(path);
         let content = fs.readFileSync(config, "utf8");
         // TODO load configuration containers and config files
@@ -202,4 +210,4 @@ class SerializationHelper {
 }
 
 
-export {IntoCpsApp}
+export { IntoCpsApp }

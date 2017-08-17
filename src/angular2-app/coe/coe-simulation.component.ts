@@ -6,7 +6,8 @@ import { Http } from "@angular/http";
 import { SettingsService, SettingKeys } from "../shared/settings.service";
 import IntoCpsApp from "../../IntoCpsApp";
 import { WarningMessage } from "../../intocps-configurations/Messages";
-import { openCOEServerStatusWindow } from "../../menus"
+import { openCOEServerStatusWindow } from "../../menus";
+import {CoeProcess} from "../../coe-server-status/CoeProcess";
 
 @Component({
     selector: "coe-simulation",
@@ -62,7 +63,7 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.url = this.settings.get(SettingKeys.COE_URL) || "localhost:8082";
+        this.url = CoeProcess.getCoeVersionUrl();
         this.onlineInterval = window.setInterval(() => this.isCoeOnline(), 2000);
         this.isCoeOnline();
     }
@@ -141,7 +142,7 @@ export class CoeSimulationComponent implements OnInit, OnDestroy {
 
     isCoeOnline() {
         this.http
-            .get(`http://${this.url}/version`)
+            .get(this.url)
             .timeout(2000)
             .map(response => response.json())
             .subscribe((data: any) => {

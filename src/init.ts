@@ -20,6 +20,7 @@ import * as Path from 'path';
 import { DseConfiguration } from "./intocps-configurations/dse-configuration"
 
 import { TraceMessager } from "./traceability/trace-messenger"
+import { StatusBarHandler, PreviewHandler } from "./bottom"
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -35,12 +36,15 @@ import { CoeViewController } from "./angular2-app/coe/CoeViewController";
 import { MmViewController } from "./angular2-app/mm/MmViewController";
 import { DseViewController } from "./angular2-app/dse/DseViewController";
 
+import { CoeServerStatusUiController,CoeLogUiController } from "./CoeServerStatusUiController"
+
 class InitializationController {
     // constants
     mainViewId: string = "mainView";
     layout: W2UI.W2Layout;
     title: HTMLTitleElement;
     mainView: HTMLDivElement;
+    previewHandler: PreviewHandler;
 
     constructor() {
         $(document).ready(() => this.initialize());
@@ -49,6 +53,13 @@ class InitializationController {
         this.setTitle();
         this.configureLayout();
         this.loadViews();
+        this.previewHandler = new PreviewHandler((name: string, panelName: string, visible: boolean) => {
+            if (visible) {
+                this.layout.show(name)
+            } else {
+                this.layout.hide(name)
+            }
+        });
     }
     private configureLayout() {
         let layout: HTMLDivElement = <HTMLDivElement>document.querySelector("#layout");
@@ -59,6 +70,8 @@ class InitializationController {
             panels: [
                 { type: "left", size: 200, resizable: true, style: pstyle },
                 { type: "main", style: pstyle },
+                { type: 'preview', size: '50%', resizable: true, style: pstyle, content: 'preview' },
+                { type: 'bottom', size: 50, resizable: false, style: pstyle, content: 'bottom' }
             ]
         });
     }
@@ -89,6 +102,21 @@ class InitializationController {
         this.layout.load("left", "proj/projbrowserview.html", "", () => {
             browserController.initialize();
         });
+        this.layout.load("bottom", "bottom.html", "", () => {
+            StatusBarHandler.initializeStatusbar(this.previewHandler);
+        });
+        this.layout.load("preview", "preview.html", "", () => {
+            if (coeViewController == null) {
+                coeViewController = new CoeServerStatusUiController(<HTMLDivElement>document.getElementById("coe-console-output"));
+                coeViewController.bind();
+            }
+            if(coeLogViewController==null)
+                {
+                    coeLogViewController = new CoeLogUiController(<HTMLDivElement>document.getElementById("coe-log-output"))
+                    coeLogViewController.bind();
+                }
+        });
+        this.layout.hide("preview");
     }
 }
 
@@ -97,6 +125,8 @@ let menuHandler: IntoCpsAppMenuHandler = new IntoCpsAppMenuHandler();
 let browserController: BrowserController = new BrowserController(menuHandler);
 let init = new InitializationController();
 let controller: IViewController;
+let coeViewController: CoeServerStatusUiController = null;
+let coeLogViewController: CoeLogUiController=null;
 
 function closeView(): boolean {
     if (controller && controller.deInitialize) {
