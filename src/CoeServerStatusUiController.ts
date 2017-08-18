@@ -39,7 +39,7 @@ export class CoeServerStatusUiController {
                     m.style.color = "rgb(255, 165, 0)";
                 if (line.indexOf("DEBUG") > -1)
                     m.style.color = "rgb(0, 0, 255)";
-                if (line.indexOf("TRACE") > -1 || line.indexOf("(resumed)") == 0)
+                if (line.indexOf("TRACE") > -1 || line.indexOf("(resumed)") == 0 || line.indexOf("( truncated...)") == 0)
                     m.style.color = "rgb(128,128,128)";
 
                 div.appendChild(m);
@@ -47,11 +47,7 @@ export class CoeServerStatusUiController {
             }
         });
 
-        let maxLines = 1000
-        if (div.childElementCount > maxLines)
-            while (div.childElementCount > maxLines && div.hasChildNodes()) {
-                div.removeChild(div.firstChild);
-            }
+
     }
 
     private setStatusIcons() {
@@ -85,11 +81,17 @@ export class CoeServerStatusUiController {
         (<HTMLSpanElement>div.lastChild).scrollIntoView();
     }
 
-    public bind() {
+    private truncateVisibleLog() {
+        let maxLines = 1000
+        if (this.outputDiv.childElementCount > maxLines)
+            while (this.outputDiv.childElementCount > maxLines && this.outputDiv.hasChildNodes()) {
+                this.outputDiv.removeChild(this.outputDiv.firstChild);
+            }
+    }
+
+    public async bind() {
         if (this.isSubscribed)
             return;
-
-
 
         var coe = IntoCpsApp.getInstance().getCoeProcess();
         this.errorPrefix = coe.getErrorLogLinePrefix();
@@ -98,7 +100,7 @@ export class CoeServerStatusUiController {
         this.setStatusIcons();
 
         if (!this.coeStatusRunning) {
-            window.setInterval(this.setStatusIcons, 3000);
+            window.setInterval(() => { this.setStatusIcons(); this.truncateVisibleLog() }, 3000);
             window.setInterval(() => { this.consoleAutoScroll() }, 800);
             this.coeStatusRunning = true;
         }
@@ -119,7 +121,7 @@ export class CoeServerStatusUiController {
 
         this.bind();
 
-        
+
         if (!coe.isRunning()) {
             coe.start();
         }
@@ -136,7 +138,7 @@ export class CoeServerStatusUiController {
 
 export class CoeLogUiController extends CoeServerStatusUiController {
 
-    public bind() {
+    public async bind() {
         if (this.isSubscribed)
             return;
         var coe = IntoCpsApp.getInstance().getCoeProcess();

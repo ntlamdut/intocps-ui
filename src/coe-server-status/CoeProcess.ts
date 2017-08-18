@@ -119,7 +119,7 @@ export class CoeProcess {
     public start() {
 
         if (!this.checkCoeAvaliablity()) {
-            const {dialog} = require('electron')
+            const { dialog } = require('electron')
             dialog.showMessageBox({ type: 'error', buttons: ["OK"], message: "Please install the: " + "'Co-simulation Orchestration Engine'" + " first." }, function (button: any) { });
             return;
         }
@@ -218,40 +218,144 @@ export class CoeProcess {
     // enable subscription to the coe log file if it exists, otherwise it is created
     public subscribe(callback: any) {
 
-        if (fs.existsSync(this.getLogFilePath())) {
-            fs.appendFileSync(this.getLogFilePath(), "");
+        let path = this.getLogFilePath();
+
+        if (fs.existsSync(path)) {
+            fs.appendFileSync(path, "");
             var Tail = require('tail').Tail;
 
-            var tail = new Tail(this.getLogFilePath(), { fromBeginning: true });
-            tail.watchEvent.call(tail, "change"); // https://github.com/lucagrulla/node-tail/issues/40
-            tail.on("line", function (data: any) {
-                try {
-                    callback(data);
-                } catch (e) {
-                    if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
-                        throw e;
-                }
+            this.partialFileRead(100000, path, (ds: string) => {
+                callback("( truncated...)\n\n" + ds);
+
+                var tail = new Tail(path);
+                tail.on("line", function (data: any) {
+                    try {
+                        callback(data);
+                    } catch (e) {
+                        if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
+                            throw e;
+                    }
+                })
+
             });
         }
+    }
+
+    private partialFileRead(size: number, path: string, callback: any) {
+        fs.stat(path, (err, stats) => {
+            var offset = 0;
+            let MaxFileSize = size;
+            if (stats.size > MaxFileSize) {
+                offset = stats.size - MaxFileSize;
+            }
+
+            fs.open(path, 'r+', function (err, fd) {
+                if (err) {
+                    return console.error(err);
+                }
+
+                var buf = new Buffer(MaxFileSize + 1000);
+
+                fs.read(fd, buf, 0, buf.length, offset, function (err, bytes) {
+                    if (err) {
+                        console.info(err);
+                    }
+
+                    // Print only read bytes to avoid junk.
+                    if (bytes > 0) {
+                        let readData = buf.slice(0, bytes).toString("UTF-8");
+                        callback(readData);
+                    }
+                });
+            });
+        });
     }
 
     // enable subscription to the coe log file if it exists, otherwise it is created
     public subscribeLog4J(callback: any) {
 
-        if (fs.existsSync(this.getLog4JFilePath())) {
-            fs.appendFileSync(this.getLog4JFilePath(), "");
+        let path = this.getLog4JFilePath();
+
+        if (fs.existsSync(path)) {
+            fs.appendFileSync(path, "");
             var Tail = require('tail').Tail;
 
-            var tail = new Tail(this.getLog4JFilePath(), { fromBeginning: true });
-            tail.watchEvent.call(tail, "change"); // https://github.com/lucagrulla/node-tail/issues/40
-            tail.on("line", function (data: any) {
-                try {
-                    callback(data);
-                } catch (e) {
-                    if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
-                        throw e;
-                }
-            });
+            this.partialFileRead(100000, path, (ds: string) => {
+                callback("( truncated...)\n\n" + ds);
+
+                var tail = new Tail(path);
+                tail.on("line", function (data: any) {
+                    try {
+                        callback(data);
+                    } catch (e) {
+                        if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
+                            throw e;
+                    }
+                });
+            })
+
+            /*
+                        fs.stat(this.getLog4JFilePath(), (err, stats) => {
+                            var offset = 0;
+                            let MaxFileSize = 1024;//2e+6; 
+                            if (stats.size > MaxFileSize) {
+                                offset = stats.size - MaxFileSize;
+                            }
+                            console.info("size: " + stats.size);
+            
+            
+            
+                            fs.open(this.getLog4JFilePath(), 'r+', function (err, fd) {
+                                if (err) {
+                                    return console.error(err);
+                                }
+            
+                                var buf = new Buffer(MaxFileSize);
+            
+                                console.log("File opened successfully!");
+                                console.log("Going to read the file");
+                                fs.read(fd, buf, 0, buf.length, 0, function (err, bytes) {
+                                    if (err) {
+                                        console.log(err);
+                                    }
+                                    console.log(bytes + " bytes read");
+            
+                                    // Print only read bytes to avoid junk.
+                                    if (bytes > 0) {
+                                        console.log(buf.slice(0, bytes).toString());
+                                    }
+                                });
+                            });
+                        })
+            
+            
+            
+                        fs.readFile(this.getLog4JFilePath(), (err, d) => {
+            
+                            var index = 0;
+                            for (var i = 0; i < 10; i++) {
+                                index = d.lastIndexOf("\n", index - 2);
+                            }
+            
+                            console.info("truncating to line: " + index + " full length is: " + d.length)
+                            var ds = d.toString();
+                            if (index > 0)
+                                ds = ds.substr(index);
+            
+                            console.info("ds length: " + ds.length)
+                            callback(ds);
+            
+                            var tail = new Tail(this.getLog4JFilePath());
+                            tail.on("line", function (data: any) {
+                                try {
+                                    callback(data);
+                                } catch (e) {
+                                    if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
+                                        throw e;
+                                }
+                            });
+                        });
+                    */
         }
     }
 }
