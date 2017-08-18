@@ -197,7 +197,7 @@ export class BrowserController {
         this.menuHandler = menuHandler;
     }
 
-    initialize() {
+    public async initialize() {
         this.browser = <HTMLDivElement>document.querySelector("#browser");
 
         this.tree = $(this.browser).w2sidebar({
