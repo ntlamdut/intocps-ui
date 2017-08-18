@@ -309,7 +309,7 @@ export class trManager {
 
     public stop(nextCallback?: Function) {
         if (!this.enabled) {
-            return;
+            nextCallback();
         }
 
         if (!this.running) {
