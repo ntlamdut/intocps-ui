@@ -220,8 +220,12 @@ export class CoeProcess {
 
         let path = this.getLogFilePath();
 
+        if (!fs.existsSync(path)) {
+            fs.writeFileSync(path, "");
+        }
+
         if (fs.existsSync(path)) {
-            fs.appendFileSync(path, "");
+
             var Tail = require('tail').Tail;
 
             this.partialFileRead(100000, path, (ds: string) => {
@@ -276,8 +280,12 @@ export class CoeProcess {
 
         let path = this.getLog4JFilePath();
 
+        if (!fs.existsSync(path)) {
+            fs.writeFileSync(path, "");
+        }
+
         if (fs.existsSync(path)) {
-            fs.appendFileSync(path, "");
+
             var Tail = require('tail').Tail;
 
             this.partialFileRead(100000, path, (ds: string) => {
