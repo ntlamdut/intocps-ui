@@ -1,6 +1,5 @@
 
 import childProcess = require("child_process");
-import { IntoCpsApp } from "../IntoCpsApp"
 import { SettingKeys } from "../settings/SettingKeys";
 import { Project } from "../proj/Project"
 import { Daemon } from "../traceability/daemon"
@@ -76,6 +75,7 @@ export class trManager {
     neo4JProcess: childProcess.ChildProcess;
     daemon: Daemon;
     enabled: boolean = false;
+    private dbFilesSubfoder: string = 'db';
 
     constructor(setSettingsCallback: Function, enabled: boolean) {
         this.enabled = enabled;
@@ -140,6 +140,7 @@ export class trManager {
             return;
         }
 
+        this.daemon.setDBfileLocation(this.getDBfileLocation());
         if (!counter) {
             counter = 0;
         }
@@ -161,7 +162,9 @@ export class trManager {
                     console.log('Connection to Neo4J failed. Trying one more time.');
                 }
                 setTimeout(this.connectDaemon.bind(this, timeOut, counter, err), 2000);
-            }).bind(this, timeOut, counter));
+            }).bind(this, timeOut, counter),
+            this.reBuildDataBase.bind(this)
+        );
         } else {
             setTimeout(this.connectDaemon.bind(this, timeOut, counter, new Error("Neo4J is not running")), 2000);
         }
@@ -175,10 +178,16 @@ export class trManager {
     private setDaemonPort(setSettingsCallback: Function, port: number) {
         setSettingsCallback(SettingKeys.DAEMON_URL, "localhost:" + port);
     }
+    public getDBfileLocation(): string{
+        return this.neo4Jconf.getConfigurationLocation() + Path.sep + this.dbFilesSubfoder;
+    }
     private checkDataBase() {
         var confFileName: string = this.neo4Jconf.getConfigurationLocation() + Path.sep + "neo4j.conf";
         if (!fs.existsSync(this.neo4Jconf.getConfigurationLocation())) {
             fs.mkdir(this.neo4Jconf.getConfigurationLocation(), function (err: Error) { console.log("Unable to create database folder " + this.neo4Jconf.getConfigurationLocation()); });
+        }
+        if (!fs.existsSync(this.getDBfileLocation())) {
+            fs.mkdir(this.getDBfileLocation(), function (err: Error) { console.log("Unable to create database folder " + this.getDBfileLocation()); });
         }
         if (!fs.existsSync(confFileName)) {
             fs.writeFileSync(confFileName, fs.readFileSync(this.neo4Jconf.homeLocation + Path.sep + "conf" + Path.sep + "neo4j.conf"));
@@ -197,6 +206,26 @@ export class trManager {
             fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms");
         }
         fs.writeFileSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data" + Path.sep + "dbms" + Path.sep + "auth", "intoCPSApp:SHA-256,9780635B5BC9974CCB47A230B20DEF8069A26E2B3EC954A76E4034B9308042B0,2ADAC311B595F9670EBA0424F5620BED:", { flag: 'w' });
+    }
+    private clearDataBase(){
+        this.sendCypherQuery('MATCH (n) DETACH DELETE n');
+        return;
+    }
+    private buildDataBase(dataFolder:string){
+        fs.readdir(dataFolder, (err:any, files:any) => {
+            files.forEach((file:string) => {
+              this.loadMessageFileToDB(file);
+            });
+          });
+        return;
+    }
+    private loadMessageFileToDB(file:string){
+        fs.readFile(Path.join(this.getDBfileLocation(), file), (err:Error, data:string) => {this.daemon.recordTraceNoFile(JSON.parse(data))});
+    }
+    private reBuildDataBase(){
+        this.clearDataBase();
+        this.buildDataBase(this.getDBfileLocation());
+    return;
     }
     private startNeo4J(): childProcess.ChildProcess {
         try {

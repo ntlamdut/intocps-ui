@@ -170,8 +170,14 @@ export default class IntoCpsApp extends EventEmitter {
 
     //get the global instance
     public static getInstance(): IntoCpsApp {
+        let intoApp:IntoCpsApp = null;
         let remote = require("electron").remote;
-        return remote.getGlobal("intoCpsApp");
+        if (remote){
+            intoApp = remote.getGlobal("intoCpsApp");
+        }else{
+            intoApp = global.intoCpsApp;
+        }
+        return intoApp;
     }
 
     // change topbar title

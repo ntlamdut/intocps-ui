@@ -3,7 +3,6 @@
 import Express = require('express');
 // concurrency
 import * as Promise from 'bluebird';
-import { IntoCpsApp } from "../IntoCpsApp";
 // import * as http from "http";
 
 // xml handling
@@ -11,6 +10,7 @@ import * as xml2js from 'xml2js';
 var validateMessage:Function = require('jsonschema').validate;
 import Path = require("path");
 var fs = require('fs');
+import * as GitConn from "./git-connection"
 
 /**
  * Trace
@@ -36,6 +36,7 @@ export class Daemon {
   private jsonSchema:Object;
   private enableValidation:boolean;
   private jsonSchemaPath:string;
+  private DBfileLocation:string;
 
   constructor(){
     this.isconnected = false;
@@ -116,7 +117,7 @@ export class Daemon {
  
   }
 
-  public connect(neo4jURL:string, errorCallback:Function){
+  public connect(neo4jURL:string, errorCallback:Function, successCallback?:Function){
       if (!neo4jURL){
           neo4jURL = this.neo4jURL;
       }
@@ -132,12 +133,20 @@ export class Daemon {
 
       this.isconnected = true;
 
-      this.db.testConnection()
+      if (successCallback){
+        var coccected = this.db.testConnection()
+        .then(successCallback, (function (err: Error) {
+            errorCallback(err);
+            this.isconnected = false;
+        }).bind(this));
+      }else{
+        var coccected = this.db.testConnection()
         .catch((function (err: Error) {
             errorCallback(err);
             this.isconnected = false;
         }).bind(this));
-  }
+      };
+}
 
   // ------- functions ---------
 
@@ -368,6 +377,10 @@ export class Daemon {
   }
 
   public recordTrace(jsonObj: Object):Promise<any>{
+    return this.recordTraceNoFile(jsonObj).then((this.storeMessageFile).bind(this, jsonObj));
+  }
+
+  public recordTraceNoFile(jsonObj: Object):Promise<any>{
       var validationResult:any = this.validateJsonInput(jsonObj);
       var pr:Promise<any> = Promise.resolve(undefined);
       if (validationResult.errors.length != 0){
@@ -393,7 +406,15 @@ export class Daemon {
         pr = pr.return(obj).then((function (localObj:any){return this.parseSubject(localObj, "");}).bind(this));
       }
       return pr;
-    
+  }
+  public setDBfileLocation(location:string){
+    this.DBfileLocation = location;
+  }
+  private storeMessageFile(messageObject: Object){
+      var messageString = JSON.stringify(messageObject);
+      var fileName:string = Path.join(this.DBfileLocation, GitConn.GitCommands.getHashOfFile(messageString, true)+'.dmsg');
+      fs.writeFileSync(fileName, messageString, { flag: 'w' });
+      GitConn.GitCommands.addFile(fileName);
   }
 
   private isNode(obj: any){
