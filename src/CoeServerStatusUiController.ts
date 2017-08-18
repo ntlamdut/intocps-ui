@@ -110,6 +110,8 @@ export class CoeServerStatusUiController {
         while (this.activeDiv.hasChildNodes()) {
             this.activeDiv.removeChild(this.activeDiv.firstChild);
         }
+
+        var coe = IntoCpsApp.getInstance().getCoeProcess();
         let mLaunch = document.createElement("span");
         mLaunch.innerHTML = "Terminal args: java -jar " + coe.getCoePath() + "<br/>";
 
@@ -117,7 +119,7 @@ export class CoeServerStatusUiController {
 
         this.bind();
 
-        var coe = IntoCpsApp.getInstance().getCoeProcess();
+        
         if (!coe.isRunning()) {
             coe.start();
         }
