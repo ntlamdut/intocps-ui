@@ -141,9 +141,15 @@ export default class IntoCpsApp extends EventEmitter {
         if (this.window != undefined) {
             // Fire an event to inform all controlls on main window that the project has changed
             this.window.webContents.send(IntoCpsAppEvents.PROJECT_CHANGED);
+            this.window.reload();
             console.info("fire event: " + event);
         }
-        this.emit(IntoCpsAppEvents.PROJECT_CHANGED);
+        try {
+            this.emit(IntoCpsAppEvents.PROJECT_CHANGED);
+        } catch (error) {
+
+        }
+
     }
 
 

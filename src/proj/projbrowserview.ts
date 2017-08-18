@@ -607,6 +607,15 @@ export class BrowserController {
             else if (this.isOvertureProject(path)) {
                 result.img = "into-cps-icon-projbrowser-overture";
                 result.expanded = false;
+                let menuEntryExportFmuSourceCode = menuEntry("Export Source Code FMU", "glyphicon glyphicon-export",
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.exportOvertureFmu("source",item.path);
+                    });
+                let menuEntryExportFmuToolWrapper = menuEntry("Export Tool Wrapper FMU", "glyphicon glyphicon-export",
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.exportOvertureFmu("tool",item.path);
+                    });
+                result.menuEntries = [menuEntryExportFmuSourceCode,menuEntryExportFmuToolWrapper];
                 result.menuEntries.push(menuReveal);
             }
             else if (Path.basename(path) == Project.PATH_DSE) {
