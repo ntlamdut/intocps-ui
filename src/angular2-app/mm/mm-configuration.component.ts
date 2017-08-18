@@ -246,6 +246,10 @@ export class MmConfigurationComponent {
         this.newParameter = this.getParameters()[0];
     }
 
+    isTypeBool(type: ScalarVariableType){
+        return type === ScalarVariableType.Bool;
+    }
+
     setParameter(parameter: ScalarVariable, value: any) {
         if (parameter.type === ScalarVariableType.Real)
             value = parseFloat(value);

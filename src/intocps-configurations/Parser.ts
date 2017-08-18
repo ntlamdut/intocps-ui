@@ -17,6 +17,7 @@ export class Parser {
     protected END_TIME_TAG: string = "endTime";
     protected ALGORITHM_TAG: string = "algorithm";
     protected MULTIMODEL_CRC_TAG: string = "multimodel_crc";
+    protected LOG_VARIABLES_TAG: string ="logVariables";
 
     protected ALGORITHM_TYPE: string = "type";
     protected ALGORITHM_TYPE_FIXED: string = "fixed-step";
@@ -224,8 +225,16 @@ parseMultiModelCrc(data: any): string {
 }
 
 parseLivestream(data: any, multiModel: MultiModelConfig): Map < Instance, ScalarVariable[] > {
+    return this.parseLivestreamInternal(this.LIVESTREAM_TAG,data,multiModel);
+}
+
+parseLogVariables(data: any, multiModel: MultiModelConfig): Map < Instance, ScalarVariable[] > {
+    return this.parseLivestreamInternal(this.LOG_VARIABLES_TAG,data,multiModel);
+}
+
+parseLivestreamInternal(tag: string, data: any, multiModel: MultiModelConfig): Map < Instance, ScalarVariable[] > {
     let livestream = new Map<Instance, ScalarVariable[]>();
-    let livestreamEntry = data[this.LIVESTREAM_TAG];
+    let livestreamEntry = data[tag];
 
     if(livestreamEntry) {
         Object.keys(livestreamEntry).forEach(id => {

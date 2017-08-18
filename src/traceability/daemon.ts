@@ -40,7 +40,7 @@ export class Daemon {
   constructor(){
     this.isconnected = false;
     this.enableValidation = false;
-    this.jsonSchemaPath = Path.join(__dirname, "../../src/traceability/INTO-CPS-Traceability-Schema-V1.3.json");
+    this.jsonSchemaPath = Path.join(__dirname, "../../src/traceability/INTO-CPS-Traceability-Schema-V1.3.1.json");
 //    console.log(this.jsonSchemaPath);
     this.readJsonSchema();
 }
@@ -145,6 +145,10 @@ export class Daemon {
     resp.status(503).send("Unable to perform action. Daemon is not connected to neo4J.");
   }
 
+  public sendCypherResponse(cypherQuery:string, cypherParams:any){
+    return this.db.sendCypherResponse(cypherQuery, cypherParams);
+  }
+
   private handleCypherQuery(req: Express.Request, resp: Express.Response, next: Express.NextFunction){
     if (!this.isconnected){
       this.sendUnconnectedMessage(resp);
@@ -153,7 +157,7 @@ export class Daemon {
     console.log("Cypher request received:");
     var cypherQuery:string=req.params.query;
     var cypherParams = req.query;
-    this.db.sendCypherResponse(cypherQuery, cypherParams)
+    this.sendCypherResponse(cypherQuery, cypherParams)
     .then(function (results: any) {
       resp.status(200)
         .json({

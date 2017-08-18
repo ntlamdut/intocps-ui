@@ -11,12 +11,18 @@ let hash = require("md5-promised");
 let yauzl = require("yauzl");
 let mkdirp = require("mkdirp");
 
+export namespace DownloadAction {
+    export var UNPACK = "unpack";
+    export var LAUNCH = "launch";
+    export var SHOW = "show";
+    export var NONE = "none";
+}
+
 var previousVersionsLocalPath = "";
 
 function isUrlLocal(url: any): boolean {
     return url.startsWith("file:");
 }
-
 
 function requestProxy(options: any, callback?: any) {
 
@@ -47,6 +53,7 @@ function requestProxy(options: any, callback?: any) {
 
     return request(options, callback);
 }
+
 
 export function getSystemPlatform() {
     let arch: string = Utilities.getSystemArchitecture();
@@ -200,10 +207,10 @@ function launchToolInstaller(filePath: string) {
 }
 
 
-export function toolRequiresUnpack(tool: any) {
+export function checkToolAction(tool: any, testAction:string) {
     let platFormToUse = tool.platforms.any ? "any" : SYSTEM_PLATFORM;
     const action: string = tool.platforms[platFormToUse].action;
-    return action === "unpack";
+    return action === testAction;
 }
 
 export function unpackTool(filePath: string, targetDirectory: string) {
