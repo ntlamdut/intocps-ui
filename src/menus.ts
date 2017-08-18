@@ -195,7 +195,7 @@ export function configureIntoCpsMenu() {
         });
 
       }
-
+/*
       m.submenu.splice(m.submenu.length - 1, 0, {
         label: 'Show Co-simulation Orchestration Engine',
         accelerator: 'Alt+O',
@@ -203,7 +203,7 @@ export function configureIntoCpsMenu() {
           //openCOEServerStatusWindow();
         }
       });
-
+*/
 
       m.submenu.splice(m.submenu.length - 1, 0, {
         label: 'Show Download Manager',
