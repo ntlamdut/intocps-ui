@@ -111,8 +111,18 @@ export class CoeProcess {
         return coePath;
     }
 
+    private checkCoeAvaliablity() {
+        return fs.existsSync(this.getCoePath());
+    }
+
     //start or restart the COE process
     public start() {
+
+        if (!this.checkCoeAvaliablity()) {
+            const {dialog} = require('electron')
+            dialog.showMessageBox({ type: 'error', buttons: ["OK"], message: "Please install the: " + "'Co-simulation Orchestration Engine'" + " first." }, function (button: any) { });
+            return;
+        }
 
         if (CoeProcess.firstStart) {
             //fs.unlinkSync(this.getLogFilePath())
@@ -227,21 +237,21 @@ export class CoeProcess {
 
     // enable subscription to the coe log file if it exists, otherwise it is created
     public subscribeLog4J(callback: any) {
-        
-                if (fs.existsSync(this.getLog4JFilePath())) {
-                    fs.appendFileSync(this.getLog4JFilePath(), "");
-                    var Tail = require('tail').Tail;
-        
-                    var tail = new Tail(this.getLog4JFilePath(), { fromBeginning: true });
-                    tail.watchEvent.call(tail, "change"); // https://github.com/lucagrulla/node-tail/issues/40
-                    tail.on("line", function (data: any) {
-                        try {
-                            callback(data);
-                        } catch (e) {
-                            if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
-                                throw e;
-                        }
-                    });
+
+        if (fs.existsSync(this.getLog4JFilePath())) {
+            fs.appendFileSync(this.getLog4JFilePath(), "");
+            var Tail = require('tail').Tail;
+
+            var tail = new Tail(this.getLog4JFilePath(), { fromBeginning: true });
+            tail.watchEvent.call(tail, "change"); // https://github.com/lucagrulla/node-tail/issues/40
+            tail.on("line", function (data: any) {
+                try {
+                    callback(data);
+                } catch (e) {
+                    if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
+                        throw e;
                 }
-            }
+            });
+        }
+    }
 }
