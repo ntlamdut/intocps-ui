@@ -267,6 +267,7 @@ export class CoeProcess {
 
                     // Print only read bytes to avoid junk.
                     if (bytes > 0) {
+                        fs.close(fd);
                         let readData = buf.slice(0, bytes).toString("UTF-8");
                         callback(readData);
                     }
