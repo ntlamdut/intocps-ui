@@ -138,7 +138,7 @@ export class CoeProcess {
             this.internalKill(pid + "", null);
         } else {
             if (fs.existsSync(this.getLogFilePath())) {
-                fs.unlinkSync(this.getLogFilePath())
+               // fs.unlinkSync(this.getLogFilePath())
             }
         }
         var spawn = child_process.spawn;
@@ -261,13 +261,15 @@ export class CoeProcess {
                 var buf = new Buffer(MaxFileSize + 1000);
 
                 fs.read(fd, buf, 0, buf.length, offset, function (err, bytes) {
+                    fs.close(fd);
                     if (err) {
                         console.info(err);
+                        return;
                     }
 
                     // Print only read bytes to avoid junk.
                     if (bytes > 0) {
-                        fs.close(fd);
+                       
                         let readData = buf.slice(0, bytes).toString("UTF-8");
                         callback(readData);
                     }

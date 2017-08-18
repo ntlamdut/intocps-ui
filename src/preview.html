@@ -6,6 +6,7 @@
         left: 0px;
         position: absolute;
         overflow: scroll;
+        width: 100%;
     }
 
     .navbar-xs {
@@ -58,7 +59,7 @@
                     <li> Online: <span id="online-status" class="glyphicon glyphicon-remove"></span></li>
                     <li> Stream redirect: <span id="stream-status" class="glyphicon glyphicon-remove"></span></li>
                     <li>
-                        <button type="button" id="coe-spawn" class="btn btn-default navbar-xs navbar-btn btn-xs" onclick="coeViewController.launchCoe()">
+                        <button type="button" id="coe-btn-launch" class="btn btn-default navbar-xs navbar-btn btn-xs" onclick="coeViewController.launchCoe()">
                                 <span class="glyphicon glyphicon-link"></span>Launch
                            </button>
                     </li>
@@ -69,7 +70,7 @@
                     </li>
 
                     <li>
-                        <button type="button" class="btn btn-default navbar-xs navbar-btn btn-xs" onclick="coeViewController.stopCoe()">
+                        <button type="button" id="coe-btn-stop" class="btn btn-default navbar-xs navbar-btn btn-xs" onclick="coeViewController.stopCoe()">
                                 <span class="glyphicon glyphicon-remove"></span> Stop
                            </button>
                     </li>
@@ -119,9 +120,9 @@
             <div class="collapse navbar-collapse navbar-right" id="bs-example-navbar-collapse-2">
                 <ul class="nav navbar-nav">
                     <li>
-                        <button type="button"  class="btn btn-default navbar-xs navbar-btn btn-xs" onclick="refresh()">
-                                    <span class="glyphicon glyphicon-link"></span>Launch
-                               </button>
+                        <button type="button" class="btn btn-default navbar-xs navbar-btn btn-xs" onclick="coeLogViewController.clearOutput()">
+                            <span class="glyphicon glyphicon-link"></span>Clear
+                       </button>
                     </li>
 
                 </ul>

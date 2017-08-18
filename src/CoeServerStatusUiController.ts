@@ -46,29 +46,30 @@ export class CoeServerStatusUiController {
                 lastElement = m;
             }
         });
-
-
     }
 
     private setStatusIcons() {
         var coe = IntoCpsApp.getInstance().getCoeProcess();
-
+        var ss = <HTMLSpanElement>document.getElementById("stream-status");
+        
         if (coe.isLogRedirectActive() && coe.isRunning()) {
-
-            var sp = <HTMLSpanElement>document.getElementById("stream-status");
-            sp.className = "glyphicon glyphicon-link";
+            ss.className = "glyphicon glyphicon-link";
         } else {
-            var sp = <HTMLSpanElement>document.getElementById("stream-status");
-            sp.className = "glyphicon glyphicon-remove";
+            ss.className = "glyphicon glyphicon-remove";
         }
+
+        var os = <HTMLSpanElement>document.getElementById("online-status");
 
         if (coe.isRunning()) {
-            var sp = <HTMLSpanElement>document.getElementById("online-status");
-            sp.className = "glyphicon glyphicon-ok";
+            os.className = "glyphicon glyphicon-ok";
         } else {
-            var sp = <HTMLSpanElement>document.getElementById("online-status");
-            sp.className = "glyphicon glyphicon-remove";
+            os.className = "glyphicon glyphicon-remove";
         }
+
+        var btnLaunch = <HTMLButtonElement>document.getElementById("coe-btn-launch");
+        btnLaunch.disabled =coe.isRunning();
+        var btnStop = <HTMLButtonElement>document.getElementById("coe-btn-stop");
+        btnStop.disabled =!coe.isRunning();
     }
 
     consoleAutoScroll() {
@@ -82,7 +83,7 @@ export class CoeServerStatusUiController {
     }
 
     private truncateVisibleLog() {
-        let maxLines = 1000
+        let maxLines = 2000
         if (this.outputDiv.childElementCount > maxLines)
             while (this.outputDiv.childElementCount > maxLines && this.outputDiv.hasChildNodes()) {
                 this.outputDiv.removeChild(this.outputDiv.firstChild);
