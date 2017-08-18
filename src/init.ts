@@ -189,6 +189,9 @@ menuHandler.openTraceability = () => {
 menuHandler.openFMUTraceability = () => {
     openView(null, view => new TrFMUViewController(view));
 };
+menuHandler.openFMUTraceRequirements = function(path:string){
+    openView(null, view => new TrFMUViewController(view, path));
+};
 
 menuHandler.openDseView = (path: string) => {
     openView(null, view => new DseViewController(view, path));

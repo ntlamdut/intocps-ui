@@ -399,6 +399,10 @@ export class BrowserController {
                     self.menuHandler.openFmu(item.path);
                 };
                 result.menuEntries.push(menuReveal);
+                let menuEntryTraceFMU = menuEntry("Trace Requirements", "glyphicon glyphicon-asterisk", function (item: ProjectBrowserItem) {
+                    self.menuHandler.openFMUTraceRequirements(item.path);
+                });
+                result.menuEntries = [menuReveal, menuEntryDelete, menuEntryTraceFMU];
             }
             else if (path.endsWith(".sysml.json")) {
                 result.img = "into-cps-icon-projbrowser-modelio";

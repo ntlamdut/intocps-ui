@@ -1,4 +1,5 @@
 import {OnInit, Component, Input, NgZone} from "@angular/core";
+import * as Promise from 'bluebird';
 //import {MultiModelConfig} from "../../intocps-configurations/MultiModelConfig";
 //import {Serializer} from "../../intocps-configurations/Parser";
 import IntoCpsApp from "../../IntoCpsApp";
@@ -38,7 +39,7 @@ export class TrOverviewComponent{
         this.intoApp = IntoCpsApp.getInstance();
     }
     @Input()
-    set findSourcesFor(findSourcesFor:subObject) {
+        set findSourcesFor(findSourcesFor:subObject) {
         this._findSourcesFor = findSourcesFor;
         if (findSourcesFor.listSources){
             findSourcesFor.listSources = false;
@@ -60,10 +61,9 @@ export class TrOverviewComponent{
     }
 
 
-    protected updatemainObjects(){
+    protected updatemainObjects():Promise<any>{
         this.resultsAvailible = false;
-        this.mainObjecList = Array<subObject>();
-        this.intoApp.trmanager.sendCypherQuery(this.findAllMainObjects)
+        return this.intoApp.trmanager.sendCypherQuery(this.findAllMainObjects)
             .then(this.parsemainObjects.bind(this));
     }
 
@@ -79,6 +79,7 @@ export class TrOverviewComponent{
     }
 
     private parsemainObjects(results: any[]){
+        this.mainObjecList = Array<subObject>();
         for(var result in results){
             this.mainObjecList.push(new subObject(results[result], this.mainObjectPropertyID1, this.mainObjectPropertyID2, this.mainObjectPropertyID3));
         }
@@ -94,7 +95,7 @@ export class TrOverviewComponent{
 
 }
 
-class subObject {
+export class subObject {
     public listSources:Boolean;
     public subObjectPropertyID1:string;
     public subObjectPropertyID2:string;

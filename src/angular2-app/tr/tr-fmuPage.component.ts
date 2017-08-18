@@ -1,4 +1,4 @@
-import {Component} from "@angular/core"; // , Input
+import {Component , Input} from "@angular/core";
 import {TrFUMsComponent} from "./tr-fmus.component";
 import IntoCpsApp from "../../IntoCpsApp";
 import {PanelComponent} from "../shared/panel.component";
@@ -13,6 +13,6 @@ import {PanelComponent} from "../shared/panel.component";
     templateUrl: "./angular2-app/tr/trFMU-page.component.html",
 })
 export class TrFMUPageComponent {
-//    @Input()
-//    path:string;
+    @Input()
+    path:string;
 }

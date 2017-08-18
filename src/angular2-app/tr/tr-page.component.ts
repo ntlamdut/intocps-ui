@@ -1,4 +1,4 @@
-import {Component} from "@angular/core"; // , Input
+import {Component , Input} from "@angular/core";
 import {TrResultComponent} from "./tr-result.component";
 import IntoCpsApp from "../../IntoCpsApp";
 import {PanelComponent} from "../shared/panel.component";
@@ -13,6 +13,6 @@ import {PanelComponent} from "../shared/panel.component";
     templateUrl: "./angular2-app/tr/tr-page.component.html",
 })
 export class TrPageComponent {
-//    @Input()
-//    path:string;
+    @Input()
+    path?:string;
 }

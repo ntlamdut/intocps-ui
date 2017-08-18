@@ -86,8 +86,9 @@ export class AppComponent implements OnInit {
         });
     }
 
-    openFMUTraceability():void {
+    openFMUTraceability(path: string):void {
         this.zone.run(() => {
+            this.path = path;
             this.page = "trFMU";
         });
     }

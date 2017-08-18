@@ -29,14 +29,17 @@ export class TrViewController extends ViewController {
     }
 }
 export class TrFMUViewController extends ViewController {
-    constructor(private view: HTMLDivElement) {
+    public path:string;
+    constructor(private view: HTMLDivElement, path?:string) {
         super(view);
+        if (path)
+            this.path = path;
     }
 
     initialize() {
         $(this.view).css('height',0);
         IntoCpsApp.setTopName('Trace Requirements');
-        window.ng2app.openFMUTraceability();
+        window.ng2app.openFMUTraceability(this.path);
     }
 
     deInitialize() {
