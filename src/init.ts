@@ -17,10 +17,10 @@ import { bootstrap } from '@angular/platform-browser-dynamic';
 import { AppComponent } from './angular2-app/app.component';
 import * as fs from 'fs';
 import * as Path from 'path';
-import { DseConfiguration } from "./intocps-configurations/dse-configuration"
+import { DseConfiguration } from "./intocps-configurations/dse-configuration";
 import * as ShowdownHelper  from "./showdownHelper";
-
-import {TraceMessager} from "./traceability/trace-messenger"
+import {Overture} from "./overture";
+import {TraceMessager} from "./traceability/trace-messenger";
 
 interface MyWindow extends Window {
     ng2app: AppComponent;
@@ -418,6 +418,8 @@ menuHandler.showTraceView = () => {
     renameHandler.openWindow();
     menuHandler.openHTMLInMainView("http://localhost:7474/browser/", "Traceability Graph View");
 };
+
+menuHandler.exportOvertureFmu = Overture.exportOvertureFmu;
 
 
 Menus.configureIntoCpsMenu();
