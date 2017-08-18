@@ -20,7 +20,7 @@ export class TraceMessager {
     }
 
     private static finishTrace(filePath: Array<string>, object: Object) {
-        console.log("trace: " + JSON.stringify(object));
+        // console.log("trace: " + JSON.stringify(object));
         this.appInstance.recordTrace(object);
         filePath.forEach(fp => {GitConn.GitCommands.addFile(fp);/*GitConn.GitCommands.commitFile(fp)*/});
     }
@@ -35,7 +35,7 @@ export class TraceMessager {
             var ea = new TraceProtocol.EntityAgent();
             var efDerived = new TraceProtocol.EntityFile();
 
-            rootMessage.activity = activity;
+            rootMessage.activities.push(activity);
             rootMessage.entities.push(ef);
             rootMessage.agents.push(ea);
 
@@ -58,8 +58,7 @@ export class TraceMessager {
                 type: "architectureConfiguration",
                 wasGeneratedBy: activity,
                 wasAttributedTo: ea,
-                wasDerivedFrom: efDerived,
-                comment: "Derived multi model configuration from SysML configuration"
+                wasDerivedFrom: [efDerived]
             });
             let serializedMessage = rootMessage.serialize();
             this.finishTrace([mmPath], serializedMessage);
@@ -80,17 +79,19 @@ export class TraceMessager {
             var oldMm = new TraceProtocol.EntityFile();
 
             mmConfig.fmus.forEach((fmu: Fmu) => {
-                let efFmu = new TraceProtocol.EntityFile()
-                efFmu.setPropertiesCalcAbout({
-                    hash: GitConn.GitCommands.getHashOfFile(fmu.path),
+                if (fmu.path) {
+                    let efFmu = new TraceProtocol.EntityFile()
+                    efFmu.setPropertiesCalcAbout({
+                        hash: GitConn.GitCommands.getHashOfFile(fmu.path),
                     type: "fmu",
-                    path: this.getUriRelativeToProjectRoot(fmu.path)
-                });
-                efFmu.calcAbout();
-                activity.used.push(efFmu);
+                        path: this.getUriRelativeToProjectRoot(fmu.path)
+                    });
+                    efFmu.calcAbout();
+                    activity.used.push(efFmu);
+                }
             });
 
-            rootMessage.activity = activity;
+            rootMessage.activities.push(activity);
             rootMessage.entities.push(ef);
             rootMessage.agents.push(ea);
 
@@ -112,8 +113,7 @@ export class TraceMessager {
                 type: "architectureConfiguration",
                 wasGeneratedBy: activity,
                 wasAttributedTo: ea,
-                wasDerivedFrom: oldMm,
-                comment: "Edited multi model configuration"
+                wasDerivedFrom: [oldMm]
             });
 
             let serializedMessage = rootMessage.serialize();
@@ -135,7 +135,7 @@ export class TraceMessager {
             var ea = new TraceProtocol.EntityAgent();
             var efUsed = new TraceProtocol.EntityFile();
 
-            rootMessage.activity = activity;
+            rootMessage.activities.push(activity);
             rootMessage.entities.push(ef);
             rootMessage.agents.push(ea);
 
@@ -158,7 +158,7 @@ export class TraceMessager {
                 type: "simulationConfiguration",
                 wasGeneratedBy: activity,
                 wasAttributedTo: ea,
-                comment: "Derived multi model configuration from SysML configuration"
+                commit: "Derived multi model configuration from SysML configuration"
             });
             let serializedMessage = rootMessage.serialize();
             this.finishTrace([coePath], serializedMessage);
@@ -179,7 +179,7 @@ export class TraceMessager {
             let usedMM = new TraceProtocol.EntityFile();
 
 
-            rootMessage.activity = activity;
+            rootMessage.activities.push(activity);
             rootMessage.agents.push(ea);
 
             activity.type = "simulation"

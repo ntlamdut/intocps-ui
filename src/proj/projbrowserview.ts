@@ -294,6 +294,12 @@ export class BrowserController {
             self.menuHandler.rename(item.path);
         });
 
+        let menuReveal = menuEntry("Show In Folder", "glyphicon glyphicon-pencil", function (item: ProjectBrowserItem) {
+            console.info("Reveal path: " + item.path);
+            const { shell } = require('electron');
+            shell.showItemInFolder(item.path);
+        });
+
         // Default menu entries
         result.menuEntries = [menuEntryDelete];
 
@@ -392,6 +398,7 @@ export class BrowserController {
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openFmu(item.path);
                 };
+                result.menuEntries.push(menuReveal);
             }
             else if (path.endsWith(".sysml.json")) {
                 result.img = "into-cps-icon-projbrowser-modelio";
@@ -427,6 +434,7 @@ export class BrowserController {
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openWithSystemEditor(item.path);
                 };
+                result.menuEntries.push(menuReveal);
             }
             else if (path.endsWith(".mo")) {
                 result.img = "into-cps-icon-projbrowser-openmodelica";
@@ -434,6 +442,7 @@ export class BrowserController {
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openWithSystemEditor(item.path);
                 };
+                result.menuEntries.push(menuReveal);
             }
             else if (path.endsWith(".csv")) {
                 if (isResultValid(path)) {
@@ -446,6 +455,7 @@ export class BrowserController {
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openWithSystemEditor(item.path);
                 };
+                result.menuEntries.push(menuReveal);
             } else {
                 return null;
             }
@@ -531,13 +541,8 @@ export class BrowserController {
                     }
                 }
                 else {
-                    if (pathComponents.length == 3) {
-                        if (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures") {
+                    if (pathComponents.length == 3 && (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
                             result.img = "into-cps-icon-rtt-tla";
-                        } else {
-                            // Hide other directories
-                            return null;
-                        }
                     }
                     else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
                         result.img = "into-cps-icon-rtt-mbt-test-procedure";
@@ -592,7 +597,7 @@ export class BrowserController {
                     }
                 }
             }
-            else if (pathComponents[0] == Project.PATH_MULTI_MODELS) {
+            else if (pathComponents.length==1 && pathComponents[0] == Project.PATH_MULTI_MODELS) {
                 let menuEntryCreate = menuEntry("New Multi-Model", "glyphicon glyphicon-asterisk",
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.createMultiModelPlain();
@@ -611,6 +616,7 @@ export class BrowserController {
                         self.menuHandler.exportOvertureFmu("tool",item.path);
                     });
                 result.menuEntries = [menuEntryExportFmuSourceCode,menuEntryExportFmuToolWrapper];
+                result.menuEntries.push(menuReveal);
             }
             else if (Path.basename(path) == Project.PATH_DSE) {
                 let menuEntryCreate = menuEntry("Create Design Space Exploration Config", "glyphicon glyphicon-asterisk",
@@ -623,7 +629,19 @@ export class BrowserController {
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.showTraceView();
                     });
-                result.menuEntries = [menuGraph];
+                let menuOpenTr = menuEntry("Trace Results", "glyphicon glyphicon-asterisk",
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.openTraceability();
+                    });
+                let menuOpenTrFMU = menuEntry("Trace Requirements", "glyphicon glyphicon-asterisk",
+                    function (item: ProjectBrowserItem) {
+                        self.menuHandler.openFMUTraceability();
+                    });
+                result.menuEntries = [menuGraph, menuOpenTr, menuOpenTrFMU];
+                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                    self.menuHandler.openTraceability();
+
+                };
             } else if (Path.basename(path) == "downloads") {
                 // skip the project download folder
                 return;
@@ -631,6 +649,7 @@ export class BrowserController {
             else if (this.isResultFolder(path)) {
                 result.img = 'icon-folder';
                 result.menuEntries = [menuEntryDelete];
+                result.menuEntries.push(menuReveal);
             }
         }
         if (result != null) {

@@ -6,7 +6,7 @@ import {
     VariableStepAlgorithm, ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint,
     VariableStepConstraint
 } from "../../intocps-configurations/CoSimulationConfig";
-import { ScalarVariable, CausalityType, Instance, InstanceScalarPair } from "./models/Fmu";
+import { ScalarVariable, CausalityType, Instance, InstanceScalarPair, ScalarVariableType } from "./models/Fmu";
 import { ZeroCrossingComponent } from "./inputs/zero-crossing.component";
 import { BoundedDifferenceComponent } from "./inputs/bounded-difference.component";
 import { SamplingRateComponent } from "./inputs/sampling-rate.component";
@@ -29,6 +29,7 @@ import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
 })
 export class CoeConfigurationComponent {
     private _path: string;
+    
 
     @Input()
     set path(path: string) {
@@ -50,6 +51,8 @@ export class CoeConfigurationComponent {
     outputPorts: Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
     editing: boolean = false;
+    liveStreamSearchName: string = '';
+    logVariablesSearchName: string = '';
     parseError: string = null;
     warnings: WarningMessage[] = [];
     loglevels: string[] = ["Not set", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
@@ -176,6 +179,15 @@ export class CoeConfigurationComponent {
         return scalarVariables.filter(variable => (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local));
     }
 
+    restrictToCheckedLiveStream(instance: Instance, scalarVariables: Array<ScalarVariable>){
+        return scalarVariables.filter(variable => this.isLivestreamChecked(instance,variable));
+    }
+
+    
+    restrictToCheckedLogVariables(instance: Instance, scalarVariables: Array<ScalarVariable>){
+        return scalarVariables.filter(variable => this.isLogVariableChecked(instance,variable));
+    }
+
     addConstraint() {
         if (!this.newConstraint) return;
 
@@ -216,6 +228,24 @@ export class CoeConfigurationComponent {
         return variables.indexOf(output) !== -1;
     }
 
+    
+    isLogVariableChecked(instance: Instance, output: ScalarVariable) {
+        let variables = this.config.logVariables.get(instance);
+
+        if (!variables) return false;
+
+        return variables.indexOf(output) !== -1;
+    }
+
+    isLocal(variable: ScalarVariable):boolean
+    {
+        return variable.causality === CausalityType.Local
+    }
+
+    getScalarVariableTypeName(type: ScalarVariableType){
+        return ScalarVariableType[type];
+    }
+
     onLivestreamChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
         let variables = this.config.livestream.get(instance);
 
@@ -232,5 +262,31 @@ export class CoeConfigurationComponent {
             if (variables.length == 0)
                 this.config.livestream.delete(instance);
         }
+    }
+
+    
+    onLogVariableChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
+        let variables = this.config.logVariables.get(instance);
+
+        if (!variables) {
+            variables = [];
+            this.config.logVariables.set(instance, variables);
+        }
+
+        if (enabled)
+            variables.push(output);
+        else {
+            variables.splice(variables.indexOf(output), 1);
+
+            if (variables.length == 0)
+                this.config.logVariables.delete(instance);
+        }
+    }
+    
+    onLiveStreamKey(event : any){
+        this.liveStreamSearchName = event.target.value;
+    }
+    onLogVariablesKey(event : any){
+        this.logVariablesSearchName = event.target.value;
     }
 }
