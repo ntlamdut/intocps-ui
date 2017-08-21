@@ -90,8 +90,8 @@ export class trManager {
         return this.daemon.port;
     }
 
-    public sendCypherQuery(query:string, params?:any){
-        if (!params){
+    public sendCypherQuery(query: string, params?: any) {
+        if (!params) {
             params = {};
         }
         return this.daemon.sendCypherResponse(query, params);
@@ -163,8 +163,8 @@ export class trManager {
                 }
                 setTimeout(this.connectDaemon.bind(this, timeOut, counter, err), 2000);
             }).bind(this, timeOut, counter),
-            this.reBuildDataBase.bind(this)
-        );
+                this.reBuildDataBase.bind(this)
+            );
         } else {
             setTimeout(this.connectDaemon.bind(this, timeOut, counter, new Error("Neo4J is not running")), 2000);
         }
@@ -178,65 +178,87 @@ export class trManager {
     private setDaemonPort(setSettingsCallback: Function, port: number) {
         setSettingsCallback(SettingKeys.DAEMON_URL, "localhost:" + port);
     }
-    public getDBfileLocation(): string{
+    public getDBfileLocation(): string {
         return this.neo4Jconf.getConfigurationLocation() + Path.sep + this.dbFilesSubfoder;
     }
+
+    private removeEmptyLinesAndComments(data: string) {
+        var lines = "";
+        data.split("\n").forEach(line => {
+            if (line.trim().length > 0 && !line.startsWith("#"))
+                lines += line + "\n";
+
+        });
+        return lines;
+    }
+
+    private toNixPathFormat(path: string) {
+        return path.split(Path.sep).join("/");
+    }
     private checkDataBase() {
-        var confFileName: string = Path.join(this.neo4Jconf.getConfigurationLocation() , "neo4j.conf");
+        var confFileName: string = Path.join(this.neo4Jconf.getConfigurationLocation(), "neo4j.conf");
         if (!fs.existsSync(this.neo4Jconf.getConfigurationLocation())) {
             fs.mkdir(this.neo4Jconf.getConfigurationLocation(), function (err: Error) { console.log("Unable to create database folder " + this.neo4Jconf.getConfigurationLocation()); });
         }
         if (!fs.existsSync(this.getDBfileLocation())) {
             fs.mkdir(this.getDBfileLocation(), function (err: Error) { console.log("Unable to create database folder " + this.getDBfileLocation()); });
         }
-        if (!fs.existsSync(confFileName)) {
-            fs.writeFileSync(confFileName, fs.readFileSync(Path.join(this.neo4Jconf.homeLocation , "conf", "neo4j.conf")));
-        }
+        /* if (!fs.existsSync(confFileName)) {
+             fs.writeFileSync(confFileName, fs.readFileSync(Path.join(this.neo4Jconf.homeLocation, "conf", "neo4j.conf")));
+         }*/
         if (fs.existsSync(confFileName)) {
-            var fileContent: string = fs.readFileSync(confFileName, "UTF-8");
+            let neo4jDefaultConfig = Path.join(this.neo4Jconf.homeLocation, "conf", "neo4j.conf");
+
+            var fileContent: string = fs.readFileSync(neo4jDefaultConfig, "UTF-8");
+
+            //remove all text from the config string
+            fileContent = this.removeEmptyLinesAndComments(fileContent)
+
             var dblocation: string = Path.join(this.neo4Jconf.getConfigurationLocation(), "data");
 
-            dblocation = dblocation.split(Path.sep).join("/");
-            fileContent = fileContent.replace(RegExp(".*dbms\.directories\.data=.*"), "dbms.directories.data=" + dblocation);
-            fileContent = fileContent.replace(/#dbms.connector.http.listen_address=:7474/g,'dbms.connector.http.listen_address=:7474');
-            fileContent = fileContent.replace(/#dbms.directories.logs=/g,'dbms.directories.logs='+this.neo4Jconf.getConfigurationLocation()+' \n#');
-            fileContent = fileContent.replace(/#dbms.logs.http.enabled=true/g,'dbms.logs.http.enabled=true');
 
-            fs.writeFile(Path.join(this.neo4Jconf.getConfigurationLocation(),".gitignore"),"data\n*.log\n*.conf\n");
+            fileContent += "dbms.directories.data=" + this.toNixPathFormat(dblocation) + '\n';
+            fileContent += 'dbms.connector.http.listen_address=:' + this.neo4Jconf.port + '\n';
+            fileContent += 'dbms.directories.logs=' + this.toNixPathFormat(this.neo4Jconf.getConfigurationLocation()) + ' \n';
+            fileContent += 'dbms.logs.http.enabled=true' + '\n';
 
-            
+            fs.writeFile(Path.join(this.neo4Jconf.getConfigurationLocation(), ".gitignore"), "data\n*.log\n*.conf\n");
+
             fs.writeFileSync(confFileName, fileContent);
         }
         if (!fs.existsSync(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data")) {
             fs.mkdir(this.neo4Jconf.getConfigurationLocation() + Path.sep + "data");
         }
-        if (!fs.existsSync(Path.join(this.neo4Jconf.getConfigurationLocation() , "data", "dbms"))) {
-            fs.mkdir(Path.join(this.neo4Jconf.getConfigurationLocation() ,"data" , "dbms"));
+        if (!fs.existsSync(Path.join(this.neo4Jconf.getConfigurationLocation(), "data", "dbms"))) {
+            fs.mkdir(Path.join(this.neo4Jconf.getConfigurationLocation(), "data", "dbms"));
         }
-        fs.writeFileSync(Path.join(this.neo4Jconf.getConfigurationLocation() , "data" , "dbms" , "auth"), "intoCPSApp:SHA-256,9780635B5BC9974CCB47A230B20DEF8069A26E2B3EC954A76E4034B9308042B0,2ADAC311B595F9670EBA0424F5620BED:", { flag: 'w' });
+        fs.writeFileSync(Path.join(this.neo4Jconf.getConfigurationLocation(), "data", "dbms", "auth"), "intoCPSApp:SHA-256,9780635B5BC9974CCB47A230B20DEF8069A26E2B3EC954A76E4034B9308042B0,2ADAC311B595F9670EBA0424F5620BED:", { flag: 'w' });
     }
-    private clearDataBase(){
+    private clearDataBase() {
         this.sendCypherQuery('MATCH (n) DETACH DELETE n');
         return;
     }
-    private buildDataBase(dataFolder:string){
-        fs.readdir(dataFolder, (err:any, files:any) => {
-            files.forEach((file:string) => {
-                if(!file.startsWith(".")&& file.endsWith(".dmsg"))
-                    
-              this.loadMessageFileToDB(file);
+    private buildDataBase(dataFolder: string) {
+        fs.readdir(dataFolder, (err: any, files: any) => {
+            files.forEach((file: string) => {
+                if (!file.startsWith(".") && file.endsWith(".dmsg"))
+
+                    this.loadMessageFileToDB(file);
             });
-          });
+        });
         return;
     }
-    private loadMessageFileToDB(file:string){
-        console.info("Tracebility processing: "+file);
-        fs.readFile(Path.join(this.getDBfileLocation(),file),'utf8', (err:Error, data:string) => {this.daemon.recordTraceNoFile(JSON.parse(data))});
+    private loadMessageFileToDB(file: string) {
+
+        fs.readFile(Path.join(this.getDBfileLocation(), file), 'utf8', (err: Error, data: string) => {
+            console.info("Tracebility processing: " + file);
+            this.daemon.recordTraceNoFile(JSON.parse(data))
+        });
     }
-    private reBuildDataBase(){
+    private reBuildDataBase() {
         this.clearDataBase();
         this.buildDataBase(this.getDBfileLocation());
-    return;
+        return;
     }
     private startNeo4J(): childProcess.ChildProcess {
         try {
@@ -266,11 +288,11 @@ export class trManager {
             var localNeo4JProcess: childProcess.ChildProcess = spawn(argv[0], argv.splice(1), neo4JExecOptions);
 
             localNeo4JProcess.stdout.on('data', function (data: any) {
-                 console.info('neo4j (stdout): ' + data);  
+                console.info('neo4j (stdout): ' + data);
             });
             localNeo4JProcess.stderr.on('data', function (data: any) {
-                console.error('neo4j (stdout): ' + data);  
-           });
+                console.error('neo4j (stdout): ' + data);
+            });
         } catch (err) {
             this.errorOnNeo4JStart(err);
             return undefined;
