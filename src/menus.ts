@@ -1,5 +1,4 @@
 const electron = require('electron');
-//const Tray = electron.remote.Tray;
 const Menu = electron.remote.Menu;
 const fs = require('fs');
 const path = require('path');
@@ -38,45 +37,14 @@ let openSettingsHandler = new DialogHandler("settings/settings.html", 500, 600, 
 createProjectHandler.install();
 openProjectHandler.install();
 openDownloadManagerHandler.install();
-//let appIcon : Electron.Tray = null;
-//let coeServerStatusHandlerWindow: Electron.BrowserWindow = null;
+
 export function openCOEServerStatusWindow(data: string = "", show:boolean=true) {
   let coe = intoCpsApp.getCoeProcess();
   if(!coe.isRunning())
     intoCpsApp.getCoeProcess().start();
-  /*if (coeServerStatusHandlerWindow) {
-      coeServerStatusHandlerWindow.show();
-  }
-  else {
-    coeServerStatusHandlerWindow = coeServerStatusHandler.openWindow(data, show);
-  }*/
 }
 
 export function configureIntoCpsMenu() {
-/*
-  let iconPath = path.join(__dirname + "/resources/into-cps/tray_icon.png");
-  appIcon = new Tray(iconPath);
-  appIcon.setToolTip('INTO-CPS Co-Simulation Orchestration Engine');
-  var trayIconContextMenu = electron.remote.Menu.buildFromTemplate([
-    {
-      label: 'Show COE',
-      click: function () {
-        openCOEServerStatusWindow();
-      }
-    },
-    {
-      label: 'Shut down COE',
-      click: function () {
-        if(coeServerStatusHandlerWindow)
-        {
-          coeServerStatusHandlerWindow.webContents.send("kill");
-          coeServerStatusHandlerWindow = null;
-        }
-      }
-    }
-  ]);
-  appIcon.setContextMenu(trayIconContextMenu);
-  */
 
   const {remote} = require('electron');
   const app = remote.app
@@ -195,15 +163,6 @@ export function configureIntoCpsMenu() {
         });
 
       }
-/*
-      m.submenu.splice(m.submenu.length - 1, 0, {
-        label: 'Show Co-simulation Orchestration Engine',
-        accelerator: 'Alt+O',
-        click: function (item: any, focusedWindow: any) {
-          //openCOEServerStatusWindow();
-        }
-      });
-*/
 
       m.submenu.splice(m.submenu.length - 1, 0, {
         label: 'Show Download Manager',

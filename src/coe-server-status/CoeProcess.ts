@@ -8,7 +8,6 @@ import * as child_process from 'child_process'
 
 
 export class CoeProcess {
-    //private globalChild: any;
     private settings: ISettingsValues
     private static firstStart = true;
     private process: any = null;;
@@ -138,7 +137,7 @@ export class CoeProcess {
             this.internalKill(pid + "", null);
         } else {
             if (fs.existsSync(this.getLogFilePath())) {
-               // fs.unlinkSync(this.getLogFilePath())
+                // fs.unlinkSync(this.getLogFilePath())
             }
         }
         var spawn = child_process.spawn;
@@ -245,39 +244,6 @@ export class CoeProcess {
         }
     }
 
-    private partialFileRead(size: number, path: string, callback: any) {
-        fs.stat(path, (err, stats) => {
-            var offset = 0;
-            let MaxFileSize = size;
-            if (stats.size > MaxFileSize) {
-                offset = stats.size - MaxFileSize;
-            }
-
-            fs.open(path, 'r+', function (err, fd) {
-                if (err) {
-                    return console.error(err);
-                }
-
-                var buf = new Buffer(MaxFileSize + 1000);
-
-                fs.read(fd, buf, 0, buf.length, offset, function (err, bytes) {
-                    fs.close(fd);
-                    if (err) {
-                        console.info(err);
-                        return;
-                    }
-
-                    // Print only read bytes to avoid junk.
-                    if (bytes > 0) {
-                       
-                        let readData = buf.slice(0, bytes).toString("UTF-8");
-                        callback(readData);
-                    }
-                });
-            });
-        });
-    }
-
     // enable subscription to the coe log file if it exists, otherwise it is created
     public subscribeLog4J(callback: any) {
 
@@ -304,69 +270,40 @@ export class CoeProcess {
                     }
                 });
             })
-
-            /*
-                        fs.stat(this.getLog4JFilePath(), (err, stats) => {
-                            var offset = 0;
-                            let MaxFileSize = 1024;//2e+6; 
-                            if (stats.size > MaxFileSize) {
-                                offset = stats.size - MaxFileSize;
-                            }
-                            console.info("size: " + stats.size);
-            
-            
-            
-                            fs.open(this.getLog4JFilePath(), 'r+', function (err, fd) {
-                                if (err) {
-                                    return console.error(err);
-                                }
-            
-                                var buf = new Buffer(MaxFileSize);
-            
-                                console.log("File opened successfully!");
-                                console.log("Going to read the file");
-                                fs.read(fd, buf, 0, buf.length, 0, function (err, bytes) {
-                                    if (err) {
-                                        console.log(err);
-                                    }
-                                    console.log(bytes + " bytes read");
-            
-                                    // Print only read bytes to avoid junk.
-                                    if (bytes > 0) {
-                                        console.log(buf.slice(0, bytes).toString());
-                                    }
-                                });
-                            });
-                        })
-            
-            
-            
-                        fs.readFile(this.getLog4JFilePath(), (err, d) => {
-            
-                            var index = 0;
-                            for (var i = 0; i < 10; i++) {
-                                index = d.lastIndexOf("\n", index - 2);
-                            }
-            
-                            console.info("truncating to line: " + index + " full length is: " + d.length)
-                            var ds = d.toString();
-                            if (index > 0)
-                                ds = ds.substr(index);
-            
-                            console.info("ds length: " + ds.length)
-                            callback(ds);
-            
-                            var tail = new Tail(this.getLog4JFilePath());
-                            tail.on("line", function (data: any) {
-                                try {
-                                    callback(data);
-                                } catch (e) {
-                                    if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
-                                        throw e;
-                                }
-                            });
-                        });
-                    */
         }
+    }
+
+    // utility method to load the tail of a large file
+    private partialFileRead(size: number, path: string, callback: any) {
+        fs.stat(path, (err, stats) => {
+            var offset = 0;
+            let MaxFileSize = size;
+            if (stats.size > MaxFileSize) {
+                offset = stats.size - MaxFileSize;
+            }
+
+            fs.open(path, 'r+', function (err, fd) {
+                if (err) {
+                    return console.error(err);
+                }
+
+                var buf = new Buffer(MaxFileSize + 1000);
+
+                fs.read(fd, buf, 0, buf.length, offset, function (err, bytes) {
+                    fs.close(fd);
+                    if (err) {
+                        console.info(err);
+                        return;
+                    }
+
+                    // Print only read bytes to avoid junk.
+                    if (bytes > 0) {
+
+                        let readData = buf.slice(0, bytes).toString("UTF-8");
+                        callback(readData);
+                    }
+                });
+            });
+        });
     }
 }
