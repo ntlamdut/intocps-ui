@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "INTO-CPS Traceability JSON Schema Version 1.1",
+  "description": "INTO-CPS Traceability JSON Schema Version 1.2",
+  "version":"1.2",
   "type": "object",
   "properties": {
     "rdf:RDF": {
@@ -25,7 +26,7 @@
         "messageFormatVersion": {
           "type": "string",
           "enum": [
-            "1.1"
+            "1.2"
           ],
           "default": "1.1"
         },
@@ -58,7 +59,16 @@
           }
         },
         "prov:Activity": {
-          "$ref": "#/definitions/Activity"
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "oneOf": [
+              {
+                  "$ref": "#/definitions/Activity"
+              }
+            ]
+          }
         }
       },
       "required": [
@@ -94,7 +104,14 @@
         "simulation",
         "simulationConfigurationCreation",
         "simulationModelling",
-        "testCreation"
+        "testCreation",
+		"defineTestModel",
+		"defineTestObjectives",
+		"runTest",
+		"defineMCModel",
+		"defineCTAbstraction",
+		"defineMCQuery",
+		"runMCQuery"
       ]
     },
     "EntityType": {
@@ -141,7 +158,8 @@
         "CoE",
         "INTO-CPS App",
         "Simulation Tool",
-        "Model Checking Tool"
+        "Model Checking Tool",
+		"Test Automation Tool"
       ]
     },
     "Activity": {
@@ -209,7 +227,6 @@
         "rdf:about",
         "type",
         "time",
-        "guid",
         "prov:wasAssociatedWith",
         "prov:used"
       ],
@@ -217,12 +234,12 @@
     },
     "URIEntity": {
       "type": "string",
-      "pattern": "^Entity\\.(\\w)+:([a-zA-Z0-9/.-_])+(:([a-zA-Z0-9.-_])+)?#([0-9]+)",
+      "pattern": "^Entity\\.(\\w)+:([a-zA-Z0-9\\\/.\\-_])+(:([a-zA-Z0-9.-_])+)?#[0-9a-f]{5,40}",
       "additionalProperties": false
     },
     "URITool": {
       "type": "string",
-      "pattern": "^Entity\\.softwareTool:(\\w)+:(([0-9])+)((\\.[0-9]+))?",
+      "pattern": "^Entity\\.softwareTool:([\\w\\W])+:[\\w\\W]*",
       "additionalProperties": false
     },
     "URIActivity": {
@@ -427,7 +444,7 @@
         "hash",
         "type"
       ],
-      "additionalProperties": false
+      "additionalProperties": true
     }
   }
 }

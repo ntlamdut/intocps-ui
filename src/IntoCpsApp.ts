@@ -15,7 +15,11 @@ import {Utilities} from "./utilities"
 // constants
 let topBarNameId: string = "activeTabTitle";
 
+const globalAny:any = global;
 export default class IntoCpsApp extends EventEmitter {
+
+
+    
     app: Electron.App;
     platform: String
     window: Electron.BrowserWindow;
@@ -173,7 +177,6 @@ export default class IntoCpsApp extends EventEmitter {
         return project;
     }
 
-
     //get the global instance
     public static getInstance(): IntoCpsApp {
         let intoApp:IntoCpsApp = null;
@@ -181,7 +184,7 @@ export default class IntoCpsApp extends EventEmitter {
         if (remote){
             intoApp = remote.getGlobal("intoCpsApp");
         }else{
-            intoApp = global.intoCpsApp;
+            intoApp = globalAny.intoCpsApp;
         }
         return intoApp;
     }
