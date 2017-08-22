@@ -174,15 +174,15 @@ export class Daemon {
             let connectRetry = () => {
                 counter--;
                 this.db.testConnection().then(() => {
-                    console.info("CONNECTED TO NEO€J")
+                    console.info("Connected to NEO4J")
                     this.isconnected = true;
                     resolve(this.isconnected );
                 }).catch((e: any) => {
                     if (counter <= 0) {
-                        console.info("NOT connected to NEO4J aborting")
+                        console.info("NOT connected to NEO4J aborting...")
                         reject(e);
                     } else {
-                        console.info("NOT connected yet retrying: " + counter + " / " + retries);
+                        console.info("NOT connected yet retrying: " + retries + " / " + counter);
                         setTimeout(connectRetry, 1000);
                     }
                 })
