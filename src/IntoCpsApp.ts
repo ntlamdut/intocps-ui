@@ -9,7 +9,7 @@ import {Project} from "./proj/Project";
 import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
 import {SettingKeys} from "./settings//SettingKeys";
 import {EventEmitter} from "events";
-import {trManager} from "./traceability/trManager"
+import {TrManager} from "./traceability/trManager"
 import {Utilities} from "./utilities"
 
 // constants
@@ -18,12 +18,10 @@ let topBarNameId: string = "activeTabTitle";
 const globalAny:any = global;
 export default class IntoCpsApp extends EventEmitter {
 
-
-    
     app: Electron.App;
     platform: String
     window: Electron.BrowserWindow;
-    trmanager:trManager;
+    trmanager:TrManager;
 
     settings: Settings;
 
@@ -64,7 +62,13 @@ export default class IntoCpsApp extends EventEmitter {
             this.settings.setValue(SettingKeys.EXAMPLE_REPO, this.settings.getValue(SettingKeys.DEV_EXAMPLE_REPO));
         }
 
-        this.trmanager = new trManager(this.settings.setSetting.bind(this.settings),this.getSettings().getValue(SettingKeys.ENABLE_TRACEABILITY));
+        let enableTrace = this.settings.getValue(SettingKeys.ENABLE_TRACEABILITY);
+        let daemonPort = this.settings.getValue(SettingKeys.TRACE_DAEMON_PORT)
+        this.trmanager = new TrManager(enableTrace,daemonPort);
+        
+    }
+
+    public loadPreviousActiveProject(){
         let activeProjectPath = this.settings.getSetting(SettingKeys.ACTIVE_PROJECT);
         if (activeProjectPath) {
             try {

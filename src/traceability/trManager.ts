@@ -9,81 +9,93 @@ var fs = require("fs");
 import Path = require("path");
 
 
-class Neo4Jconfiguration {
-    private configurationLocation: string;
-    homeLocation: string;
-    binariesLocation: string;
-    username: string;
-    password: string;
-    port: string;
-    active: boolean;
+class Neo4JHelper {
 
-    constructor(confLoc: string, appDir: string, appsDirTemp: string) {
-        this.active = false;
-        this.configurationLocation = confLoc;
-        this.homeLocation = this.getHomeLocation(appDir, appsDirTemp);
-        this.setBinaryLocation();
-        this.username = "intoCPSApp";
-        this.password = "KLHJiK8k2378HKsg823jKKLJ89sjklJHBNf8j8JH7FxE";
-        this.port = "7474";
-    }
-
-    public setBinaryLocation() {
-        this.binariesLocation = this.homeLocation + Path.sep + "bin";
-    }
-    public setConfigurationLocation(confLoc: string) {
-
-        this.configurationLocation = confLoc;
-    }
-    public getConfigurationLocation(): string {
-        return this.configurationLocation;
-    }
-    private getHomeLocation(appsDir: string, appsDirTemp: string): string {
+    //returns the found path or null
+    public static searchForNeo4jHome(searchPath: string): string {
         var fileString: string;
         if (process.platform == 'darwin' || process.platform == 'linux') {
             fileString = "bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>";
         } else {
             fileString = "bin" + Path.sep + "<[nN]><[eE]><[oO]>4<[jJ]>*";
         }
-        if (fs.existsSync(appsDir)) {
-            var files: Array<string> = fsFinder.from(appsDir).findFiles(fileString);
+
+        var found = false;
+        if (fs.existsSync(searchPath)) {
+            var files: Array<string> = fsFinder.from(searchPath).findFiles(fileString);
             if (files.length > 0) {
-                var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
-                this.active = true;
+                return Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
             }
         }
-        if (fs.existsSync(appsDirTemp)) {
-            var files: Array<string> = fsFinder.from(appsDirTemp).findFiles(fileString);
-            if (files.length > 0) {
-                var path = Path.normalize(Path.dirname(files[0]) + Path.sep + "..");
-                this.active = true;
+
+        return null;
+    }
+
+
+    public static getBinPath(homePath: string): string {
+        return Path.join(homePath, "bin");
+    }
+
+
+    public static stopNeo4J(pid: number): Promise<void> {
+
+        return new Promise<void>((resolve, reject) => {
+
+            if (pid == undefined || pid == null) {
+                resolve();
+                return;
             }
-        }
-        if (!this.active) {
-            var path = "";
-            console.log("Neo4J was not found. Please download neo4j to the folder " + appsDir);
-            return "";
-        }
-        return path;
+
+            var kill = require('tree-kill');
+            kill(pid, 'SIGKILL', (nextCallback: Function, err: any) => {
+                if (err) {
+                    reject("Failed to close Neo4J. " + "It was not possible to close Neo4J. Pid: " + pid);
+                }
+                else {
+                    resolve();
+                }
+
+            });
+        });
+    }
+
+}
+
+
+class Neo4Jconfiguration {
+
+    username: string;
+    password: string;
+    port: string;
+
+    constructor() {
+        this.username = "intoCPSApp";
+        this.password = "KLHJiK8k2378HKsg823jKKLJ89sjklJHBNf8j8JH7FxE";
+        this.port = "7474";
     }
 }
 
-export class trManager {
+export class TrManager {
 
-    neo4Jconf: Neo4Jconfiguration;
+    private neo4jApplicationHome: string = null;
+    private workdingDir: string = null;
+
+    neo4Jconf: Neo4Jconfiguration = new Neo4Jconfiguration();
     running: boolean;
     neo4JProcess: childProcess.ChildProcess;
-    daemon: Daemon;
+    daemon: Daemon = new Daemon();;
     enabled: boolean = false;
+    private daemonPort: number = 0;
     private dbFilesSubfoder: string = 'db';
 
-    constructor(setSettingsCallback: Function, enabled: boolean) {
+    constructor(enabled: boolean, daemonPort: number) {
         this.enabled = enabled;
         this.running = false;
+        this.daemonPort = daemonPort;
 
-        if (this.enabled) {
-            this.startDaemon(setSettingsCallback);
-        }
+        /* if (this.enabled) {
+             this.startDaemon();
+         }*/
     }
 
     public getDaemonPort(): number {
@@ -104,35 +116,46 @@ export class trManager {
         this.daemon.recordTrace(jsonObj);
     }
 
-    public start(neo4JConfLoc: string, appDir: string, appsDirTemp: string) {
-        if (!this.enabled) {
-            return;
-        }
+    public start(neo4JConfLoc: string, appDir: string, appsDirTemp: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
 
-        if (!this.neo4Jconf || !this.neo4Jconf.active) {
-            this.neo4Jconf = new Neo4Jconfiguration(neo4JConfLoc, appDir, appsDirTemp);
-        } else {
-            this.neo4Jconf.setConfigurationLocation(neo4JConfLoc);
-            this.neo4Jconf.setBinaryLocation();
-        }
-        if (this.neo4Jconf.active) {
+            if (!this.enabled) {
+                resolve();
+                return;
+            }
+
+            var neo4jHome: string = null;
+            for (let path in [appDir, appsDirTemp]) {
+                neo4jHome = Neo4JHelper.searchForNeo4jHome(appDir);
+                if (neo4jHome != null) {
+                    break;
+                }
+            }
+
+            if (neo4jHome == null) {
+                reject("Neo4j not found in search path: " + [appDir, appsDirTemp]);
+            }
+
+            this.neo4jApplicationHome = neo4jHome;
+            this.workdingDir = neo4JConfLoc;
+
             this.running = true;
-            this.startNeo4J().then((p) => {
+            return this.startNeo4J().then((p) => {
                 this.neo4JProcess = p;
                 if (this.enabled) {
                     this.daemon.setDBfileLocation(this.getDBfileLocation());
                     let neo4jURL: string = "http://" + this.neo4Jconf.username + ":" + this.neo4Jconf.password + "@localhost:" + this.neo4Jconf.port;
-                    return this.daemon.connect2(neo4jURL, 16);
+                    return this.daemon.connect(neo4jURL, 30);
                 }
             }).then((connected) => {
                 if (connected) {
                     this.reBuildDataBase();
+                    if (!this.daemon.isRunning) {
+                        this.startDaemon();
+                    }
                 }
-            }).catch((err) => {
-                const { dialog } = require('electron')
-                dialog.showMessageBox({ type: 'error', buttons: ["OK"], message: "Neo4J: " + err.message }, function (button: any) { });
-            });
-        }
+            })
+        });
     }
 
     public changeDataBase(projectLocation: string, appDir: string, appsDirTemp: string) {
@@ -140,26 +163,43 @@ export class trManager {
             return;
         }
 
-        var confLoc: string = projectLocation + Path.sep + Project.PATH_TRACEABILITY;
+        let handleError = (err: any) => {
+            console.info(err);
+            const { dialog } = require('electron')
+            dialog.showMessageBox({ type: 'error', buttons: ["OK"], message: "Neo4J: " + err }, function (button: any) { });
+
+        };
+
+        var confLoc: string = Path.join(projectLocation, Project.PATH_TRACEABILITY);
+
         if (this.running) {
-            this.stop(this.start.bind(this, confLoc, appDir));
+            this.stop().then(() => { return this.start(confLoc, appDir, appsDirTemp) }).then(() => {
+                console.info("Startup complete.");
+            }).catch(handleError);//.stop(this.start.bind(this, confLoc, appDir));
         } else {
-            this.start(confLoc, appDir, appsDirTemp);
+            this.start(confLoc, appDir, appsDirTemp).then(() => { }).catch(handleError);
         }
     }
 
-    
-    private startDaemon(setSettingsCallback: Function) {
-        this.daemon = new Daemon();
-        this.daemon.start(8083, this.daemon.start.bind(this.daemon, 0, function () {
-            console.log("Unable to start daemon.");
-        }, this.setDaemonPort.bind(null, setSettingsCallback)), this.setDaemonPort.bind(0, setSettingsCallback));
+
+    private startDaemon() {
+
+        this.daemon.start(this.daemonPort).catch((err) => {
+            if (err.errno === 'EADDRINUSE') {
+                console.info("Daemon address: " + this.daemonPort + " already in use.")
+            } else {
+                console.info(err);
+            }
+        });
+
+        /*      , this.daemon.start.bind(this.daemon, 0, function () {
+              console.log("Unable to start daemon.");
+          }, this.setDaemonPort.bind(null, setSettingsCallback)), this.setDaemonPort.bind(0, setSettingsCallback));
+          */
     }
-    private setDaemonPort(setSettingsCallback: Function, port: number) {
-        setSettingsCallback(SettingKeys.DAEMON_URL, "localhost:" + port);
-    }
+
     public getDBfileLocation(): string {
-        return this.neo4Jconf.getConfigurationLocation() + Path.sep + this.dbFilesSubfoder;
+        return Path.join(this.workdingDir, this.dbFilesSubfoder);
     }
 
     private removeEmptyLinesAndComments(data: string) {
@@ -195,21 +235,21 @@ export class trManager {
 
         let writeDbConfig = () => {
             return new Promise((resolve, reject) => {
-                var confFileName: string = Path.join(this.neo4Jconf.getConfigurationLocation(), "neo4j.conf");
+                var confFileName: string = Path.join(this.workdingDir, "neo4j.conf");
 
-                let neo4jDefaultConfig = Path.join(this.neo4Jconf.homeLocation, "conf", "neo4j.conf");
+                let neo4jDefaultConfig = Path.join(this.neo4jApplicationHome, "conf", "neo4j.conf");
 
                 var fileContent: string = fs.readFileSync(neo4jDefaultConfig, "UTF-8");
 
                 //remove all text from the config string
                 fileContent = this.removeEmptyLinesAndComments(fileContent)
 
-                fileContent += "dbms.directories.data=" + this.toNixPathFormat(Path.join(this.neo4Jconf.getConfigurationLocation(), "data")) + '\n';
+                fileContent += "dbms.directories.data=" + this.toNixPathFormat(Path.join(this.workdingDir, "data")) + '\n';
                 fileContent += 'dbms.connector.http.listen_address=:' + this.neo4Jconf.port + '\n';
-                fileContent += 'dbms.directories.logs=' + this.toNixPathFormat(this.neo4Jconf.getConfigurationLocation()) + ' \n';
+                fileContent += 'dbms.directories.logs=' + this.toNixPathFormat(this.workdingDir) + ' \n';
                 fileContent += 'dbms.logs.http.enabled=true' + '\n';
 
-                fs.writeFile(Path.join(this.neo4Jconf.getConfigurationLocation(), ".gitignore"), "data\n*.log\n*.conf\n");
+                fs.writeFile(Path.join(this.workdingDir, ".gitignore"), "data\n*.log\n*.conf\n");
 
                 fs.writeFileSync(confFileName, fileContent);
                 resolve();
@@ -217,16 +257,16 @@ export class trManager {
             });
         };
 
-        return CreateFolderIfNotExist(this.neo4Jconf.getConfigurationLocation()).then(() => {
+        return CreateFolderIfNotExist(this.workdingDir).then(() => {
             return CreateFolderIfNotExist(this.getDBfileLocation())
         }).then(() => {
             return writeDbConfig()
         }).then(() => {
-            return CreateFolderIfNotExist(Path.join(this.neo4Jconf.getConfigurationLocation(), "data"))
+            return CreateFolderIfNotExist(Path.join(this.workdingDir, "data"))
         }).then(() => {
-            return CreateFolderIfNotExist(Path.join(this.neo4Jconf.getConfigurationLocation(), "data", "dbms"))
+            return CreateFolderIfNotExist(Path.join(this.workdingDir, "data", "dbms"))
         }).then(() => {
-            fs.writeFileSync(Path.join(this.neo4Jconf.getConfigurationLocation(), "data", "dbms", "auth"), "intoCPSApp:SHA-256,9780635B5BC9974CCB47A230B20DEF8069A26E2B3EC954A76E4034B9308042B0,2ADAC311B595F9670EBA0424F5620BED:", { flag: 'w' });
+            fs.writeFileSync(Path.join(this.workdingDir, "data", "dbms", "auth"), "intoCPSApp:SHA-256,9780635B5BC9974CCB47A230B20DEF8069A26E2B3EC954A76E4034B9308042B0,2ADAC311B595F9670EBA0424F5620BED:", { flag: 'w' });
         });
     }
     private clearDataBase() {
@@ -265,13 +305,13 @@ export class trManager {
                 var neo4JExecOptions: Object = {
                     env: Object.assign(process.env,
                         {
-                            "NEO4J_BIN": this.neo4Jconf.binariesLocation,
-                            "NEO4J_HOME": this.neo4Jconf.homeLocation,
-                            "NEO4J_CONF": this.neo4Jconf.getConfigurationLocation(),
+                            "NEO4J_BIN": Neo4JHelper.getBinPath(this.neo4jApplicationHome),
+                            "NEO4J_HOME": this.neo4jApplicationHome,
+                            "NEO4J_CONF": this.workdingDir,
                         }),
                     detached: false,
                     shell: true,
-                    cwd: this.neo4Jconf.binariesLocation
+                    cwd: Neo4JHelper.getBinPath(this.neo4jApplicationHome)
                 };
                 let argv: string[] = [];
                 if (process.platform == "linux")
@@ -279,10 +319,10 @@ export class trManager {
                 if (process.platform == "win32") {
                     argv.push("neo4j");
                 } else {
-                    argv.push(Path.join(this.neo4Jconf.binariesLocation, "neo4j"));
+                    argv.push(Path.join(Neo4JHelper.getBinPath(this.neo4jApplicationHome), "neo4j"));
                 }
                 argv.push("console");
-                console.log("Starting Neo4J from path '" + this.neo4Jconf.binariesLocation + "'. With database configuration: " + this.neo4Jconf.getConfigurationLocation());
+                console.log("Starting Neo4J from path '" + Neo4JHelper.getBinPath(this.neo4jApplicationHome) + "'. With database configuration: " + this.workdingDir);
                 var localNeo4JProcess: childProcess.ChildProcess = spawn(argv[0], argv.splice(1), neo4JExecOptions);
 
                 localNeo4JProcess.stdout.on('data', function (data: any) {
@@ -307,33 +347,32 @@ export class trManager {
         });
     }
 
-    public stop(nextCallback?: Function) {
-        if (!this.enabled) {
-            nextCallback();
-        }
+    //stop the traca manager and the database process
+    public stop(): Promise<void> {
 
-        if (!this.running) {
-            nextCallback();
-            return;
-        }
-        if (nextCallback) {
-            this.stopNeo4J(nextCallback);
-        } else {
-            this.stopNeo4J(function () { });
-        }
+        return new Promise<void>((resolve, reject) => {
+
+            if (!this.enabled || !this.running) {
+                resolve();
+                return;
+            }
+
+            if (this.running) {
+                if (this.neo4JProcess == null || this.neo4JProcess == undefined) {
+                    this.running = false;
+                    resolve();
+                    return;
+                }
+                Neo4JHelper.stopNeo4J(this.neo4JProcess.pid).then(() => {
+                    this.neo4JProcess = null;
+                    this.running = false;
+                    resolve();
+                }).catch((e) => reject(e));
+            } else
+                resolve();
+
+        });
+
+
     }
-
-    private stopNeo4J(nextCallback: Function) {
-        var kill = require('tree-kill');
-        kill(this.neo4JProcess.pid, 'SIGKILL', (function (nextCallback: Function, err: any) {
-            if (err) {
-                console.log("Failed to close Neo4J. " + "It was not possible to close Neo4J. Pid: " + this.neo4JProcess.pid);
-            }
-            else {
-                this.neo4JProcess = null;
-            }
-            this.running = false;
-            nextCallback();
-        }).bind(this, nextCallback));
-    };
 }

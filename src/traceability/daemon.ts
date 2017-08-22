@@ -37,13 +37,19 @@ export class Daemon {
     private neo4jURL: string;
     private enableValidation: boolean;
     private DBfileLocation: string;
+    public isRunning = false;
 
     private schemas: Map<string, Object> = new Map<string, Object>();
 
     constructor() {
+        this.db = require('./db');
         this.isconnected = false;
         this.enableValidation = true;
+        this.loadValidationSchemas();
+    }
 
+    //load validation schemas
+    private loadValidationSchemas() {
         let schemaBase = Path.join(__dirname, "..", "resources", "into-cps", "tracability", "schemas");
 
         fs.readdir(schemaBase, (err: any, files: any) => {
@@ -76,83 +82,79 @@ export class Daemon {
                 }
             });
         });
-
     }
 
-    public start(serverPort: number, allreadyInUseCallback: Function, setPortCallback: Function) {
-        this.db = require('./db');
+    //start daemon, listening on the given port
+    public start(serverPort: number): Promise<number> {
 
-        try {
-            var app = Express();
-            app.locals.title = 'INTO-CPS-Traceability-Daemon';
-            var bodyParser = require('body-parser');
+        return new Promise<number>((resolve, reject) => {
+            try {
+                var app = Express();
+                app.locals.title = 'INTO-CPS-Traceability-Daemon';
+                var bodyParser = require('body-parser');
 
-            app.use(bodyParser.json({ limit: '50mb' }));
-            //server.use(restify.queryParser({ mapParams: false }));
+                app.use(bodyParser.json({ limit: '50mb' }));
+                //server.use(restify.queryParser({ mapParams: false }));
 
-            // ------- REST URLs: --------
-            app.post('/traces/push/json', (this.handlePostJSON).bind(this));
-            app.get('/traces/from/:source/json', (this.handleGETTraceFromJSON).bind(this));
-            app.get('/traces/to/:target/json', (this.handleGETTraceToJSON).bind(this));
-            app.get('/nodes/json', (this.handleGETNodeToJSON).bind(this));
+                // ------- REST URLs: --------
+                app.post('/traces/push/json', (this.handlePostJSON).bind(this));
+                app.get('/traces/from/:source/json', (this.handleGETTraceFromJSON).bind(this));
+                app.get('/traces/to/:target/json', (this.handleGETTraceToJSON).bind(this));
+                app.get('/nodes/json', (this.handleGETNodeToJSON).bind(this));
 
-            app.post('/traces/push/xml', (this.handlePostXML).bind(this));
-            app.get('/traces/from/:source/xml', (this.handleGETTraceFromXML).bind(this));
-            app.get('/traces/to/:target/xml', (this.handleGETTraceToXML).bind(this));
+                app.post('/traces/push/xml', (this.handlePostXML).bind(this));
+                app.get('/traces/from/:source/xml', (this.handleGETTraceFromXML).bind(this));
+                app.get('/traces/to/:target/xml', (this.handleGETTraceToXML).bind(this));
 
-            app.get('/database/cypher/:query/json', (this.handleCypherQuery).bind(this));
+                app.get('/database/cypher/:query/json', (this.handleCypherQuery).bind(this));
 
-            //  server.get('/traces/test/methods', handleTestMethods);
+                //  server.get('/traces/test/methods', handleTestMethods);
 
-            app.get(new RegExp('^\/test\/(.+)\/json'), (this.handleMatch).bind(this));
+                app.get(new RegExp('^\/test\/(.+)\/json'), (this.handleMatch).bind(this));
 
-            // development error handler
-            // will print stacktrace
-            if (app.get('env') === 'development') {
-                app.use(function (err: any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
-                    res.status(err.code || 500)
-                        .json({
-                            status: 'error',
-                            message: err
-                        });
-                });
-            }
-            else {
-                // production error handler
-                // no stacktraces leaked to user
-                app.use(function (err: any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
-                    res.status(err.status || 500)
-                        .json({
-                            status: 'error',
-                            message: err.message
-                        });
-                });
-            }
-
-
-            var server = app.listen(serverPort, (function (localSetPortCallback: Function) {
-                console.log('Traceability daemon listening on port %s.', server.address().port);
-                this.port = server.address().port;
-                localSetPortCallback(server.address().port);
-            }).bind(this, setPortCallback));
-            // on already in use error use callback
-            server.on('error', function (err: any) {
-                if (err.errno === 'EADDRINUSE') {
-                    allreadyInUseCallback();
-                } else {
-                    throw (err);
+                // development error handler
+                // will print stacktrace
+                if (app.get('env') === 'development') {
+                    app.use(function (err: any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+                        res.status(err.code || 500)
+                            .json({
+                                status: 'error',
+                                message: err
+                            });
+                    });
                 }
-            });
-        } catch (err) {
-            console.log(err.message);
-            console.log(err.stack);
-        }
+                else {
+                    // production error handler
+                    // no stacktraces leaked to user
+                    app.use(function (err: any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+                        res.status(err.status || 500)
+                            .json({
+                                status: 'error',
+                                message: err.message
+                            });
+                    });
+                }
 
+
+                var server = app.listen(serverPort, (err: any) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    console.log('Traceability daemon listening on port %s.', server.address().port);
+                    this.port = server.address().port;
+                    this.isRunning = true;
+                    resolve(server.address().port);
+                });
+            } catch (err) {
+                reject(err);
+            }
+        });
     }
 
 
-
-    public connect2(neo4jURL: string, retries: number): Promise<boolean> {
+    //connect to neo4j database server
+    public connect(neo4jURL: string, retries: number): Promise<boolean> {
         if (!neo4jURL) {
             neo4jURL = this.neo4jURL;
         }
@@ -176,7 +178,7 @@ export class Daemon {
                 this.db.testConnection().then(() => {
                     console.info("Connected to NEO4J")
                     this.isconnected = true;
-                    resolve(this.isconnected );
+                    resolve(this.isconnected);
                 }).catch((e: any) => {
                     if (counter <= 0) {
                         console.info("NOT connected to NEO4J aborting...")

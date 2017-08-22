@@ -26,6 +26,9 @@ console.info("Running in development mode: " + devMode);
 let mainWindow;
 
 function createWindow() {
+
+  //First load the last active project, but not until app is ready
+  intoCpsApp.loadPreviousActiveProject();
   // Create the browser window.
   mainWindow = new BrowserWindow({ width: 800, height: 600 });
 
@@ -41,17 +44,25 @@ function createWindow() {
 
 
   mainWindow.on('close', function (ev) {
-    if (!intoCpsApp.isquitting){
-      intoCpsApp.isquitting = true;
+    intoCpsApp.isquitting = true;
+
+    BrowserWindow.getAllWindows().forEach((bw => {
+      if (bw != mainWindow) {
+        bw.removeAllListeners();
+        bw.close();
+      }
+    }));
+
+    if (intoCpsApp.trmanager.running) {
       ev.preventDefault();
-      intoCpsApp.trmanager.stop(mainWindow.close.bind(mainWindow));
-    }else{
-      BrowserWindow.getAllWindows().forEach((bw => {
-        if (bw != mainWindow) {
-          bw.removeAllListeners();
-          bw.close();
-        }
-      }));
+
+      console.info("Waiting for trmanager to stop...");
+      intoCpsApp.trmanager.stop().then(() => {
+        console.info("trmanager stopped.");
+        mainWindow.close()
+      }).catch((err) => {
+        console.info(err); mainWindow.close();
+      });
     }
   });
 
@@ -86,10 +97,10 @@ app.on('ready', function () {
 app.on('window-all-closed', function () {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-	//the app is not build to handle this since windows are created
-	//from render processes
-	//if (process.platform !== 'darwin') {
-    app.quit();
+  //the app is not build to handle this since windows are created
+  //from render processes
+  //if (process.platform !== 'darwin') {
+  app.quit();
   //}
 });
 
