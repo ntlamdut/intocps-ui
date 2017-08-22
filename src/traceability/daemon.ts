@@ -29,6 +29,7 @@ class Trace {
 
 import { TraceNode, TraceNodeBase, TraceRel, TraceRelProps, TraceLink } from './db';
 
+
 export class Daemon {
     public isconnected: boolean;
     private db: any;
@@ -44,7 +45,7 @@ export class Daemon {
         this.enableValidation = true;
 
         let schemaBase = Path.join(__dirname, "..", "resources", "into-cps", "tracability", "schemas");
-       
+
         fs.readdir(schemaBase, (err: any, files: any) => {
             files.forEach((file: string) => {
                 if (!file.startsWith(".") && file.endsWith(".json")) {
@@ -108,7 +109,7 @@ export class Daemon {
             // development error handler
             // will print stacktrace
             if (app.get('env') === 'development') {
-                app.use(function(err: any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+                app.use(function (err: any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
                     res.status(err.code || 500)
                         .json({
                             status: 'error',
@@ -119,7 +120,7 @@ export class Daemon {
             else {
                 // production error handler
                 // no stacktraces leaked to user
-                app.use(function(err: any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
+                app.use(function (err: any, req: Express.Request, res: Express.Response, next: Express.NextFunction) {
                     res.status(err.status || 500)
                         .json({
                             status: 'error',
@@ -129,13 +130,13 @@ export class Daemon {
             }
 
 
-            var server = app.listen(serverPort, (function(localSetPortCallback: Function) {
+            var server = app.listen(serverPort, (function (localSetPortCallback: Function) {
                 console.log('Traceability daemon listening on port %s.', server.address().port);
                 this.port = server.address().port;
                 localSetPortCallback(server.address().port);
             }).bind(this, setPortCallback));
             // on already in use error use callback
-            server.on('error', function(err: any) {
+            server.on('error', function (err: any) {
                 if (err.errno === 'EADDRINUSE') {
                     allreadyInUseCallback();
                 } else {
@@ -149,35 +150,46 @@ export class Daemon {
 
     }
 
-    public connect(neo4jURL: string, errorCallback: Function, successCallback?: Function) {
+
+
+    public connect2(neo4jURL: string, retries: number): Promise<boolean> {
         if (!neo4jURL) {
             neo4jURL = this.neo4jURL;
         }
         this.neo4jURL = neo4jURL;
 
-        try {
-            this.db.connect(neo4jURL);
-        } catch (err) {
-            console.log(err.message);
-            console.log(err.stack);
-            this.isconnected = false;
-        }
+        return new Promise<boolean>((resolve, reject) => {
 
-        this.isconnected = true;
+            try {
+                //connect to database object
+                this.db.connect(neo4jURL);
+            } catch (err) {
+                console.log(err.message);
+                console.log(err.stack);
+                this.isconnected = false;
+            }
 
-        if (successCallback) {
-            var coccected = this.db.testConnection()
-                .then(successCallback, (function(err: Error) {
-                    errorCallback(err);
-                    this.isconnected = false;
-                }).bind(this));
-        } else {
-            var coccected = this.db.testConnection()
-                .catch((function(err: Error) {
-                    errorCallback(err);
-                    this.isconnected = false;
-                }).bind(this));
-        };
+            var counter = retries;
+
+            let connectRetry = () => {
+                counter--;
+                this.db.testConnection().then(() => {
+                    console.info("CONNECTED TO NEO€J")
+                    this.isconnected = true;
+                    resolve(this.isconnected );
+                }).catch((e: any) => {
+                    if (counter <= 0) {
+                        console.info("NOT connected to NEO4J aborting")
+                        reject(e);
+                    } else {
+                        console.info("NOT connected yet retrying: " + counter + " / " + retries);
+                        setTimeout(connectRetry, 1000);
+                    }
+                })
+            };
+
+            setTimeout(connectRetry, 1000);
+        });
     }
 
     // ------- functions ---------
@@ -199,7 +211,7 @@ export class Daemon {
         var cypherQuery: string = req.params.query;
         var cypherParams = req.query;
         this.sendCypherResponse(cypherQuery, cypherParams)
-            .then(function(results: any) {
+            .then(function (results: any) {
                 resp.status(200)
                     .json({
                         status: 'success',
@@ -207,7 +219,7 @@ export class Daemon {
                         message: 'Retrieved cypher response'
                     });
             })
-            .catch(function(err: any) {
+            .catch(function (err: any) {
                 return next(err);
             });
     }
@@ -231,10 +243,10 @@ export class Daemon {
         }
         console.log("GET request received:");
         this.db.getRelationsFrom(req.params.source)
-            .then((function(results: TraceLink[]) {
+            .then((function (results: TraceLink[]) {
                 resp.send(this.toRdfJson(this.toTriples(results)));
             }).bind(this))
-            .catch(function(err: any) {
+            .catch(function (err: any) {
                 return next(err);
             });
     }
@@ -246,10 +258,10 @@ export class Daemon {
         }
         console.log("GET request received:");
         this.db.getRelationsFrom(req.params.source)
-            .then((function(results: TraceLink[]) {
+            .then((function (results: TraceLink[]) {
                 resp.send(this.toRdfXml(this.toTriples(results)));
             }).bind(this))
-            .catch(function(err: any) {
+            .catch(function (err: any) {
                 return next(err);
             });
     }
@@ -261,10 +273,10 @@ export class Daemon {
         }
         console.log("GET request received:");
         this.db.getRelationsTo(req.params.target)
-            .then((function(results: TraceLink[]) {
+            .then((function (results: TraceLink[]) {
                 resp.send(this.toRdfJson(this.toTriples(results)));
             }).bind(this))
-            .catch(function(err: any) {
+            .catch(function (err: any) {
                 return next(err);
             });
     }
@@ -276,10 +288,10 @@ export class Daemon {
         }
         console.log("GET request received:");
         this.db.getNodeByParams(req.query)
-            .then((function(results: any) {
+            .then((function (results: any) {
                 resp.send(results);
             }).bind(this))
-            .catch(function(err: any) {
+            .catch(function (err: any) {
                 return next(err);
             });
     }
@@ -291,10 +303,10 @@ export class Daemon {
         }
         console.log("GET request received:");
         this.db.getRelationsTo(req.params.target)
-            .then((function(results: TraceLink[]) {
+            .then((function (results: TraceLink[]) {
                 resp.send(this.toRdfXml(this.toTriples(results)));
             }).bind(this))
-            .catch(function(err: any) {
+            .catch(function (err: any) {
                 return next(err);
             });
     }
@@ -309,7 +321,7 @@ export class Daemon {
             console.log("The content type is 'application/json'");
             var jsonObj = req.body;
             this.storeObject(jsonObj)
-                .then(function(status: any) {
+                .then(function (status: any) {
                     if (status) {
                         if (status.errors) {
                             if (status.errors.length != 0) {
@@ -327,7 +339,7 @@ export class Daemon {
                     });
                     return next();
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     return next(err);
                 });
         }
@@ -345,7 +357,7 @@ export class Daemon {
             this.toJson(req.body, (function cb(err: Error, obj: Object) {
                 if (err) throw err;
                 this.storeObject(obj, resp)
-                    .catch(function(err: any) {
+                    .catch(function (err: any) {
                         return next(err);
                     });
             }).bind(this));
@@ -437,7 +449,7 @@ export class Daemon {
                 // if data comes from xml parser the object needs to be reformatted
                 obj = this.reformat(obj);
             }
-            pr = pr.return(obj).then((function(localObj: any) { return this.parseSubject(localObj, ""); }).bind(this));
+            pr = pr.return(obj).then((function (localObj: any) { return this.parseSubject(localObj, ""); }).bind(this));
         }
         return pr;
     }
@@ -503,7 +515,7 @@ export class Daemon {
     }
     private storeNode(node: TraceNode): Promise<any> {
         return this.db.existsNode(node.node.properties.uri)
-            .then((function(existsNode: boolean) {
+            .then((function (existsNode: boolean) {
                 if (!existsNode) {
                     return this.db.storeNode(node);
                 } else {
@@ -518,15 +530,15 @@ export class Daemon {
             var subject = this.getNode(jsonObj, type);
             pr = this.storeNode(subject);
             for (var key in jsonObj) {
-                pr = pr.return(key).then((function(localKey: any) { return this.parseRelation(subject, jsonObj[localKey], localKey) }).bind(this));
+                pr = pr.return(key).then((function (localKey: any) { return this.parseRelation(subject, jsonObj[localKey], localKey) }).bind(this));
             }
         } else if (this.isArray(jsonObj)) {
             for (let value of jsonObj) {
-                pr = pr.return(value).then((function(localValue: any) { return this.parseSubject(localValue, type) }).bind(this));
+                pr = pr.return(value).then((function (localValue: any) { return this.parseSubject(localValue, type) }).bind(this));
             }
         } else if (!this.isString(jsonObj)) {
             for (var key in jsonObj) {
-                pr = pr.return(key).then((function(localKey: string) {
+                pr = pr.return(key).then((function (localKey: string) {
                     return this.parseSubject(jsonObj[localKey], localKey);
                 }).bind(this));
             }
@@ -538,12 +550,12 @@ export class Daemon {
         var pr: Promise<any> = Promise.resolve(undefined);
         if (this.isArray(jsonObj)) {
             for (let arrayValue of jsonObj) {
-                pr = pr.return(arrayValue).then((function(localValue: any) { return this.parseRelation(subject, localValue, type) }).bind(this));
+                pr = pr.return(arrayValue).then((function (localValue: any) { return this.parseRelation(subject, localValue, type) }).bind(this));
             }
         } else {
             for (var key in jsonObj) {
                 if (this.isNode(jsonObj[key]) || this.isArray(jsonObj[key])) {
-                    pr = pr.return(key).then((function(localKey: any) { return this.parseObject(subject, type, jsonObj[localKey], localKey) }).bind(this));
+                    pr = pr.return(key).then((function (localKey: any) { return this.parseObject(subject, type, jsonObj[localKey], localKey) }).bind(this));
                 }
             }
         }
@@ -554,10 +566,10 @@ export class Daemon {
         if (this.isNode(jsonObj)) {
             var object: TraceNode = this.getNode(jsonObj, type);
             pr = this.parseSubject(jsonObj, type);
-            pr = pr.then((function() { return this.storeSingleObject(subject, relation, object) }).bind(this));
+            pr = pr.then((function () { return this.storeSingleObject(subject, relation, object) }).bind(this));
         } else if (this.isArray(jsonObj)) {
             for (let arrayValue of jsonObj) {
-                pr = pr.return(arrayValue).then((function(localValue: any) { return this.parseObject(subject, relation, localValue, type) }).bind(this));
+                pr = pr.return(arrayValue).then((function (localValue: any) { return this.parseObject(subject, relation, localValue, type) }).bind(this));
             }
         }
         return pr;
@@ -572,11 +584,11 @@ export class Daemon {
     private storeTriple(triple: Trace): Promise<any> {
         return this.storeNode(triple.source)
             // insert target node if not yet contained
-            .then((function() { return this.storeNode(triple.target) }).bind(this))
+            .then((function () { return this.storeNode(triple.target) }).bind(this))
             // insert relation if not yet contained
-            .then((function() {
+            .then((function () {
                 return this.db.existsRelation(triple.source.node.properties.uri, triple.relation, triple.target.node.properties.uri)
-                    .then((function(relationExists: boolean) {
+                    .then((function (relationExists: boolean) {
                         if (!relationExists) {
                             return this.db.createRelation(triple.source.node.properties.uri, triple.relation, triple.target.node.properties.uri);
                         } else {
@@ -588,7 +600,7 @@ export class Daemon {
 
     // returns an error reporting function 
     private reportError(resp: Express.Response, error: number) {
-        return function(err: Error) {
+        return function (err: Error) {
             console.log(err.message);
             console.log(err.stack);
             resp.status(error).write(err.message);
