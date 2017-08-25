@@ -19,6 +19,8 @@ export namespace SettingKeys {
     export var DEV_EXAMPLE_REPO = "dev_example_site";
     export var DEFAULT_PROJECTS_FOLDER_PATH = "default_projects_folder_path";
     export var ENABLE_TRACEABILITY = "enable_traceability";
+    export var LOCAL_UPDATE_SITE = "local_update_site";
+    export var USE_LOCAL_UPDATE_SITE = "use_local_update_site";
 
     export var DEFAULT_VALUES: { [key: string]: any; } = {};
     DEFAULT_VALUES[RTTESTER_INSTALL_DIR] = 'C:/opt/rt-tester';
@@ -35,4 +37,6 @@ export namespace SettingKeys {
     DEFAULT_VALUES[COE_DEBUG_ENABLED] = false;
     DEFAULT_VALUES[COE_REMOTE_HOST] = false;
     DEFAULT_VALUES[ENABLE_TRACEABILITY] = false;
+    DEFAULT_VALUES[LOCAL_UPDATE_SITE] = "";
+     DEFAULT_VALUES[USE_LOCAL_UPDATE_SITE] = false;
 }

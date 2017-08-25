@@ -87,6 +87,14 @@ function fetchList() {
 
     }
 
+    if (settings.getValue(SettingKeys.USE_LOCAL_UPDATE_SITE) && settings.getValue(SettingKeys.LOCAL_UPDATE_SITE) != "") {
+        url = settings.getValue(SettingKeys.LOCAL_UPDATE_SITE);
+    }
+
+    if (!(url + "").endsWith("/")) {
+        url = url + "/";
+    }
+
     var panel: HTMLInputElement = <HTMLInputElement>document.getElementById("tool-versions-panel");
 
     while (panel.hasChildNodes()) {
