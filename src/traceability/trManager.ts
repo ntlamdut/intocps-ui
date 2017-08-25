@@ -7,7 +7,6 @@ var fsFinder = require("fs-finder");
 var fs = require("fs");
 import Path = require("path");
 
-
 class Neo4JHelper {
 
     //returns the found path or null
