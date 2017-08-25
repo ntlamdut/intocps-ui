@@ -1,4 +1,3 @@
-
 import childProcess = require("child_process");
 import { SettingKeys } from "../settings/SettingKeys";
 import { Project } from "../proj/Project"
