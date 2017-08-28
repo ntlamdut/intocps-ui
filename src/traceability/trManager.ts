@@ -1,4 +1,3 @@
-
 import childProcess = require("child_process");
 import { SettingKeys } from "../settings/SettingKeys";
 import { Project } from "../proj/Project"
@@ -7,7 +6,6 @@ import { Daemon } from "../traceability/daemon"
 var fsFinder = require("fs-finder");
 var fs = require("fs");
 import Path = require("path");
-
 
 class Neo4JHelper {
 
@@ -95,10 +93,6 @@ export class TrManager {
         this.enabled = enabled;
         this.running = false;
         this.daemonPort = daemonPort;
-
-        /* if (this.enabled) {
-             this.startDaemon();
-         }*/
     }
 
     public getDaemonPort(): number {
@@ -178,7 +172,7 @@ export class TrManager {
         if (this.running) {
             this.stop().then(() => { return this.start(confLoc, appDir, appsDirTemp) }).then(() => {
                 console.info("Startup complete.");
-            }).catch(handleError);//.stop(this.start.bind(this, confLoc, appDir));
+            }).catch(handleError);
         } else {
             this.start(confLoc, appDir, appsDirTemp).then(() => { }).catch(handleError);
         }
@@ -194,11 +188,6 @@ export class TrManager {
                 console.info(err);
             }
         });
-
-        /*      , this.daemon.start.bind(this.daemon, 0, function () {
-              console.log("Unable to start daemon.");
-          }, this.setDaemonPort.bind(null, setSettingsCallback)), this.setDaemonPort.bind(0, setSettingsCallback));
-          */
     }
 
     public getDBfileLocation(): string {
@@ -377,7 +366,5 @@ export class TrManager {
                 resolve();
 
         });
-
-
     }
 }
