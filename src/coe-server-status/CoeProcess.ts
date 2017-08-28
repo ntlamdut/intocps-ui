@@ -91,7 +91,15 @@ export class CoeProcess {
 
     //check if the coe is running, this is done based no the existence of the pid file
     public isRunning() {
-        return fs.existsSync(this.getPidFilePath());
+        let pid = this.getPid();
+        if (pid == null) {
+            return false;
+        }
+        let isRunning = require('is-running')(pid)
+        if (!isRunning) {
+            fs.unlinkSync(this.getPidFilePath());
+        }
+        return isRunning;
     }
 
     //check if the streams redirection to the log is active
