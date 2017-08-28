@@ -1,12 +1,12 @@
 
-import {ViewController} from "../iViewController";
-import {IntoCpsApp} from "../IntoCpsApp";
+import { ViewController } from "../iViewController";
+import { IntoCpsApp } from "../IntoCpsApp";
 import Path = require("path");
 import fs = require("fs");
-import {RTTester} from "../rttester/RTTester";
-import {Abstractions, Interface, Output} from "./CTAbstractions";
-import {Utilities} from "../utilities";
-import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
+import { RTTester } from "../rttester/RTTester";
+import { Abstractions, Interface, Output } from "./CTAbstractions";
+import { Utilities } from "../utilities";
+import { IntoCpsAppMenuHandler } from "../IntoCpsAppMenuHandler";
 import * as ModalCommand from "./GenericModalCommand";
 
 
@@ -192,6 +192,7 @@ export class CreateMCProjectController extends ViewController {
                     () => self.createDefaultAbstractionsPromise(c, xmiFileName, targetDir).then(
                         () => self.createSignalMap(c, targetDir).then(
                             () => {
+                                RTTester.queueEvent("Define-CT-Abstraction", targetDir);
                                 c.displayTermination(true);
                                 self.menuHandler.openHTMLInMainView(modelDetailsPath, modelDetailsTitle);
                             },

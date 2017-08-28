@@ -1,10 +1,10 @@
 
-import {ViewController} from "../iViewController";
-import {IntoCpsApp} from "../IntoCpsApp";
-import {Abstractions, Interface, Output, Component, Abstraction} from "../rttester/CTAbstractions";
-import {SignalMap, SignalMapEntry} from "./SignalMap";
+import { ViewController } from "../iViewController";
+import { IntoCpsApp } from "../IntoCpsApp";
+import { Abstractions, Interface, Output, Component, Abstraction } from "../rttester/CTAbstractions";
+import { SignalMap, SignalMapEntry } from "./SignalMap";
 import Path = require("path");
-import {RTTester} from "../rttester/RTTester";
+import { RTTester } from "../rttester/RTTester";
 
 
 let makeAbstractionTreeID = (function () {
@@ -151,7 +151,13 @@ export class CTAbstractionsView extends ViewController {
         let abtstractionSignalMapFileName = Path.join(RTTester.getProjectOfFile(this.jsonFileName),
             "model", "signalmap-with-interval-abstraction.csv");
         abstractionSignalMap.saveToFile(abtstractionSignalMapFileName,
-            (error) => { if (error) console.log(error); });
+            (error) => {
+                if (error) console.log(error);
+                else {
+                    let proj = RTTester.getProjectOfFile(abtstractionSignalMapFileName);
+                    RTTester.queueEvent("Define-CT-Abstraction", proj);
+                }
+            });
     }
 
     displayAbstractions(): void {

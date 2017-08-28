@@ -42,6 +42,9 @@ export class LTLEditorController extends ViewController {
             BMCSteps: this.hBMCSteps.value,
         };
         fs.writeFileSync(this.ltlQueryFileName, JSON.stringify(json, null, 4));
+        let proj = RTTester.getProjectOfFile(this.ltlQueryFileName);
+        let queryFolder = Path.dirname(RTTester.getRelativePathInProject(this.ltlQueryFileName));
+        RTTester.queueEvent("Define-MC-Query", proj, queryFolder);
     }
 
     check() {
@@ -49,6 +52,7 @@ export class LTLEditorController extends ViewController {
         this.save();
         let projectPath = RTTester.getProjectOfFile(this.ltlQueryFileName);
         let queryDir = Path.dirname(this.ltlQueryFileName);
+        let queryName = Path.basename(queryDir);
         let modelCheckingReportPath = Path.join(queryDir, "model-checking-report.html");
         let modelCheckingReportTitle = RTTester.getRelativePathInProject(modelCheckingReportPath);
         let cmd = {
@@ -56,10 +60,7 @@ export class LTLEditorController extends ViewController {
             command: RTTester.pythonExecutable(),
             arguments: [
                 Path.normalize(Path.join(RTTester.rttMBTInstallDir(), "bin", "rtt-mbt-mc.py")),
-                "--bound", this.hBMCSteps.value,
-                "--abstractions", Path.join(projectPath, "abstractions.json"),
-                "--sigMap", Path.join(projectPath, "model", "signalmap-with-interval-abstraction.csv"),
-                this.ltlEditor.getValue()],
+                queryName],
             options: {
                 env: RTTester.genericCommandEnv(this.ltlQueryFileName),
                 cwd: queryDir

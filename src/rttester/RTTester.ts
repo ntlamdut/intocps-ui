@@ -1,7 +1,7 @@
-import {IntoCpsApp} from  "../IntoCpsApp";
+import { IntoCpsApp } from "../IntoCpsApp";
 import Path = require("path");
-import {SettingKeys} from "../settings/SettingKeys";
-import {Utilities} from "../utilities";
+import { SettingKeys } from "../settings/SettingKeys";
+import { Utilities } from "../utilities";
 
 export class RTTester {
 
@@ -70,6 +70,18 @@ export class RTTester {
             arguments: [script, tp],
             options: { env: RTTester.genericCommandEnv(path) }
         };
+    }
+
+    public static queueEvent(action: string, context: string, tp: string = null, extra: string = null): void {
+        context = RTTester.getProjectOfFile(context);
+        let exe = RTTester.pythonExecutable();
+        let script = Path.normalize(Path.join(context, "..", "utils", "rtt-fmi-queue-event.py"));
+        let args = [script, action, context];
+        if (tp != null) args.push(tp);
+        if (extra != null) args.push(extra);
+        let env: any = RTTester.genericCommandEnv(context);
+        const cp = require("child_process");
+        cp.spawnSync(exe, args, { env: env });
     }
 
 }
