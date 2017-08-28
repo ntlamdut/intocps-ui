@@ -45,15 +45,18 @@ class Neo4JHelper {
             }
 
             var kill = require('tree-kill');
-            kill(pid, 'SIGKILL', (nextCallback: Function, err: any) => {
-                if (err) {
-                    reject("Failed to close Neo4J. " + "It was not possible to close Neo4J. Pid: " + pid);
-                }
-                else {
-                    resolve();
-                }
+            if (require('is-running')(pid)) {
+                kill(pid, 'SIGKILL',  (err: any) => {
+                    if (err) {
+                        reject("Failed to close Neo4J. " + "It was not possible to close Neo4J. Pid: " + pid);
+                    }
+                    else {
+                        resolve();
+                    }
 
-            });
+                });
+            } else
+                resolve();
         });
     }
 
@@ -335,6 +338,8 @@ export class TrManager {
             return this.spawnNeo4JProcess()
         });
     }
+
+
 
     //stop the traca manager and the database process
     public stop(): Promise<void> {
