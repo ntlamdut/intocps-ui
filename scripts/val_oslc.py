@@ -142,7 +142,7 @@ for arg in args:
 
 
 # read known schemas
-for file in glob.glob("src/resources/into-cps/tracability/schemas/*.json"):
+for file in glob.glob("../src/resources/into-cps/tracability/schemas/*.json"):
     # take identifier from file name, all after 'V' and ignore the suffix
     version = ((file.replace(".json", "")).split('V'))[-1]
     print "## Importing {0}  [{1}]".format(file, version)
