@@ -17,15 +17,15 @@ export class Project implements IProject {
     MAX_NEW_FILENAME: number = 100; 
 
 
-    PATH_FMUS: String = "FMUs";
-    PATH_MODELS: String = "Models";
+    PATH_FMUS: string = "FMUs";
+    PATH_MODELS: string = "Models";
     static PATH_MULTI_MODELS: string = "Multi-models";
     static PATH_DSE: string = "DSEs";
     //PATH_CONNECTIONS: String = "SysML Connections";
-    static PATH_SYSML: String = "SysML";
-    static PATH_TEST_DATA_GENERATION: String = "Test-Data-Generation";
-    static PATH_TRACEABILITY: String = "Traceability";
-    static PATH_MODEL_CHECKING: String = "Model-Checking";
+    static PATH_SYSML: string = "SysML";
+    static PATH_TEST_DATA_GENERATION: string = "Test-Data-Generation";
+    static PATH_TRACEABILITY: string = "Traceability";
+    static PATH_MODEL_CHECKING: string = "Model-Checking";
 
     constructor(name: string, rootPath: string, configPath: string) {
         this.name = name;

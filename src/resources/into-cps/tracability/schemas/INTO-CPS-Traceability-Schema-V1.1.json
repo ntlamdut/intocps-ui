@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "INTO-CPS Traceability JSON Schema Version 1.3",
+  "description": "INTO-CPS Traceability JSON Schema Version 1.1",
+  "version":"1.1",
   "type": "object",
   "properties": {
     "rdf:RDF": {
@@ -25,9 +26,9 @@
         "messageFormatVersion": {
           "type": "string",
           "enum": [
-            "1.3"
+            "1.1"
           ],
-          "default": "1.3"
+          "default": "1.1"
         },
         "prov:Agent": {
           "type": "array",
@@ -58,16 +59,7 @@
           }
         },
         "prov:Activity": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "oneOf": [
-              {
-                  "$ref": "#/definitions/Activity"
-              }
-            ]
-          }
+          "$ref": "#/definitions/Activity"
         }
       },
       "required": [
@@ -103,14 +95,7 @@
         "simulation",
         "simulationConfigurationCreation",
         "simulationModelling",
-        "testCreation",
-		    "defineTestModel",
-		    "defineTestObjectives",
-		    "runTest",
-		    "defineMCModel",
-		    "defineCTAbstraction",
-		    "defineMCQuery",
-		    "runMCQuery"
+        "testCreation"
       ]
     },
     "EntityType": {
@@ -153,13 +138,11 @@
     "ToolType": {
       "type": "string",
       "enum": [
-        "Architecture Tool", 
-        "Co Simulation Engine",  
-        "Co Simulation GUI", 
-        "Software Tool",
-        "Simulation Tool",  
-        "Model Checking Tool",  
-        "Test Automation Tool"
+        "Architecture Tool",
+        "CoE",
+        "INTO-CPS App",
+        "Simulation Tool",
+        "Model Checking Tool"
       ]
     },
     "Activity": {
@@ -175,7 +158,12 @@
         },
         "time": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "time": "yyyy-mm-dd-hh-mm-ss"
+        },
+        "guid": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
         },
         "prov:wasAssociatedWith": {
           "type": "object",
@@ -222,6 +210,7 @@
         "rdf:about",
         "type",
         "time",
+        "guid",
         "prov:wasAssociatedWith",
         "prov:used"
       ],
@@ -229,12 +218,12 @@
     },
     "URIEntity": {
       "type": "string",
-      "pattern": "^Entity\\.(\\w)+:([a-zA-Z0-9\\\/.\\-_])+(:([a-zA-Z0-9.-_])+)?#[0-9a-f]{5,40}$",
+      "pattern": "^Entity\\.(\\w)+:([a-zA-Z0-9/.-_])+(:([a-zA-Z0-9.-_])+)?#([0-9]+)",
       "additionalProperties": false
     },
     "URITool": {
       "type": "string",
-      "pattern": "^Entity\\.softwareTool:([\\w\\W])+:[\\w\\W]*$",
+      "pattern": "^Entity\\.softwareTool:(\\w)+:(([0-9])+)((\\.[0-9]+))?",
       "additionalProperties": false
     },
     "URIActivity": {
@@ -377,13 +366,11 @@
         "rdf:about": {
           "$ref": "#/definitions/URIEntity"
         },
-        "path": {           
-          "type": "string",
-          "pattern": "^([a-zA-Z0-9\\\/.\\-_])+$"
+        "path": {
+          "type": "string"
         },
         "hash": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{5,40}$"
+          "type": "string"
         },
         "type": {
           "$ref": "#/definitions/EntityType"
@@ -441,7 +428,7 @@
         "hash",
         "type"
       ],
-      "additionalProperties": true
+      "additionalProperties": false
     }
   }
 }

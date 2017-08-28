@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "INTO-CPS Traceability JSON Schema Version 1.3",
+  "version":"1.3",
   "type": "object",
   "properties": {
     "rdf:RDF": {
@@ -95,11 +96,7 @@
         "dseAnalysisCreation",
         "dseConfigurationCreation",
         "fmuExport",
-        "fmuImport",
         "fmuExportForHiL",
-        "modelCreation",
-        "modelModification",
-        "modelDeletion",
         "modelDescriptionExport",
         "modelChecking",
         "modelDescriptionImport",
@@ -108,13 +105,13 @@
         "simulationConfigurationCreation",
         "simulationModelling",
         "testCreation",
-		"defineTestModel",
-		"defineTestObjectives",
-		"runTest",
-		"defineMCModel",
-		"defineCTAbstraction",
-		"defineMCQuery",
-		"runMCQuery"
+		    "defineTestModel",
+		    "defineTestObjectives",
+		    "runTest",
+		    "defineMCModel",
+		    "defineCTAbstraction",
+		    "defineMCQuery",
+		    "runMCQuery"
       ]
     },
     "EntityType": {
@@ -140,7 +137,6 @@
         "modelCheckModel",
         "modelCheckResult",
         "modelDescriptionFile",
-        "modelFile",
         "multiModelConfiguration",
         "objectivesValues",
         "requirement",
@@ -239,7 +235,7 @@
     },
     "URITool": {
       "type": "string",
-      "pattern": "^Entity\\.(\\w)+:([\\w\\W])+:[\\w\\W]*$",
+      "pattern": "^Entity\\.softwareTool:([\\w\\W])+:[\\w\\W]*$",
       "additionalProperties": false
     },
     "URIActivity": {
