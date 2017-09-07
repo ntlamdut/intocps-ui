@@ -4,7 +4,7 @@ import Path = require("path");
 import { RTTester } from "../rttester/RTTester";
 import fs = require("fs");
 import * as RTesterModalCommandWindow from "./GenericModalCommand";
-import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
+import { IntoCpsAppMenuHandler } from "../IntoCpsAppMenuHandler";
 
 
 export class LTLEditorController extends ViewController {
@@ -13,6 +13,9 @@ export class LTLEditorController extends ViewController {
     ltlQueryFileName: string;
     ltlEditor: any;
     hBMCSteps: HTMLInputElement;
+    hRequirements: HTMLInputElement;
+    hVerifiesButton: HTMLButtonElement;
+    hViolatesButton: HTMLButtonElement;
 
     constructor(protected viewDiv: HTMLDivElement, menuHandler: IntoCpsAppMenuHandler, folderName: string) {
         super(viewDiv);
@@ -20,6 +23,9 @@ export class LTLEditorController extends ViewController {
         this.ltlQueryFileName = Path.join(folderName, "query.json");
         IntoCpsApp.setTopName("LTL Formula");
         this.hBMCSteps = <HTMLInputElement>document.getElementById("BMCSteps");
+        this.hRequirements = <HTMLInputElement>document.getElementById("Requirements");
+        this.hVerifiesButton = <HTMLButtonElement>document.getElementById("verifies");
+        this.hViolatesButton = <HTMLButtonElement>document.getElementById("violates");
         this.ltlEditor = ace.edit("ltlFormula");
         this.ltlEditor.$blockScrolling = Infinity;
         let langTools: any = ace.require("ace/ext/language_tools");
@@ -34,12 +40,28 @@ export class LTLEditorController extends ViewController {
         let json = JSON.parse(data);
         this.ltlEditor.setValue(json["ltlFormula"]);
         this.hBMCSteps.value = json["BMCSteps"];
+        this.hRequirements.value = json["RequirementsToLink"];
+        if (json["TracabilityLink"] == "verifies") {
+            console.log("verifies");
+            (<any>this.hViolatesButton).checked = false;
+            this.hViolatesButton.parentElement.classList.remove("active");
+            (<any>this.hVerifiesButton).checked = true;
+            this.hVerifiesButton.parentElement.classList.add("active");
+        } else {
+            console.log("violates");
+            (<any>this.hVerifiesButton).checked = false;
+            this.hVerifiesButton.parentElement.classList.remove("active");
+            (<any>this.hViolatesButton).checked = true;
+            this.hViolatesButton.parentElement.classList.add("active");
+        }
     }
 
     save() {
         let json = {
             ltlFormula: this.ltlEditor.getValue(),
             BMCSteps: this.hBMCSteps.value,
+            RequirementsToLink: this.hRequirements.value,
+            TracabilityLink: (<any>this.hVerifiesButton).checked ? "verifies" : "violates",
         };
         fs.writeFileSync(this.ltlQueryFileName, JSON.stringify(json, null, 4));
         let proj = RTTester.getProjectOfFile(this.ltlQueryFileName);
