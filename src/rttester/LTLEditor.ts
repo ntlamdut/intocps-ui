@@ -40,7 +40,7 @@ export class LTLEditorController extends ViewController {
         let json = JSON.parse(data);
         this.ltlEditor.setValue(json["ltlFormula"]);
         this.hBMCSteps.value = json["BMCSteps"];
-        this.hRequirements.value = json["RequirementsToLink"];
+        this.hRequirements.value = json["RequirementsToLink"].join(", ");
         if (json["TracabilityLink"] == "verifies") {
             console.log("verifies");
             (<any>this.hViolatesButton).checked = false;
@@ -57,10 +57,11 @@ export class LTLEditorController extends ViewController {
     }
 
     save() {
+        let requirements = this.hRequirements.value.split(',').map((r: string)=> r.trim());
         let json = {
             ltlFormula: this.ltlEditor.getValue(),
             BMCSteps: this.hBMCSteps.value,
-            RequirementsToLink: this.hRequirements.value,
+            RequirementsToLink: requirements,
             TracabilityLink: (<any>this.hVerifiesButton).checked ? "verifies" : "violates",
         };
         fs.writeFileSync(this.ltlQueryFileName, JSON.stringify(json, null, 4));
