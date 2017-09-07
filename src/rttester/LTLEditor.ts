@@ -87,7 +87,7 @@ export class LTLEditorController extends ViewController {
                 env: RTTester.genericCommandEnv(this.ltlQueryFileName),
                 cwd: queryDir
             },
-            onSuccess: () => { self.menuHandler.openHTMLInMainView(modelCheckingReportPath, modelCheckingReportTitle) }
+            onSuccess: () => { self.menuHandler.openMCResult(modelCheckingReportPath) }
         };
         RTesterModalCommandWindow.runCommand(cmd);
     }
