@@ -42,13 +42,11 @@ export class LTLEditorController extends ViewController {
         this.hBMCSteps.value = json["BMCSteps"];
         this.hRequirements.value = json["RequirementsToLink"].join(", ");
         if (json["TracabilityLink"] == "verifies") {
-            console.log("verifies");
             (<any>this.hViolatesButton).checked = false;
             this.hViolatesButton.parentElement.classList.remove("active");
             (<any>this.hVerifiesButton).checked = true;
             this.hVerifiesButton.parentElement.classList.add("active");
         } else {
-            console.log("violates");
             (<any>this.hVerifiesButton).checked = false;
             this.hVerifiesButton.parentElement.classList.remove("active");
             (<any>this.hViolatesButton).checked = true;
