@@ -4,7 +4,9 @@ import Path = require('path');
 
 import { IProject } from "./IProject"
 import { ProjectSettings } from "./ProjectSettings"
-import {DseConfiguration} from "../intocps-configurations/dse-configuration"
+import { DseConfiguration } from "../intocps-configurations/dse-configuration"
+import { IntoCpsApp } from "../IntoCpsApp";
+import { SettingKeys } from "../settings/SettingKeys";
 
 export class Project implements IProject {
 
@@ -14,7 +16,7 @@ export class Project implements IProject {
     /**
      * The maximum number to be concatenated to filenames when a fresh name is needed
      */
-    MAX_NEW_FILENAME: number = 100; 
+    MAX_NEW_FILENAME: number = 100;
 
 
     PATH_FMUS: string = "FMUs";
@@ -56,17 +58,17 @@ export class Project implements IProject {
         Project.PATH_TEST_DATA_GENERATION, Project.PATH_MODEL_CHECKING, Project.PATH_TRACEABILITY];
 
         for (var i = 0; folders.length > i; i++) {
-          try {
-            var folder = folders[i];
-            let path = Path.normalize(this.rootPath + "/" + folder);
-            if (!fs.existsSync(path)) {
-              fs.mkdir(path, function (err) { });
+            try {
+                var folder = folders[i];
+                let path = Path.normalize(this.rootPath + "/" + folder);
+                if (!fs.existsSync(path)) {
+                    fs.mkdir(path, function (err) { });
+                }
             }
-          } 
-          catch (e) {
-            //already exists
-          }
-          //create empty ignore file for folder
+            catch (e) {
+                //already exists
+            }
+            //create empty ignore file for folder
         }
 
         fs.open(this.configPath, "w", (err, fd) => {
@@ -109,7 +111,7 @@ export class Project implements IProject {
     public createMultiModel(name: String, jsonContent: String): String {
         let path = Path.normalize(this.rootPath + "/" + Project.PATH_MULTI_MODELS + "/" + name);
 
-        if(fs.existsSync(path)) throw new Error('Multi-Model '+  name + ' already exists!');
+        if (fs.existsSync(path)) throw new Error('Multi-Model ' + name + ' already exists!');
 
         fs.mkdirSync(path);
 
@@ -125,7 +127,7 @@ export class Project implements IProject {
 
         fs.mkdirSync(path);
 
-        let fullpath = Path.normalize(path + "/"+name+".dse.json");
+        let fullpath = Path.normalize(path + "/" + name + ".dse.json");
 
         fs.writeFileSync(fullpath, jsonContent == null ? "{}" : jsonContent, "UTF-8");
 
@@ -169,8 +171,8 @@ export class Project implements IProject {
     }
 
 
-    public freshMultiModelName(name : string): string { 
-        return this.freshFilename(Path.normalize(this.rootPath + "/" + Project.PATH_MULTI_MODELS),name); 
+    public freshMultiModelName(name: string): string {
+        return this.freshFilename(Path.normalize(this.rootPath + "/" + Project.PATH_MULTI_MODELS), name);
     }
 
 
@@ -179,25 +181,24 @@ export class Project implements IProject {
      * @param {string} path 
      * @param {string} name 
      */
-    public freshFilename(path: string, name: string) : string
-    {
-        var filepath : string;
-        var newname : string = name; 
+    public freshFilename(path: string, name: string): string {
+        var filepath: string;
+        var newname: string = name;
 
-        for (var i = 1; i < this.MAX_NEW_FILENAME; i++)
-            {
-                filepath = Path.format({ dir : path,
-                                         base : newname, 
-                                         root : null, 
-                                         name : null, 
-                                         ext : null
-                                        });
+        for (var i = 1; i < this.MAX_NEW_FILENAME; i++) {
+            filepath = Path.format({
+                dir: path,
+                base: newname,
+                root: null,
+                name: null,
+                ext: null
+            });
 
-                if(!fs.existsSync(filepath)) return newname;        
+            if (!fs.existsSync(filepath)) return newname;
 
-                newname = name +'-'+ i;
-            }
-            
+            newname = name + '-' + i;
+        }
+
         return name;
     }
 
@@ -213,3 +214,34 @@ export function checksum(str: string, algorithm: any, encoding: any): string {
         .digest(encoding || 'hex')
 }
 
+
+export function openProjectViaDirectoryDialog() {
+
+    let remote = require("electron").remote;
+    let dialog = remote.dialog;
+    let settings = IntoCpsApp.getInstance().getSettings();
+    let defaultPath = settings.getValue(SettingKeys.DEFAULT_PROJECTS_FOLDER_PATH);
+    let dialogResult: string[] = dialog.showOpenDialog({ defaultPath: defaultPath, properties: ["openDirectory"] });
+    if (dialogResult != undefined) {
+        try {
+
+            let path = Path.join(dialogResult[0], ".project.json");
+            if (fs.accessSync(path, fs.constants.R_OK)) {
+                console.info("Cannot open project: "+ path);
+                dialog.showErrorBox("Cannot open project", "Unable to find project at path: " + path);
+                return;
+            } else {
+                console.info("Opening project at: "+path);
+                try{
+                let project = IntoCpsApp.getInstance().loadProject(path);
+                IntoCpsApp.getInstance().setActiveProject(project);
+                }catch(e){
+                    dialog.showErrorBox("Cannot open project", "Invalid project file at: " + path);
+                    return;
+                }
+            }
+        } catch (e) {
+            dialog.showErrorBox("Cannot open project", "Unable to find project at path: " + dialogResult[0] + " Error: " + e);
+        }
+    }
+}
