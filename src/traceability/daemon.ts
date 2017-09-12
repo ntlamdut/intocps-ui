@@ -97,7 +97,7 @@ export class Daemon {
                 //server.use(restify.queryParser({ mapParams: false }));
 
                 // ------- REST URLs: --------
-                app.post('/traces/push/json', (this.handlePostJSON).bind(this));
+                app.post('/traces/push/json', (req, res)=>this.handlePostJSON(req,res));
                 app.get('/traces/from/:source/json', (this.handleGETTraceFromJSON).bind(this));
                 app.get('/traces/to/:target/json', (this.handleGETTraceToJSON).bind(this));
                 app.get('/nodes/json', (this.handleGETNodeToJSON).bind(this));
@@ -313,10 +313,10 @@ export class Daemon {
             });
     }
 
-    private handlePostJSON(req: Express.Request, resp: Express.Response, next: Express.NextFunction) {
+    private handlePostJSON(req: Express.Request, resp: Express.Response) {
         if (!this.isconnected) {
             this.sendUnconnectedMessage(resp);
-            return next();
+            return ;
         }
         console.log("POST request received:");
         if (req.is('application/json')) {
@@ -331,7 +331,7 @@ export class Daemon {
                                     status: 'validation error',
                                     message: status
                                 });
-                                return next();
+                                return ;
                             }
                         }
                     }
@@ -339,10 +339,16 @@ export class Daemon {
                         status: 'success',
                         message: 'JSON object stored'
                     });
-                    return next();
+                    return ;
                 })
                 .catch(function (err) {
-                    return next(err);
+                    console.log("handlePostJSON catch: "+err);
+                    
+                    resp.status(500).json({
+                        status: 'error',
+                        message: err
+                    });
+                    return ;
                 });
         }
         else {
@@ -385,7 +391,7 @@ export class Daemon {
         return this.recordTrace(jsonObj);
     }
 
-    private validateJsonInput(jsonObj: any): any {
+    private validateJsonInput(jsonObj: any): jsonschema.ValidatorResult {
         let ctxt: any = { schema: "", options: "", propertyPath: "", base: "", schemas: "" };
 
         let rdfKey = "rdf:RDF";
@@ -425,35 +431,42 @@ export class Daemon {
     }
 
     public recordTrace(jsonObj: Object): Promise<any> {
-        return this.recordTraceNoFile(jsonObj).then((this.storeMessageFile).bind(this, jsonObj));
+        return this.recordTraceNoFile(jsonObj).then((data) =>this.storeMessageFile( jsonObj));
     }
 
     public recordTraceNoFile(jsonObj: Object): Promise<any> {
-        var validationResult: any = this.validateJsonInput(jsonObj);
-        var pr: Promise<any> = Promise.resolve(undefined);
-        if (validationResult.errors.length != 0) {
-            console.log("Recieved message is not valid according to the JsonSchema and will not be recorded. JsonSchema was read from: ");
-            //console.log(this.jsonSchemaPath);
-            console.log("Validation Errrors are:");
-            console.log(validationResult);
-            return pr.return(validationResult);
-        }
-        var objArray: Object[];
-        if (!Array.isArray(jsonObj)) {
-            objArray = [jsonObj];
-        }
-        else {
-            objArray = jsonObj;
-        }
-        for (var index in objArray) {
-            var obj: any = objArray[index];
-            if ((<Object>obj).hasOwnProperty("$")) {
-                // if data comes from xml parser the object needs to be reformatted
-                obj = this.reformat(obj);
+
+        return new Promise<void>((resolve, reject) => {
+
+            var validationResult = this.validateJsonInput(jsonObj);
+            //var pr: Promise<any> = Promise.resolve(undefined);
+            if (validationResult.errors.length != 0) {
+                console.log("Recieved message is not valid according to the JsonSchema and will not be recorded. JsonSchema was read from: ");
+                //console.log(this.jsonSchemaPath);
+                console.log("Validation Errrors are:");
+                console.log(validationResult);
+                reject(validationResult);
+                return;
             }
-            pr = pr.return(obj).then((function (localObj: any) { return this.parseSubject(localObj, ""); }).bind(this));
-        }
-        return pr;
+            var objArray: Object[];
+            if (!Array.isArray(jsonObj)) {
+                objArray = [jsonObj];
+            }
+            else {
+                objArray = jsonObj;
+            }
+            for (var index in objArray) {
+                var obj: any = objArray[index];
+                if ((<Object>obj).hasOwnProperty("$")) {
+                    // if data comes from xml parser the object needs to be reformatted
+                    obj = this.reformat(obj);
+                }
+
+                //add to database
+                this.parseSubject(obj, "");
+            }
+            resolve();
+        });
     }
     public setDBfileLocation(location: string) {
         this.DBfileLocation = location;
