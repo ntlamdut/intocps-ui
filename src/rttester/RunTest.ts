@@ -103,7 +103,7 @@ export class RunTestController extends ViewController {
         let python = RTTester.pythonExecutable();
         let rttTestContext = RTTester.getProjectOfFile(this.testCase);
         let runCOEScript = Path.normalize(Path.join(
-            rttTestContext, "..", "utils", "run-COE.py"));
+            rttTestContext, "utils", "run-COE.py"));
         let driverFMU = RTTester.getRelativePathInProject(this.testCase);
         let summaryPath = Path.join(this.testCase, "test-case-summary.html");
         let summaryTitle = RTTester.getRelativePathInProject(summaryPath);

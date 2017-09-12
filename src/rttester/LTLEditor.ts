@@ -108,7 +108,7 @@ export class LTLEditorController extends ViewController {
                     verdict: verdict,
                     BMCSteps: this.hBMCSteps.value,
                     requirements: this.getRequirements(),
-                    tracabilityLink: this.getTracabilityLink(),
+                    traceabilityLink: this.getTracabilityLink(),
                 };
                 fs.writeFileSync(modelCheckingReportPathJSON, JSON.stringify(jsonReport, null, 4));
                 self.menuHandler.openMCResult(modelCheckingReportPath)
