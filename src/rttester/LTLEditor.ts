@@ -54,13 +54,20 @@ export class LTLEditorController extends ViewController {
         }
     }
 
+    getRequirements() {
+        return this.hRequirements.value.split(',').map((r: string) => r.trim());
+    }
+
+    getTracabilityLink() {
+        return (<any>this.hVerifiesButton).checked ? "verifies" : "violates";
+    }
+
     save() {
-        let requirements = this.hRequirements.value.split(',').map((r: string)=> r.trim());
         let json = {
             ltlFormula: this.ltlEditor.getValue(),
             BMCSteps: this.hBMCSteps.value,
-            RequirementsToLink: requirements,
-            TracabilityLink: (<any>this.hVerifiesButton).checked ? "verifies" : "violates",
+            RequirementsToLink: this.getRequirements(),
+            TracabilityLink: this.getTracabilityLink(),
         };
         fs.writeFileSync(this.ltlQueryFileName, JSON.stringify(json, null, 4));
         let proj = RTTester.getProjectOfFile(this.ltlQueryFileName);
@@ -75,6 +82,7 @@ export class LTLEditorController extends ViewController {
         let queryDir = Path.dirname(this.ltlQueryFileName);
         let queryName = Path.basename(queryDir);
         let modelCheckingReportPath = Path.join(queryDir, "model-checking-report.html");
+        let modelCheckingReportPathJSON = Path.join(queryDir, ".model-checking-report.json");
         let modelCheckingReportTitle = RTTester.getRelativePathInProject(modelCheckingReportPath);
         let cmd = {
             title: "Check LTL Query",
@@ -86,7 +94,25 @@ export class LTLEditorController extends ViewController {
                 env: RTTester.genericCommandEnv(this.ltlQueryFileName),
                 cwd: queryDir
             },
-            onSuccess: () => { self.menuHandler.openMCResult(modelCheckingReportPath) }
+            onSuccess: () => {
+                let rawVerdict = fs.readFileSync(Path.join(queryDir, "verdict.txt"));
+                let verdict: string = null;
+                if (rawVerdict.includes("holds")) {
+                    verdict = "holds";
+                } else if (rawVerdict.includes("violated")) {
+                    verdict = "does-not-hold";
+                } else {
+                    verdict = "unknown";
+                }
+                let jsonReport = {
+                    verdict: verdict,
+                    BMCSteps: this.hBMCSteps.value,
+                    requirements: this.getRequirements(),
+                    tracabilityLink: this.getTracabilityLink(),
+                };
+                fs.writeFileSync(modelCheckingReportPathJSON, JSON.stringify(jsonReport, null, 4));
+                self.menuHandler.openMCResult(modelCheckingReportPath)
+            }
         };
         RTesterModalCommandWindow.runCommand(cmd);
     }
