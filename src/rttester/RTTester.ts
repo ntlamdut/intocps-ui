@@ -28,6 +28,7 @@ export class RTTester {
         env["RTT_TESTCONTEXT"] = RTTester.getProjectOfFile(path);
         env["RTTDIR"] = RTTester.rttInstallDir();
         env["RTT_OP_KEY"] = "TMS:19999:FMI";
+        env["OSLC_PORT"] = "7474";
         return env;
     }
 
