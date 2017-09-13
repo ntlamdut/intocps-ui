@@ -70,9 +70,6 @@ export class LTLEditorController extends ViewController {
             TracabilityLink: this.getTracabilityLink(),
         };
         fs.writeFileSync(this.ltlQueryFileName, JSON.stringify(json, null, 4));
-        let proj = RTTester.getProjectOfFile(this.ltlQueryFileName);
-        let queryFolder = Path.dirname(RTTester.getRelativePathInProject(this.ltlQueryFileName));
-        RTTester.queueEvent("Define-MC-Query", proj, queryFolder);
     }
 
     check() {
