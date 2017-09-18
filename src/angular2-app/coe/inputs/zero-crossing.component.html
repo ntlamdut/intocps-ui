@@ -41,10 +41,10 @@
             <p *ngIf="!editing" class="form-control-static">{{constraint.order}}</p>
             <div *ngIf="editing">
                 <label class="radio-inline">
-                    <input [(ngModel)]="constraint.order" type="radio" name="order" value="1"> 1
+                    <input [(ngModel)]="constraint.order" type="radio" attr.name="{{constraint.name}}" value="1"> 1
                 </label>
                 <label class="radio-inline">
-                    <input [(ngModel)]="constraint.order" type="radio" name="order" value="2"> 2
+                    <input [(ngModel)]="constraint.order" type="radio" attr.name="{{constraint.name}}" value="2"> 2
                 </label>
             </div>
         </div>
