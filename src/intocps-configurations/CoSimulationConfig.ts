@@ -264,17 +264,22 @@ export interface VariableStepConstraint {
 
 export class ZeroCrossingConstraint implements VariableStepConstraint {
     type = "zerocrossing";
-    public name: string
+    //public name: string = "monkey"
+    private static index : number = 0;
     constructor(
         public id: string = "zc",
+        public name: string,
         public ports: Array<InstanceScalarPair> = [],
         public order: string = "2", // Can be 1 or 2.
         public abstol?: number,
         public safety?: number
-    ) { }
+    ) { 
+        this.name = "order"+ZeroCrossingConstraint.index++;
+
+    }
 
     createName(index:number){
-        this.name = "order"+index;
+        //this.name = "order"+index;
     }
 
     toFormGroup() {
