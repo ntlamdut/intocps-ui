@@ -102,7 +102,7 @@ export class CoeConfigurationComponent {
                     // Create an array of all output ports on all instances
                     this.outputPorts = this.config.multiModel.fmuInstances
                         .map(instance => instance.fmu.scalarVariables
-                            .filter(sv => sv.causality === CausalityType.Output)
+                            .filter(sv => sv.causality === CausalityType.Output||sv.causality === CausalityType.Parameter)
                             .map(sv => this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name)))
                         .reduce((a, b) => a.concat(...b), []);
 
