@@ -197,10 +197,6 @@ export class CoeConfigurationComponent {
         let algorithm = <VariableStepAlgorithm>this.config.algorithm;
         let formArray = <FormArray>this.form.find('algorithm').find('constraints');
         let constraint = new this.newConstraint();
-
-        if (constraint instanceof ZeroCrossingConstraint) {
-            constraint.createName(this.zeroCrossings++);
-        }
         algorithm.constraints.push(constraint);
         formArray.push(constraint.toFormGroup());
     }
