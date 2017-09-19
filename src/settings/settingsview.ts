@@ -1,8 +1,8 @@
-import * as IntoCpsApp from  "../IntoCpsApp"
-import {SettingKeys} from "./SettingKeys";
-import {TextInputNonLoad, TextInputIds} from "../components/text-input-non-load";
-import {Settings} from "./settings";
-import {Component} from "../components/component";
+import * as IntoCpsApp from "../IntoCpsApp"
+import { SettingKeys } from "./SettingKeys";
+import { TextInputNonLoad, TextInputIds } from "../components/text-input-non-load";
+import { Settings } from "./settings";
+import { Component } from "../components/component";
 
 class SettingsView {
     private keys: { [key: string]: any };
@@ -13,7 +13,7 @@ class SettingsView {
         this.settings = IntoCpsApp.IntoCpsApp.getInstance().getSettings();
         this.settingsView = document.getElementById("settings-div");
         Object.keys(SettingKeys).forEach(k => {
-            if(k != "DEFAULT_VALUES"){
+            if (k != "DEFAULT_VALUES") {
                 this.addSetting((<any>SettingKeys)[k]);
             }
         });
@@ -65,8 +65,13 @@ class SettingsView {
         this.settings.save();
         let remote = require("electron").remote;
         let dialog = remote.dialog;
-        dialog.showMessageBox({ type: 'warning', buttons: ["ok"], message: "Please restart the application for all settings to take effect." }, function (button: any) {
-            window.top.close();
+        dialog.showMessageBox({ type: 'warning', buttons: ["ok", "cancel"], message: "Application restart required for all settings to take effect." }, function (button: any) {
+            if (button == 0) {
+                remote.app.relaunch();
+                remote.app.exit();
+            } else {
+                window.top.close();
+            }
         });
 
         return false;

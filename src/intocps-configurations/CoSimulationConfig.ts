@@ -264,21 +264,24 @@ export interface VariableStepConstraint {
 
 export class ZeroCrossingConstraint implements VariableStepConstraint {
     type = "zerocrossing";
-
+    private static index : number = 0;
+    public readonly name : string;
     constructor(
         public id: string = "zc",
         public ports: Array<InstanceScalarPair> = [],
         public order: string = "2", // Can be 1 or 2.
         public abstol?: number,
         public safety?: number
-    ) {
+    ) { 
+        this.name = "order"+ZeroCrossingConstraint.index++;
+
     }
 
     toFormGroup() {
         return new FormGroup({
             id: new FormControl(this.id),
             ports: new FormControl(this.ports, [lengthValidator(1, 2), uniqueValidator]),
-            order: new FormControl(this.order),
+            [this.name]: new FormControl(this.order),
             abstol: new FormControl(this.abstol, [numberValidator]),
             safety: new FormControl(this.safety, [numberValidator])
         });

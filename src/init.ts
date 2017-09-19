@@ -5,6 +5,7 @@ import { CreateMCProjectController } from "./rttester/CreateMCProject";
 import { RunTestController } from "./rttester/RunTest";
 import { LTLEditorController } from "./rttester/LTLEditor";
 import { CTAbstractionsView } from "./rttester/CTAbstractionsView";
+import { MCResultView } from "./rttester/MCResultView";
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import * as AddLTLQueryDialog from "./rttester/AddLTLQueryDialog";
 import { BrowserController } from "./proj/projbrowserview";
@@ -223,6 +224,10 @@ menuHandler.showAddLTLQuery = (folder: string) => {
         AddLTLQueryDialog.display(folder);
         (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
     });
+};
+
+menuHandler.openMCResult = (fileName: string) => {
+    openView("rttester/MCResultView.html", view => new MCResultView(view, fileName));
 };
 
 menuHandler.openSysMlExport = () => {

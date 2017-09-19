@@ -31,7 +31,7 @@ import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
 })
 export class CoeConfigurationComponent {
     private _path: string;
-    
+
 
     @Input()
     set path(path: string) {
@@ -58,6 +58,9 @@ export class CoeConfigurationComponent {
     parseError: string = null;
     warnings: WarningMessage[] = [];
     loglevels: string[] = ["Not set", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
+    //The variable zeroCrossings is necessary to give different names to the radiobutton groups in the different zeroCrossing constraints.
+    // Otherwise they will all be connected.
+    zeroCrossings: number = 0;
 
     private config: CoSimulationConfig;
 
@@ -102,9 +105,9 @@ export class CoeConfigurationComponent {
                     // Create an array of all output ports on all instances
                     this.outputPorts = this.config.multiModel.fmuInstances
                         .map(instance => instance.fmu.scalarVariables
-                            .filter(sv => sv.causality === CausalityType.Output||sv.causality === CausalityType.Parameter)
+                            .filter(sv => sv.type === ScalarVariableType.Real && (sv.causality === CausalityType.Output||sv.causality === CausalityType.Parameter))
                             .map(sv => this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name)))
-                        .reduce((a, b) => a.concat(...b),[]);
+                        .reduce((a, b) => a.concat(...b), []);
 
                     // Create a form group for validation
                     this.form = new FormGroup({
@@ -116,7 +119,7 @@ export class CoeConfigurationComponent {
                         global_relative_tolerance: new FormControl(config.global_relative_tolerance, [Validators.required, numberValidator])
                     }, null, lessThanValidator('startTime', 'endTime'));
                 });
-            }, error => this.zone.run(() => {this.parseError = error})).catch(error => console.error(`Error during parsing of config: ${error}`));
+            }, error => this.zone.run(() => { this.parseError = error })).catch(error => console.error(`Error during parsing of config: ${error}`));
     }
 
     public setPostProcessingScript(config: CoSimulationConfig, path: string) {
@@ -153,7 +156,7 @@ export class CoeConfigurationComponent {
 
         if (this.warnings.length > 0) {
 
-             let remote = require("electron").remote;
+            let remote = require("electron").remote;
             let dialog = remote.dialog;
             let res = dialog.showMessageBox({ title: 'Validation failed', message: 'Do you want to save anyway?', buttons: ["No", "Yes"] });
 
@@ -182,13 +185,13 @@ export class CoeConfigurationComponent {
         return scalarVariables.filter(variable => (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local));
     }
 
-    restrictToCheckedLiveStream(instance: Instance, scalarVariables: Array<ScalarVariable>){
-        return scalarVariables.filter(variable => this.isLivestreamChecked(instance,variable));
+    restrictToCheckedLiveStream(instance: Instance, scalarVariables: Array<ScalarVariable>) {
+        return scalarVariables.filter(variable => this.isLivestreamChecked(instance, variable));
     }
 
-    
-    restrictToCheckedLogVariables(instance: Instance, scalarVariables: Array<ScalarVariable>){
-        return scalarVariables.filter(variable => this.isLogVariableChecked(instance,variable));
+
+    restrictToCheckedLogVariables(instance: Instance, scalarVariables: Array<ScalarVariable>) {
+        return scalarVariables.filter(variable => this.isLogVariableChecked(instance, variable));
     }
 
     addConstraint() {
@@ -196,9 +199,7 @@ export class CoeConfigurationComponent {
 
         let algorithm = <VariableStepAlgorithm>this.config.algorithm;
         let formArray = <FormArray>this.form.find('algorithm').find('constraints');
-
         let constraint = new this.newConstraint();
-
         algorithm.constraints.push(constraint);
         formArray.push(constraint.toFormGroup());
     }
@@ -233,7 +234,7 @@ export class CoeConfigurationComponent {
         return variables.indexOf(output) !== -1;
     }
 
-    
+
     isLogVariableChecked(instance: Instance, output: ScalarVariable) {
         let variables = this.config.logVariables.get(instance);
 
@@ -242,12 +243,11 @@ export class CoeConfigurationComponent {
         return variables.indexOf(output) !== -1;
     }
 
-    isLocal(variable: ScalarVariable):boolean
-    {
+    isLocal(variable: ScalarVariable): boolean {
         return variable.causality === CausalityType.Local
     }
 
-    getScalarVariableTypeName(type: ScalarVariableType){
+    getScalarVariableTypeName(type: ScalarVariableType) {
         return ScalarVariableType[type];
     }
 
@@ -269,7 +269,7 @@ export class CoeConfigurationComponent {
         }
     }
 
-    
+
     onLogVariableChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
         let variables = this.config.logVariables.get(instance);
 
@@ -287,11 +287,11 @@ export class CoeConfigurationComponent {
                 this.config.logVariables.delete(instance);
         }
     }
-    
-    onLiveStreamKey(event : any){
+
+    onLiveStreamKey(event: any) {
         this.liveStreamSearchName = event.target.value;
     }
-    onLogVariablesKey(event : any){
+    onLogVariablesKey(event: any) {
         this.logVariablesSearchName = event.target.value;
     }
 }

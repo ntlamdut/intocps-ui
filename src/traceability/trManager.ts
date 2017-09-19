@@ -84,7 +84,7 @@ export class TrManager {
     neo4Jconf: Neo4Jconfiguration = new Neo4Jconfiguration();
     running: boolean;
     neo4JProcess: childProcess.ChildProcess;
-    daemon: Daemon = new Daemon();;
+    daemon: Daemon = null;
     enabled: boolean = false;
     private daemonPort: number = 0;
     private dbFilesSubfoder: string = 'db';
@@ -93,6 +93,10 @@ export class TrManager {
         this.enabled = enabled;
         this.running = false;
         this.daemonPort = daemonPort;
+        if(this.enabled)
+        {
+            this.daemon = new Daemon();
+        }
     }
 
     public getDaemonPort(): number {
