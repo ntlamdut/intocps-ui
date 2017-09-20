@@ -4,11 +4,12 @@ import IntoCpsApp from "../../IntoCpsApp";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm,
     VariableStepAlgorithm, ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint,
-    VariableStepConstraint
+    VariableStepConstraint,FmuMaxStepSizeConstraint
 } from "../../intocps-configurations/CoSimulationConfig";
 import { ScalarVariable, CausalityType, Instance, InstanceScalarPair, ScalarVariableType } from "./models/Fmu";
 import { ZeroCrossingComponent } from "./inputs/zero-crossing.component";
 import { BoundedDifferenceComponent } from "./inputs/bounded-difference.component";
+import { FmuMaxStepSizeComponent } from "./inputs/fmu-max-step-size.component";
 import { SamplingRateComponent } from "./inputs/sampling-rate.component";
 import { numberValidator, lessThanValidator } from "../shared/validators";
 import { NavigationService } from "../shared/navigation.service";
@@ -21,6 +22,7 @@ import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
         FORM_DIRECTIVES,
         REACTIVE_FORM_DIRECTIVES,
         ZeroCrossingComponent,
+        FmuMaxStepSizeComponent,
         BoundedDifferenceComponent,
         SamplingRateComponent,
         FileBrowserComponent
@@ -70,7 +72,8 @@ export class CoeConfigurationComponent {
     private constraintConstructors = [
         ZeroCrossingConstraint,
         BoundedDifferenceConstraint,
-        SamplingRateConstraint
+        SamplingRateConstraint,
+        FmuMaxStepSizeConstraint
     ];
 
     constructor(private zone: NgZone, private navigationService: NavigationService) {
@@ -213,6 +216,8 @@ export class CoeConfigurationComponent {
     getConstraintName(constraint: any) {
         if (constraint === ZeroCrossingConstraint || constraint instanceof ZeroCrossingConstraint)
             return "Zero Crossing";
+        if (constraint === FmuMaxStepSizeConstraint || constraint instanceof FmuMaxStepSizeConstraint)
+            return "FMU Max Step Size";
 
         if (constraint === BoundedDifferenceConstraint || constraint instanceof BoundedDifferenceConstraint)
             return "Bounded Difference";

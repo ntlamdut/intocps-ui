@@ -301,6 +301,31 @@ export class ZeroCrossingConstraint implements VariableStepConstraint {
     }
 }
 
+export class FmuMaxStepSizeConstraint implements VariableStepConstraint {
+    type = "fmumaxstepsize";
+
+    constructor(
+        public id: string = "maxstepsize"
+    ) {
+    }
+
+    toFormGroup() {
+        return new FormGroup({
+            id: new FormControl(this.id)
+        });
+    }
+
+    toObject() {
+        let obj: any = {
+            type: this.type
+        };
+
+        return obj;
+    }
+}
+
+
+
 export class BoundedDifferenceConstraint implements VariableStepConstraint {
     type = "boundeddifference";
 

@@ -1,6 +1,6 @@
 import { MultiModelConfig } from "./MultiModelConfig";
 import {
-    CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, VariableStepAlgorithm, VariableStepConstraint,
+    CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, FmuMaxStepSizeConstraint, VariableStepAlgorithm, VariableStepConstraint,
     ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint
 } from "./CoSimulationConfig";
 import * as Path from 'path';
@@ -300,6 +300,12 @@ parseAlgorithm(data: any, multiModel: MultiModelConfig): ICoSimAlgorithm {
                 c.order.toString(),
                 c.abstol,
                 c.safety
+            )
+        }
+
+        if (c.type === "fmumaxstepsize") {
+            return new FmuMaxStepSizeConstraint(
+                id
             )
         }
 
