@@ -142,8 +142,9 @@
 									<sampling-rate [editing]="editing" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
 									 *ngIf="constraint.type === 'samplingrate'"></sampling-rate>
 
-									 <fmu-max-step-size [editing]="editing" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
-									 *ngIf="constraint.type === 'fmumaxstepsize'"></fmu-max-step-size>
+									 <fmu-max-step-size [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
+                   *ngIf="constraint.type === 'fmumaxstepsize'"> 
+                   </fmu-max-step-size>
 								</div>
 							</div>
 						</div>
