@@ -17,7 +17,7 @@ export class CoeConfig {
 
         let data: any = {};
 
-        let livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
+        let livestream: Map<string, ScalarVariable[]> = new Map<string, ScalarVariable[]>();
 
         if (this.coSimConfig.liveGraphs) {
             this.coSimConfig.liveGraphs.forEach(g => {
@@ -25,19 +25,19 @@ export class CoeConfig {
                 if (g.getLivestream()) {
                     g.getLivestream().forEach((svs, ins: Instance) => {
 
-
-                        if (livestream.has(ins)) {
-                            let list: any= [];
+                        let iname = Serializer.getId(ins);
+                        if (livestream.has(iname)) {
+                            let list: any = livestream.get(iname);
                             g.getLivestream().get(ins).forEach(sv => {
                                 if (list.indexOf(sv) < 0) {
                                     list.push(sv);
                                 }
                             });
 
-                            livestream.set(ins, list);
+                            livestream.set(iname, list);
                         }
                         else {
-                            livestream.set(ins, g.getLivestream().get(ins));
+                            livestream.set(iname, g.getLivestream().get(ins).map(x => x));
                         }
                     });
                 }
@@ -56,7 +56,7 @@ export class CoeConfig {
         delete data["postProcessingScript"];
 
         let livestreamData: any = {};
-        livestream.forEach((svs, instance) => livestreamData[Serializer.getId(instance)] = svs.map(sv => sv.name));
+        livestream.forEach((svs, iname) => livestreamData[iname] = svs.map(sv => sv.name));
         data["livestream"] = livestreamData;
 
         if (data["graphs"])
