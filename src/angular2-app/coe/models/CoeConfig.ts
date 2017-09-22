@@ -1,5 +1,7 @@
 import * as Path from 'path';
 import { CoSimulationConfig } from "../../../intocps-configurations/CoSimulationConfig";
+import { Instance, ScalarVariable } from "../models/Fmu"
+import { Serializer } from "../../../intocps-configurations/Parser"
 
 export class CoeConfig {
     constructor(private coSimConfig: CoSimulationConfig, private remoteCoe: boolean = false) {
@@ -15,14 +17,52 @@ export class CoeConfig {
 
         let data: any = {};
 
+        let livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
+
+        if (this.coSimConfig.liveGraphs) {
+            this.coSimConfig.liveGraphs.forEach(g => {
+
+                if (g.livestream) {
+                    g.livestream.forEach((svs, ins: Instance) => {
+
+
+                        if (livestream.has(ins)) {
+                            let list = livestream.get(ins);
+                            g.livestream.get(ins).forEach(sv => {
+                                if (list.indexOf(sv) < 0) {
+                                    list.push(sv);
+                                }
+                            });
+
+                            livestream.set(ins, list);
+                        }
+                        else {
+                            livestream.set(ins, g.livestream.get(ins));
+                        }
+                    });
+                }
+
+            });
+        }
+
         //FMUS
         Object.assign(data, this.coSimConfig.multiModel.toObject(), this.coSimConfig.toObject());
 
         delete data["endTime"];
         delete data["startTime"];
         delete data["multimodel_path"];
+        delete data["multimodel_crc"];
         delete data["enableAllLogCategoriesPerInstance"];
         delete data["postProcessingScript"];
+
+        let livestreamData: any = {};
+        livestream.forEach((svs, instance) => livestreamData[Serializer.getId(instance)] = svs.map(sv => sv.name));
+        data["livestream"] = livestreamData;
+
+        if (data["graphs"])
+            delete data["graphs"];
+
+
 
         if (!data["livestreamInterval"])
             delete data["livestreamInterval"];

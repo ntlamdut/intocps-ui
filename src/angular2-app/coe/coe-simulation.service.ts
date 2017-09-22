@@ -7,7 +7,7 @@ import { CoeConfig } from "./models/CoeConfig";
 import * as Path from "path";
 import { BehaviorSubject } from "rxjs/Rx";
 import { Injectable, NgZone } from "@angular/core";
-import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
+import { CoSimulationConfig, LiveGraph } from "../../intocps-configurations/CoSimulationConfig";
 import { storeResultCrc } from "../../intocps-configurations/ResultConfig";
 import * as http from "http"
 import * as fs from 'fs'
@@ -20,6 +20,11 @@ export class CoeSimulationService {
 
     progress: number = 0;
     datasets: BehaviorSubject<Array<any>> = new BehaviorSubject([]);
+
+    graphDatasets: BehaviorSubject<Array<any>>[] = []; //Map<LiveGraph, BehaviorSubject<Array<any>>> = new Map();
+    graphs: LiveGraph[] = [];
+
+
     errorReport: (hasError: boolean, message: string) => void = function () { };
     simulationCompletedHandler: () => void = function () { };
     postProcessingOutputReport: (hasError: boolean, message: string) => void = function () { };
@@ -44,6 +49,9 @@ export class CoeSimulationService {
     reset() {
         this.progress = 0;
         this.datasets.next([]);
+
+        this.graphs = [];
+        this.graphDatasets = [];
 
     }
 
@@ -72,7 +80,7 @@ export class CoeSimulationService {
             .replace(/\./gi, "_");
         this.resultDir = Path.normalize(`${currentDir}/R_${dateString}`);
 
-        this.initializeDatasets();
+        this.initializeDatasets(config);
         this.createSession();
     }
 
@@ -82,7 +90,33 @@ export class CoeSimulationService {
             .subscribe((response: Response) => { }, (err: Response) => this.errorHandler(err));
     }
 
-    private initializeDatasets() {
+    private initializeDatasets(config: CoSimulationConfig) {
+
+        config.liveGraphs.forEach(g => {
+
+            let ds = new BehaviorSubject([]);
+            //this.graphDatasets.set(g, ds);
+            this.graphDatasets.push(ds);
+            this.graphs.push(g);
+
+            let datasets: Array<any> = [];
+
+            g.livestream.forEach((value: any, index: any) => {
+                value.forEach((sv: any) => {
+                    datasets.push({
+                        name: Serializer.getIdSv(index, sv),
+                        y: [],
+                        x: []
+                    })
+                });
+            });
+
+            ds.next(datasets);
+        });
+
+
+        //old below
+
         let datasets: Array<any> = [];
 
         this.config.livestream.forEach((value: any, index: any) => {
@@ -188,6 +222,10 @@ export class CoeSimulationService {
 
         let rawData = JSON.parse(event.data);
         let datasets = this.datasets.getValue();
+        let graphDatasets: Map<BehaviorSubject<Array<any>>, any> = new Map<BehaviorSubject<Array<any>>, any>();
+        this.graphDatasets.map(ds => { graphDatasets.set(ds, ds.getValue()) });// this.datasets.getValue();
+
+
         let newCOE = false;
         let xValue = this.counter++;
         //Preparing for new livestream messages. It has the following structure:
@@ -215,14 +253,31 @@ export class CoeSimulationService {
 
                     if (value == "true") value = 1;
                     else if (value == "false") value = 0;
+
+                    graphDatasets.forEach((value: any, index: BehaviorSubject<any[]>) => {
+
+                        let dataset = value.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
+                        if (dataset) {
+                            dataset.y.push(value);
+                            dataset.x.push(xValue);
+                        }
+
+                    })
+
                     let dataset = datasets.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
-                    dataset.y.push(value);
-                    dataset.x.push(xValue);
+                    if (dataset) {
+                        dataset.y.push(value);
+                        dataset.x.push(xValue);
+                    }
                 });
             });
         });
 
         this.datasets.next(datasets);
+
+        graphDatasets.forEach((value: any, index: BehaviorSubject<any[]>) => {
+            index.next(value);
+        });
     }
 
     private downloadResults() {

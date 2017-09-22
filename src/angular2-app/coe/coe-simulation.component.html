@@ -39,6 +39,15 @@
 
 <line-chart *ngIf="coeSimulation.datasets.getValue().length > 0" [datasets]="coeSimulation.datasets"></line-chart>
 
+<hr>
+
+<div *ngFor="let g of coeSimulation.graphs; let i=index; trackBy:customTrackBy">
+
+<h4>{{g.title}} {{i}} - {{coeSimulation.graphDatasets[i]}}</h4>
+
+<line-chart *ngIf="coeSimulation.graphDatasets[i].getValue().length > 0" [datasets]="coeSimulation.graphDatasets[i]"></line-chart>
+</div>
+
 
 
 <div *ngIf="hasPostScriptOutput">

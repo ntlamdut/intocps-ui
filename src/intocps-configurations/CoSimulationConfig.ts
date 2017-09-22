@@ -21,6 +21,8 @@ export class CoSimulationConfig implements ISerializable {
     sourcePath: string;
     multiModelCrc: string;
 
+    liveGraphs: LiveGraph[] = [];
+
     //optional livestream outputs
     livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
     logVariables: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
@@ -40,9 +42,9 @@ export class CoSimulationConfig implements ISerializable {
     simulationProgramDelay: boolean = false;
 
     public getProjectRelativePath(path: string): string {
-        if(path==".")
+        if (path == ".")
             return "";
-        if (path.length>0 && path.indexOf(this.projectRoot) === 0)
+        if (path.length > 0 && path.indexOf(this.projectRoot) === 0)
             return path.substring(this.projectRoot.length + 1);
         return path;
     }
@@ -53,11 +55,15 @@ export class CoSimulationConfig implements ISerializable {
         let logVariables: any = {};
         this.logVariables.forEach((svs, instance) => logVariables[Serializer.getId(instance)] = svs.map(sv => sv.name));
 
+        //let graphs :any= this.liveGraphs.map(g=>g.toObject());
+
+
         return {
             startTime: Number(this.startTime),
             endTime: Number(this.endTime),
             multimodel_path: this.getProjectRelativePath(this.multiModel.sourcePath),
             livestream: livestream,
+            graphs: this.liveGraphs.map(g => g.toObject()),
             livestreamInterval: Number(this.livestreamInterval),
             logVariables: logVariables,
             visible: this.visible,
@@ -71,7 +77,7 @@ export class CoSimulationConfig implements ISerializable {
             stabalizationEnabled: this.stabalization,
             global_absolute_tolerance: Number(this.global_absolute_tolerance),
             global_relative_tolerance: Number(this.global_relative_tolerance),
-            simulationProgramDelay:this.simulationProgramDelay
+            simulationProgramDelay: this.simulationProgramDelay
         };
     }
 
@@ -160,7 +166,7 @@ export class CoSimulationConfig implements ISerializable {
                     config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data, "enableAllLogCategoriesPerInstance", false);
                     config.multiModelCrc = parser.parseMultiModelCrc(data);
                     config.postProcessingScript = parser.parseSimpleTagDefault(data, "postProcessingScript", "");
-
+                    config.liveGraphs = parser.parseGraphs(Parser.GRAPHS_TAG, data, multiModel);
                     config.simulationProgramDelay = parser.parseSimpleTagDefault(data, "simulationProgramDelay", false);
                     config.parallelSimulation = parser.parseSimpleTagDefault(data, "parallelSimulation", false);
                     config.stabalization = parser.parseSimpleTagDefault(data, "stabalizationEnabled", false);
@@ -196,6 +202,38 @@ export interface ICoSimAlgorithm {
     toObject(): { [key: string]: any };
     type: string;
     name: string;
+}
+
+export class LiveGraph {
+    public title = "Live Graph";
+    public livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
+    public id: number;
+    private static next = 0;
+    constructor() {
+        LiveGraph.next++;
+        this.id = LiveGraph.next;
+    }
+
+    toObject() {
+
+        let livestream: any = {};
+        this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
+
+        return {
+            title: this.title,
+            livestream: livestream,
+        };
+    }
+
+    toFormGroup() {
+        return new FormGroup({
+            id: new FormControl(this.id),
+            livestream: new FormControl(this.livestream),
+            title: new FormControl(this.title)
+        });
+    }
+
+
 }
 
 export class FixedStepAlgorithm implements ICoSimAlgorithm {
@@ -264,16 +302,16 @@ export interface VariableStepConstraint {
 
 export class ZeroCrossingConstraint implements VariableStepConstraint {
     type = "zerocrossing";
-    private static index : number = 0;
-    public readonly name : string;
+    private static index: number = 0;
+    public readonly name: string;
     constructor(
         public id: string = "zc",
         public ports: Array<InstanceScalarPair> = [],
         public order: string = "2", // Can be 1 or 2.
         public abstol?: number,
         public safety?: number
-    ) { 
-        this.name = "order"+ZeroCrossingConstraint.index++;
+    ) {
+        this.name = "order" + ZeroCrossingConstraint.index++;
 
     }
 
