@@ -20,9 +20,7 @@ export class CoeSimulationService {
 
     progress: number = 0;
 
-    graphDatasets: BehaviorSubject<Array<any>>[] = [];
-    graphs: LiveGraph[] = [];
-
+    graphMap: Map<LiveGraph, BehaviorSubject<Array<any>>> = new Map();
 
     errorReport: (hasError: boolean, message: string) => void = function () { };
     simulationCompletedHandler: () => void = function () { };
@@ -36,8 +34,6 @@ export class CoeSimulationService {
     private config: CoSimulationConfig;
     private counter: number = 0;
 
-
-
     constructor(private http: Http,
         private settings: SettingsService,
         private fileSystem: FileSystemService,
@@ -47,9 +43,9 @@ export class CoeSimulationService {
 
     reset() {
         this.progress = 0;
-        this.graphs = [];
-        this.graphDatasets = [];
-
+        this.zone.run(() => {
+            this.graphMap.clear();
+        });
     }
 
     run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void, simCompleted: () => void, postScriptOutputReport: (hasError: boolean, message: string) => void) {
@@ -88,21 +84,31 @@ export class CoeSimulationService {
             .subscribe((response: Response) => { }, (err: Response) => this.errorHandler(err));
     }
 
+    public getDataset(graph: LiveGraph): BehaviorSubject<Array<any>> {
+        return this.graphMap.get(graph);
+    }
+
+    public getGraphs(): LiveGraph[] {
+        return Array.from(this.graphMap.keys());
+    }
+
     private initializeDatasets(config: CoSimulationConfig) {
+
+        this.graphMap.clear();
 
         config.liveGraphs.forEach(g => {
 
             let ds = new BehaviorSubject([]);
-            //this.graphDatasets.set(g, ds);
-            this.graphDatasets.push(ds);
-            this.graphs.push(g);
+            this.graphMap.set(g, ds);
 
             let datasets: Array<any> = [];
 
-            g.livestream.forEach((value: any, index: any) => {
+            g.getLivestream().forEach((value: any, index: any) => {
+
                 value.forEach((sv: any) => {
+                    let qualifiedName = Serializer.getIdSv(index, sv);
                     datasets.push({
-                        name: Serializer.getIdSv(index, sv),
+                        name: qualifiedName,
                         y: [],
                         x: []
                     })
@@ -162,7 +168,7 @@ export class CoeSimulationService {
         this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
 
         this.webSocket.addEventListener("error", event => console.error(event));
-        this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
+        this.webSocket.addEventListener("message", event => this.onMessage(event));
 
         var message: any = {
             startTime: this.config.startTime,
@@ -203,7 +209,7 @@ export class CoeSimulationService {
 
         let rawData = JSON.parse(event.data);
         let graphDatasets: Map<BehaviorSubject<Array<any>>, any> = new Map<BehaviorSubject<Array<any>>, any>();
-        this.graphDatasets.map(ds => { graphDatasets.set(ds, ds.getValue()) });// this.datasets.getValue();
+        this.graphMap.forEach(ds => { graphDatasets.set(ds, ds.getValue()) });
 
 
         let newCOE = false;
@@ -234,7 +240,7 @@ export class CoeSimulationService {
                     if (value == "true") value = 1;
                     else if (value == "false") value = 0;
 
-                    graphDatasets.forEach((ds: any, index: BehaviorSubject<any[]>) => {
+                    graphDatasets.forEach((ds: any, index: any) => {
 
                         let dataset = ds.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
                         if (dataset) {

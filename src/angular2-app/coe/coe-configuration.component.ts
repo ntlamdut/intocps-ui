@@ -55,7 +55,7 @@ export class CoeConfigurationComponent {
     outputPorts: Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
     editing: boolean = false;
-    liveStreamSearchName: string = '';
+    
     logVariablesSearchName: string = '';
     parseError: string = null;
     warnings: WarningMessage[] = [];
@@ -190,9 +190,7 @@ export class CoeConfigurationComponent {
         return scalarVariables.filter(variable => (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local));
     }
 
-    restrictToCheckedLiveStream(instance: Instance, scalarVariables: Array<ScalarVariable>) {
-        return scalarVariables.filter(variable => this.isLivestreamChecked(instance, variable));
-    }
+  
 
 
     restrictToCheckedLogVariables(instance: Instance, scalarVariables: Array<ScalarVariable>) {
@@ -247,13 +245,7 @@ export class CoeConfigurationComponent {
             return "Sampling Rate";
     }
 
-    isLivestreamChecked(instance: Instance, output: ScalarVariable) {
-        let variables = this.config.livestream.get(instance);
-
-        if (!variables) return false;
-
-        return variables.indexOf(output) !== -1;
-    }
+   
 
 
     isLogVariableChecked(instance: Instance, output: ScalarVariable) {
@@ -272,23 +264,7 @@ export class CoeConfigurationComponent {
         return ScalarVariableType[type];
     }
 
-    onLivestreamChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
-        let variables = this.config.livestream.get(instance);
 
-        if (!variables) {
-            variables = [];
-            this.config.livestream.set(instance, variables);
-        }
-
-        if (enabled)
-            variables.push(output);
-        else {
-            variables.splice(variables.indexOf(output), 1);
-
-            if (variables.length == 0)
-                this.config.livestream.delete(instance);
-        }
-    }
 
 
     onLogVariableChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
@@ -309,9 +285,7 @@ export class CoeConfigurationComponent {
         }
     }
 
-    onLiveStreamKey(event: any) {
-        this.liveStreamSearchName = event.target.value;
-    }
+   
     onLogVariablesKey(event: any) {
         this.logVariablesSearchName = event.target.value;
     }

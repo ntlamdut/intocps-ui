@@ -67,7 +67,7 @@ export class LiveGraphComponent {
     }
 
     isLivestreamChecked(instance: Instance, output: ScalarVariable) {
-        let variables = this.graph.livestream.get(instance);
+        let variables = this.graph.getLivestream().get(instance);
 
         if (!variables) return false;
 
@@ -75,11 +75,11 @@ export class LiveGraphComponent {
     }
 
     onLivestreamChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
-        let variables = this.graph.livestream.get(instance);
+        let variables = this.graph.getLivestream().get(instance);
 
         if (!variables) {
             variables = [];
-            this.graph.livestream.set(instance, variables);
+            this.graph.getLivestream().set(instance, variables);
         }
 
         if (enabled)
@@ -88,7 +88,7 @@ export class LiveGraphComponent {
             variables.splice(variables.indexOf(output), 1);
 
             if (variables.length == 0)
-                this.graph.livestream.delete(instance);
+                this.graph.getLivestream().delete(instance);
         }
     }
 

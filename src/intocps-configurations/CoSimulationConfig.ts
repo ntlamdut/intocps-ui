@@ -206,12 +206,20 @@ export interface ICoSimAlgorithm {
 
 export class LiveGraph {
     public title = "Live Graph";
-    public livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
+    private livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
     public id: number;
     private static next = 0;
     constructor() {
         LiveGraph.next++;
         this.id = LiveGraph.next;
+    }
+
+    public getLivestream(){
+        return this.livestream;
+    }
+
+    public setLivestream(livestream: Map<Instance, ScalarVariable[]>){
+         this.livestream=livestream;
     }
 
     toObject() {

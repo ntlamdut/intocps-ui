@@ -244,7 +244,7 @@ export class Parser {
             {
                 let graph = new LiveGraph();
                 graph.title = this.parseSimpleTag(g,"title");
-                graph.livestream = this.parseLivestream(g, multiModel);
+                graph.setLivestream( this.parseLivestream(g, multiModel));
                 graphs.push(graph);
             }
         }

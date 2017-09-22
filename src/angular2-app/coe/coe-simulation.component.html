@@ -37,11 +37,11 @@
     {{httpErrorMessage}}
 </div>
 
-<div *ngFor="let g of coeSimulation.graphs; let i=index; trackBy:customTrackBy">
+<div *ngFor="let g of coeSimulation.getGraphs(); let i=index; trackBy:customTrackBy">
 
-<h4>{{g.title}} {{i}}</h4>
+<h4>Graph {{i}}: {{g.title}}</h4>
 
-<line-chart *ngIf="coeSimulation.graphDatasets[i].getValue().length > 0" [datasets]="coeSimulation.graphDatasets[i]"></line-chart>
+<line-chart *ngIf="coeSimulation.getDataset(g).getValue().length > 0" [datasets]="coeSimulation.getDataset(g)"></line-chart>
 </div>
 
 <div *ngIf="hasPostScriptOutput">

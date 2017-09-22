@@ -22,13 +22,13 @@ export class CoeConfig {
         if (this.coSimConfig.liveGraphs) {
             this.coSimConfig.liveGraphs.forEach(g => {
 
-                if (g.livestream) {
-                    g.livestream.forEach((svs, ins: Instance) => {
+                if (g.getLivestream()) {
+                    g.getLivestream().forEach((svs, ins: Instance) => {
 
 
                         if (livestream.has(ins)) {
-                            let list = livestream.get(ins);
-                            g.livestream.get(ins).forEach(sv => {
+                            let list: any= [];
+                            g.getLivestream().get(ins).forEach(sv => {
                                 if (list.indexOf(sv) < 0) {
                                     list.push(sv);
                                 }
@@ -37,7 +37,7 @@ export class CoeConfig {
                             livestream.set(ins, list);
                         }
                         else {
-                            livestream.set(ins, g.livestream.get(ins));
+                            livestream.set(ins, g.getLivestream().get(ins));
                         }
                     });
                 }
