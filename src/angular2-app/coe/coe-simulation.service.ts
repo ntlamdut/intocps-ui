@@ -19,9 +19,8 @@ import { TraceMessager } from "../../traceability/trace-messenger"
 export class CoeSimulationService {
 
     progress: number = 0;
-    datasets: BehaviorSubject<Array<any>> = new BehaviorSubject([]);
 
-    graphDatasets: BehaviorSubject<Array<any>>[] = []; //Map<LiveGraph, BehaviorSubject<Array<any>>> = new Map();
+    graphDatasets: BehaviorSubject<Array<any>>[] = [];
     graphs: LiveGraph[] = [];
 
 
@@ -48,8 +47,6 @@ export class CoeSimulationService {
 
     reset() {
         this.progress = 0;
-        this.datasets.next([]);
-
         this.graphs = [];
         this.graphDatasets = [];
 
@@ -80,6 +77,7 @@ export class CoeSimulationService {
             .replace(/\./gi, "_");
         this.resultDir = Path.normalize(`${currentDir}/R_${dateString}`);
 
+        this.reset();
         this.initializeDatasets(config);
         this.createSession();
     }
@@ -113,23 +111,6 @@ export class CoeSimulationService {
 
             ds.next(datasets);
         });
-
-
-        //old below
-
-        let datasets: Array<any> = [];
-
-        this.config.livestream.forEach((value: any, index: any) => {
-            value.forEach((sv: any) => {
-                datasets.push({
-                    name: Serializer.getIdSv(index, sv),
-                    y: [],
-                    x: []
-                })
-            });
-        });
-
-        this.datasets.next(datasets);
     }
 
     private createSession() {
@@ -221,7 +202,6 @@ export class CoeSimulationService {
     private onMessage(event: MessageEvent) {
 
         let rawData = JSON.parse(event.data);
-        let datasets = this.datasets.getValue();
         let graphDatasets: Map<BehaviorSubject<Array<any>>, any> = new Map<BehaviorSubject<Array<any>>, any>();
         this.graphDatasets.map(ds => { graphDatasets.set(ds, ds.getValue()) });// this.datasets.getValue();
 
@@ -254,26 +234,17 @@ export class CoeSimulationService {
                     if (value == "true") value = 1;
                     else if (value == "false") value = 0;
 
-                    graphDatasets.forEach((value: any, index: BehaviorSubject<any[]>) => {
+                    graphDatasets.forEach((ds: any, index: BehaviorSubject<any[]>) => {
 
-                        let dataset = value.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
+                        let dataset = ds.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
                         if (dataset) {
                             dataset.y.push(value);
                             dataset.x.push(xValue);
                         }
-
                     })
-
-                    let dataset = datasets.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
-                    if (dataset) {
-                        dataset.y.push(value);
-                        dataset.x.push(xValue);
-                    }
                 });
             });
         });
-
-        this.datasets.next(datasets);
 
         graphDatasets.forEach((value: any, index: BehaviorSubject<any[]>) => {
             index.next(value);
