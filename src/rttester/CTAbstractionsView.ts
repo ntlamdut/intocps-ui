@@ -81,7 +81,7 @@ export class CTAbstractionsView extends ViewController {
                 let remote = require("electron").remote;
                 let dialog = remote.dialog;
                 let dialogResult: string[] = dialog.showOpenDialog({
-                    filters: [{ name: "Log-Files (*.log)", extensions: ["log"] }]
+                    filters: [{ name: "Signal Log-Files (*.json)", extensions: ["json"] }]
                 });
                 if (dialogResult != undefined) {
                     self.currentOutput.abstraction.simulationBased.fileName
