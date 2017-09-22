@@ -12,10 +12,11 @@
 
             <div class="form-group">
                 <div class="form-horizontal">
-
-                    <p *ngIf="!editing" class="form-control-static">{{graph.title}}</p>
-                    <input *ngIf="editing" [(ngModel)]="graph.title" name="title" class="form-control">
-
+                    <div class="form-group">
+                        <label class="col-sm-5 col-md-4 control-label">Name:</label>
+                        <p *ngIf="!editing" class="form-control-static col-sm-7 col-md-8">{{graph.title}}</p>
+                        <input *ngIf="editing" [(ngModel)]="graph.title" name="title" class="form-control col-sm-7 col-md-8">
+                    </div>
                     <div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
                         <label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
                         <div class="col-sm-7 col-md-8">
