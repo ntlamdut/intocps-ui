@@ -33,12 +33,13 @@ export class CoeSimulationService {
     private resultDir: string;
     private config: CoSimulationConfig;
     private counter: number = 0;
+    private graphMaxDataPoints: number = 100;
 
     constructor(private http: Http,
         private settings: SettingsService,
         private fileSystem: FileSystemService,
         private zone: NgZone) {
-
+        this.graphMaxDataPoints = settings.get(SettingKeys.GRAPH_MAX_DATA_POINTS);
     }
 
     reset() {
@@ -246,6 +247,7 @@ export class CoeSimulationService {
                         if (dataset) {
                             dataset.y.push(value);
                             dataset.x.push(xValue);
+                            this.truncateDataset(dataset, this.graphMaxDataPoints);
                         }
                     })
                 });
@@ -255,6 +257,15 @@ export class CoeSimulationService {
         graphDatasets.forEach((value: any, index: BehaviorSubject<any[]>) => {
             index.next(value);
         });
+    }
+
+    private truncateDataset(ds: any, maxLen: number) {
+        let x: Number[] = <Number[]>ds.x;
+        let size = x.length;
+        if (size > maxLen) {
+            ds.x = x.slice(size - maxLen, size)
+            ds.y = ds.y.slice(size - maxLen, size)
+        }
     }
 
     private downloadResults() {
