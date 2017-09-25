@@ -1,10 +1,10 @@
 <div class="form-horizontal" [formGroup]="formGroup">
     <div class="form-group">
-        <label>Graph Variables</label>
+        <label style="padding-left:10px">Graph Variables</label>
 
         <div class="form-forizontal">
             <div *ngIf="editing" class="form-group">
-                <label class="col-sm-5 col-md-4 control-label" style="text-align: right">Filter</label>
+                <label class="col-md-7 col-md-5 control-label" style="text-align: right">Filter</label>
                 <div class="col-sm-7 col-md-8 form-group">
                     <input #box (keyup)="onLiveStreamKey($event)" class="form-control">
                 </div>

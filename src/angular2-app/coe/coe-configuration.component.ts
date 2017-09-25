@@ -190,7 +190,6 @@ export class CoeConfigurationComponent {
         return scalarVariables.filter(variable => (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local));
     }
 
-  
 
 
     restrictToCheckedLogVariables(instance: Instance, scalarVariables: Array<ScalarVariable>) {
@@ -245,7 +244,6 @@ export class CoeConfigurationComponent {
             return "Sampling Rate";
     }
 
-   
 
 
     isLogVariableChecked(instance: Instance, output: ScalarVariable) {
@@ -263,8 +261,6 @@ export class CoeConfigurationComponent {
     getScalarVariableTypeName(type: ScalarVariableType) {
         return ScalarVariableType[type];
     }
-
-
 
 
     onLogVariableChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
@@ -285,7 +281,6 @@ export class CoeConfigurationComponent {
         }
     }
 
-   
     onLogVariablesKey(event: any) {
         this.logVariablesSearchName = event.target.value;
     }
