@@ -23,6 +23,16 @@ class SettingsView {
         return id + this.idCounter++;
     }
 
+    private installHelpPopup(html: HTMLElement, settingKey: string) {
+        (<HTMLButtonElement>html.querySelector("#helpBtn")).onclick = (e) =>
+            w2popup.open({
+                title: 'Help for ' + settingKey,
+                body: SettingKeys.VALUE_DESCRIPTION[settingKey] + "<br><br>Default Value is: " + SettingKeys.DEFAULT_VALUES[settingKey],
+                buttons: '',
+                showClose: true,
+            });
+    }
+
     private addSetting(settingName: string) {
         let callback = (value: any) => {
             this.settings.setValue(settingName, value);
@@ -34,6 +44,7 @@ class SettingsView {
         if (typeof (value) === "boolean") {
             $("<div>").load("checkbox-setting.html #checkbox-setting-form", function (event: JQueryEventObject) {
                 let html = <HTMLElement>(<HTMLDivElement>this).firstChild;
+                self.installHelpPopup(html, settingName);
                 let label = html.querySelector("label");
                 label.textContent = settingName;
                 let chkBox = <HTMLInputElement>html.querySelector("#chkBox");
@@ -48,6 +59,7 @@ class SettingsView {
         else {
             $("<div>").load("text-setting.html #settings-form", function (event: JQueryEventObject) {
                 let html = <HTMLElement>(<HTMLDivElement>this).firstChild;
+                self.installHelpPopup(html, settingName);
                 let label = html.querySelector("label");
                 label.textContent = settingName;
                 let ids = new TextInputIds();

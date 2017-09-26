@@ -6,7 +6,6 @@ export namespace SettingKeys {
     export var INSTALL_TMP_DIR = "install_tmp_dir";
     export var COE_URL = "coe_host_url";
     export var TRACE_DAEMON_PORT = "traceability_daemon_port";
-    export var COE_DEBUG_ENABLED = "coe_debug_enabled";
     export var COE_REMOTE_HOST = "coe_remote_host";
     export var COE_JAR_PATH = "coe_jar_path";
     export var RTTESTER_INSTALL_DIR: string = "RT-Tester Installation Path";
@@ -34,9 +33,31 @@ export namespace SettingKeys {
     DEFAULT_VALUES[DEVELOPMENT_MODE] = false;
     DEFAULT_VALUES[COE_URL] = "localhost:8082";
     DEFAULT_VALUES[TRACE_DAEMON_PORT] = "8083";
-    DEFAULT_VALUES[COE_DEBUG_ENABLED] = false;
     DEFAULT_VALUES[COE_REMOTE_HOST] = false;
     DEFAULT_VALUES[ENABLE_TRACEABILITY] = false;
     DEFAULT_VALUES[LOCAL_UPDATE_SITE] = "";
-     DEFAULT_VALUES[USE_LOCAL_UPDATE_SITE] = false;
+    DEFAULT_VALUES[USE_LOCAL_UPDATE_SITE] = false;
+
+    export var VALUE_DESCRIPTION: { [key: string]: any; } = {};
+
+    VALUE_DESCRIPTION[DEVELOPMENT_MODE] = "This enabled development mode allowing download of development downloads and increases the debug information show.";
+    VALUE_DESCRIPTION[ACTIVE_PROJECT] = "Stores the active project. This is meant for internal use only."
+    VALUE_DESCRIPTION[INSTALL_DIR] = "The folder where downloads will be installed to"
+    VALUE_DESCRIPTION[COE_URL] = "URL used for the COE connection.";
+    VALUE_DESCRIPTION[TRACE_DAEMON_PORT] = "The port at which the trace daemon will listen for messages";
+    VALUE_DESCRIPTION[COE_REMOTE_HOST] = "Remote host url for the COE. Leave blank to use local host connection";
+    VALUE_DESCRIPTION[COE_JAR_PATH] = "Custom jar path for the COE. Leave blank to search install folder instead";
+    VALUE_DESCRIPTION[RTTESTER_INSTALL_DIR] = "?";
+    VALUE_DESCRIPTION[RTTESTER_MBT_INSTALL_DIR] = "?";
+    VALUE_DESCRIPTION[RTTESTER_RTTUI] = "?";
+    VALUE_DESCRIPTION[RTTESTER_PYTHON] = "?";
+    VALUE_DESCRIPTION[UPDATE_SITE] = "URL for the update site";
+    VALUE_DESCRIPTION[DEV_UPDATE_SITE] = "URL for the update site used in development mode";
+    VALUE_DESCRIPTION[EXAMPLE_REPO] = "URL for the examples repo";
+    VALUE_DESCRIPTION[DEV_EXAMPLE_REPO] = "URL for the examples repo used in development mode";
+    VALUE_DESCRIPTION[DEFAULT_PROJECTS_FOLDER_PATH] = "Path of the folder used as default for projects";
+    VALUE_DESCRIPTION[ENABLE_TRACEABILITY] = "Enable tracebility tracking in both the app and the daemon which enables remote tools to submit trace info to the open project";
+    VALUE_DESCRIPTION[LOCAL_UPDATE_SITE] = "A local URI using schema file to a local downloaded update site";
+    VALUE_DESCRIPTION[USE_LOCAL_UPDATE_SITE] = "Enable the use local downloaded repo";
+
 }
