@@ -22,11 +22,12 @@ export class CoSimulationConfig implements ISerializable {
     multiModelCrc: string;
 
     liveGraphs: LiveGraph[] = [];
+    liveGraphColumns: number = 1;
+    liveGraphVisibleRowCount: number=1;
 
     //optional livestream outputs
-    livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
     logVariables: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
-    livestreamInterval: number = 0.0
+    livestreamInterval: number = 0.1
     algorithm: ICoSimAlgorithm = new FixedStepAlgorithm();
     startTime: number = 0;
     endTime: number = 10;
@@ -50,19 +51,16 @@ export class CoSimulationConfig implements ISerializable {
     }
 
     toObject(): any {
-        let livestream: any = {};
-        this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
+
         let logVariables: any = {};
         this.logVariables.forEach((svs, instance) => logVariables[Serializer.getId(instance)] = svs.map(sv => sv.name));
-
-        //let graphs :any= this.liveGraphs.map(g=>g.toObject());
-
 
         return {
             startTime: Number(this.startTime),
             endTime: Number(this.endTime),
             multimodel_path: this.getProjectRelativePath(this.multiModel.sourcePath),
-            livestream: livestream,
+            liveGraphColumns: this.liveGraphColumns,
+            liveGraphVisibleRowCount: this.liveGraphVisibleRowCount,
             graphs: this.liveGraphs.map(g => g.toObject()),
             livestreamInterval: Number(this.livestreamInterval),
             logVariables: logVariables,
@@ -156,7 +154,6 @@ export class CoSimulationConfig implements ISerializable {
                     config.sourcePath = path;
                     config.startTime = parser.parseStartTime(data) || 0;
                     config.endTime = parser.parseEndTime(data) || 10;
-                    config.livestream = parser.parseLivestream(data, multiModel);
                     config.logVariables = parser.parseLogVariables(data, multiModel);
                     config.livestreamInterval = parseFloat(parser.parseSimpleTagDefault(data, "livestreamInterval", "0.0"));
                     config.algorithm = parser.parseAlgorithm(data, multiModel);
@@ -167,6 +164,8 @@ export class CoSimulationConfig implements ISerializable {
                     config.multiModelCrc = parser.parseMultiModelCrc(data);
                     config.postProcessingScript = parser.parseSimpleTagDefault(data, "postProcessingScript", "");
                     config.liveGraphs = parser.parseGraphs(Parser.GRAPHS_TAG, data, multiModel);
+                    config.liveGraphColumns = parseInt(parser.parseSimpleTagDefault(data, "liveGraphColumns", 1));
+                    config.liveGraphVisibleRowCount = parseInt(parser.parseSimpleTagDefault(data, "liveGraphVisibleRowCount", 1));
                     config.simulationProgramDelay = parser.parseSimpleTagDefault(data, "simulationProgramDelay", false);
                     config.parallelSimulation = parser.parseSimpleTagDefault(data, "parallelSimulation", false);
                     config.stabalization = parser.parseSimpleTagDefault(data, "stabalizationEnabled", false);
@@ -208,18 +207,19 @@ export class LiveGraph {
     public title = "Live Graph";
     private livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
     public id: number;
+    public externalWindow: boolean;
     private static next = 0;
     constructor() {
         LiveGraph.next++;
         this.id = LiveGraph.next;
     }
 
-    public getLivestream(){
+    public getLivestream() {
         return this.livestream;
     }
 
-    public setLivestream(livestream: Map<Instance, ScalarVariable[]>){
-         this.livestream=livestream;
+    public setLivestream(livestream: Map<Instance, ScalarVariable[]>) {
+        this.livestream = livestream;
     }
 
     toObject() {
@@ -230,6 +230,7 @@ export class LiveGraph {
         return {
             title: this.title,
             livestream: livestream,
+            externalWindow:this.externalWindow,
         };
     }
 
@@ -237,7 +238,8 @@ export class LiveGraph {
         return new FormGroup({
             id: new FormControl(this.id),
             livestream: new FormControl(this.livestream),
-            title: new FormControl(this.title)
+            title: new FormControl(this.title),
+            externalWindow: new FormControl(this.externalWindow),
         });
     }
 

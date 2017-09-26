@@ -240,11 +240,11 @@ export class Parser {
 
         if (graphEntry) {
 
-            for(let g of graphEntry)
-            {
+            for (let g of graphEntry) {
                 let graph = new LiveGraph();
-                graph.title = this.parseSimpleTag(g,"title");
-                graph.setLivestream( this.parseLivestream(g, multiModel));
+                graph.title = this.parseSimpleTag(g, "title");
+                graph.setLivestream(this.parseLivestream(g, multiModel));
+                graph.externalWindow = this.parseSimpleTagDefault(g, "externalWindow", false);
                 graphs.push(graph);
             }
         }

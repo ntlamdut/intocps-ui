@@ -119,6 +119,8 @@ export class CoeConfigurationComponent {
                         endTime: new FormControl(config.endTime, [Validators.required, numberValidator]),
                         liveGraphs:  new FormArray(config.liveGraphs.map(g => g.toFormGroup()), uniqueGroupPropertyValidator("id")),//, uniqueGroupPropertyValidator("id")
                         livestreamInterval: new FormControl(config.livestreamInterval, [Validators.required, numberValidator]),
+                        liveGraphColumns: new FormControl(config.liveGraphColumns, [Validators.required, numberValidator]),
+                        liveGraphVisibleRowCount: new FormControl(config.liveGraphVisibleRowCount, [Validators.required, numberValidator]),
                         algorithm: this.algorithmFormGroups.get(this.config.algorithm),
                         global_absolute_tolerance: new FormControl(config.global_absolute_tolerance, [Validators.required, numberValidator]),
                         global_relative_tolerance: new FormControl(config.global_relative_tolerance, [Validators.required, numberValidator])
