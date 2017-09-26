@@ -267,6 +267,24 @@
 							<div *ngIf="form.hasError('invalidNumber', 'livestreamInterval')" class="alert alert-danger">Only numbers are allowed.</div>
 						</div>
 					</div>
+					<div class="form-group">
+						<label class="col-sm-5 col-md-4 control-label config">Number of graph columns</label>
+						<div class="col-sm-7 col-md-8 form-group">
+							<p *ngIf="!editing" class="form-control-static">{{config.liveGraphColumns}}</p>
+							<input *ngIf="editing" name="liveGraphColumns" [(ngModel)]="config.liveGraphColumns" class="form-control">
+							<div *ngIf="form.hasError('required', 'liveGraphColumns')" class="alert alert-danger">This field is required.</div>
+							<div *ngIf="form.hasError('invalidNumber', 'liveGraphColumns')" class="alert alert-danger">Only numbers are allowed.</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-5 col-md-4 control-label config">Number of visible graph rows</label>
+						<div class="col-sm-7 col-md-8 form-group">
+							<p *ngIf="!editing" class="form-control-static">{{config.liveGraphVisibleRowCount}}</p>
+							<input *ngIf="editing" name="liveGraphVisibleRowCount" [(ngModel)]="config.liveGraphVisibleRowCount" class="form-control">
+							<div *ngIf="form.hasError('required', 'liveGraphVisibleRowCount')" class="alert alert-danger">This field is required.</div>
+							<div *ngIf="form.hasError('invalidNumber', 'liveGraphVisibleRowCount')" class="alert alert-danger">Only numbers are allowed.</div>
+						</div>
+					</div>
 
 					<hr>
 
