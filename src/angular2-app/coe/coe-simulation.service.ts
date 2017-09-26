@@ -13,6 +13,7 @@ import * as http from "http"
 import * as fs from 'fs'
 import * as child_process from 'child_process'
 import { TraceMessager } from "../../traceability/trace-messenger"
+import DialogHandler from "../../DialogHandler"
 
 
 @Injectable()
@@ -165,38 +166,43 @@ export class CoeSimulationService {
     }
 
     private simulate() {
-        this.counter = 0;
-        this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
 
-        this.webSocket.addEventListener("error", event => console.error(event));
-        this.webSocket.addEventListener("message", event => this.onMessage(event));
 
-        var message: any = {
-            startTime: this.config.startTime,
-            endTime: this.config.endTime,
-            reportProgress: true,
-            liveLogInterval: this.config.livestreamInterval
-        };
+        // this.counter = 0;
+        // this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
 
-        // enable logging for all log categories        
-        var logCategories: any = new Object();
-        let self = this;
-        this.config.multiModel.fmuInstances.forEach(instance => {
-            let key: any = instance.fmu.name + "." + instance.name;
+        // this.webSocket.addEventListener("error", event => console.error(event));
+        // this.webSocket.addEventListener("message", event => this.onMessage(event));
 
-            if (self.config.enableAllLogCategoriesPerInstance) {
-                logCategories[key] = instance.fmu.logCategories;
-            }
-        });
-        Object.assign(message, { logLevels: logCategories });
+        // var message: any = {
+        //     startTime: this.config.startTime,
+        //     endTime: this.config.endTime,
+        //     reportProgress: true,
+        //     liveLogInterval: this.config.livestreamInterval
+        // };
 
-        let data = JSON.stringify(message);
+        // // enable logging for all log categories        
+        // var logCategories: any = new Object();
+        // let self = this;
+        // this.config.multiModel.fmuInstances.forEach(instance => {
+        //     let key: any = instance.fmu.name + "." + instance.name;
 
-        this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
-            .then(() => {
-                this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
-                    .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
-            });
+        //     if (self.config.enableAllLogCategoriesPerInstance) {
+        //         logCategories[key] = instance.fmu.logCategories;
+        //     }
+        // });
+        // Object.assign(message, { logLevels: logCategories });
+
+        // let data = JSON.stringify(message);
+
+        // this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
+        //     .then(() => {
+        //         this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
+        //             .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
+        //     });
+
+        let dh = new DialogHandler("angular2-app/coe/graph-window/graph-window.html", 800, 600,null,null,null);
+        dh.openWindow("ws://" + this.url + "/attachSession/" + this.sessionId ,true);
     }
 
     errorHandler(err: Response) {
