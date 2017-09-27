@@ -13,7 +13,7 @@ class SettingsView {
         this.settings = IntoCpsApp.IntoCpsApp.getInstance().getSettings();
         this.settingsView = document.getElementById("settings-div");
         Object.keys(SettingKeys).forEach(k => {
-            if (k != "DEFAULT_VALUES") {
+            if (k != "DEFAULT_VALUES" && k != "VALUE_DESCRIPTION") {
                 this.addSetting((<any>SettingKeys)[k]);
             }
         });
