@@ -37,8 +37,8 @@
     {{httpErrorMessage}}
 </div>
 
-<div *ngIf="coeSimulation.graph.getGraphs().length >0" [style.-webkit-column-count]="config.liveGraphColumns" [style.-moz-column-count]="config.liveGraphColumns" [style.column-count]="config.liveGraphColumns">
-    <div *ngFor="let g of coeSimulation.graph.getGraphs(); let i=index; trackBy:customTrackBy">
+<div *ngIf="coeSimulation.graph.getInternalGraphs().length >0" [style.-webkit-column-count]="config.liveGraphColumns" [style.-moz-column-count]="config.liveGraphColumns" [style.column-count]="config.liveGraphColumns">
+    <div *ngFor="let g of coeSimulation.graph.getInternalGraphs(); let i=index; trackBy:customTrackBy">
 
         <div style="page-break-inside:avoid !important;border-style: solid; margin: 2px; border-width: 0.1em;">
             <h5>Graph {{i+1}}: {{g.title}}</h5>

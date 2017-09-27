@@ -1,6 +1,6 @@
 import IntoCpsApp from  "./IntoCpsApp";
 import {SettingKeys} from "./settings/SettingKeys"
-
+import {remote} from "electron"
 export default class DialogHandler {
 
     doAction: (arg: any) => void;
@@ -12,7 +12,7 @@ export default class DialogHandler {
 
     externalUrl: boolean = false;
 
-    win: any = null;
+    win: Electron.BrowserWindow = null;
 
     constructor(htmlPath: string, windowWidth: number,
         windowHeight: number, ipcOpenEventName: string, ipcDoActionEventName: string, doAction: (arg: any) => void) {
@@ -44,19 +44,14 @@ export default class DialogHandler {
 
     }
 
-    public openWindow(data:string = '', showWindow:boolean = true) {
-
-        const electron = require('electron');
-
-        // Module to create native browser window.
-        const BrowserWindow = electron.remote.BrowserWindow;
-
-        this.win = new BrowserWindow({ width: this.windowWidth, height: this.windowHeight, show: showWindow });
+    public openWindow(data:string = '', showWindow:boolean = true) : Electron.BrowserWindow {
+        
+        this.win = new remote.BrowserWindow({ width: this.windowWidth, height: this.windowHeight, show: showWindow });
         if(!IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.DEVELOPMENT_MODE) && this.win.setMenu)
             this.win.setMenu(null);
 
         // Open the DevTools.
-        this.win.webContents.openDevTools();
+        // this.win.webContents.openDevTools();
 
         this.win.on('closed', function () {
             this.win = null;

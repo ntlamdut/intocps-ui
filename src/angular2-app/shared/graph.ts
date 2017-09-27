@@ -9,15 +9,18 @@ export class Graph {
     private counter: number = 0;
     private graphMaxDataPoints: number = 100;
     private webSocket: WebSocket;
+    private external = false;
     private progressCallback: (n: number) => void;
 
-    constructor(progressCallback?: (n: number) => void)
-    {
+
+    public setProgressCallback(progressCallback?: (n: number) => void) {
         if (progressCallback)
-        this.progressCallback = progressCallback;
+            this.progressCallback = progressCallback;
     }
 
-    public setGraphMaxDataPoints(graphMaxDataPoints: number,){
+    public setExternal(external: boolean) { this.external = external; }
+
+    public setGraphMaxDataPoints(graphMaxDataPoints: number, ) {
         this.graphMaxDataPoints = graphMaxDataPoints;
     }
 
@@ -36,6 +39,10 @@ export class Graph {
     public getGraphs(): LiveGraph[] {
         return Array.from(this.graphMap.keys());
     }
+    public getInternalGraphs() : LiveGraph[] {
+        return Array.from(this.graphMap.keys()).filter((x: LiveGraph) => { return !x.externalWindow; });
+    }
+
     public initializeSingleDataset(g: LiveGraph) {
         this.graphMap.clear();
         let ds = new BehaviorSubject([]);
@@ -55,7 +62,6 @@ export class Graph {
         ds.next(datasets);
     }
     public initializeDatasets() {
-
         this.graphMap.clear();
 
         this.config.liveGraphs.forEach(g => {

@@ -14,16 +14,13 @@ import * as fs from 'fs'
 import * as child_process from 'child_process'
 import { TraceMessager } from "../../traceability/trace-messenger"
 import DialogHandler from "../../DialogHandler"
-import {Graph} from "../shared/graph"
+import { Graph } from "../shared/graph"
 
 
 @Injectable()
 export class CoeSimulationService {
 
     progress: number = 0;
-
-    // graphMap: Map<LiveGraph, BehaviorSubject<Array<any>>> = new Map();
-
     errorReport: (hasError: boolean, message: string) => void = function () { };
     simulationCompletedHandler: () => void = function () { };
     postProcessingOutputReport: (hasError: boolean, message: string) => void = function () { };
@@ -34,17 +31,17 @@ export class CoeSimulationService {
     private url: string;
     private resultDir: string;
     private config: CoSimulationConfig;
-    private counter: number = 0;
     private graphMaxDataPoints: number = 100;
-    public graph : Graph;
+    public graph: Graph = new Graph();;
+    public externalGraphs : Array<DialogHandler> = new Array<DialogHandler>();
 
     constructor(private http: Http,
         private settings: SettingsService,
         private fileSystem: FileSystemService,
         private zone: NgZone) {
-            
+
         this.graphMaxDataPoints = settings.get(SettingKeys.GRAPH_MAX_DATA_POINTS);
-        this.graph = new Graph((progress: number) => {this.progress = progress});
+        this.graph.setProgressCallback((progress: number) => { this.progress = progress });
         this.graph.setGraphMaxDataPoints(this.graphMaxDataPoints);
     }
 
@@ -83,7 +80,6 @@ export class CoeSimulationService {
         this.reset();
         this.graph.setCoSimConfig(config);
         this.graph.initializeDatasets();
-        // this.initializeDatasets(config);
         this.createSession();
     }
 
@@ -136,26 +132,18 @@ export class CoeSimulationService {
     }
 
     private simulate() {
-
-                
-        this.graph.graphMap.forEach((value: BehaviorSubject<any[]>, key:LiveGraph) => {
-            //if(key.externalWindow)
-            //{
+        this.graph.graphMap.forEach((value: BehaviorSubject<any[]>, key: LiveGraph) => {
+            if (key.externalWindow) {
                 let graphObj = key.toObject();
-                graphObj.webSocket = "ws://" + this.url + "/attachSession/" + this.sessionId; 
+                graphObj.webSocket = "ws://" + this.url + "/attachSession/" + this.sessionId;
                 graphObj.graphMaxDataPoints = this.graphMaxDataPoints;
                 console.log(graphObj);
-                let dh = new DialogHandler("angular2-app/coe/graph-window/graph-window.html", 800, 600,null,null,null);
-                dh.openWindow(JSON.stringify(graphObj),true);        
-            //}
+                let dh = new DialogHandler("angular2-app/coe/graph-window/graph-window.html", 800, 600, null, null, null);
+                dh.openWindow(JSON.stringify(graphObj), true);
+                this.externalGraphs.push(dh);                
+            }
         });
-
-        //this.graph.launchWebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
-        // this.counter = 0;
-        // this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
-
-        // this.webSocket.addEventListener("error", event => console.error(event));
-        // this.webSocket.addEventListener("message", event => this.onMessage(event));
+        this.graph.launchWebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
 
         var message: any = {
             startTime: this.config.startTime,
@@ -192,71 +180,11 @@ export class CoeSimulationService {
 
     }
 
-    // private onMessage(event: MessageEvent) {
-
-    //     let rawData = JSON.parse(event.data);
-    //     let graphDatasets: Map<BehaviorSubject<Array<any>>, any> = new Map<BehaviorSubject<Array<any>>, any>();
-    //     this.graphMap.forEach(ds => { graphDatasets.set(ds, ds.getValue()) });
-
-
-    //     let newCOE = false;
-    //     let xValue = this.counter++;
-    //     //Preparing for new livestream messages. It has the following structure:
-    //     // {"data":{"{integrate}":{"inst2":{"output":"0.0"}},"{sine}":{"sine":{"output":"0.0"}}},"time":0.0}}
-    //     if ("time" in rawData) {
-    //         xValue = rawData.time;
-
-    //         if (rawData.time < this.config.endTime) {
-    //             let pct = (rawData.time / this.config.endTime) * 100;
-    //             this.progress = Math.round(pct);
-    //         } else {
-    //             this.progress = 100;
-    //         }
-
-    //         rawData = rawData.data;
-    //     }
-
-    //     Object.keys(rawData).forEach(fmuKey => {
-    //         if (fmuKey.indexOf("{") !== 0) return;
-
-    //         Object.keys(rawData[fmuKey]).forEach(instanceKey => {
-
-    //             Object.keys(rawData[fmuKey][instanceKey]).forEach(outputKey => {
-    //                 let value = rawData[fmuKey][instanceKey][outputKey];
-
-    //                 if (value == "true") value = 1;
-    //                 else if (value == "false") value = 0;
-
-    //                 graphDatasets.forEach((ds: any, index: any) => {
-
-    //                     let dataset = ds.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
-    //                     if (dataset) {
-    //                         dataset.y.push(value);
-    //                         dataset.x.push(xValue);
-    //                         this.truncateDataset(dataset, this.graphMaxDataPoints);
-    //                     }
-    //                 })
-    //             });
-    //         });
-    //     });
-
-    //     graphDatasets.forEach((value: any, index: BehaviorSubject<any[]>) => {
-    //         index.next(value);
-    //     });
-    // }
-
-    // private truncateDataset(ds: any, maxLen: number) {
-    //     let x: Number[] = <Number[]>ds.x;
-    //     let size = x.length;
-    //     if (size > maxLen) {
-    //         ds.x = x.slice(size - maxLen, size)
-    //         ds.y = ds.y.slice(size - maxLen, size)
-    //     }
-    // }
-
     private downloadResults() {
-        // this.webSocket.close();
         this.graph.closeSocket();
+        this.externalGraphs.forEach((eg) => {
+            eg.win.webContents.send("close");
+        })
         this.simulationCompletedHandler();
 
         let resultPath = Path.normalize(`${this.resultDir}/outputs.csv`);

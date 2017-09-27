@@ -4,7 +4,10 @@ import { HTTP_PROVIDERS, Http } from "@angular/http";
 import { LineChartComponent } from "../../shared/line-chart.component";
 import { BehaviorSubject } from "rxjs/Rx";
 import { LiveGraph } from "../../../intocps-configurations/CoSimulationConfig";
-import {Graph} from "../../shared/graph"
+import { Graph } from "../../shared/graph"
+import { ipcRenderer } from "electron";
+
+
 
 
 interface MyWindow extends Window {
@@ -30,7 +33,7 @@ export class AppComponent implements OnInit {
     private webSocket: WebSocket;
     private counter: number = 0;
     test: string = "BINDING WORKS";
-    graph : Graph = new Graph();
+    graph: Graph = new Graph();
 
     constructor(private http: Http,
         private fileSystem: FileSystemService,
@@ -42,17 +45,17 @@ export class AppComponent implements OnInit {
         console.log("Initialize graph");
         let dataObj = JSON.parse(data);
         this.zone.run(() => {
-        this.graph.setGraphMaxDataPoints(dataObj.graphMaxDataPoints);
-        let lg : LiveGraph = new LiveGraph();
-        lg.fromObject(dataObj.livestream);
-        console.log("initializeSingleDataset")
-        this.graph.initializeSingleDataset(lg);
-        console.log("launchwebsocket")
-        this.graph.launchWebSocket(dataObj.webSocket)
+            this.graph.setGraphMaxDataPoints(dataObj.graphMaxDataPoints);
+            let lg: LiveGraph = new LiveGraph();
+            lg.fromObject(dataObj.livestream,dataObj.title);
+            console.log("initializeSingleDataset")
+            this.graph.initializeSingleDataset(lg);
+            console.log("launchwebsocket")
+            this.graph.launchWebSocket(dataObj.webSocket)
         });
+        ipcRenderer.on('close', (event, data) => { this.graph.closeSocket(); });
     }
 
     ngOnInit() {
-        console.log("Angular initializing.")
     }
 }

@@ -226,7 +226,8 @@ export class LiveGraph {
     public setLivestream(livestream: Map<Instance, ScalarVariable[]>) {
         this.livestream = livestream;
     }
-    fromObject(livestream: any){
+    fromObject(livestream: any, title: any){
+        this.title = title;
         console.log("fromObject");
         Object.keys(livestream).forEach(key => {
             console.log("fromObject key: " + key + " val: " + livestream[key]);

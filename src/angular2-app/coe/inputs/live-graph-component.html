@@ -17,6 +17,15 @@
                         <p *ngIf="!editing" class="form-control-static col-sm-7 col-md-8">{{graph.title}}</p>
                         <input *ngIf="editing" [(ngModel)]="graph.title" name="title" class="form-control col-sm-7 col-md-8">
                     </div>
+                    <div class="form-group">
+                        <label class="col-sm-5 col-md-4 control-label">External Window</label>
+                        <div class="checkbox col-sm-7 col-md-8">
+                            <label>
+                                <input type="checkbox" [disabled]="!editing" name="externalWindow" [checked]="graph.externalWindow"
+                        [(ngModel)]="graph.externalWindow" >
+                    </label>
+                        </div>
+                    </div>
                     <div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
                         <label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
                         <div class="col-sm-7 col-md-8">
