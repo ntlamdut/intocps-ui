@@ -56,7 +56,7 @@ export default class DialogHandler {
             this.win.setMenu(null);
 
         // Open the DevTools.
-        //this.win.webContents.openDevTools();
+        this.win.webContents.openDevTools();
 
         this.win.on('closed', function () {
             this.win = null;

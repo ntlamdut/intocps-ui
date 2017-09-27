@@ -206,12 +206,17 @@ export interface ICoSimAlgorithm {
 export class LiveGraph {
     public title = "Live Graph";
     private livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
+    private serializedLiveStream: Map<string,string[]> = new Map<string,string[]>();
     public id: number;
     public externalWindow: boolean;
     private static next = 0;
     constructor() {
         LiveGraph.next++;
         this.id = LiveGraph.next;
+    }
+
+    public getSerializedLiveStream(){
+        return this.serializedLiveStream;
     }
 
     public getLivestream() {
@@ -221,8 +226,15 @@ export class LiveGraph {
     public setLivestream(livestream: Map<Instance, ScalarVariable[]>) {
         this.livestream = livestream;
     }
-
-    toObject() {
+    fromObject(livestream: any){
+        console.log("fromObject");
+        Object.keys(livestream).forEach(key => {
+            console.log("fromObject key: " + key + " val: " + livestream[key]);
+            this.serializedLiveStream.set(key, livestream[key])
+        });
+        console.log("fromObject");
+    }
+    toObject() : any {
 
         let livestream: any = {};
         this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));

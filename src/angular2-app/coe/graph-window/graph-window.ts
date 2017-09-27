@@ -10,11 +10,23 @@ function gup(name: any, url: any) {
     return results == null ? null : results[1];
 }
 
+function getParameterByName(name:string, url?:string) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
 window.onload = function () {
-    let websocket = decodeURIComponent(gup("data", undefined));
-    console.log("Websocket passed");
+    
+    let data = getParameterByName("data");
+    console.log("Data passed: " + data);
     // Start Angular 2 application
     let ref = bootstrap(AppComponent, []).then((ref) => {
         let instance : AppComponent = ref.instance;
+        instance.initializeGraph(data);        
     });
 }

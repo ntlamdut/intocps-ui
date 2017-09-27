@@ -1,4 +1,8 @@
 GRAPH
-<!-- <h4>Graph: {{g.title}}</h4> -->
-<!-- <line-chart *ngIf="dataset.getValue > 0" [datasets]="dataset"></line-chart> -->
-<line-chart></line-chart>
+<h4>Graph: {{test}}</h4>
+<div *ngIf="graph.getGraphs().length >0">
+    SHOWING
+    <div *ngFor="let g of graph.getGraphs(); let i=index; trackBy:customTrackBy">
+        <line-chart *ngIf="graph.getDataset(g).getValue().length > 0" [datasets]="graph.getDataset(g)"></line-chart>
+    </div>
+</div>

@@ -14,6 +14,7 @@ import * as fs from 'fs'
 import * as child_process from 'child_process'
 import { TraceMessager } from "../../traceability/trace-messenger"
 import DialogHandler from "../../DialogHandler"
+import {Graph} from "../shared/graph"
 
 
 @Injectable()
@@ -21,7 +22,7 @@ export class CoeSimulationService {
 
     progress: number = 0;
 
-    graphMap: Map<LiveGraph, BehaviorSubject<Array<any>>> = new Map();
+    // graphMap: Map<LiveGraph, BehaviorSubject<Array<any>>> = new Map();
 
     errorReport: (hasError: boolean, message: string) => void = function () { };
     simulationCompletedHandler: () => void = function () { };
@@ -35,18 +36,22 @@ export class CoeSimulationService {
     private config: CoSimulationConfig;
     private counter: number = 0;
     private graphMaxDataPoints: number = 100;
+    public graph : Graph;
 
     constructor(private http: Http,
         private settings: SettingsService,
         private fileSystem: FileSystemService,
         private zone: NgZone) {
+            
         this.graphMaxDataPoints = settings.get(SettingKeys.GRAPH_MAX_DATA_POINTS);
+        this.graph = new Graph((progress: number) => {this.progress = progress});
+        this.graph.setGraphMaxDataPoints(this.graphMaxDataPoints);
     }
 
     reset() {
         this.progress = 0;
         this.zone.run(() => {
-            this.graphMap.clear();
+            this.graph.reset();
         });
     }
 
@@ -76,49 +81,15 @@ export class CoeSimulationService {
         this.resultDir = Path.normalize(`${currentDir}/R_${dateString}`);
 
         this.reset();
-        this.initializeDatasets(config);
+        this.graph.setCoSimConfig(config);
+        this.graph.initializeDatasets();
+        // this.initializeDatasets(config);
         this.createSession();
     }
-
 
     stop() {
         this.http.get(`http://${this.url}/stopsimulation/${this.sessionId}`)
             .subscribe((response: Response) => { }, (err: Response) => this.errorHandler(err));
-    }
-
-    public getDataset(graph: LiveGraph): BehaviorSubject<Array<any>> {
-        return this.graphMap.get(graph);
-    }
-
-    public getGraphs(): LiveGraph[] {
-        return Array.from(this.graphMap.keys());
-    }
-
-    private initializeDatasets(config: CoSimulationConfig) {
-
-        this.graphMap.clear();
-
-        config.liveGraphs.forEach(g => {
-
-            let ds = new BehaviorSubject([]);
-            this.graphMap.set(g, ds);
-
-            let datasets: Array<any> = [];
-
-            g.getLivestream().forEach((value: any, index: any) => {
-
-                value.forEach((sv: any) => {
-                    let qualifiedName = Serializer.getIdSv(index, sv);
-                    datasets.push({
-                        name: qualifiedName,
-                        y: [],
-                        x: []
-                    })
-                });
-            });
-
-            ds.next(datasets);
-        });
     }
 
     private createSession() {
@@ -132,7 +103,6 @@ export class CoeSimulationService {
     }
 
     private uploadFmus() {
-
         if (!this.remoteCoe) {
             this.initializeCoe();
             return;
@@ -167,42 +137,52 @@ export class CoeSimulationService {
 
     private simulate() {
 
+                
+        this.graph.graphMap.forEach((value: BehaviorSubject<any[]>, key:LiveGraph) => {
+            //if(key.externalWindow)
+            //{
+                let graphObj = key.toObject();
+                graphObj.webSocket = "ws://" + this.url + "/attachSession/" + this.sessionId; 
+                graphObj.graphMaxDataPoints = this.graphMaxDataPoints;
+                console.log(graphObj);
+                let dh = new DialogHandler("angular2-app/coe/graph-window/graph-window.html", 800, 600,null,null,null);
+                dh.openWindow(JSON.stringify(graphObj),true);        
+            //}
+        });
 
+        //this.graph.launchWebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
         // this.counter = 0;
         // this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
 
         // this.webSocket.addEventListener("error", event => console.error(event));
         // this.webSocket.addEventListener("message", event => this.onMessage(event));
 
-        // var message: any = {
-        //     startTime: this.config.startTime,
-        //     endTime: this.config.endTime,
-        //     reportProgress: true,
-        //     liveLogInterval: this.config.livestreamInterval
-        // };
+        var message: any = {
+            startTime: this.config.startTime,
+            endTime: this.config.endTime,
+            reportProgress: true,
+            liveLogInterval: this.config.livestreamInterval
+        };
 
-        // // enable logging for all log categories        
-        // var logCategories: any = new Object();
-        // let self = this;
-        // this.config.multiModel.fmuInstances.forEach(instance => {
-        //     let key: any = instance.fmu.name + "." + instance.name;
+        // enable logging for all log categories        
+        var logCategories: any = new Object();
+        let self = this;
+        this.config.multiModel.fmuInstances.forEach(instance => {
+            let key: any = instance.fmu.name + "." + instance.name;
 
-        //     if (self.config.enableAllLogCategoriesPerInstance) {
-        //         logCategories[key] = instance.fmu.logCategories;
-        //     }
-        // });
-        // Object.assign(message, { logLevels: logCategories });
+            if (self.config.enableAllLogCategoriesPerInstance) {
+                logCategories[key] = instance.fmu.logCategories;
+            }
+        });
+        Object.assign(message, { logLevels: logCategories });
 
-        // let data = JSON.stringify(message);
+        let data = JSON.stringify(message);
 
-        // this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
-        //     .then(() => {
-        //         this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
-        //             .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
-        //     });
-
-        let dh = new DialogHandler("angular2-app/coe/graph-window/graph-window.html", 800, 600,null,null,null);
-        dh.openWindow("ws://" + this.url + "/attachSession/" + this.sessionId ,true);
+        this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
+            .then(() => {
+                this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
+                    .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
+            });
     }
 
     errorHandler(err: Response) {
@@ -212,70 +192,71 @@ export class CoeSimulationService {
 
     }
 
-    private onMessage(event: MessageEvent) {
+    // private onMessage(event: MessageEvent) {
 
-        let rawData = JSON.parse(event.data);
-        let graphDatasets: Map<BehaviorSubject<Array<any>>, any> = new Map<BehaviorSubject<Array<any>>, any>();
-        this.graphMap.forEach(ds => { graphDatasets.set(ds, ds.getValue()) });
+    //     let rawData = JSON.parse(event.data);
+    //     let graphDatasets: Map<BehaviorSubject<Array<any>>, any> = new Map<BehaviorSubject<Array<any>>, any>();
+    //     this.graphMap.forEach(ds => { graphDatasets.set(ds, ds.getValue()) });
 
 
-        let newCOE = false;
-        let xValue = this.counter++;
-        //Preparing for new livestream messages. It has the following structure:
-        // {"data":{"{integrate}":{"inst2":{"output":"0.0"}},"{sine}":{"sine":{"output":"0.0"}}},"time":0.0}}
-        if ("time" in rawData) {
-            xValue = rawData.time;
+    //     let newCOE = false;
+    //     let xValue = this.counter++;
+    //     //Preparing for new livestream messages. It has the following structure:
+    //     // {"data":{"{integrate}":{"inst2":{"output":"0.0"}},"{sine}":{"sine":{"output":"0.0"}}},"time":0.0}}
+    //     if ("time" in rawData) {
+    //         xValue = rawData.time;
 
-            if (rawData.time < this.config.endTime) {
-                let pct = (rawData.time / this.config.endTime) * 100;
-                this.progress = Math.round(pct);
-            } else {
-                this.progress = 100;
-            }
+    //         if (rawData.time < this.config.endTime) {
+    //             let pct = (rawData.time / this.config.endTime) * 100;
+    //             this.progress = Math.round(pct);
+    //         } else {
+    //             this.progress = 100;
+    //         }
 
-            rawData = rawData.data;
-        }
+    //         rawData = rawData.data;
+    //     }
 
-        Object.keys(rawData).forEach(fmuKey => {
-            if (fmuKey.indexOf("{") !== 0) return;
+    //     Object.keys(rawData).forEach(fmuKey => {
+    //         if (fmuKey.indexOf("{") !== 0) return;
 
-            Object.keys(rawData[fmuKey]).forEach(instanceKey => {
+    //         Object.keys(rawData[fmuKey]).forEach(instanceKey => {
 
-                Object.keys(rawData[fmuKey][instanceKey]).forEach(outputKey => {
-                    let value = rawData[fmuKey][instanceKey][outputKey];
+    //             Object.keys(rawData[fmuKey][instanceKey]).forEach(outputKey => {
+    //                 let value = rawData[fmuKey][instanceKey][outputKey];
 
-                    if (value == "true") value = 1;
-                    else if (value == "false") value = 0;
+    //                 if (value == "true") value = 1;
+    //                 else if (value == "false") value = 0;
 
-                    graphDatasets.forEach((ds: any, index: any) => {
+    //                 graphDatasets.forEach((ds: any, index: any) => {
 
-                        let dataset = ds.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
-                        if (dataset) {
-                            dataset.y.push(value);
-                            dataset.x.push(xValue);
-                            this.truncateDataset(dataset, this.graphMaxDataPoints);
-                        }
-                    })
-                });
-            });
-        });
+    //                     let dataset = ds.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
+    //                     if (dataset) {
+    //                         dataset.y.push(value);
+    //                         dataset.x.push(xValue);
+    //                         this.truncateDataset(dataset, this.graphMaxDataPoints);
+    //                     }
+    //                 })
+    //             });
+    //         });
+    //     });
 
-        graphDatasets.forEach((value: any, index: BehaviorSubject<any[]>) => {
-            index.next(value);
-        });
-    }
+    //     graphDatasets.forEach((value: any, index: BehaviorSubject<any[]>) => {
+    //         index.next(value);
+    //     });
+    // }
 
-    private truncateDataset(ds: any, maxLen: number) {
-        let x: Number[] = <Number[]>ds.x;
-        let size = x.length;
-        if (size > maxLen) {
-            ds.x = x.slice(size - maxLen, size)
-            ds.y = ds.y.slice(size - maxLen, size)
-        }
-    }
+    // private truncateDataset(ds: any, maxLen: number) {
+    //     let x: Number[] = <Number[]>ds.x;
+    //     let size = x.length;
+    //     if (size > maxLen) {
+    //         ds.x = x.slice(size - maxLen, size)
+    //         ds.y = ds.y.slice(size - maxLen, size)
+    //     }
+    // }
 
     private downloadResults() {
-        this.webSocket.close();
+        // this.webSocket.close();
+        this.graph.closeSocket();
         this.simulationCompletedHandler();
 
         let resultPath = Path.normalize(`${this.resultDir}/outputs.csv`);

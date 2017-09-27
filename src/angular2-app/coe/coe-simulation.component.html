@@ -37,13 +37,13 @@
     {{httpErrorMessage}}
 </div>
 
-<div *ngIf="coeSimulation.getGraphs().length >0" [style.-webkit-column-count]="config.liveGraphColumns" [style.-moz-column-count]="config.liveGraphColumns" [style.column-count]="config.liveGraphColumns">
-    <div *ngFor="let g of coeSimulation.getGraphs(); let i=index; trackBy:customTrackBy">
+<div *ngIf="coeSimulation.graph.getGraphs().length >0" [style.-webkit-column-count]="config.liveGraphColumns" [style.-moz-column-count]="config.liveGraphColumns" [style.column-count]="config.liveGraphColumns">
+    <div *ngFor="let g of coeSimulation.graph.getGraphs(); let i=index; trackBy:customTrackBy">
 
         <div style="page-break-inside:avoid !important;border-style: solid; margin: 2px; border-width: 0.1em;">
             <h5>Graph {{i+1}}: {{g.title}}</h5>
 
-            <line-chart *ngIf="coeSimulation.getDataset(g).getValue().length > 0" [datasets]="coeSimulation.getDataset(g)" [livegraphvisiblerowcount]="config.liveGraphVisibleRowCount" [something]="config.liveGraphColumns" style="page-break-inside:avoid !important;"></line-chart>
+            <line-chart *ngIf="coeSimulation.graph.getDataset(g).getValue().length > 0" [datasets]="coeSimulation.graph.getDataset(g)" [livegraphvisiblerowcount]="config.liveGraphVisibleRowCount" [something]="config.liveGraphColumns" style="page-break-inside:avoid !important;"></line-chart>
         </div>
     </div>
 </div>
