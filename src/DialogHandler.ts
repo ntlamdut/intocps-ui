@@ -57,6 +57,7 @@ export default class DialogHandler {
 
         // Open the DevTools.
         //this.win.webContents.openDevTools();
+        window.onbeforeunload = (ev) => {if(this.win) this.win.removeAllListeners();}
 
         this.win.on('closed', function () {
             this.win = null;
