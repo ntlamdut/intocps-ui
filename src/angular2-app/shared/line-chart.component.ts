@@ -20,8 +20,10 @@ export class LineChartComponent implements OnInit {
             y: -0.1,
             xanchor: "left",
             yanchor: "top",
-            
             tracegroupgap: 20
+        },
+        margin: {
+            l: 25, r:25,b:25,t:25,pad:0
         },
         xaxis: {
             showgrid: false,
