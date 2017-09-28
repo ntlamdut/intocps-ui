@@ -51,11 +51,12 @@ export default class DialogHandler {
             this.win.setMenu(null);
 
         // Open the DevTools.
-        // this.win.webContents.openDevTools();
+        //this.win.webContents.openDevTools();
+        window.onbeforeunload = (ev) => {if(this.win) this.win.removeAllListeners();}
 
         this.win.on('closed', function () {
             self.win.removeAllListeners();
-            self.win = null;
+            this.win = null;
         });
 
         if (this.externalUrl) {
