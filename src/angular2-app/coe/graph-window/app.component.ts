@@ -29,10 +29,7 @@ declare let window: MyWindow;
     templateUrl: "./graph.component.html"
 })
 export class AppComponent implements OnInit {
-    private url: string;
     private webSocket: WebSocket;
-    private counter: number = 0;
-    test: string = "BINDING WORKS";
     graph: Graph = new Graph();
 
     constructor(private http: Http,
@@ -42,18 +39,18 @@ export class AppComponent implements OnInit {
     }
 
     initializeGraph(data: any) {
-        console.log("Initialize graph");
         let dataObj = JSON.parse(data);
         this.zone.run(() => {
             this.graph.setGraphMaxDataPoints(dataObj.graphMaxDataPoints);
             let lg: LiveGraph = new LiveGraph();
-            lg.fromObject(dataObj.livestream,dataObj.title);
-            console.log("initializeSingleDataset")
-            this.graph.initializeSingleDataset(lg);
-            console.log("launchwebsocket")
+            lg.fromObject(dataObj.livestream,dataObj.title);      
+            this.graph.initializeSingleDataset(lg);        
             this.graph.launchWebSocket(dataObj.webSocket)
         });
         ipcRenderer.on('close', (event, data) => { this.graph.closeSocket(); });
+        window.onbeforeunload = ((ev) => {
+           this.graph.closeSocket();       
+        });
     }
 
     ngOnInit() {

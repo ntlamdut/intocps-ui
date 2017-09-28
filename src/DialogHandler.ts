@@ -45,7 +45,7 @@ export default class DialogHandler {
     }
 
     public openWindow(data:string = '', showWindow:boolean = true) : Electron.BrowserWindow {
-        
+        let self = this;
         this.win = new remote.BrowserWindow({ width: this.windowWidth, height: this.windowHeight, show: showWindow });
         if(!IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.DEVELOPMENT_MODE) && this.win.setMenu)
             this.win.setMenu(null);
@@ -54,7 +54,8 @@ export default class DialogHandler {
         // this.win.webContents.openDevTools();
 
         this.win.on('closed', function () {
-            this.win = null;
+            self.win.removeAllListeners();
+            self.win = null;
         });
 
         if (this.externalUrl) {

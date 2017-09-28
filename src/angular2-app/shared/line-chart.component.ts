@@ -20,7 +20,7 @@ export class LineChartComponent implements OnInit {
             y: -0.1,
             xanchor: "left",
             yanchor: "top",
-
+            
             tracegroupgap: 20
         },
         xaxis: {
@@ -29,7 +29,8 @@ export class LineChartComponent implements OnInit {
         },
         yaxis: {
             showline: false
-        }
+        },
+        showlegend: true,
     };
 
     private options = {

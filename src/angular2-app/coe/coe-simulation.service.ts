@@ -15,7 +15,7 @@ import * as child_process from 'child_process'
 import { TraceMessager } from "../../traceability/trace-messenger"
 import DialogHandler from "../../DialogHandler"
 import { Graph } from "../shared/graph"
-import {Deferred} from "../../deferred"
+import { Deferred } from "../../deferred"
 
 
 @Injectable()
@@ -34,7 +34,7 @@ export class CoeSimulationService {
     private config: CoSimulationConfig;
     private graphMaxDataPoints: number = 100;
     public graph: Graph = new Graph();;
-    public externalGraphs : Array<DialogHandler> = new Array<DialogHandler>();
+    public externalGraphs: Array<DialogHandler> = new Array<DialogHandler>();
 
     constructor(private http: Http,
         private settings: SettingsService,
@@ -133,15 +133,12 @@ export class CoeSimulationService {
     }
 
     private simulate() {
-        // let deferreds = new Array<JQueryDeferred<any>>();
         let deferreds = new Array<Promise<any>>();
+
         this.graph.graphMap.forEach((value: BehaviorSubject<any[]>, key: LiveGraph) => {
             if (key.externalWindow) {
                 let deferred: Deferred<any> = new Deferred<any>();
                 deferreds.push(deferred.promise);
-                // let deferred : JQueryDeferred<any> = $.Deferred()
-                // deferreds.push(deferred);
-                
                 let graphObj = key.toObject();
                 graphObj.webSocket = "ws://" + this.url + "/attachSession/" + this.sessionId;
                 graphObj.graphMaxDataPoints = this.graphMaxDataPoints;
@@ -149,45 +146,45 @@ export class CoeSimulationService {
                 let dh = new DialogHandler("angular2-app/coe/graph-window/graph-window.html", 800, 600, null, null, null);
                 dh.openWindow(JSON.stringify(graphObj), true);
                 this.externalGraphs.push(dh);
-
-                dh.win.webContents.on("did-finish-load",() => {
+                dh.win.webContents.on("did-finish-load", () => {
+                    dh.win.setTitle("Plot: " + key.title);
                     deferred.resolve();
-                    // deferred.resolve();
-                });                
+                });
             }
         });
-            Promise.all(deferreds).then(() => {
+
+        Promise.all(deferreds).then(() => {
             this.graph.launchWebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
-            
-                    var message: any = {
-                        startTime: this.config.startTime,
-                        endTime: this.config.endTime,
-                        reportProgress: true,
-                        liveLogInterval: this.config.livestreamInterval
-                    };
-            
-                    // enable logging for all log categories        
-                    var logCategories: any = new Object();
-                    let self = this;
-                    this.config.multiModel.fmuInstances.forEach(instance => {
-                        let key: any = instance.fmu.name + "." + instance.name;
-            
-                        if (self.config.enableAllLogCategoriesPerInstance) {
-                            logCategories[key] = instance.fmu.logCategories;
-                        }
-                    });
-                    Object.assign(message, { logLevels: logCategories });
-            
-                    let data = JSON.stringify(message);
-            
-                    this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
-                        .then(() => {
-                            this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
-                                .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
-                        });
+
+            var message: any = {
+                startTime: this.config.startTime,
+                endTime: this.config.endTime,
+                reportProgress: true,
+                liveLogInterval: this.config.livestreamInterval
+            };
+
+            // enable logging for all log categories        
+            var logCategories: any = new Object();
+            let self = this;
+            this.config.multiModel.fmuInstances.forEach(instance => {
+                let key: any = instance.fmu.name + "." + instance.name;
+
+                if (self.config.enableAllLogCategoriesPerInstance) {
+                    logCategories[key] = instance.fmu.logCategories;
+                }
+            });
+            Object.assign(message, { logLevels: logCategories });
+
+            let data = JSON.stringify(message);
+
+            this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
+                .then(() => {
+                    this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
+                        .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
+                });
         });
-        
-        
+
+
     }
 
     errorHandler(err: Response) {
@@ -200,7 +197,8 @@ export class CoeSimulationService {
     private downloadResults() {
         this.graph.closeSocket();
         this.externalGraphs.forEach((eg) => {
-            eg.win.webContents.send("close");
+            if (eg.win)
+                eg.win.webContents.send("close");
         })
         this.simulationCompletedHandler();
 

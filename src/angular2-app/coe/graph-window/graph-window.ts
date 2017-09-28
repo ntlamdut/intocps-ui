@@ -1,5 +1,6 @@
 import { AppComponent } from './app.component';
 import { bootstrap } from '@angular/platform-browser-dynamic';  
+import {enableProdMode} from "@angular/core"
 
 function getParameterByName(name:string, url?:string) {
     if (!url) url = window.location.href;
@@ -11,6 +12,7 @@ function getParameterByName(name:string, url?:string) {
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 // Start Angular 2 application
+enableProdMode();
 let ref = bootstrap(AppComponent, []).then((ref) => {
     let data = getParameterByName("data");
     let instance : AppComponent = ref.instance;
