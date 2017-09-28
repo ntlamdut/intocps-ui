@@ -26,6 +26,10 @@
         "messageFormatVersion": {
           "type": "string",
           "enum": [
+            "1.3",
+            "1.3.1",
+            "1.3.2",
+            "1.4",
             "1.5"
           ],
           "default": "1.5"
