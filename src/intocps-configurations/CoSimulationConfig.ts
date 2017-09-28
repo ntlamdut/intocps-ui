@@ -21,10 +21,13 @@ export class CoSimulationConfig implements ISerializable {
     sourcePath: string;
     multiModelCrc: string;
 
+    liveGraphs: LiveGraph[] = [];
+    liveGraphColumns: number = 1;
+    liveGraphVisibleRowCount: number=1;
+
     //optional livestream outputs
-    livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
     logVariables: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
-    livestreamInterval: number = 0.0
+    livestreamInterval: number = 0.1
     algorithm: ICoSimAlgorithm = new FixedStepAlgorithm();
     startTime: number = 0;
     endTime: number = 10;
@@ -40,16 +43,15 @@ export class CoSimulationConfig implements ISerializable {
     simulationProgramDelay: boolean = false;
 
     public getProjectRelativePath(path: string): string {
-        if(path==".")
+        if (path == ".")
             return "";
-        if (path.length>0 && path.indexOf(this.projectRoot) === 0)
+        if (path.length > 0 && path.indexOf(this.projectRoot) === 0)
             return path.substring(this.projectRoot.length + 1);
         return path;
     }
 
     toObject(): any {
-        let livestream: any = {};
-        this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
+
         let logVariables: any = {};
         this.logVariables.forEach((svs, instance) => logVariables[Serializer.getId(instance)] = svs.map(sv => sv.name));
 
@@ -57,7 +59,9 @@ export class CoSimulationConfig implements ISerializable {
             startTime: Number(this.startTime),
             endTime: Number(this.endTime),
             multimodel_path: this.getProjectRelativePath(this.multiModel.sourcePath),
-            livestream: livestream,
+            liveGraphColumns: this.liveGraphColumns,
+            liveGraphVisibleRowCount: this.liveGraphVisibleRowCount,
+            graphs: this.liveGraphs.map(g => g.toObject()),
             livestreamInterval: Number(this.livestreamInterval),
             logVariables: logVariables,
             visible: this.visible,
@@ -71,7 +75,7 @@ export class CoSimulationConfig implements ISerializable {
             stabalizationEnabled: this.stabalization,
             global_absolute_tolerance: Number(this.global_absolute_tolerance),
             global_relative_tolerance: Number(this.global_relative_tolerance),
-            simulationProgramDelay:this.simulationProgramDelay
+            simulationProgramDelay: this.simulationProgramDelay
         };
     }
 
@@ -150,7 +154,6 @@ export class CoSimulationConfig implements ISerializable {
                     config.sourcePath = path;
                     config.startTime = parser.parseStartTime(data) || 0;
                     config.endTime = parser.parseEndTime(data) || 10;
-                    config.livestream = parser.parseLivestream(data, multiModel);
                     config.logVariables = parser.parseLogVariables(data, multiModel);
                     config.livestreamInterval = parseFloat(parser.parseSimpleTagDefault(data, "livestreamInterval", "0.0"));
                     config.algorithm = parser.parseAlgorithm(data, multiModel);
@@ -160,7 +163,9 @@ export class CoSimulationConfig implements ISerializable {
                     config.enableAllLogCategoriesPerInstance = parser.parseSimpleTagDefault(data, "enableAllLogCategoriesPerInstance", false);
                     config.multiModelCrc = parser.parseMultiModelCrc(data);
                     config.postProcessingScript = parser.parseSimpleTagDefault(data, "postProcessingScript", "");
-
+                    config.liveGraphs = parser.parseGraphs(Parser.GRAPHS_TAG, data, multiModel);
+                    config.liveGraphColumns = parseInt(parser.parseSimpleTagDefault(data, "liveGraphColumns", 1));
+                    config.liveGraphVisibleRowCount = parseInt(parser.parseSimpleTagDefault(data, "liveGraphVisibleRowCount", 1));
                     config.simulationProgramDelay = parser.parseSimpleTagDefault(data, "simulationProgramDelay", false);
                     config.parallelSimulation = parser.parseSimpleTagDefault(data, "parallelSimulation", false);
                     config.stabalization = parser.parseSimpleTagDefault(data, "stabalizationEnabled", false);
@@ -196,6 +201,62 @@ export interface ICoSimAlgorithm {
     toObject(): { [key: string]: any };
     type: string;
     name: string;
+}
+
+export class LiveGraph {
+    public title = "Live Graph";
+    private livestream: Map<Instance, ScalarVariable[]> = new Map<Instance, ScalarVariable[]>();
+    private serializedLiveStream: Map<string,string[]> = new Map<string,string[]>();
+    public id: number;
+    public externalWindow: boolean;
+    private static next = 0;
+    constructor() {
+        LiveGraph.next++;
+        this.id = LiveGraph.next;
+    }
+
+    public getSerializedLiveStream(){
+        return this.serializedLiveStream;
+    }
+
+    public getLivestream() {
+        return this.livestream;
+    }
+
+    public setLivestream(livestream: Map<Instance, ScalarVariable[]>) {
+        this.livestream = livestream;
+    }
+    fromObject(livestream: any, title: any){
+        this.title = title;
+        console.log("fromObject");
+        Object.keys(livestream).forEach(key => {
+            console.log("fromObject key: " + key + " val: " + livestream[key]);
+            this.serializedLiveStream.set(key, livestream[key])
+        });
+        console.log("fromObject");
+    }
+    toObject() : any {
+
+        let livestream: any = {};
+        this.livestream.forEach((svs, instance) => livestream[Serializer.getId(instance)] = svs.map(sv => sv.name));
+
+        return {
+            title: this.title,
+            livestream: livestream,
+            externalWindow:this.externalWindow,
+        };
+    }
+
+    toFormGroup() {
+        return new FormGroup({
+            id: new FormControl(this.id),
+            livestream: new FormControl(this.livestream),
+            title: new FormControl(this.title),
+            externalWindow: new FormControl(this.externalWindow),
+        });
+    }
+
+
 }
 
 export class FixedStepAlgorithm implements ICoSimAlgorithm {
@@ -264,16 +325,16 @@ export interface VariableStepConstraint {
 
 export class ZeroCrossingConstraint implements VariableStepConstraint {
     type = "zerocrossing";
-    private static index : number = 0;
-    public readonly name : string;
+    private static index: number = 0;
+    public readonly name: string;
     constructor(
         public id: string = "zc",
         public ports: Array<InstanceScalarPair> = [],
         public order: string = "2", // Can be 1 or 2.
         public abstol?: number,
         public safety?: number
-    ) { 
-        this.name = "order"+ZeroCrossingConstraint.index++;
+    ) {
+        this.name = "order" + ZeroCrossingConstraint.index++;
 
     }
 

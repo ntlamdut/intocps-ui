@@ -37,9 +37,16 @@
     {{httpErrorMessage}}
 </div>
 
-<line-chart *ngIf="coeSimulation.datasets.getValue().length > 0" [datasets]="coeSimulation.datasets"></line-chart>
+<div *ngIf="coeSimulation.graph.getInternalGraphs().length >0" [style.-webkit-column-count]="config.liveGraphColumns" [style.-moz-column-count]="config.liveGraphColumns" [style.column-count]="config.liveGraphColumns">
+    <div *ngFor="let g of coeSimulation.graph.getInternalGraphs(); let i=index; trackBy:customTrackBy">
 
+        <div style="page-break-inside:avoid !important;border-style: solid; margin: 2px;padding-left: 2px; border-width: 0.1em;">
+            <h5>Graph {{i+1}}: {{g.title}}</h5>
 
+            <line-chart *ngIf="coeSimulation.graph.getDataset(g).getValue().length > 0" [datasets]="coeSimulation.graph.getDataset(g)" [livegraphvisiblerowcount]="config.liveGraphVisibleRowCount" [something]="config.liveGraphColumns" style="page-break-inside:avoid !important;"></line-chart>
+        </div>
+    </div>
+</div>
 
 <div *ngIf="hasPostScriptOutput">
 

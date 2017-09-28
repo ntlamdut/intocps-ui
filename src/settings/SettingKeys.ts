@@ -20,6 +20,7 @@ export namespace SettingKeys {
     export var ENABLE_TRACEABILITY = "enable_traceability";
     export var LOCAL_UPDATE_SITE = "local_update_site";
     export var USE_LOCAL_UPDATE_SITE = "use_local_update_site";
+    export var GRAPH_MAX_DATA_POINTS = "graph_max_data_points";
 
     export var DEFAULT_VALUES: { [key: string]: any; } = {};
     DEFAULT_VALUES[RTTESTER_INSTALL_DIR] = 'C:/opt/rt-tester';
@@ -37,6 +38,7 @@ export namespace SettingKeys {
     DEFAULT_VALUES[ENABLE_TRACEABILITY] = false;
     DEFAULT_VALUES[LOCAL_UPDATE_SITE] = "";
     DEFAULT_VALUES[USE_LOCAL_UPDATE_SITE] = false;
+    DEFAULT_VALUES[GRAPH_MAX_DATA_POINTS] = 1000;
 
     export var VALUE_DESCRIPTION: { [key: string]: any; } = {};
 
