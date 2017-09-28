@@ -1,7 +1,7 @@
 import { MultiModelConfig } from "./MultiModelConfig";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm, FmuMaxStepSizeConstraint, VariableStepAlgorithm, VariableStepConstraint,
-    ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint
+    ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint, LiveGraph
 } from "./CoSimulationConfig";
 import * as Path from 'path';
 import * as fs from 'fs';
@@ -13,11 +13,12 @@ export class Parser {
     protected CONNECTIONS_TAG: string = "connections";
     protected PARAMETERS_TAG: string = "parameters";
     protected LIVESTREAM_TAG: string = "livestream";
+    public static GRAPHS_TAG: string = "graphs";
     protected START_TIME_TAG: string = "startTime";
     protected END_TIME_TAG: string = "endTime";
     protected ALGORITHM_TAG: string = "algorithm";
     protected MULTIMODEL_CRC_TAG: string = "multimodel_crc";
-    protected LOG_VARIABLES_TAG: string ="logVariables";
+    protected LOG_VARIABLES_TAG: string = "logVariables";
 
     protected ALGORITHM_TYPE: string = "type";
     protected ALGORITHM_TYPE_FIXED: string = "fixed-step";
@@ -74,270 +75,289 @@ export class Parser {
                         }
                         fmus.push(fmu);
                     });
-    }
-} catch (e) {
-    reject(e);
-}
+                }
+            } catch (e) {
+                reject(e);
+            }
 
-Promise.all(populates.map(p => p.catch(e => e)))
-    .then(results => resolve(fmus))
-    .catch(e => reject(e));
+            Promise.all(populates.map(p => p.catch(e => e)))
+                .then(results => resolve(fmus))
+                .catch(e => reject(e));
         });
     }
 
 
-parseId(id: string): string[] {
-    //is must have the form: '{' + fmuName '}' + '.' instance-name + '.' + scalar-variable
-    // restriction is that instance-name cannot have '.'
+    parseId(id: string): string[] {
+        //is must have the form: '{' + fmuName '}' + '.' instance-name + '.' + scalar-variable
+        // restriction is that instance-name cannot have '.'
 
-    let indexEndCurlyBracket = id.indexOf('}');
-    if (indexEndCurlyBracket <= 0) {
-        throw "Invalid id";
+        let indexEndCurlyBracket = id.indexOf('}');
+        if (indexEndCurlyBracket <= 0) {
+            throw "Invalid id";
+        }
+
+        let fmuName = id.substring(0, indexEndCurlyBracket + 1);
+        var rest = id.substring(indexEndCurlyBracket + 1);
+        var dotIndex = rest.indexOf('.');
+        if (dotIndex < 0) {
+            throw "Missing dot after fmu name";
+        }
+        rest = rest.substring(dotIndex + 1);
+        //this is instance-name start index 0
+
+        dotIndex = rest.indexOf('.');
+        if (dotIndex < 0) {
+            throw "Missing dot after instance name";
+        }
+        let instanceName = rest.substring(0, dotIndex);
+        let scalarVariableName = rest.substring(dotIndex + 1);
+
+        return [fmuName, instanceName, scalarVariableName];
     }
 
-    let fmuName = id.substring(0, indexEndCurlyBracket + 1);
-    var rest = id.substring(indexEndCurlyBracket + 1);
-    var dotIndex = rest.indexOf('.');
-    if (dotIndex < 0) {
-        throw "Missing dot after fmu name";
+    parseIdShort(id: string): string[] {
+        //is must have the form: '{' + fmuName '}' + '.' instance-name 
+        // restriction is that instance-name cannot have '.'
+
+        let indexEndCurlyBracket = id.indexOf('}');
+        if (indexEndCurlyBracket <= 0) {
+            throw "Invalid id";
+        }
+
+        let fmuName = id.substring(0, indexEndCurlyBracket + 1);
+        var rest = id.substring(indexEndCurlyBracket + 1);
+        var dotIndex = rest.indexOf('.');
+        if (dotIndex < 0) {
+            throw "Missing dot after fmu name";
+        }
+        rest = rest.substring(dotIndex + 1);
+        //this is instance-name start index 0
+
+        let instanceName = rest;
+        return [fmuName, instanceName];
     }
-    rest = rest.substring(dotIndex + 1);
-    //this is instance-name start index 0
-
-    dotIndex = rest.indexOf('.');
-    if (dotIndex < 0) {
-        throw "Missing dot after instance name";
-    }
-    let instanceName = rest.substring(0, dotIndex);
-    let scalarVariableName = rest.substring(dotIndex + 1);
-
-    return [fmuName, instanceName, scalarVariableName];
-}
-
-parseIdShort(id: string): string[] {
-    //is must have the form: '{' + fmuName '}' + '.' instance-name 
-    // restriction is that instance-name cannot have '.'
-
-    let indexEndCurlyBracket = id.indexOf('}');
-    if (indexEndCurlyBracket <= 0) {
-        throw "Invalid id";
-    }
-
-    let fmuName = id.substring(0, indexEndCurlyBracket + 1);
-    var rest = id.substring(indexEndCurlyBracket + 1);
-    var dotIndex = rest.indexOf('.');
-    if (dotIndex < 0) {
-        throw "Missing dot after fmu name";
-    }
-    rest = rest.substring(dotIndex + 1);
-    //this is instance-name start index 0
-
-    let instanceName = rest;
-    return [fmuName, instanceName];
-}
 
     //Utility method to obtain an instance from the multimodel by its string id encoding
     private getInstance(multiModel: MultiModelConfig, id: string): Instance {
-    let ids = this.parseId(id);
+        let ids = this.parseId(id);
 
-    let fmuName = ids[0];
-    let instanceName = ids[1];
-    let scalarVariableName = ids[2];
+        let fmuName = ids[0];
+        let instanceName = ids[1];
+        let scalarVariableName = ids[2];
 
-    return multiModel.getInstanceOrCreate(fmuName, instanceName);
-}
+        return multiModel.getInstanceOrCreate(fmuName, instanceName);
+    }
 
-//parse connections
-parseConnections(data: any, multiModel: MultiModelConfig) {
+    //parse connections
+    parseConnections(data: any, multiModel: MultiModelConfig) {
 
-    if (Object.keys(data).indexOf(this.CONNECTIONS_TAG) >= 0) {
-        let connectionsEntry = data[this.CONNECTIONS_TAG];
-        $.each(Object.keys(connectionsEntry), (j, id) => {
+        if (Object.keys(data).indexOf(this.CONNECTIONS_TAG) >= 0) {
+            let connectionsEntry = data[this.CONNECTIONS_TAG];
+            $.each(Object.keys(connectionsEntry), (j, id) => {
 
-            let ids = this.parseId(id);
+                let ids = this.parseId(id);
 
-            let fmuName = ids[0];
-            let instanceName = ids[1];
-            let scalarVariableName = ids[2];
+                let fmuName = ids[0];
+                let instanceName = ids[1];
+                let scalarVariableName = ids[2];
 
-            var instance = this.getInstance(multiModel, id);
+                var instance = this.getInstance(multiModel, id);
 
-            let inputList = connectionsEntry[id];
+                let inputList = connectionsEntry[id];
 
-            $.each(inputList, (j, inputId) => {
-                let inputIds = this.parseId(inputId);
+                $.each(inputList, (j, inputId) => {
+                    let inputIds = this.parseId(inputId);
 
-                let inFmuName = inputIds[0];
-                let inInstanceName = inputIds[1];
-                let inScalarVariableName = inputIds[2];
+                    let inFmuName = inputIds[0];
+                    let inInstanceName = inputIds[1];
+                    let inScalarVariableName = inputIds[2];
 
-                var inInstance = multiModel.getInstanceOrCreate(inFmuName, inInstanceName);
+                    var inInstance = multiModel.getInstanceOrCreate(inFmuName, inInstanceName);
 
-                instance.addOutputToInputLink(instance.fmu.getScalarVariable(scalarVariableName),
-                    new InstanceScalarPair(inInstance, inInstance.fmu.getScalarVariable(inScalarVariableName)));
+                    instance.addOutputToInputLink(instance.fmu.getScalarVariable(scalarVariableName),
+                        new InstanceScalarPair(inInstance, inInstance.fmu.getScalarVariable(inScalarVariableName)));
+                });
             });
-        });
-    }
-}
-
-//parse parameters
-parseParameters(data: any, multiModel: MultiModelConfig) {
-    var parameters: Map<String, any> = new Map<String, any>();
-
-    if (Object.keys(data).indexOf(this.PARAMETERS_TAG) >= 0) {
-        let parameterData = data[this.PARAMETERS_TAG];
-        $.each(Object.keys(parameterData), (j, id) => {
-            let value = parameterData[id];
-
-            let ids = this.parseId(id);
-
-            let fmuName = ids[0];
-            let instanceName = ids[1];
-            let scalarVariableName = ids[2];
-
-            var instance = this.getInstance(multiModel, id);
-            instance.initialValues.set(instance.fmu.getScalarVariable(scalarVariableName), value);
-        });
+        }
     }
 
-    return parameters;
-}
+    //parse parameters
+    parseParameters(data: any, multiModel: MultiModelConfig) {
+        var parameters: Map<String, any> = new Map<String, any>();
 
+        if (Object.keys(data).indexOf(this.PARAMETERS_TAG) >= 0) {
+            let parameterData = data[this.PARAMETERS_TAG];
+            $.each(Object.keys(parameterData), (j, id) => {
+                let value = parameterData[id];
 
-parseSimpleTag(data: any, tag: string): any {
-    return data[tag] !== undefined ? data[tag] : null;
-}
+                let ids = this.parseId(id);
 
-parseSimpleTagDefault(data: any, tag: string, defaultValue: any): any {
-    return data[tag] !== undefined ? data[tag] : defaultValue;
-}
+                let fmuName = ids[0];
+                let instanceName = ids[1];
+                let scalarVariableName = ids[2];
 
-parseStartTime(data: any): number {
-    return parseFloat(this.parseSimpleTag(data, this.START_TIME_TAG));
-}
+                var instance = this.getInstance(multiModel, id);
+                instance.initialValues.set(instance.fmu.getScalarVariable(scalarVariableName), value);
+            });
+        }
 
-parseEndTime(data: any): number {
-    return parseFloat(this.parseSimpleTag(data, this.END_TIME_TAG));
-}
-
-parseMultiModelCrc(data: any): string {
-    return this.parseSimpleTag(data, this.MULTIMODEL_CRC_TAG);
-}
-
-parseLivestream(data: any, multiModel: MultiModelConfig): Map < Instance, ScalarVariable[] > {
-    return this.parseLivestreamInternal(this.LIVESTREAM_TAG,data,multiModel);
-}
-
-parseLogVariables(data: any, multiModel: MultiModelConfig): Map < Instance, ScalarVariable[] > {
-    return this.parseLivestreamInternal(this.LOG_VARIABLES_TAG,data,multiModel);
-}
-
-parseLivestreamInternal(tag: string, data: any, multiModel: MultiModelConfig): Map < Instance, ScalarVariable[] > {
-    let livestream = new Map<Instance, ScalarVariable[]>();
-    let livestreamEntry = data[tag];
-
-    if(livestreamEntry) {
-        Object.keys(livestreamEntry).forEach(id => {
-            let [fmuName, instanceName] = this.parseIdShort(id);
-            let instance: Instance = multiModel.getInstance(fmuName, instanceName);
-
-            if (instance)
-                livestream.set(instance, livestreamEntry[id]
-                    .filter((name: string) => instance.fmu.scalarVariables.find(variable => variable.name == name && (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local)))
-                    .map((name: string) => instance.fmu.getScalarVariable(name)));
-        });
+        return parameters;
     }
+
+
+    parseSimpleTag(data: any, tag: string): any {
+        return data[tag] !== undefined ? data[tag] : null;
+    }
+
+    parseSimpleTagDefault(data: any, tag: string, defaultValue: any): any {
+        return data[tag] !== undefined ? data[tag] : defaultValue;
+    }
+
+    parseStartTime(data: any): number {
+        return parseFloat(this.parseSimpleTag(data, this.START_TIME_TAG));
+    }
+
+    parseEndTime(data: any): number {
+        return parseFloat(this.parseSimpleTag(data, this.END_TIME_TAG));
+    }
+
+    parseMultiModelCrc(data: any): string {
+        return this.parseSimpleTag(data, this.MULTIMODEL_CRC_TAG);
+    }
+
+    parseLivestream(data: any, multiModel: MultiModelConfig): Map<Instance, ScalarVariable[]> {
+        return this.parseLivestreamInternal(this.LIVESTREAM_TAG, data, multiModel);
+    }
+
+    parseLogVariables(data: any, multiModel: MultiModelConfig): Map<Instance, ScalarVariable[]> {
+        return this.parseLivestreamInternal(this.LOG_VARIABLES_TAG, data, multiModel);
+    }
+
+    parseGraphs(tag: string, data: any, multiModel: MultiModelConfig): LiveGraph[] {
+        let graphs: LiveGraph[] = [];
+
+        let graphEntry = data[tag];
+
+        if (graphEntry) {
+
+            for (let g of graphEntry) {
+                let graph = new LiveGraph();
+                graph.title = this.parseSimpleTag(g, "title");
+                graph.setLivestream(this.parseLivestream(g, multiModel));
+                graph.externalWindow = this.parseSimpleTagDefault(g, "externalWindow", false);
+                graphs.push(graph);
+            }
+        }
+
+        return graphs;
+    }
+
+    parseLivestreamInternal(tag: string, data: any, multiModel: MultiModelConfig): Map<Instance, ScalarVariable[]> {
+        let livestream = new Map<Instance, ScalarVariable[]>();
+        let livestreamEntry = data[tag];
+
+        if (livestreamEntry) {
+            Object.keys(livestreamEntry).forEach(id => {
+                let [fmuName, instanceName] = this.parseIdShort(id);
+                let instance: Instance = multiModel.getInstance(fmuName, instanceName);
+
+                if (instance)
+                    livestream.set(instance, livestreamEntry[id]
+                        .filter((name: string) => instance.fmu.scalarVariables.find(variable => variable.name == name && (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local)))
+                        .map((name: string) => instance.fmu.getScalarVariable(name)));
+            });
+        }
 
         return livestream;
-}
+    }
 
-parseAlgorithm(data: any, multiModel: MultiModelConfig): ICoSimAlgorithm {
-    let algorithm = data[this.ALGORITHM_TAG];
-    if (!algorithm) return;
+    parseAlgorithm(data: any, multiModel: MultiModelConfig): ICoSimAlgorithm {
+        let algorithm = data[this.ALGORITHM_TAG];
+        if (!algorithm) return;
 
-    let type = algorithm[this.ALGORITHM_TYPE];
+        let type = algorithm[this.ALGORITHM_TYPE];
 
-    if (type === this.ALGORITHM_TYPE_VAR)
-        return this.parseAlgorithmVar(algorithm, multiModel);
+        if (type === this.ALGORITHM_TYPE_VAR)
+            return this.parseAlgorithmVar(algorithm, multiModel);
 
-    if (type === this.ALGORITHM_TYPE_FIXED)
-        return this.parseAlgorithmFixed(algorithm);
-}
+        if (type === this.ALGORITHM_TYPE_FIXED)
+            return this.parseAlgorithmFixed(algorithm);
+    }
 
     private parseAlgorithmFixed(data: any): ICoSimAlgorithm {
-    return new FixedStepAlgorithm(
-        parseFloat(data[this.ALGORITHM_TYPE_FIXED_SIZE_TAG])
-    );
-}
+        return new FixedStepAlgorithm(
+            parseFloat(data[this.ALGORITHM_TYPE_FIXED_SIZE_TAG])
+        );
+    }
 
     private parseAlgorithmVar(data: any, multiModel: MultiModelConfig): ICoSimAlgorithm {
-    let [minSize, maxSize] = this.parseSimpleTag(data, this.ALGORITHM_TYPE_VAR_SIZE_TAG);
+        let [minSize, maxSize] = this.parseSimpleTag(data, this.ALGORITHM_TYPE_VAR_SIZE_TAG);
 
-    return new VariableStepAlgorithm(
-        data[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG],
-        minSize,
-        maxSize,
-        this.parseAlgorithmVarConstraints(data[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG], multiModel)
-    );
-}
+        return new VariableStepAlgorithm(
+            data[this.ALGORITHM_TYPE_VAR_INIT_SIZE_TAG],
+            minSize,
+            maxSize,
+            this.parseAlgorithmVarConstraints(data[this.ALGORITHM_TYPE_VAR_CONSTRAINTS_TAG], multiModel)
+        );
+    }
 
-    private parseAlgorithmVarConstraints(constraints: any, multiModel: MultiModelConfig): Array < VariableStepConstraint > {
-    return Object.keys(constraints).map(id => {
-        let c = constraints[id];
+    private parseAlgorithmVarConstraints(constraints: any, multiModel: MultiModelConfig): Array<VariableStepConstraint> {
+        return Object.keys(constraints).map(id => {
+            let c = constraints[id];
 
-        if (c.type === "zerocrossing") {
-            return new ZeroCrossingConstraint(
-                id,
-                c.ports
-                    .filter((id: string) => {
-                        let [fmuName, instanceName] = this.parseId(id);
-                        return !!multiModel.getInstance(fmuName, instanceName);
-                    })
-                    .map((id: string) => {
-                        let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
-                        return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
-                    }),
-                c.order.toString(),
-                c.abstol,
-                c.safety
-            )
-        }
+            if (c.type === "zerocrossing") {
+                return new ZeroCrossingConstraint(
+                    id,
+                    c.ports
+                        .filter((id: string) => {
+                            let [fmuName, instanceName] = this.parseId(id);
+                            return !!multiModel.getInstance(fmuName, instanceName);
+                        })
+                        .map((id: string) => {
+                            let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
+                            return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
+                        }),
+                    c.order.toString(),
+                    c.abstol,
+                    c.safety
+                )
+            }
 
-        if (c.type === "fmumaxstepsize") {
-            return new FmuMaxStepSizeConstraint(
-                id
-            )
-        }
+            if (c.type === "fmumaxstepsize") {
+                return new FmuMaxStepSizeConstraint(
+                    id
+                )
+            }
 
-        if (c.type === "boundeddifference") {
-            return new BoundedDifferenceConstraint(
-                id,
-                c.ports
-                    .filter((id: string) => {
-                        let [fmuName, instanceName] = this.parseId(id);
-                        return !!multiModel.getInstance(fmuName, instanceName);
-                    })
-                    .map((id: string) => {
-                        let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
-                        return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
-                    }),
-                c.abstol,
-                c.reltol,
-                c.safety,
-                c.skipDiscrete
-            )
-        }
+            if (c.type === "boundeddifference") {
+                return new BoundedDifferenceConstraint(
+                    id,
+                    c.ports
+                        .filter((id: string) => {
+                            let [fmuName, instanceName] = this.parseId(id);
+                            return !!multiModel.getInstance(fmuName, instanceName);
+                        })
+                        .map((id: string) => {
+                            let [fmuName, instanceName, scalarVariableName] = this.parseId(id);
+                            return multiModel.getInstanceScalarPair(fmuName, instanceName, scalarVariableName);
+                        }),
+                    c.abstol,
+                    c.reltol,
+                    c.safety,
+                    c.skipDiscrete
+                )
+            }
 
-        if (c.type === "samplingrate") {
-            return new SamplingRateConstraint(
-                id,
-                c.base,
-                c.rate,
-                c.startTime
-            )
-        }
-    });
-}
+            if (c.type === "samplingrate") {
+                return new SamplingRateConstraint(
+                    id,
+                    c.base,
+                    c.rate,
+                    c.startTime
+                )
+            }
+        });
+    }
 }
 
 

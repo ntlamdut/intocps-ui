@@ -7,19 +7,21 @@ import { CoeConfig } from "./models/CoeConfig";
 import * as Path from "path";
 import { BehaviorSubject } from "rxjs/Rx";
 import { Injectable, NgZone } from "@angular/core";
-import { CoSimulationConfig } from "../../intocps-configurations/CoSimulationConfig";
+import { CoSimulationConfig, LiveGraph } from "../../intocps-configurations/CoSimulationConfig";
 import { storeResultCrc } from "../../intocps-configurations/ResultConfig";
 import * as http from "http"
 import * as fs from 'fs'
 import * as child_process from 'child_process'
 import { TraceMessager } from "../../traceability/trace-messenger"
+import DialogHandler from "../../DialogHandler"
+import { Graph } from "../shared/graph"
+import { Deferred } from "../../deferred"
 
 
 @Injectable()
 export class CoeSimulationService {
 
     progress: number = 0;
-    datasets: BehaviorSubject<Array<any>> = new BehaviorSubject([]);
     errorReport: (hasError: boolean, message: string) => void = function () { };
     simulationCompletedHandler: () => void = function () { };
     postProcessingOutputReport: (hasError: boolean, message: string) => void = function () { };
@@ -30,21 +32,25 @@ export class CoeSimulationService {
     private url: string;
     private resultDir: string;
     private config: CoSimulationConfig;
-    private counter: number = 0;
-
-
+    private graphMaxDataPoints: number = 100;
+    public graph: Graph = new Graph();;
+    public externalGraphs: Array<DialogHandler> = new Array<DialogHandler>();
 
     constructor(private http: Http,
         private settings: SettingsService,
         private fileSystem: FileSystemService,
         private zone: NgZone) {
 
+        this.graphMaxDataPoints = settings.get(SettingKeys.GRAPH_MAX_DATA_POINTS);
+        this.graph.setProgressCallback((progress: number) => { this.progress = progress });
+        this.graph.setGraphMaxDataPoints(this.graphMaxDataPoints);
     }
 
     reset() {
         this.progress = 0;
-        this.datasets.next([]);
-
+        this.zone.run(() => {
+            this.graph.reset();
+        });
     }
 
     run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void, simCompleted: () => void, postScriptOutputReport: (hasError: boolean, message: string) => void) {
@@ -72,30 +78,15 @@ export class CoeSimulationService {
             .replace(/\./gi, "_");
         this.resultDir = Path.normalize(`${currentDir}/R_${dateString}`);
 
-        this.initializeDatasets();
+        this.reset();
+        this.graph.setCoSimConfig(config);
+        this.graph.initializeDatasets();
         this.createSession();
     }
-
 
     stop() {
         this.http.get(`http://${this.url}/stopsimulation/${this.sessionId}`)
             .subscribe((response: Response) => { }, (err: Response) => this.errorHandler(err));
-    }
-
-    private initializeDatasets() {
-        let datasets: Array<any> = [];
-
-        this.config.livestream.forEach((value: any, index: any) => {
-            value.forEach((sv: any) => {
-                datasets.push({
-                    name: Serializer.getIdSv(index, sv),
-                    y: [],
-                    x: []
-                })
-            });
-        });
-
-        this.datasets.next(datasets);
     }
 
     private createSession() {
@@ -109,7 +100,6 @@ export class CoeSimulationService {
     }
 
     private uploadFmus() {
-
         if (!this.remoteCoe) {
             this.initializeCoe();
             return;
@@ -143,38 +133,58 @@ export class CoeSimulationService {
     }
 
     private simulate() {
-        this.counter = 0;
-        this.webSocket = new WebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
+        let deferreds = new Array<Promise<any>>();
 
-        this.webSocket.addEventListener("error", event => console.error(event));
-        this.webSocket.addEventListener("message", event => this.zone.run(() => this.onMessage(event)));
-
-        var message: any = {
-            startTime: this.config.startTime,
-            endTime: this.config.endTime,
-            reportProgress: true,
-            liveLogInterval: this.config.livestreamInterval
-        };
-
-        // enable logging for all log categories        
-        var logCategories: any = new Object();
-        let self = this;
-        this.config.multiModel.fmuInstances.forEach(instance => {
-            let key: any = instance.fmu.name + "." + instance.name;
-
-            if (self.config.enableAllLogCategoriesPerInstance) {
-                logCategories[key] = instance.fmu.logCategories;
+        this.graph.graphMap.forEach((value: BehaviorSubject<any[]>, key: LiveGraph) => {
+            if (key.externalWindow) {
+                let deferred: Deferred<any> = new Deferred<any>();
+                deferreds.push(deferred.promise);
+                let graphObj = key.toObject();
+                graphObj.webSocket = "ws://" + this.url + "/attachSession/" + this.sessionId;
+                graphObj.graphMaxDataPoints = this.graphMaxDataPoints;
+                console.log(graphObj);
+                let dh = new DialogHandler("angular2-app/coe/graph-window/graph-window.html", 800, 600, null, null, null);
+                dh.openWindow(JSON.stringify(graphObj), true);
+                this.externalGraphs.push(dh);
+                dh.win.webContents.on("did-finish-load", () => {
+                    dh.win.setTitle("Plot: " + key.title);
+                    deferred.resolve();
+                });
             }
         });
-        Object.assign(message, { logLevels: logCategories });
 
-        let data = JSON.stringify(message);
+        Promise.all(deferreds).then(() => {
+            this.graph.launchWebSocket(`ws://${this.url}/attachSession/${this.sessionId}`);
 
-        this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
-            .then(() => {
-                this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
-                    .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
+            var message: any = {
+                startTime: this.config.startTime,
+                endTime: this.config.endTime,
+                reportProgress: true,
+                liveLogInterval: this.config.livestreamInterval
+            };
+
+            // enable logging for all log categories        
+            var logCategories: any = new Object();
+            let self = this;
+            this.config.multiModel.fmuInstances.forEach(instance => {
+                let key: any = instance.fmu.name + "." + instance.name;
+
+                if (self.config.enableAllLogCategoriesPerInstance) {
+                    logCategories[key] = instance.fmu.logCategories;
+                }
             });
+            Object.assign(message, { logLevels: logCategories });
+
+            let data = JSON.stringify(message);
+
+            this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
+                .then(() => {
+                    this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
+                        .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
+                });
+        });
+
+
     }
 
     errorHandler(err: Response) {
@@ -184,49 +194,12 @@ export class CoeSimulationService {
 
     }
 
-    private onMessage(event: MessageEvent) {
-
-        let rawData = JSON.parse(event.data);
-        let datasets = this.datasets.getValue();
-        let newCOE = false;
-        let xValue = this.counter++;
-        //Preparing for new livestream messages. It has the following structure:
-        // {"data":{"{integrate}":{"inst2":{"output":"0.0"}},"{sine}":{"sine":{"output":"0.0"}}},"time":0.0}}
-        if ("time" in rawData) {
-            xValue = rawData.time;
-
-            if (rawData.time < this.config.endTime) {
-                let pct = (rawData.time / this.config.endTime) * 100;
-                this.progress = Math.round(pct);
-            } else {
-                this.progress = 100;
-            }
-
-            rawData = rawData.data;
-        }
-
-        Object.keys(rawData).forEach(fmuKey => {
-            if (fmuKey.indexOf("{") !== 0) return;
-
-            Object.keys(rawData[fmuKey]).forEach(instanceKey => {
-
-                Object.keys(rawData[fmuKey][instanceKey]).forEach(outputKey => {
-                    let value = rawData[fmuKey][instanceKey][outputKey];
-
-                    if (value == "true") value = 1;
-                    else if (value == "false") value = 0;
-                    let dataset = datasets.find((dataset: any) => dataset.name === `${fmuKey}.${instanceKey}.${outputKey}`);
-                    dataset.y.push(value);
-                    dataset.x.push(xValue);
-                });
-            });
-        });
-
-        this.datasets.next(datasets);
-    }
-
     private downloadResults() {
-        this.webSocket.close();
+        this.graph.closeSocket();
+        this.externalGraphs.forEach((eg) => {
+            if (eg.win)
+                eg.win.webContents.send("close");
+        })
         this.simulationCompletedHandler();
 
         let resultPath = Path.normalize(`${this.resultDir}/outputs.csv`);

@@ -4,14 +4,15 @@ import IntoCpsApp from "../../IntoCpsApp";
 import {
     CoSimulationConfig, ICoSimAlgorithm, FixedStepAlgorithm,
     VariableStepAlgorithm, ZeroCrossingConstraint, BoundedDifferenceConstraint, SamplingRateConstraint,
-    VariableStepConstraint,FmuMaxStepSizeConstraint
+    VariableStepConstraint, FmuMaxStepSizeConstraint, LiveGraph
 } from "../../intocps-configurations/CoSimulationConfig";
 import { ScalarVariable, CausalityType, Instance, InstanceScalarPair, ScalarVariableType } from "./models/Fmu";
+import { LiveGraphComponent } from "./inputs/live-graph-component";
 import { ZeroCrossingComponent } from "./inputs/zero-crossing.component";
 import { BoundedDifferenceComponent } from "./inputs/bounded-difference.component";
 import { FmuMaxStepSizeComponent } from "./inputs/fmu-max-step-size.component";
 import { SamplingRateComponent } from "./inputs/sampling-rate.component";
-import { numberValidator, lessThanValidator } from "../shared/validators";
+import { numberValidator, lessThanValidator ,uniqueGroupPropertyValidator} from "../shared/validators";
 import { NavigationService } from "../shared/navigation.service";
 import { WarningMessage } from "../../intocps-configurations/Messages";
 import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
@@ -25,7 +26,8 @@ import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
         FmuMaxStepSizeComponent,
         BoundedDifferenceComponent,
         SamplingRateComponent,
-        FileBrowserComponent
+        FileBrowserComponent,
+        LiveGraphComponent
     ],
     templateUrl: "./angular2-app/coe/coe-configuration.component.html"
 })
@@ -53,11 +55,13 @@ export class CoeConfigurationComponent {
     outputPorts: Array<InstanceScalarPair> = [];
     newConstraint: new (...args: any[]) => VariableStepConstraint;
     editing: boolean = false;
-    liveStreamSearchName: string = '';
+    
     logVariablesSearchName: string = '';
     parseError: string = null;
     warnings: WarningMessage[] = [];
     loglevels: string[] = ["Not set", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
+
+    // liveGraphs: LiveGraph[];
     //The variable zeroCrossings is necessary to give different names to the radiobutton groups in the different zeroCrossing constraints.
     // Otherwise they will all be connected.
     zeroCrossings: number = 0;
@@ -105,7 +109,7 @@ export class CoeConfigurationComponent {
                     // Create an array of all output ports on all instances
                     this.outputPorts = this.config.multiModel.fmuInstances
                         .map(instance => instance.fmu.scalarVariables
-                            .filter(sv => sv.type === ScalarVariableType.Real && (sv.causality === CausalityType.Output||sv.causality === CausalityType.Parameter))
+                            .filter(sv => sv.type === ScalarVariableType.Real && (sv.causality === CausalityType.Output || sv.causality === CausalityType.Parameter))
                             .map(sv => this.config.multiModel.getInstanceScalarPair(instance.fmu.name, instance.name, sv.name)))
                         .reduce((a, b) => a.concat(...b), []);
 
@@ -113,7 +117,10 @@ export class CoeConfigurationComponent {
                     this.form = new FormGroup({
                         startTime: new FormControl(config.startTime, [Validators.required, numberValidator]),
                         endTime: new FormControl(config.endTime, [Validators.required, numberValidator]),
+                        liveGraphs:  new FormArray(config.liveGraphs.map(g => g.toFormGroup()), uniqueGroupPropertyValidator("id")),//, uniqueGroupPropertyValidator("id")
                         livestreamInterval: new FormControl(config.livestreamInterval, [Validators.required, numberValidator]),
+                        liveGraphColumns: new FormControl(config.liveGraphColumns, [Validators.required, numberValidator]),
+                        liveGraphVisibleRowCount: new FormControl(config.liveGraphVisibleRowCount, [Validators.required, numberValidator]),
                         algorithm: this.algorithmFormGroups.get(this.config.algorithm),
                         global_absolute_tolerance: new FormControl(config.global_absolute_tolerance, [Validators.required, numberValidator]),
                         global_relative_tolerance: new FormControl(config.global_relative_tolerance, [Validators.required, numberValidator])
@@ -185,9 +192,6 @@ export class CoeConfigurationComponent {
         return scalarVariables.filter(variable => (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local));
     }
 
-    restrictToCheckedLiveStream(instance: Instance, scalarVariables: Array<ScalarVariable>) {
-        return scalarVariables.filter(variable => this.isLivestreamChecked(instance, variable));
-    }
 
 
     restrictToCheckedLogVariables(instance: Instance, scalarVariables: Array<ScalarVariable>) {
@@ -213,6 +217,22 @@ export class CoeConfigurationComponent {
         formArray.removeAt(index);
     }
 
+
+    addLiveGraph() {
+        let g = new LiveGraph();
+        this.config.liveGraphs.push(g);
+        let formArray = <FormArray>this.form.find('liveGraphs');
+        formArray.push(g.toFormGroup());
+    }
+
+    removeGraph(graph: LiveGraph)
+    {
+        let formArray = <FormArray>this.form.find('liveGraphs');
+        let index = this.config.liveGraphs.indexOf(graph);
+        this.config.liveGraphs.splice(index, 1);
+        formArray.removeAt(index);
+    }
+
     getConstraintName(constraint: any) {
         if (constraint === ZeroCrossingConstraint || constraint instanceof ZeroCrossingConstraint)
             return "Zero Crossing";
@@ -226,13 +246,6 @@ export class CoeConfigurationComponent {
             return "Sampling Rate";
     }
 
-    isLivestreamChecked(instance: Instance, output: ScalarVariable) {
-        let variables = this.config.livestream.get(instance);
-
-        if (!variables) return false;
-
-        return variables.indexOf(output) !== -1;
-    }
 
 
     isLogVariableChecked(instance: Instance, output: ScalarVariable) {
@@ -249,24 +262,6 @@ export class CoeConfigurationComponent {
 
     getScalarVariableTypeName(type: ScalarVariableType) {
         return ScalarVariableType[type];
-    }
-
-    onLivestreamChange(enabled: boolean, instance: Instance, output: ScalarVariable) {
-        let variables = this.config.livestream.get(instance);
-
-        if (!variables) {
-            variables = [];
-            this.config.livestream.set(instance, variables);
-        }
-
-        if (enabled)
-            variables.push(output);
-        else {
-            variables.splice(variables.indexOf(output), 1);
-
-            if (variables.length == 0)
-                this.config.livestream.delete(instance);
-        }
     }
 
 
@@ -288,9 +283,6 @@ export class CoeConfigurationComponent {
         }
     }
 
-    onLiveStreamKey(event: any) {
-        this.liveStreamSearchName = event.target.value;
-    }
     onLogVariablesKey(event: any) {
         this.logVariablesSearchName = event.target.value;
     }
