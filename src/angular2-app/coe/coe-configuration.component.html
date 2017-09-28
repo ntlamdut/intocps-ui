@@ -142,9 +142,8 @@
 									<sampling-rate [editing]="editing" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
 									 *ngIf="constraint.type === 'samplingrate'"></sampling-rate>
 
-									 <fmu-max-step-size [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
-                   *ngIf="constraint.type === 'fmumaxstepsize'"> 
-                   </fmu-max-step-size>
+									<fmu-max-step-size [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)" *ngIf="constraint.type === 'fmumaxstepsize'">
+									</fmu-max-step-size>
 								</div>
 							</div>
 						</div>
@@ -255,7 +254,7 @@
 				<div class="panel-heading">
 					<h4 class="panel-title">
 						<a data-toggle="collapse" data-parent="#accordion" href="#live-collapse">
-									Live Graph Config</a>
+									Live Plotting</a>
 					</h4>
 				</div>
 				<div id="live-collapse" class="panel-collapse collapse">
@@ -266,21 +265,69 @@
 							<input *ngIf="editing" name="livestreamInterval" [(ngModel)]="config.livestreamInterval" class="form-control">
 							<div *ngIf="form.hasError('required', 'livestreamInterval')" class="alert alert-danger">This field is required.</div>
 							<div *ngIf="form.hasError('invalidNumber', 'livestreamInterval')" class="alert alert-danger">Only numbers are allowed.</div>
-
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-5 col-md-4 control-label config">Number of graph columns</label>
+						<div class="col-sm-7 col-md-8 form-group">
+							<p *ngIf="!editing" class="form-control-static">{{config.liveGraphColumns}}</p>
+							<input *ngIf="editing" name="liveGraphColumns" [(ngModel)]="config.liveGraphColumns" class="form-control">
+							<div *ngIf="form.hasError('required', 'liveGraphColumns')" class="alert alert-danger">This field is required.</div>
+							<div *ngIf="form.hasError('invalidNumber', 'liveGraphColumns')" class="alert alert-danger">Only numbers are allowed.</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-5 col-md-4 control-label config">Number of visible graph rows. The graphs will scale such that the given number of rows will be visible without scrolling.</label>
+						<div class="col-sm-7 col-md-8 form-group">
+							<p *ngIf="!editing" class="form-control-static">{{config.liveGraphVisibleRowCount}}</p>
+							<input *ngIf="editing" name="liveGraphVisibleRowCount" [(ngModel)]="config.liveGraphVisibleRowCount" class="form-control">
+							<div *ngIf="form.hasError('required', 'liveGraphVisibleRowCount')" class="alert alert-danger">This field is required.</div>
+							<div *ngIf="form.hasError('invalidNumber', 'liveGraphVisibleRowCount')" class="alert alert-danger">Only numbers are allowed.</div>
 						</div>
 					</div>
 
 					<hr>
 
-					<label>Graph Variables</label>
+					<span style="padding-left:10px" class="input-group-btn">
+					<button type="button" *ngIf="editing" (click)="addLiveGraph()" class="btn btn-default">
+							<span class="glyphicon glyphicon-plus"></span> Add Graph
+					</button>
+                    </span><br>
+					<div class="constraint-container">
+						<div class="panel panel-default constraint-panel" *ngFor="let g of config.liveGraphs; let i = index">
+							<div class="panel-heading">
+								<a *ngIf="editing" (click)="removeGraph(g)" class="pull-right"><span class="glyphicon glyphicon-remove"></span></a>									Graph Variables
+							</div>
+							<div class="panel-body">
+								<live-graph [graph]="g" [formGroup]="form.find('liveGraphs').at(i)" [config]="config" [editing]="editing">
+								</live-graph>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
+			<div class="panel panel-info">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a data-toggle="collapse" data-parent="#accordion" href="#logVariables-collapse">
+										Results Saving</a>
+					</h4>
+				</div>
+				<div id="logVariables-collapse" class="panel-collapse collapse">
+
+
+					<label style="padding-left:10px">Additional variables to save</label> 
+                    <br>
+                    <p style="padding-left:10px"><small>All connected outputs are saved by default.</small></p>
+                    <hr>
 					<div class="form-forizontal">
 
 
 						<div *ngIf="editing" class="form-group">
 							<label class="col-sm-5 col-md-4 control-label" style="text-align: right">Filter</label>
 							<div class="col-sm-7 col-md-8 form-group">
-								<input #box (keyup)="onLiveStreamKey($event)" class="form-control">
+								<input #box (keyup)="onLogVariablesKey($event)" class="form-control">
 							</div>
 						</div>
 
@@ -289,18 +336,18 @@
 								<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
 									<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
 									<div class="col-sm-7 col-md-8">
-										<div *ngFor="let output of (editing ? getOutputs(instance.fmu.scalarVariables) : restrictToCheckedLiveStream(instance,getOutputs(instance.fmu.scalarVariables)) )">
+										<div *ngFor="let output of (editing ? getOutputs(instance.fmu.scalarVariables) : restrictToCheckedLogVariables(instance,getOutputs(instance.fmu.scalarVariables)) )">
 
-											<div class="checkbox" *ngIf="output.name.includes(liveStreamSearchName)">
+											<div class="checkbox" *ngIf="output.name.includes(logVariablesSearchName)">
 												<label>
-																								<input type="checkbox"
-																											 [disabled]="!editing"
-																											 [checked]="isLivestreamChecked(instance, output)"
-																											 (change)="onLivestreamChange($event.target.checked, instance, output)">
-						
-																									<span *ngIf="isLocal(output)" class="text-warning" style="color:#f0ad4e!important" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
-																									<span *ngIf="!isLocal(output)" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
-																							</label>
+																									<input type="checkbox"
+																												 [disabled]="!editing"
+																												 [checked]="isLogVariableChecked(instance, output)"
+																												 (change)="onLogVariableChange($event.target.checked, instance, output)">
+							
+																										<span *ngIf="isLocal(output)" class="text-warning" style="color:#f0ad4e!important" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
+																										<span *ngIf="!isLocal(output)" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
+																								</label>
 											</div>
 										</div>
 									</div>
@@ -310,55 +357,6 @@
 					</div>
 				</div>
 			</div>
-
-			<div class="panel panel-info">
-					<div class="panel-heading">
-						<h4 class="panel-title">
-							<a data-toggle="collapse" data-parent="#accordion" href="#logVariables-collapse">
-										Output Log</a>
-						</h4>
-					</div>
-					<div id="logVariables-collapse" class="panel-collapse collapse">
-						
-	
-						<label>Additional Variables</label>
-	All connected outputs are logged by default.
-						<div class="form-forizontal">
-	
-	
-							<div *ngIf="editing" class="form-group">
-								<label class="col-sm-5 col-md-4 control-label" style="text-align: right">Filter</label>
-								<div class="col-sm-7 col-md-8 form-group">
-									<input #box (keyup)="onLogVariablesKey($event)" class="form-control">
-								</div>
-							</div>
-	
-							<div class="form-group">
-								<div class="form-horizontal">
-									<div class="form-group" *ngFor="let instance of config.multiModel.fmuInstances">
-										<label class="col-sm-5 col-md-4 control-label">{{instance.fmu.name}}.{{instance.name}}</label>
-										<div class="col-sm-7 col-md-8">
-											<div *ngFor="let output of (editing ? getOutputs(instance.fmu.scalarVariables) : restrictToCheckedLogVariables(instance,getOutputs(instance.fmu.scalarVariables)) )">
-	
-												<div class="checkbox" *ngIf="output.name.includes(logVariablesSearchName)">
-													<label>
-																									<input type="checkbox"
-																												 [disabled]="!editing"
-																												 [checked]="isLogVariableChecked(instance, output)"
-																												 (change)="onLogVariableChange($event.target.checked, instance, output)">
-							
-																										<span *ngIf="isLocal(output)" class="text-warning" style="color:#f0ad4e!important" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
-																										<span *ngIf="!isLocal(output)" title="Name: {{output.name}}, Causality: {{output.causality}}, Type: {{getScalarVariableTypeName(output.type)}}">{{output.name}}</span>
-																								</label>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
 
 			<div class="panel panel-info">
 				<div class="panel-heading">
