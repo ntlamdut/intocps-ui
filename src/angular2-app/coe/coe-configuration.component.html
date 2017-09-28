@@ -277,7 +277,7 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label class="col-sm-5 col-md-4 control-label config">Number of visible graph rows</label>
+						<label class="col-sm-5 col-md-4 control-label config">Number of visible graph rows. The graphs will scale such that the given number of rows will be visible without scrolling.</label>
 						<div class="col-sm-7 col-md-8 form-group">
 							<p *ngIf="!editing" class="form-control-static">{{config.liveGraphVisibleRowCount}}</p>
 							<input *ngIf="editing" name="liveGraphVisibleRowCount" [(ngModel)]="config.liveGraphVisibleRowCount" class="form-control">
@@ -296,7 +296,7 @@
 					<div class="constraint-container">
 						<div class="panel panel-default constraint-panel" *ngFor="let g of config.liveGraphs; let i = index">
 							<div class="panel-heading">
-								<a *ngIf="editing" (click)="removeGraph(g)" class="pull-right"><span class="glyphicon glyphicon-remove"></span></a>									{{getConstraintName(constraint)}}
+								<a *ngIf="editing" (click)="removeGraph(g)" class="pull-right"><span class="glyphicon glyphicon-remove"></span></a>									Graph Variables
 							</div>
 							<div class="panel-body">
 								<live-graph [graph]="g" [formGroup]="form.find('liveGraphs').at(i)" [config]="config" [editing]="editing">
