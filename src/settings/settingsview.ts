@@ -41,7 +41,10 @@ class SettingsView {
         //Get type of value
         let value = this.settings.getValue(settingName);
         let self = this;
-	let settingDisplayName = SettingKeys.VALUE_DISPLAYNAME[settingName];
+        let settingDisplayName = SettingKeys.VALUE_DISPLAYNAME[settingName];
+        if (settingDisplayName  == undefined)
+            settingDisplayName = settingName;
+
         if (typeof (value) === "boolean") {
             $("<div>").load("checkbox-setting.html #checkbox-setting-form", function (event: JQueryEventObject) {
                 let html = <HTMLElement>(<HTMLDivElement>this).firstChild;

@@ -62,6 +62,7 @@ export namespace SettingKeys {
     VALUE_DESCRIPTION[ENABLE_TRACEABILITY] = "Enable tracebility tracking in both the INTO-CPS Application and the traceability daemon.  This enables remote tools to submit traceability information to the open project.";
     VALUE_DESCRIPTION[LOCAL_UPDATE_SITE] = "A file:// URI to a local INCO-CPS Application update site.";
     VALUE_DESCRIPTION[USE_LOCAL_UPDATE_SITE] = "Enable using the local INTO-CPS Application update site.";
+    VALUE_DESCRIPTION[GRAPH_MAX_DATA_POINTS] = "Number of samples used to plot data in live view graphs.";
 
     export var VALUE_DISPLAYNAME: { [key: string]: any; } = {};
 
@@ -85,4 +86,5 @@ export namespace SettingKeys {
     VALUE_DISPLAYNAME[ENABLE_TRACEABILITY] = "Enable Traceability";
     VALUE_DISPLAYNAME[LOCAL_UPDATE_SITE] = "Local Update Site";
     VALUE_DISPLAYNAME[USE_LOCAL_UPDATE_SITE] = "Enable Local Update Site";
+    VALUE_DISPLAYNAME[GRAPH_MAX_DATA_POINTS] = "Number of Samples in Graph";
 }
