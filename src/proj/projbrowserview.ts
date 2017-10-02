@@ -336,7 +336,7 @@ export class BrowserController {
                     result.dblClickHandler = () => self.menuHandler.openCTAbstractions(path);
                 } else if (pathComponents.length == 4 && pathComponents[3] == "model-checking-report.html") {
                     result.img = "into-cps-icon-rtt-html";
-                    result.dblClickHandler = () => self.menuHandler.openHTMLInMainView(result.path, projectPath);
+                    result.dblClickHandler = () => self.menuHandler.openMCResult(result.path);
                 } else {
                     return null;
                 }
@@ -358,7 +358,7 @@ export class BrowserController {
                 result.removeFileExtensionFromText();
                 result.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openWithSystemEditor(item.path);
-//                  self.menuHandler.openHTMLInMainView(item.path,"DSE Results View");
+                    //                  self.menuHandler.openHTMLInMainView(item.path,"DSE Results View");
                     return null;
                 };
             }
@@ -503,7 +503,9 @@ export class BrowserController {
                     }
                 }
                 if (pathComponents.length == 2) {
-                    if (pathComponents[1] == "utils") {
+                    if (pathComponents[1] == "utils" ||
+                        pathComponents[1] == "oslc" ||
+                        pathComponents[1] == "repository") {
                         return null;
                     }
                     result.img = "into-cps-icon-rtt-vsi-tick";
@@ -542,7 +544,7 @@ export class BrowserController {
                 }
                 else {
                     if (pathComponents.length == 3 && (pathComponents[2] == "TestProcedures" || pathComponents[2] == "RTT_TestProcedures")) {
-                            result.img = "into-cps-icon-rtt-tla";
+                        result.img = "into-cps-icon-rtt-tla";
                     }
                     else if (pathComponents.length == 4 && pathComponents[2] == "TestProcedures") {
                         result.img = "into-cps-icon-rtt-mbt-test-procedure";
@@ -597,7 +599,7 @@ export class BrowserController {
                     }
                 }
             }
-            else if (pathComponents.length==1 && pathComponents[0] == Project.PATH_MULTI_MODELS) {
+            else if (pathComponents.length == 1 && pathComponents[0] == Project.PATH_MULTI_MODELS) {
                 let menuEntryCreate = menuEntry("New Multi-Model", "glyphicon glyphicon-asterisk",
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.createMultiModelPlain();
@@ -609,13 +611,13 @@ export class BrowserController {
                 result.expanded = false;
                 let menuEntryExportFmuSourceCode = menuEntry("Export Source Code FMU", "glyphicon glyphicon-export",
                     function (item: ProjectBrowserItem) {
-                        self.menuHandler.exportOvertureFmu("source",item.path);
+                        self.menuHandler.exportOvertureFmu("source", item.path);
                     });
                 let menuEntryExportFmuToolWrapper = menuEntry("Export Tool Wrapper FMU", "glyphicon glyphicon-export",
                     function (item: ProjectBrowserItem) {
-                        self.menuHandler.exportOvertureFmu("tool",item.path);
+                        self.menuHandler.exportOvertureFmu("tool", item.path);
                     });
-                result.menuEntries = [menuEntryExportFmuSourceCode,menuEntryExportFmuToolWrapper];
+                result.menuEntries = [menuEntryExportFmuSourceCode, menuEntryExportFmuToolWrapper];
                 result.menuEntries.push(menuReveal);
             }
             else if (Path.basename(path) == Project.PATH_DSE) {

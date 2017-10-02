@@ -1,10 +1,12 @@
 import { IntoCpsAppEvents } from "./IntoCpsAppEvents";
+import { SettingKeys } from "./settings/SettingKeys";
 import { IntoCpsApp } from "./IntoCpsApp";
 import { CreateTDGProjectController } from "./rttester/CreateTDGProject";
 import { CreateMCProjectController } from "./rttester/CreateMCProject";
 import { RunTestController } from "./rttester/RunTest";
 import { LTLEditorController } from "./rttester/LTLEditor";
 import { CTAbstractionsView } from "./rttester/CTAbstractionsView";
+import { MCResultView } from "./rttester/MCResultView";
 import * as RTesterModalCommandWindow from "./rttester/GenericModalCommand";
 import * as AddLTLQueryDialog from "./rttester/AddLTLQueryDialog";
 import { BrowserController } from "./proj/projbrowserview";
@@ -37,6 +39,7 @@ import { CoeViewController } from "./angular2-app/coe/CoeViewController";
 import { MmViewController } from "./angular2-app/mm/MmViewController";
 import { TrViewController, TrFMUViewController } from "./angular2-app/tr/TrViewController";
 import { DseViewController } from "./angular2-app/dse/DseViewController";
+import { enableProdMode } from '@angular/core';
 
 import { CoeServerStatusUiController,CoeLogUiController } from "./CoeServerStatusUiController"
 
@@ -100,27 +103,32 @@ class InitializationController {
 
             let divReadme = (<HTMLDivElement>document.getElementById("mainReadmeView"));
 
-            let  readmePath1 = Path.join( IntoCpsApp.getInstance().getActiveProject().getRootFilePath(),"Readme.md");
-            let  readmePath2 = Path.join( IntoCpsApp.getInstance().getActiveProject().getRootFilePath(),"readme.md");
-            let  readmePath3 = Path.join( IntoCpsApp.getInstance().getActiveProject().getRootFilePath(),"README.MD");
-            let  readmePath4 = Path.join( IntoCpsApp.getInstance().getActiveProject().getRootFilePath(),"README.md");
+            let readmePath1 = Path.join(IntoCpsApp.getInstance().getActiveProject().getRootFilePath(), "Readme.md");
+            let readmePath2 = Path.join(IntoCpsApp.getInstance().getActiveProject().getRootFilePath(), "readme.md");
+            let readmePath3 = Path.join(IntoCpsApp.getInstance().getActiveProject().getRootFilePath(), "README.MD");
+            let readmePath4 = Path.join(IntoCpsApp.getInstance().getActiveProject().getRootFilePath(), "README.md");
 
             let theHtml1 = ShowdownHelper.getHtml(readmePath1);
             let theHtml2 = ShowdownHelper.getHtml(readmePath2);
             let theHtml3 = ShowdownHelper.getHtml(readmePath3);
             let theHtml4 = ShowdownHelper.getHtml(readmePath4);
 
-            if(theHtml1 != null){
+            if (theHtml1 != null) {
                 divReadme.innerHTML = theHtml1;
             }
-            else if(theHtml2 != null){
+            else if (theHtml2 != null) {
                 divReadme.innerHTML = theHtml2;
             }
-            else if(theHtml3 != null){
+            else if (theHtml3 != null) {
                 divReadme.innerHTML = theHtml3;
             }
-            else if(theHtml4 != null){
+            else if (theHtml4 != null) {
                 divReadme.innerHTML = theHtml4;
+            }
+
+            let devMode = IntoCpsApp.getInstance().getSettings().getValue(SettingKeys.DEVELOPMENT_MODE);
+            if (!devMode) {
+                enableProdMode();
             }
 
             // Start Angular 2 application
@@ -253,6 +261,10 @@ menuHandler.showAddLTLQuery = (folder: string) => {
         AddLTLQueryDialog.display(folder);
         (<any>$("#modalDialog")).modal({ keyboard: false, backdrop: false });
     });
+};
+
+menuHandler.openMCResult = (fileName: string) => {
+    openView("rttester/MCResultView.html", view => new MCResultView(view, fileName));
 };
 
 menuHandler.openSysMlExport = () => {

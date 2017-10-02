@@ -167,7 +167,6 @@ function launchCoe() {
     }
     let childCwd = Path.join(installDir, "coe-working-dir");
     let env: any = process.env;
-    env["RTT_OP_KEY"] = "TMS:19999:FMI";
 
     var mkdirp = require('mkdirp');
     mkdirp.sync(childCwd);

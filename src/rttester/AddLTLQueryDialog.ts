@@ -39,7 +39,9 @@ export function display(dir: string): void {
         // Add empty LTL formula.
         let jsonObject = {
             BMCSteps: 50,
-            ltlFormula: ""
+            ltlFormula: "",
+            RequirementsToLink: <string[]>[],
+            TracabilityLink: "verifies"
         };
         let queryFileName = Path.join(ltlDir, "query.json");
         err = fs.writeFileSync(queryFileName, JSON.stringify(jsonObject, null, 4));

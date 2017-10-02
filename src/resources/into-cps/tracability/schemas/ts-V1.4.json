@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "INTO-CPS Traceability JSON Schema Version 1.1",
+  "description": "INTO-CPS Traceability JSON Schema",
+  "version": "1.4",
   "type": "object",
   "properties": {
     "rdf:RDF": {
@@ -25,9 +26,9 @@
         "messageFormatVersion": {
           "type": "string",
           "enum": [
-            "1.1"
+            "1.4"
           ],
-          "default": "1.1"
+          "default": "1.4"
         },
         "prov:Agent": {
           "type": "array",
@@ -47,7 +48,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "oneOf": [
+            "anyOf": [
               {
                 "$ref": "#/definitions/Artefact"
               },
@@ -58,7 +59,17 @@
           }
         },
         "prov:Activity": {
-          "$ref": "#/definitions/Activity"
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": [
+            {
+              "$ref": "#/definitions/Activity"
+            }
+          ],
+          "additionalItems": {
+            "$ref": "#/definitions/Activity"
+          }
         }
       },
       "required": [
@@ -81,23 +92,34 @@
         "architectureModelling",
         "codeGeneration",
         "configurationCreation",
+        "defineCTAbstraction",
+        "defineMCModel",
+        "defineMCQuery",
+        "defineTestModel",
+        "defineTestObjectives",
         "designNoteCreation",
         "dse",
         "dseAnalysisCreation",
         "dseConfigurationCreation",
         "fmuExport",
+        "fmuImport",
         "fmuExportForHiL",
-        "modelDescriptionExport",
         "modelChecking",
+        "modelCreation",
+        "modelModification",
+        "modelDeletion",
+        "modelDescriptionExport",
         "modelDescriptionImport",
         "requirementsManagement",
+        "runMCQuery",
+        "runTest",
         "simulation",
         "simulationConfigurationCreation",
         "simulationModelling",
         "testCreation"
       ]
     },
-    "EntityType": {
+    "ArtefactType": {
       "type": "string",
       "enum": [
         "architectureConfiguration",
@@ -108,7 +130,7 @@
         "dseAlgorithm",
         "dseAnalysisScript",
         "dseRankingScript",
-        "dseRankingValues",
+        "dseRankingValue",
         "dseResult",
         "dseSearchConfiguration",
         "dseAnalysisConfiguration",
@@ -120,8 +142,9 @@
         "modelCheckModel",
         "modelCheckResult",
         "modelDescriptionFile",
+        "modelFile",
         "multiModelConfiguration",
-        "objectivesValues",
+        "objectivesValue",
         "requirement",
         "requirementSource",
         "requirementSourceSubPart",
@@ -138,10 +161,12 @@
       "type": "string",
       "enum": [
         "Architecture Tool",
-        "CoE",
-        "INTO-CPS App",
+        "Co Simulation Engine",
+        "Co Simulation GUI",
+        "Software Tool",
         "Simulation Tool",
-        "Model Checking Tool"
+        "Model Checking Tool",
+        "Test Automation Tool"
       ]
     },
     "Activity": {
@@ -157,12 +182,7 @@
         },
         "time": {
           "type": "string",
-          "format": "date-time",
-          "time": "yyyy-mm-dd-hh-mm-ss"
-        },
-        "guid": {
-          "type": "string",
-          "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+          "format": "date-time"
         },
         "prov:wasAssociatedWith": {
           "type": "object",
@@ -188,12 +208,12 @@
               "minItems": 1,
               "uniqueItems": true,
               "items": {
-                "oneOf": [
+                "anyOf": [
                   {
                     "$ref": "#/definitions/RefTool"
                   },
                   {
-                    "$ref": "#/definitions/RefEntity"
+                    "$ref": "#/definitions/RefArtefact"
                   }
                 ]
               }
@@ -209,25 +229,24 @@
         "rdf:about",
         "type",
         "time",
-        "guid",
         "prov:wasAssociatedWith",
         "prov:used"
       ],
       "additionalProperties": false
     },
-    "URIEntity": {
+    "URIArtefact": {
       "type": "string",
-      "pattern": "^Entity\\.(\\w)+:([a-zA-Z0-9/.-_])+(:([a-zA-Z0-9.-_])+)?#([0-9]+)",
+      "pattern": "^Entity\\.(architectureConfiguration|architectureConnectionDiagram|architectureModelFile|architectureStructureDiagram|architectureSubSystem|dseAlgorithm|dseAnalysisScript|dseRankingScript|dseRankingValue|dseResult|dseSearchConfiguration|dseAnalysisConfiguration|designNote|designNoteFile|fmu|file|hiLAsset|modelCheckModel|modelCheckResult|modelDescriptionFile|modelFile|multiModelConfiguration|objectivesValue|requirement|requirementSource|requirementSourceSubPart|requirementsDocument|scenarioData|simulationConfiguration|simulationModelContainer|simulationResult|softwareAgent|testCase):([a-zA-Z0-9\\/.\\-_])+(:([a-zA-Z0-9\\.-_])+)?#([0-9a-f]{5,40}|[0])$",
       "additionalProperties": false
     },
     "URITool": {
       "type": "string",
-      "pattern": "^Entity\\.softwareTool:(\\w)+:(([0-9])+)((\\.[0-9]+))?",
+      "pattern": "^Entity\\.(architectureTool|coSimulationEngine|coSimulationGUI|softwareTool|simulationTool|modelCheckingTool|testAutomationTool):([a-zA-Z0-9\\/.\\-_]+)(:[a-zA-Z0-9\\/.\\-_ ()]+)*$",
       "additionalProperties": false
     },
     "URIActivity": {
       "type": "string",
-      "pattern": "^Activity\\.(\\w)+:([0-9]){4}\\-([0-1][0-9])\\-([0-3][0-9])T([0-2][0-9]):([0-5][0-9]):([0-5][0-9])Z#[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+      "pattern": "^Activity\\.(architectureConfigurationCreation|architectureModelling|codeGeneration|configurationCreation|designNoteCreation|dse|dseAnalysisCreation|dseConfigurationCreation|fmuExport|fmuImport|fmuExportForHiL|modelCreation|modelModification|modelDeletion|modelDescriptionExport|modelChecking|modelDescriptionImport|requirementsManagement|simulation|simulationConfigurationCreation|simulationModelling|testCreation|defineTestModel|defineTestObjectives|runTest|defineMCModel|defineCTAbstraction|defineMCQuery|runMCQuery):([0-9]){4}\\-([0-1][0-9])\\-([0-3][0-9])T([0-2][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9][0-9][0-9])?Z#[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
       "additionalProperties": false
     },
     "URIAgent": {
@@ -246,23 +265,23 @@
           "uniqueItems": true,
           "items": [
             {
-              "$ref": "#/definitions/RefEntity"
+              "$ref": "#/definitions/RefArtefact"
             }
           ],
           "additionalItems": {
-            "$ref": "#/definitions/RefEntity"
+            "$ref": "#/definitions/RefArtefact"
           }
         }
       },
       "additionalProperties": false
     },
-    "RefEntity": {
+    "RefArtefact": {
       "type": "object",
       "minProperties": 1,
       "maxProperties": 1,
       "properties": {
         "rdf:about": {
-          "$ref": "#/definitions/URIEntity"
+          "$ref": "#/definitions/URIArtefact"
         }
       },
       "required": [
@@ -363,16 +382,18 @@
       "maxProperties": 12,
       "properties": {
         "rdf:about": {
-          "$ref": "#/definitions/URIEntity"
+          "$ref": "#/definitions/URIArtefact"
         },
         "path": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^([a-zA-Z0-9\\/.\\-_])+$"
         },
         "hash": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^([0-9a-f]{5,40}|[0])$"
         },
         "type": {
-          "$ref": "#/definitions/EntityType"
+          "$ref": "#/definitions/ArtefactType"
         },
         "prov:wasAttributedTo": {
           "type": "object",
@@ -427,7 +448,7 @@
         "hash",
         "type"
       ],
-      "additionalProperties": false
+      "additionalProperties": true
     }
   }
 }

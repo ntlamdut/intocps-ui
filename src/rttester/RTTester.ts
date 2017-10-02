@@ -1,7 +1,7 @@
-import {IntoCpsApp} from  "../IntoCpsApp";
+import { IntoCpsApp } from "../IntoCpsApp";
 import Path = require("path");
-import {SettingKeys} from "../settings/SettingKeys";
-import {Utilities} from "../utilities";
+import { SettingKeys } from "../settings/SettingKeys";
+import { Utilities } from "../utilities";
 
 export class RTTester {
 
@@ -18,6 +18,10 @@ export class RTTester {
         return pathComp.splice(2).join(Path.sep);
     }
 
+    public static getUtilsPath() {
+        return Path.join(require('os').homedir(), "RTT-Prj", "utils");
+    }
+
     public static simulationFMU(testCase: string, component: string) {
         return Path.join(RTTester.getProjectOfFile(testCase),
             "RTT_TestProcedures", "Simulation", component + "_simulation.fmu");
@@ -28,6 +32,7 @@ export class RTTester {
         env["RTT_TESTCONTEXT"] = RTTester.getProjectOfFile(path);
         env["RTTDIR"] = RTTester.rttInstallDir();
         env["RTT_OP_KEY"] = "TMS:19999:FMI";
+        env["OSLC_PORT"] = "7474";
         return env;
     }
 
@@ -70,6 +75,18 @@ export class RTTester {
             arguments: [script, tp],
             options: { env: RTTester.genericCommandEnv(path) }
         };
+    }
+
+    public static queueEvent(action: string, context: string, tp: string = null, extra: string = null): void {
+        context = RTTester.getProjectOfFile(context);
+        let exe = RTTester.pythonExecutable();
+        let script = Path.normalize(Path.join(RTTester.getUtilsPath(), "rtt-fmi-queue-event.py"));
+        let args = [script, action, context];
+        if (tp != null) args.push(tp);
+        if (extra != null) args.push(extra);
+        let env: any = RTTester.genericCommandEnv(context);
+        const cp = require("child_process");
+        cp.spawnSync(exe, args, { env: env });
     }
 
 }

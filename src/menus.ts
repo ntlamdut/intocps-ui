@@ -6,6 +6,7 @@ var settings = require("./settings/settings").default;
 var SettingKeys = require("./settings/SettingKeys");
 var IntoCpsApp = require("./IntoCpsApp").default;
 import * as SystemUtil from "./SystemUtil";
+import {openProjectViaDirectoryDialog} from "./proj/Project"
 
 var DialogHandler = require("./DialogHandler").default;
 var IntoCpsAppEvents = require("./IntoCpsAppEvents");
@@ -16,10 +17,6 @@ const intoCpsApp = IntoCpsApp.getInstance();
 
 let createProjectHandler = new DialogHandler("proj/new-project.html", 300, 200, IntoCpsAppEvents.OPEN_CREATE_PROJECT_WINDOW, "new-project-create", (arg: any) => {
   intoCpsApp.createProject(arg.name, arg.path);
-});
-
-let openProjectHandler = new DialogHandler("proj/open-project.html", 300, 200, IntoCpsAppEvents.OPEN_OPEN_PROJECT_WINDOW, "open-project-open", (arg: any) => {
-  intoCpsApp.setActiveProject(intoCpsApp.loadProject(arg.path));
 });
 
 let openDownloadManagerHandler = new DialogHandler("downloadManager/DownloadManager.html", 500, 500, null, null, null);
@@ -35,7 +32,6 @@ let openExamplesFromGitHandler = new DialogHandler("examples/examples.html", 500
 let openSettingsHandler = new DialogHandler("settings/settings.html", 500, 600, null, null, null);
 
 createProjectHandler.install();
-openProjectHandler.install();
 openDownloadManagerHandler.install();
 
 export function openCOEServerStatusWindow(data: string = "", show:boolean=true) {
@@ -98,7 +94,8 @@ export function configureIntoCpsMenu() {
         label: 'Open Project',
         accelerator: 'CmdOrCtrl+O',
         click: function (item: any, focusedWindow: any) {
-          openProjectHandler.openWindow();
+          //openProjectHandler.openWindow();
+          openProjectViaDirectoryDialog();
         }
 
       },
