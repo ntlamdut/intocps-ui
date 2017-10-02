@@ -24,7 +24,6 @@ export class CoeServerStatusUiController {
     }
 
     protected processOutput(data: string) {
-
         let div = this.outputDiv;
         let dd = (data + "").split("\n");
         var lastElement: HTMLSpanElement = null;
@@ -76,7 +75,7 @@ export class CoeServerStatusUiController {
         let div = this.outputDiv;
         if (!$(div).is(":visible"))
             return;
-        if (this.bottomElement == div.lastChild)
+        if (this.bottomElement == div.lastChild || div.lastChild == null)
             return
         this.bottomElement = div.lastChild;
         (<HTMLSpanElement>div.lastChild).scrollIntoView();

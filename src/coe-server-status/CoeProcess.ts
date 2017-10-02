@@ -10,7 +10,7 @@ import * as child_process from 'child_process'
 export class CoeProcess {
     private settings: ISettingsValues
     private static firstStart = true;
-    private process: any = null;;
+    private process: child_process.ChildProcess = null;
 
     public constructor(settings: ISettingsValues) {
         this.settings = settings;
@@ -28,14 +28,16 @@ export class CoeProcess {
     //stop the coe if running
     public stop() {
         if (fs.existsSync(this.getPidFilePath())) {
-
             this.internalKill(this.getPid(), () => {
                 if (fs.existsSync(this.getPidFilePath()))
                     fs.unlinkSync(this.getPidFilePath());
             });
         }
-        if (this.process != null)
+
+        if (this.process != null && this.process.connected) {
             this.process.kill();
+        }
+
     }
 
     private internalKill(pid: string, successHandler: any) {
@@ -168,7 +170,7 @@ export class CoeProcess {
         });
         child.unref();
 
-        this.process = process;
+        this.process = child;
 
         console.info("Starting COE process pid = " + child.pid);
         fs.writeFile(this.getPidFilePath(), child.pid, function (err) {
@@ -224,7 +226,6 @@ export class CoeProcess {
 
     // enable subscription to the coe log file if it exists, otherwise it is created
     public subscribe(callback: any) {
-
         let path = this.getLogFilePath();
 
         if (!fs.existsSync(path)) {
@@ -243,8 +244,9 @@ export class CoeProcess {
                     try {
                         callback(data);
                     } catch (e) {
-                        if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
+                        if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0) {
                             throw e;
+                        }
                     }
                 })
 
@@ -254,7 +256,6 @@ export class CoeProcess {
 
     // enable subscription to the coe log file if it exists, otherwise it is created
     public subscribeLog4J(callback: any) {
-
         let path = this.getLog4JFilePath();
 
         if (!fs.existsSync(path)) {
@@ -273,8 +274,9 @@ export class CoeProcess {
                     try {
                         callback(data);
                     } catch (e) {
-                        if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0)
+                        if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0) {
                             throw e;
+                        }
                     }
                 });
             })
