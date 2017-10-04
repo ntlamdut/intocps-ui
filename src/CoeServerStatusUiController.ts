@@ -10,6 +10,9 @@ export class CoeServerStatusUiController {
     coeStatusRunning = false;
     bottomElement: any = null;
     isSubscribed = false;
+    buffer: DocumentFragment = new DocumentFragment();
+    outputBuffer = new Array<string>();
+    worker: Worker = new Worker("coeLogFormatWorker.js");
 
     constructor(outputDiv: HTMLDivElement) {
         this.outputDiv = outputDiv;
@@ -22,11 +25,14 @@ export class CoeServerStatusUiController {
             div.removeChild(div.firstChild);
         }
     }
-
+    
+    
     protected processOutput(data: string) {
-        let div = this.outputDiv;
-        let dd = (data + "").split("\n");
-        var lastElement: HTMLSpanElement = null;
+        // let div : HTMLDivElement = document.createElement("div");
+        // this.worker.postMessage(data);
+        // this.worker.onmessage = (ev: MessageEvent) => {div.innerHTML = ev.data; this.outputDiv.appendChild(div);} 
+       // console.log("processOutput");
+         let dd = (data + "").split("\n");
 
         dd.forEach(line => {
             if (line.trim().length != 0) {
@@ -41,10 +47,12 @@ export class CoeServerStatusUiController {
                 if (line.indexOf("TRACE") > -1 || line.indexOf("(resumed)") == 0 || line.indexOf("( truncated...)") == 0)
                     m.style.color = "rgb(128,128,128)";
 
-                div.appendChild(m);
-                lastElement = m;
+                this.buffer.appendChild(m);
             }
         });
+
+        this.outputDiv.appendChild(this.buffer);
+        this.buffer = new DocumentFragment();
     }
 
     private setStatusIcons() {
@@ -81,6 +89,13 @@ export class CoeServerStatusUiController {
         (<HTMLSpanElement>div.lastChild).scrollIntoView();
     }
 
+    // printBufferLog() : void {
+    //     console.log("printerBufferLog");
+    //     this.outputDiv.appendChild(this.buffer);
+    //     this.buffer = new DocumentFragment();
+
+    // }
+
     private truncateVisibleLog() {
         let maxLines = 2000
         if (this.outputDiv.childElementCount > maxLines)
@@ -90,6 +105,7 @@ export class CoeServerStatusUiController {
     }
 
     public async bind() {
+        //console.log("Bind");
         if (this.isSubscribed)
             return;
 
@@ -102,6 +118,7 @@ export class CoeServerStatusUiController {
         if (!this.coeStatusRunning) {
             window.setInterval(() => { this.setStatusIcons(); this.truncateVisibleLog() }, 3000);
             window.setInterval(() => { this.consoleAutoScroll() }, 800);
+            // window.setInterval(() => {this.printBufferLog()}, 1000);
             this.coeStatusRunning = true;
         }
     }
@@ -142,9 +159,11 @@ export class CoeLogUiController extends CoeServerStatusUiController {
         if (this.isSubscribed)
             return;
         var coe = IntoCpsApp.getInstance().getCoeProcess();
-        coe.subscribeLog4J((line: any) => { this.processOutput(line) })
+        console.log("Attempting to invoke subscribeLog4J2");
+        coe.subscribeLog4J2((line: any) => { this.processOutput(line) });
         this.isSubscribed = true;
         window.setInterval(() => { this.consoleAutoScroll() }, 800);
+        // window.setInterval(() => {this.printBufferLog()}, 1000);
     }
 }
 

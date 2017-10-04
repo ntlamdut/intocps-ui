@@ -11,6 +11,7 @@ export class CoeProcess {
     private settings: ISettingsValues
     private static firstStart = true;
     private process: child_process.ChildProcess = null;
+    private maxReadSize = 500000;
 
     public constructor(settings: ISettingsValues) {
         this.settings = settings;
@@ -254,6 +255,93 @@ export class CoeProcess {
         }
     }
 
+    public subscribeLog4J2(callback: any) {
+        console.log("subscribeLog4J2 Invoked");
+        let logFile: string = this.getLog4JFilePath();;
+
+        if (!fs.existsSync(logFile)) {
+            fs.writeFileSync(logFile, "");
+        }
+
+        console.log("subscribeLog4J2 Invoking watchfile ");
+        let usePrevSize = false;
+        let prevSize = 0;
+        fs.watchFile(logFile, (current, previous) => {
+            let fileSize = current.size;
+            console.log("subscribeLog4J2 Watching file: " + logFile);
+
+            //If the size has not changed, then do not read.
+            if ( !usePrevSize && previous.size == current.size) { return; }
+
+            //If a custom size has been used, because there was too much new data, then use this for the sizeDiff.
+            let sizeDiff = (() => {
+                if (usePrevSize) {
+                    return current.size - prevSize;
+                }
+                else {
+                    return fileSize - previous.size;
+                }
+            })();
+
+            //If less than zero then log file has been truncated since last read.
+            //  Set fileSize to zero and set the size difference to the current size of the file or maxReadSize.
+            //Else if the sizeDiff is too loo large and the prevSize was set by the last invocation of the watch function
+            //  then update the prevSize and set the sizeDiff to maxReadSize.
+            //Else the sizeDiff is <= maxReadSize 
+            //  then all data can be loaded and usePrevSize can be disabled.
+            console.log("a");
+            if (sizeDiff < 0) {
+                fileSize = 0;
+                if (current.size > this.maxReadSize) {
+                    sizeDiff = this.maxReadSize;
+                }
+                else {
+                    sizeDiff = current.size;
+                }
+
+            } else if (sizeDiff > this.maxReadSize) {
+                if (usePrevSize) {
+                    prevSize += prevSize + sizeDiff;
+                }
+
+                sizeDiff = this.maxReadSize;
+            }
+            else {
+                if (usePrevSize) {
+                    usePrevSize = false;
+                    sizeDiff = current.size - prevSize;
+                }
+            }
+
+            // Create a buffer to hold only the data we intend to read.
+            var buffer = new Buffer(sizeDiff);
+            // Obtain reference to the file's descriptor.
+            var fileDescriptor = fs.openSync(logFile, 'r');
+
+            // Synchronously read from the file starting from where the last read ended.
+            console.log("Reading from: " + (usePrevSize ? prevSize : previous.size) + " with size: " + sizeDiff);
+
+            fs.readSync(fileDescriptor, buffer, 0, sizeDiff, usePrevSize ? prevSize : previous.size);
+
+            fs.closeSync(fileDescriptor); // close the file
+
+
+            // Parse the line(s) in the buffer.
+            parseBuffer(buffer);
+        });
+
+        function stop() {
+            fs.unwatchFile(logFile);
+        };
+
+        function parseBuffer(buffer: any) {
+            callback(buffer.toString());
+            // Iterate over each line in the buffer.
+            //let strings: Array<string> = buffer.toString().split("\n");
+            //console.log("Parsed lines: " + strings.length);
+        };
+    }
+
     // enable subscription to the coe log file if it exists, otherwise it is created
     public subscribeLog4J(callback: any) {
         let path = this.getLog4JFilePath();
@@ -269,7 +357,8 @@ export class CoeProcess {
             this.partialFileRead(100000, path, (ds: string) => {
                 callback("( truncated...)\n\n" + ds);
 
-                var tail = new Tail(path);
+                var options: any = { interval: 5000 };
+                var tail = new Tail(path, options);
                 tail.on("line", function (data: any) {
                     try {
                         callback(data);
