@@ -12,7 +12,7 @@ export class CoeProcess {
     private settings: ISettingsValues
     private static firstStart = true;
     private process: child_process.ChildProcess = null;
-    private maxReadSize = 5000;
+    private maxReadSize = 100000;
     private coeLogPrinter: CoeLogPrinter;
 
     public constructor(settings: ISettingsValues) {
@@ -242,26 +242,29 @@ export class CoeProcess {
             fs.writeFileSync(path, "");
         }
 
-        if (fs.existsSync(path)) {
+        this.coeLogPrinter = new CoeLogPrinter(this.maxReadSize, callback);
+        this.coeLogPrinter.startWatching(this.getLogFilePath());
 
-            var Tail = require('tail').Tail;
+        // if (fs.existsSync(path)) {
 
-            this.partialFileRead(100000, path, (ds: string) => {
-                callback("( truncated...)\n\n" + ds);
+        //     var Tail = require('tail').Tail;
 
-                var tail = new Tail(path);
-                tail.on("line", function (data: any) {
-                    try {
-                        callback(data);
-                    } catch (e) {
-                        if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0) {
-                            throw e;
-                        }
-                    }
-                })
+        //     this.partialFileRead(100000, path, (ds: string) => {
+        //         callback("( truncated...)\n\n" + ds);
 
-            });
-        }
+        //         var tail = new Tail(path);
+        //         tail.on("line", function (data: any) {
+        //             try {
+        //                 callback(data);
+        //             } catch (e) {
+        //                 if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0) {
+        //                     throw e;
+        //                 }
+        //             }
+        //         })
+
+        //     });
+        // }
     }
 
     public subscribeLog4J(callback: any) {

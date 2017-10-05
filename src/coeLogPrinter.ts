@@ -100,7 +100,7 @@ export class CoeLogPrinter {
             fs.closeSync(fd);
             callback(buffer.toString());
             this.filePosition = this.filePosition + readSize
-            //console.log(`CoeLogPrinter fileReadSize: ${readSize} - filePosition: ${this.filePosition}. Remaning to read: ${currentSize-this.filePosition}`);
+            console.log(`CoeLogPrinter fileReadSize: ${readSize} - filePosition: ${this.filePosition}. Remaning to read: ${currentSize-this.filePosition}`);
             return readSize;
         }
     }

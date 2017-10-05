@@ -96,8 +96,8 @@ export class CoeServerStatusUiController {
         (<HTMLSpanElement>div.lastChild).scrollIntoView();
     }
 
-    private truncateVisibleLog() {
-        let maxLines = 2000
+    protected truncateVisibleLog() {
+        let maxLines = 4000
         if (this.outputDiv.childElementCount > maxLines)
             while (this.outputDiv.childElementCount > maxLines && this.outputDiv.hasChildNodes()) {
                 this.outputDiv.removeChild(this.outputDiv.firstChild);
@@ -158,6 +158,7 @@ export class CoeLogUiController extends CoeServerStatusUiController {
             return;
         var coe = IntoCpsApp.getInstance().getCoeProcess();
         coe.subscribeLog4J((data: any) => { this.processOutput(data) });
+        window.setInterval(() => { this.truncateVisibleLog() }, 3000);
         this.isSubscribed = true;
         window.setInterval(() => { this.consoleAutoScroll() }, 800);
     }
