@@ -5,12 +5,16 @@ import { ISettingsValues } from "../settings/ISettingsValues";
 import * as Path from 'path';
 import fs = require('fs');
 import * as child_process from 'child_process'
+import { CoeLogPrinter } from "./../coeLogPrinter"
 
 
 export class CoeProcess {
     private settings: ISettingsValues
     private static firstStart = true;
     private process: child_process.ChildProcess = null;
+    private maxReadSize = 100000;
+    private coeLogPrinter: CoeLogPrinter;
+    private cbPrepareSimulation: Array<() => void> = new Array<() => void>();
 
     public constructor(settings: ISettingsValues) {
         this.settings = settings;
@@ -178,7 +182,6 @@ export class CoeProcess {
         });
 
         child.stdout.on('data', function (data: any) {
-            //console.log('stdout: ' + data);
             //Here is where the output goes
             let dd = (data + "").split("\n");
 
@@ -216,12 +219,25 @@ export class CoeProcess {
 
         child.on('exit', (code, signal) => {
             console.info("child process exit. Code: " + code + " Signal: " + signal)
-            //if (fs.existsSync(this.getPidFilePath()))
-            //    fs.unlinkSync(this.getPidFilePath());
             this.process = null;
         });
 
 
+    }
+
+    public simulationFinished() {
+        this.coeLogPrinter.printRemaining();
+    }
+    public prepareSimulation()
+    {
+        fs.truncateSync(this.getLogFilePath());
+        this.cbPrepareSimulation.forEach((cbFn) => cbFn());
+        this.coeLogPrinter.stopPrintingRemaining();
+    }
+
+    public setPrepareSimulationCallback(callback: () => void)
+    {
+        this.cbPrepareSimulation.push(callback);
     }
 
     // enable subscription to the coe log file if it exists, otherwise it is created
@@ -232,88 +248,17 @@ export class CoeProcess {
             fs.writeFileSync(path, "");
         }
 
-        if (fs.existsSync(path)) {
-
-            var Tail = require('tail').Tail;
-
-            this.partialFileRead(100000, path, (ds: string) => {
-                callback("( truncated...)\n\n" + ds);
-
-                var tail = new Tail(path);
-                tail.on("line", function (data: any) {
-                    try {
-                        callback(data);
-                    } catch (e) {
-                        if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0) {
-                            throw e;
-                        }
-                    }
-                })
-
-            });
-        }
+        this.coeLogPrinter = new CoeLogPrinter(this.maxReadSize, callback);
+        this.coeLogPrinter.startWatching(this.getLogFilePath());
     }
 
-    // enable subscription to the coe log file if it exists, otherwise it is created
     public subscribeLog4J(callback: any) {
-        let path = this.getLog4JFilePath();
+        let logFile: string = this.getLog4JFilePath();
 
-        if (!fs.existsSync(path)) {
-            fs.writeFileSync(path, "");
+        if (!fs.existsSync(logFile)) {
+            fs.writeFileSync(logFile, "");
         }
-
-        if (fs.existsSync(path)) {
-
-            var Tail = require('tail').Tail;
-
-            this.partialFileRead(100000, path, (ds: string) => {
-                callback("( truncated...)\n\n" + ds);
-
-                var tail = new Tail(path);
-                tail.on("line", function (data: any) {
-                    try {
-                        callback(data);
-                    } catch (e) {
-                        if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0) {
-                            throw e;
-                        }
-                    }
-                });
-            })
-        }
-    }
-
-    // utility method to load the tail of a large file
-    private partialFileRead(size: number, path: string, callback: any) {
-        fs.stat(path, (err, stats) => {
-            var offset = 0;
-            let MaxFileSize = size;
-            if (stats.size > MaxFileSize) {
-                offset = stats.size - MaxFileSize;
-            }
-
-            fs.open(path, 'r+', function (err, fd) {
-                if (err) {
-                    return console.error(err);
-                }
-
-                var buf = new Buffer(MaxFileSize + 1000);
-
-                fs.read(fd, buf, 0, buf.length, offset, function (err, bytes) {
-                    fs.close(fd);
-                    if (err) {
-                        console.info(err);
-                        return;
-                    }
-
-                    // Print only read bytes to avoid junk.
-                    if (bytes > 0) {
-
-                        let readData = buf.slice(0, bytes).toString("UTF-8");
-                        callback(readData);
-                    }
-                });
-            });
-        });
+        this.coeLogPrinter = new CoeLogPrinter(this.maxReadSize, callback);
+        this.coeLogPrinter.startWatching(this.getLog4JFilePath());
     }
 }

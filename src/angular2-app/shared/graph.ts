@@ -95,7 +95,6 @@ export class Graph {
         this.webSocket.addEventListener("message", event => this.onMessage(event));
     }
     private onMessage(event: MessageEvent) {
-        console.log("onMessage")
         let rawData = JSON.parse(event.data);
         let graphDatasets: Map<BehaviorSubject<Array<any>>, any> = new Map<BehaviorSubject<Array<any>>, any>();
         this.graphMap.forEach(ds => { graphDatasets.set(ds, ds.getValue()) });
