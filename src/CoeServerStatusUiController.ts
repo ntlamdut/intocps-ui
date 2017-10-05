@@ -11,8 +11,8 @@ export class CoeServerStatusUiController {
     bottomElement: any = null;
     isSubscribed = false;
     buffer: DocumentFragment = new DocumentFragment();
-    outputBuffer = new Array<string>();
-    worker: Worker = new Worker("coeLogFormatWorker.js");
+    coeLogStartLine: string;
+    coeLogStartLineIsSet = false;
 
     constructor(outputDiv: HTMLDivElement) {
         this.outputDiv = outputDiv;
@@ -25,29 +25,36 @@ export class CoeServerStatusUiController {
             div.removeChild(div.firstChild);
         }
     }
-    
-    
+
     protected processOutput(data: string) {
-        // let div : HTMLDivElement = document.createElement("div");
-        // this.worker.postMessage(data);
-        // this.worker.onmessage = (ev: MessageEvent) => {div.innerHTML = ev.data; this.outputDiv.appendChild(div);} 
-       // console.log("processOutput");
-         let dd = (data + "").split("\n");
+        let endsWithNewline: boolean = data.endsWith("\n");
+        let dd = data.split("\n");
 
-        dd.forEach(line => {
+        dd.forEach((line, idx, array) => {
             if (line.trim().length != 0) {
-                let m = document.createElement("span");
-                m.innerHTML = line + "<br/>";
-                if (line.indexOf("ERROR") > -1 || line.indexOf(this.errorPrefix) == 0)
-                    m.style.color = "rgb(255, 0, 0)";
-                if (line.indexOf("WARN") > -1)
-                    m.style.color = "rgb(255, 165, 0)";
-                if (line.indexOf("DEBUG") > -1)
-                    m.style.color = "rgb(0, 0, 255)";
-                if (line.indexOf("TRACE") > -1 || line.indexOf("(resumed)") == 0 || line.indexOf("( truncated...)") == 0)
-                    m.style.color = "rgb(128,128,128)";
-
-                this.buffer.appendChild(m);
+                if (idx === array.length - 1 && endsWithNewline === false) {
+                    this.coeLogStartLine = line;
+                    this.coeLogStartLineIsSet = true;
+                }
+                else {
+                    let m = document.createElement("span");
+                    if (this.coeLogStartLineIsSet) {
+                        if (idx === 0) { m.innerHTML = this.coeLogStartLine; }
+                        else {
+                            this.coeLogStartLineIsSet = false;
+                        }
+                    }
+                    m.innerHTML = m.innerHTML.concat(`${line} <br/>`);
+                    if (line.indexOf("ERROR") > -1 || line.indexOf(this.errorPrefix) == 0)
+                        m.style.color = "rgb(255, 0, 0)";
+                    if (line.indexOf("WARN") > -1)
+                        m.style.color = "rgb(255, 165, 0)";
+                    if (line.indexOf("DEBUG") > -1)
+                        m.style.color = "rgb(0, 0, 255)";
+                    if (line.indexOf("TRACE") > -1 || line.indexOf("(resumed)") == 0 || line.indexOf("( truncated...)") == 0)
+                        m.style.color = "rgb(128,128,128)";
+                    this.buffer.appendChild(m);
+                }
             }
         });
 
@@ -58,7 +65,7 @@ export class CoeServerStatusUiController {
     private setStatusIcons() {
         var coe = IntoCpsApp.getInstance().getCoeProcess();
         var ss = <HTMLSpanElement>document.getElementById("stream-status");
-        
+
         if (coe.isLogRedirectActive() && coe.isRunning()) {
             ss.className = "glyphicon glyphicon-link";
         } else {
@@ -74,9 +81,9 @@ export class CoeServerStatusUiController {
         }
 
         var btnLaunch = <HTMLButtonElement>document.getElementById("coe-btn-launch");
-        btnLaunch.disabled =coe.isRunning();
+        btnLaunch.disabled = coe.isRunning();
         var btnStop = <HTMLButtonElement>document.getElementById("coe-btn-stop");
-        btnStop.disabled =!coe.isRunning();
+        btnStop.disabled = !coe.isRunning();
     }
 
     consoleAutoScroll() {
@@ -89,13 +96,6 @@ export class CoeServerStatusUiController {
         (<HTMLSpanElement>div.lastChild).scrollIntoView();
     }
 
-    // printBufferLog() : void {
-    //     console.log("printerBufferLog");
-    //     this.outputDiv.appendChild(this.buffer);
-    //     this.buffer = new DocumentFragment();
-
-    // }
-
     private truncateVisibleLog() {
         let maxLines = 2000
         if (this.outputDiv.childElementCount > maxLines)
@@ -105,7 +105,6 @@ export class CoeServerStatusUiController {
     }
 
     public async bind() {
-        //console.log("Bind");
         if (this.isSubscribed)
             return;
 
@@ -118,7 +117,6 @@ export class CoeServerStatusUiController {
         if (!this.coeStatusRunning) {
             window.setInterval(() => { this.setStatusIcons(); this.truncateVisibleLog() }, 3000);
             window.setInterval(() => { this.consoleAutoScroll() }, 800);
-            // window.setInterval(() => {this.printBufferLog()}, 1000);
             this.coeStatusRunning = true;
         }
     }
@@ -159,13 +157,12 @@ export class CoeLogUiController extends CoeServerStatusUiController {
         if (this.isSubscribed)
             return;
         var coe = IntoCpsApp.getInstance().getCoeProcess();
-        console.log("Attempting to invoke subscribeLog4J2");
-        coe.subscribeLog4J2((line: any) => { this.processOutput(line) });
+        coe.subscribeLog4J((data: any) => { this.processOutput(data) });
         this.isSubscribed = true;
         window.setInterval(() => { this.consoleAutoScroll() }, 800);
-        // window.setInterval(() => {this.printBufferLog()}, 1000);
     }
 }
+
 
 
 

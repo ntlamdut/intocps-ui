@@ -16,11 +16,12 @@ import { TraceMessager } from "../../traceability/trace-messenger"
 import DialogHandler from "../../DialogHandler"
 import { Graph } from "../shared/graph"
 import { Deferred } from "../../deferred"
+import { CoeProcess } from "../../coe-server-status/CoeProcess"
+import { IntoCpsApp } from "../../IntoCpsApp";
 
 
 @Injectable()
 export class CoeSimulationService {
-
     progress: number = 0;
     errorReport: (hasError: boolean, message: string) => void = function () { };
     simulationCompletedHandler: () => void = function () { };
@@ -29,6 +30,7 @@ export class CoeSimulationService {
     private webSocket: WebSocket;
     private sessionId: number;
     private remoteCoe: boolean;
+    private coe: CoeProcess; 
     private url: string;
     private resultDir: string;
     private config: CoSimulationConfig;
@@ -54,6 +56,7 @@ export class CoeSimulationService {
     }
 
     run(config: CoSimulationConfig, errorReport: (hasError: boolean, message: string) => void, simCompleted: () => void, postScriptOutputReport: (hasError: boolean, message: string) => void) {
+        this.coe = IntoCpsApp.getInstance().getCoeProcess();
         this.errorReport = errorReport;
         this.simulationCompletedHandler = simCompleted;
         this.config = config;
@@ -81,6 +84,7 @@ export class CoeSimulationService {
         this.reset();
         this.graph.setCoSimConfig(config);
         this.graph.initializeDatasets();
+        this.coe.prepareSimulation();
         this.createSession();
     }
 
@@ -215,6 +219,7 @@ export class CoeSimulationService {
                     this.fileSystem.copyFile(this.config.sourcePath, coeConfigPath),
                     this.fileSystem.copyFile(this.config.multiModel.sourcePath, mmConfigPath)
                 ]).then(() => {
+                    this.coe.simulationFinished();
                     this.progress = 100;
                     storeResultCrc(resultPath, this.config);
                     this.executePostProcessingScript(resultPath);
