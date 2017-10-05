@@ -1,13 +1,14 @@
-import fs = require('fs');
+import * as fs from 'fs';
+import {CoeServerStatusUiController} from "./CoeServerStatusUiController"
 
 interface ReadDataObject {
     readSize?: number
 }
 
 export class CoeLogPrinter {
-    private maxFileReadSize: number = 5000;
-    private remainingMaxFileReadSize: number = 500000;
-    private callback: (data: string) => void;
+    private maxFileReadSize: number;
+    private remainingMaxFileReadSize: number;
+    private callback: (data: string, skip: boolean) => void;
     private path: string;
     private pathIsSet: boolean = false;
     private interval: number = 1000;
@@ -25,8 +26,9 @@ export class CoeLogPrinter {
         this.interval = interval;
     }
 
-    public setMaxFileReadSize(maxFileReadSize: number) {
+    private setMaxFileReadSize(maxFileReadSize: number) {
         this.maxFileReadSize = maxFileReadSize;
+        this.remainingMaxFileReadSize = 5 * maxFileReadSize;
     }
 
     private getFileSize(path: string) {
@@ -43,13 +45,24 @@ export class CoeLogPrinter {
     }
 
     public printRemaining(){
+        // 200 is the typical number of characters per line.
+        let truncateSizeInBytes = CoeServerStatusUiController.maxLines * 200;
+        
         this.printingRemainingIsActive = true;
-        //console.log(`Printing the remaining data from the COE log file with interval ${this.interval} ms.`)
+        // console.log(`Printing the remaining data from the COE log file with interval ${this.interval} ms.`)
         // Check if there is still remaining data to be printed, and print it.
         this.intervalHandle = setInterval(() => {
+            let alteredFilePosition = false;
             let currentFileSize = this.getFileSize(this.path);
             if (currentFileSize != this.filePosition) {
-                let readSize = this.readFunction(this.path, currentFileSize, this.remainingMaxFileReadSize, this.callback)
+                if(currentFileSize-truncateSizeInBytes > this.filePosition)
+                {
+                    // Advance the file position
+                    this.filePosition = currentFileSize-truncateSizeInBytes;
+                    alteredFilePosition = true;
+                    //console.log(`CoeLogPrinter watching file: ${this.path} advanced file position to: ${this.filePosition}`);
+                }
+                let readSize = this.readFunction(this.path, currentFileSize, this.remainingMaxFileReadSize, alteredFilePosition, this.callback)
                 if (readSize && readSize < this.maxFileReadSize) {
                     this.stopPrintingRemaining();
                 }
@@ -67,7 +80,7 @@ export class CoeLogPrinter {
         }
     }
 
-    private readFunction(path: string, currentSize: number, maxReadSize: number, callback: (data: string) => void): number | undefined {
+    private readFunction(path: string, currentSize: number, maxReadSize: number, alteredFilePosition: boolean, callback: (data: string, skip:boolean) => void): number | undefined {
         let calcReadSize = (currentSize: number) => {
             let readSize = currentSize - this.filePosition;
             if (readSize > maxReadSize) {
@@ -82,25 +95,27 @@ export class CoeLogPrinter {
 
         // This happens if the log has been truncated. Therefore perform a reinitialization and calculate the read size again.
         if (readSize <= 0) {
-            //console.log(`CoeLogPrinter watching ${path} encountered a non-positive size to read: ${readSize}. Reinitializing and trying again.`)
-            this.filePosition = this.getFileSize(path);
+            console.log(`Info: CoeLogPrinter watching ${path} encountered a non-positive read size. Current size: ${currentSize} - Read size: ${readSize} - File position: ${this.filePosition}. 
+            This is probably due to a log file rollover. Reinitializing and trying again.`);
+            
+            currentSize = this.getFileSize(path);
+            this.filePosition = 0;
             readSize = calcReadSize(currentSize);
+            console.log(`Info: CoeLogPrinter watching ${path} reinitialized. Current size: ${currentSize} - Read size: ${readSize} - File position: ${this.filePosition}`);
         }
 
         if (readSize <= 0) {
-            console.error(`ERROR: CoeLogPrinter watching ${path} encountered an error with the value of fileReadSize: ${readSize}`);
             return;
         }
         else {
             let buffer = new Buffer(readSize);
-            let fd = fs.openSync(path, 'r');
-
-            
+            let fd = fs.openSync(path, 'r');            
             fs.readSync(fd, buffer, 0, readSize, this.filePosition);
             fs.closeSync(fd);
-            callback(buffer.toString());
+            callback(buffer.toString(),alteredFilePosition);
+            // console.log(`CoeLogPrinter watching ${path} is reading from filePosition: ${this.filePosition} with the size fileReadSize: ${readSize}. Remaning to read: ${currentSize-this.filePosition-readSize}`);
             this.filePosition = this.filePosition + readSize
-            console.log(`CoeLogPrinter fileReadSize: ${readSize} - filePosition: ${this.filePosition}. Remaning to read: ${currentSize-this.filePosition}`);
+
             return readSize;
         }
     }
@@ -116,7 +131,7 @@ export class CoeLogPrinter {
 
         fs.watchFile(this.path, { interval: this.interval }, (current: fs.Stats, previous: fs.Stats) => {
             if(!this.printingRemainingIsActive)
-                this.readFunction(this.path, current.size, this.maxFileReadSize, this.callback);
+                this.readFunction(this.path, current.size, this.maxFileReadSize, false, this.callback);
 
         });
     }

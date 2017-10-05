@@ -14,6 +14,7 @@ export class CoeProcess {
     private process: child_process.ChildProcess = null;
     private maxReadSize = 100000;
     private coeLogPrinter: CoeLogPrinter;
+    private cbPrepareSimulation: Array<() => void> = new Array<() => void>();
 
     public constructor(settings: ISettingsValues) {
         this.settings = settings;
@@ -218,8 +219,6 @@ export class CoeProcess {
 
         child.on('exit', (code, signal) => {
             console.info("child process exit. Code: " + code + " Signal: " + signal)
-            //if (fs.existsSync(this.getPidFilePath()))
-            //    fs.unlinkSync(this.getPidFilePath());
             this.process = null;
         });
 
@@ -231,7 +230,14 @@ export class CoeProcess {
     }
     public prepareSimulation()
     {
+        fs.truncateSync(this.getLogFilePath());
+        this.cbPrepareSimulation.forEach((cbFn) => cbFn());
         this.coeLogPrinter.stopPrintingRemaining();
+    }
+
+    public setPrepareSimulationCallback(callback: () => void)
+    {
+        this.cbPrepareSimulation.push(callback);
     }
 
     // enable subscription to the coe log file if it exists, otherwise it is created
@@ -244,27 +250,6 @@ export class CoeProcess {
 
         this.coeLogPrinter = new CoeLogPrinter(this.maxReadSize, callback);
         this.coeLogPrinter.startWatching(this.getLogFilePath());
-
-        // if (fs.existsSync(path)) {
-
-        //     var Tail = require('tail').Tail;
-
-        //     this.partialFileRead(100000, path, (ds: string) => {
-        //         callback("( truncated...)\n\n" + ds);
-
-        //         var tail = new Tail(path);
-        //         tail.on("line", function (data: any) {
-        //             try {
-        //                 callback(data);
-        //             } catch (e) {
-        //                 if ((e + "").indexOf("Error: Attempting to call a function in a renderer window that has been closed or released") != 0) {
-        //                     throw e;
-        //                 }
-        //             }
-        //         })
-
-        //     });
-        // }
     }
 
     public subscribeLog4J(callback: any) {
@@ -275,39 +260,5 @@ export class CoeProcess {
         }
         this.coeLogPrinter = new CoeLogPrinter(this.maxReadSize, callback);
         this.coeLogPrinter.startWatching(this.getLog4JFilePath());
-    }
-
-    // utility method to load the tail of a large file
-    private partialFileRead(size: number, path: string, callback: any) {
-        fs.stat(path, (err, stats) => {
-            var offset = 0;
-            let MaxFileSize = size;
-            if (stats.size > MaxFileSize) {
-                offset = stats.size - MaxFileSize;
-            }
-
-            fs.open(path, 'r+', function (err, fd) {
-                if (err) {
-                    return console.error(err);
-                }
-
-                var buf = new Buffer(MaxFileSize + 1000);
-
-                fs.read(fd, buf, 0, buf.length, offset, function (err, bytes) {
-                    fs.close(fd);
-                    if (err) {
-                        console.info(err);
-                        return;
-                    }
-
-                    // Print only read bytes to avoid junk.
-                    if (bytes > 0) {
-
-                        let readData = buf.slice(0, bytes).toString("UTF-8");
-                        callback(readData);
-                    }
-                });
-            });
-        });
     }
 }
