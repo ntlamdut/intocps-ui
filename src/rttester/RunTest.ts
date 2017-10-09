@@ -4,56 +4,44 @@ import { IntoCpsApp } from "../IntoCpsApp";
 import { RTTester } from "../rttester/RTTester";
 import * as RTesterModalCommandWindow from "./GenericModalCommand";
 import Path = require("path");
-import {IntoCpsAppMenuHandler} from "../IntoCpsAppMenuHandler";
-
+import { IntoCpsAppMenuHandler } from "../IntoCpsAppMenuHandler";
 
 class FMUAssignment {
     assignments: FMUAssignments;
-    instanceName: string;
-    componentName: string;
-    simulationFMUPath: string;
     hInstanceName: HTMLHeadingElement;
     hFMUPath: HTMLInputElement;
-    hBrowseButton: HTMLButtonElement;
-    hSimulationButton: HTMLButtonElement;
-    html: HTMLElement;
-    constructor(assignments: FMUAssignments, componentName: string, instanceName: string, fmuFileName: string = null) {
-        this.componentName = componentName;
+    hRemoveButton: HTMLButtonElement;
+    html: HTMLDivElement;
+    constructor(assignments: FMUAssignments, fmuFileName: string) {
         this.assignments = assignments;
-        this.instanceName = instanceName;
-        this.simulationFMUPath = RTTester.simulationFMU(this.assignments.controller.testCase, this.componentName);
         let self: FMUAssignment = this;
         $("<div>").load("./rttester/RunTest/SUTSelection.html", function (event: JQueryEventObject) {
-            self.hInstanceName = this.querySelector("#instanceName");
+            self.html = <HTMLDivElement>(this);
+            self.hInstanceName = this.querySelector("#name");
             self.hFMUPath = this.querySelector("#fmuPath");
-            self.hBrowseButton = this.querySelector("#browseButton");
-            self.hSimulationButton = this.querySelector("#simulationButton");
-            self.hSimulationButton.addEventListener("click", () => self.setSimulation());
-            self.hFMUPath.addEventListener("input", () => { self.updateSimulationButton(); });
-            self.hBrowseButton.addEventListener("click", () => {
-                let remote = require("electron").remote;
-                let dialog = remote.dialog;
-                let dialogResult: string[] = dialog.showOpenDialog({
-                    filters: [{ name: "FMU-Files", extensions: ["fmu"] }]
-                });
-                if (dialogResult != undefined) {
-                    self.hFMUPath.value = dialogResult[0];
-                }
-                self.updateSimulationButton();
+            self.hFMUPath.value = fmuFileName;
+            self.hRemoveButton = this.querySelector("#removeButton");
+            self.hRemoveButton.addEventListener("click", () => {
+                self.assignments.remove(self);
             });
-            self.hInstanceName.innerText = self.componentName; // + " - " + self.instanceName;
-            self.hFMUPath.value = fmuFileName != null ? fmuFileName : self.simulationFMUPath;
-            self.assignments.hSUTList.appendChild(this);
-            self.updateSimulationButton();
+            let JSZip = require("jszip");
+            var fs = require('fs');
+            fs.readFile(fmuFileName, function (err: any, data: any) {
+                if (err)
+                    throw err;
+                JSZip.loadAsync(data).then(function (zip: any) {
+                    return zip.file("modelDescription.xml").async("text");
+                }).then(function (xml: string) {
+                    let parser = new DOMParser();
+                    let dom = parser.parseFromString(xml, "text/xml");
+                    self.hInstanceName.innerText = dom.documentElement.getAttribute("modelName");
+                });
+            });
+            self.assignments.add(self);
         });
     }
-    updateSimulationButton() {
-        this.hSimulationButton.className = (this.hFMUPath.value == this.simulationFMUPath) ?
-            "btn btn-info btn-sm" : "btn btn-default btn-sm";
-    }
-    setSimulation() {
-        this.hFMUPath.value = this.simulationFMUPath;
-        this.updateSimulationButton();
+    getHTML(): HTMLDivElement {
+        return this.html;
     }
 }
 
@@ -61,12 +49,33 @@ class FMUAssignments {
     controller: RunTestController;
     assignments: FMUAssignment[] = [];
     hSUTList: HTMLDivElement;
+    hAddFMUButton: HTMLButtonElement;
+    fmus: FMUAssignment[] = [];
     constructor(controller: RunTestController) {
         this.controller = controller;
         this.hSUTList = <HTMLDivElement>document.getElementById("sutList");
+        this.hAddFMUButton = <HTMLButtonElement>document.getElementById("addFMUButton");
+        this.hAddFMUButton.addEventListener("click", () => {
+            let remote = require("electron").remote;
+            let dialog = remote.dialog;
+            let dialogResult: string[] = dialog.showOpenDialog({
+                filters: [{ name: "FMU-Files", extensions: ["fmu"] }]
+            });
+            if (dialogResult != undefined) {
+                let fmu = new FMUAssignment(this, dialogResult[0]);
+            }
+        });
     }
-    load() {
-        this.assignments.push(new FMUAssignment(this, "INTO-CPS-Demo", "", null));
+    add(fmu: FMUAssignment) {
+        this.fmus.push(fmu);
+        this.hSUTList.appendChild(fmu.getHTML());
+    }
+    remove(fmu: FMUAssignment) {
+        this.hSUTList.removeChild(fmu.getHTML());
+        let idx = this.fmus.indexOf(fmu);
+        if (idx != -1) {
+            this.fmus.splice(idx, 1);
+        }
     }
 }
 
@@ -85,7 +94,6 @@ export class RunTestController extends ViewController {
         let self = this;
         this.testCase = testCase;
         IntoCpsApp.setTopName("Run Test");
-        this.fmuAssignments.load();
         this.hRunButton = <HTMLButtonElement>document.getElementById("runButton");
         this.hEnableSignalViewer = <HTMLInputElement>document.getElementById("enableSignalViewer");
         this.hStepSize = <HTMLInputElement>document.getElementById("stepSize");
