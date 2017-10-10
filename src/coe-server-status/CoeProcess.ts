@@ -63,7 +63,7 @@ export class CoeProcess {
     }
 
     private getWorkingDir() {
-        let installDir = this.settings.getValue(SettingKeys.INSTALL_DIR);
+        let installDir = this.settings.getValue(SettingKeys.INSTALL_TMP_DIR);
         let childCwd = Path.join(installDir, "coe-working-dir");
         return childCwd;
     }
