@@ -81,3 +81,10 @@ coe-configuration .alert-big {
     margin-top: 0;
     border-radius: 4px;
 }
+
+.glyphicon.glyphicon-one-fine-dot:before {
+    content: "\25cf";
+    font-size: 1.0em;
+    vertical-align: 0.1em;
+    }
+    

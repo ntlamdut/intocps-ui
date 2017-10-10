@@ -1,9 +1,21 @@
+import { CoeProcess } from "./coe-server-status/CoeProcess"
+import { IntoCpsApp } from "./IntoCpsApp";
+
 export class PreviewHandler {
 
     setVisible: any;
+    coe: CoeProcess;
     constructor(setVisible: any) {
         this.setVisible = setVisible;
+        this.coe = IntoCpsApp.getInstance().getCoeProcess();
+        window.setInterval(() => { this.setStatusIcons() }, 1000);
     }
+
+    private setStatusIcons() {
+        let iconSpan = document.getElementById("coeIconColor");
+        iconSpan.style.color = this.coe.isRunning() ? "green" : "red";
+    }
+
     public setVisibilityPreviewPanel(name: string, visibel: boolean) {
         this.setVisible("preview", name, visibel);
 

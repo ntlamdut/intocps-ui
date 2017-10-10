@@ -80,12 +80,7 @@ export class CoeServerStatusUiController {
         }
 
         var os = <HTMLSpanElement>document.getElementById("online-status");
-
-        if (coe.isRunning()) {
-            os.className = "glyphicon glyphicon-ok";
-        } else {
-            os.className = "glyphicon glyphicon-remove";
-        }
+        os.style.color = coe.isRunning() ? "green" : "red";
 
         var btnLaunch = <HTMLButtonElement>document.getElementById("coe-btn-launch");
         btnLaunch.disabled = coe.isRunning();
