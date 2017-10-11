@@ -2,15 +2,16 @@ import * as Path from 'path';
 import * as fs from 'fs';
 
 
-import {ISettingsValues} from "./settings/ISettingsValues";
-import {Settings} from "./settings/settings";
-import {IProject} from "./proj/IProject";
-import {Project} from "./proj/Project";
-import {IntoCpsAppEvents} from "./IntoCpsAppEvents";
-import {SettingKeys} from "./settings//SettingKeys";
-import {EventEmitter} from "events";
-import {TrManager} from "./traceability/trManager"
-import {Utilities} from "./utilities"
+import { ISettingsValues } from "./settings/ISettingsValues";
+import { Settings } from "./settings/settings";
+import { IProject } from "./proj/IProject";
+import { Project } from "./proj/Project";
+import { IntoCpsAppEvents } from "./IntoCpsAppEvents";
+import { SettingKeys } from "./settings//SettingKeys";
+import { EventEmitter } from "events";
+import { TrManager } from "./traceability/trManager"
+import { Utilities } from "./utilities"
+import { CoeProcess } from "./coe-server-status/CoeProcess";
 
 // constants
 let topBarNameId: string = "activeTabTitle";
@@ -22,6 +23,7 @@ export default class IntoCpsApp extends EventEmitter {
     platform: String
     window: Electron.BrowserWindow;
     trmanager:TrManager;
+    coeProcess: CoeProcess = null;
 
     settings: Settings;
 
@@ -83,6 +85,12 @@ export default class IntoCpsApp extends EventEmitter {
                 console.warn("Unable to set active project from settings: " + activeProjectPath);
             }
         }
+        this.coeProcess = new CoeProcess(this.settings);
+
+    }
+
+    public getCoeProcess(): CoeProcess {
+        return this.coeProcess;
     }
 
     public setWindow(win: Electron.BrowserWindow) {
@@ -221,4 +229,4 @@ class SerializationHelper {
 }
 
 
-export {IntoCpsApp}
+export { IntoCpsApp }

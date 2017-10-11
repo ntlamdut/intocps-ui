@@ -4,14 +4,16 @@ import { remote, ipcRenderer } from "electron";
 import * as Path from 'path';
 import * as child_process from 'child_process'
 import fs = require('fs');
+import { CoeProcess } from "./CoeProcess"
 
 var globalChild: any;
 var intoCpsAppIns = IntoCpsApp.getInstance();
 var killWindow = false;
 var preventUnload = true;
 window.onload = function () {
-    if (window.location.search === "?data=autolaunch")
-        launchCoe();
+    launchCoe();
+    //    if (window.location.search === "?data=autolaunch")
+    //      launchCoe();
 };
 
 function hideBehaviour(ev: Event) {
@@ -32,8 +34,7 @@ window.onbeforeunload = (ev: Event) => {
                 killCoeCloseWindow();
             }
         }
-        else
-        {
+        else {
             hideBehaviour(ev)
         }
     }
@@ -44,30 +45,9 @@ ipcRenderer.on("kill", (event, message) => {
     window.close();
 });
 
-function coeOnlineCheck() {
-    let url = IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.COE_URL) || "localhost:8082";
-    let request = $.getJSON(`http://${url}/version`);
 
-    let onlineAlert = document.getElementById("online-alert");
-    let offlineAlert = document.getElementById("offline-alert");
 
-    setTimeout(() => request.abort(), 2000);
 
-    request.fail(() => {
-        onlineAlert.innerHTML = `Co-Simulation Engine, offline no connection at: ${url}`;
-
-        onlineAlert.style.display = "block";
-        offlineAlert.style.display = "none";
-
-        setTimeout(() => coeOnlineCheck(), 2000);
-    })
-        .done(data => {
-            offlineAlert.innerHTML = `Co-Simulation Engine, version: ${data.version}, online at: ${url}`;
-
-            onlineAlert.style.display = "none";
-            offlineAlert.style.display = "block";
-        });
-}
 
 function killCoeCloseWindow() {
     if (globalChild) {
@@ -85,7 +65,7 @@ function killCoeCloseWindow() {
     }
 }
 
-function coeClose(){
+function coeClose() {
     window.close();
 }
 
@@ -95,14 +75,94 @@ function clearOutput() {
         div.removeChild(div.firstChild);
     }
 }
+
+var activeDiv: HTMLDivElement;
+var errorPrefix = ".";
+
+function processOutput(data: string) {
+
+    let div = <HTMLDivElement>document.getElementById("coe-console-output");
+    let dd = (data + "").split("\n");
+
+    dd.forEach(line => {
+        if (line.trim().length != 0) {
+            let m = document.createElement("span");
+            m.innerHTML = line + "<br/>";
+            if (line.indexOf("ERROR") > -1 || line.indexOf(errorPrefix) == 0)
+                m.style.color = "rgb(255, 0, 0)";
+            if (line.indexOf("WARN") > -1)
+                m.style.color = "rgb(255, 165, 0)";
+            if (line.indexOf("DEBUG") > -1)
+                m.style.color = "rgb(0, 0, 255)";
+            if (line.indexOf("TRACE") > -1 || line.indexOf("(resumed)") == 0)
+                m.style.color = "rgb(128,128,128)";
+
+            div.appendChild(m);
+        }
+    });
+
+
+    if (div.childElementCount > 600)
+        while (div.childElementCount > 5000 && div.hasChildNodes()) {
+            div.removeChild(div.firstChild);
+        }
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function launchCoe() {
+
+    var coe = IntoCpsApp.getInstance().getCoeProcess();
+    errorPrefix = coe.getErrorLogLinePrefix();
+
+    //let root = document.getElementById("coe-console")
+    activeDiv = <HTMLDivElement>document.getElementById("coe-console-output");
+    while (activeDiv.hasChildNodes()) {
+        activeDiv.removeChild(activeDiv.firstChild);
+    }
+    //let div = document.createElement("div");
+    //div.id = "coe-console-output";
+    //let panel = createPanel("Console", div);
+    //root.appendChild(panel);
+    let mLaunch = document.createElement("span");
+    mLaunch.innerHTML = "Terminal args: java -jar " + coe.getCoePath() + "<br/>";
+    //div.appendChild(mLaunch);
+    //activeDiv = div;
+
+    activeDiv.appendChild(mLaunch);
+
+    coe.subscribe(processOutput)
+
+    if (!coe.isLogRedirectActive()) {
+        var sp = <HTMLSpanElement>document.getElementById("stream-status");
+        sp.className = "glyphicon glyphicon-remove";
+    }
+    else {
+        var sp = <HTMLSpanElement>document.getElementById("stream-status");
+        sp.className = "glyphicon glyphicon-link";
+
+    }
+    if (!coe.isRunning()) {
+        coe.start();
+        var sp = <HTMLSpanElement>document.getElementById("stream-status");
+        sp.className = "glyphicon glyphicon-link";
+    }
+}
+
+function stopCoe() {
+    var coe = IntoCpsApp.getInstance().getCoeProcess();
+    if (coe.isRunning()) {
+        coe.stop();
+    }
+}
+
+/*
 function launchCoe() {
     var spawn = child_process.spawn;
 
     let installDir = intoCpsAppIns.getSettings().getValue(SettingKeys.INSTALL_TMP_DIR);
     var coePath = Path.join(installDir, "coe.jar");
     let overrideCoePath = intoCpsAppIns.getSettings().getValue(SettingKeys.COE_JAR_PATH);
-    if(fs.existsSync(overrideCoePath))
-    {
+    if (fs.existsSync(overrideCoePath)) {
         coePath = overrideCoePath;
     }
     let childCwd = Path.join(installDir, "coe-working-dir");
@@ -173,6 +233,7 @@ function launchCoe() {
         div.appendChild(m);
     });
 }
+*/
 
 function createPanel(title: string, content: HTMLElement): HTMLElement {
     var divPanel = document.createElement("div");
