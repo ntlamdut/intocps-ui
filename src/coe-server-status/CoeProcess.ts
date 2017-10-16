@@ -6,6 +6,7 @@ import * as Path from 'path';
 import fs = require('fs');
 import * as child_process from 'child_process'
 import { CoeLogPrinter } from "./../coeLogPrinter"
+import {UICrtlType} from "./../CoeServerStatusUiController"
 
 
 export class CoeProcess {
@@ -14,8 +15,8 @@ export class CoeProcess {
     private process: child_process.ChildProcess = null;
     private maxReadSize = 100000;
     private coeLogPrinter: CoeLogPrinter;
-    private cbPrepareSimulation: Array<() => void> = new Array<() => void>();
-
+    private coeConsolePrinter: CoeLogPrinter;
+    private cbPrepSimCBs: Map<UICrtlType, () => void> = new Map<UICrtlType,  () => void>();
     public constructor(settings: ISettingsValues) {
         this.settings = settings;
     }
@@ -231,18 +232,20 @@ export class CoeProcess {
 
     public simulationFinished() {
         this.coeLogPrinter.printRemaining();
+        this.coeConsolePrinter.printRemaining();
     }
     public prepareSimulation()
     {
         fs.truncateSync(this.getLogFilePath());
-        this.cbPrepareSimulation.forEach((cbFn) => cbFn());
+        this.cbPrepSimCBs.forEach((val) => {val()});
         this.coeLogPrinter.stopPrintingRemaining();
+        this.coeConsolePrinter.stopPrintingRemaining();
     }
 
-    public setPrepareSimulationCallback(callback: () => void)
-    {
-        this.cbPrepareSimulation.push(callback);
-    }
+    public subscribePrepareSimulationCallback(uiCrtlType: UICrtlType, callback: () => void)
+    {   
+        this.cbPrepSimCBs.set(uiCrtlType, callback);
+    }  
 
     // enable subscription to the coe log file if it exists, otherwise it is created
     public subscribe(callback: any) {
@@ -251,9 +254,8 @@ export class CoeProcess {
         if (!fs.existsSync(path)) {
             fs.writeFileSync(path, "");
         }
-
-        this.coeLogPrinter = new CoeLogPrinter(this.maxReadSize, callback);
-        this.coeLogPrinter.startWatching(this.getLogFilePath());
+        this.coeConsolePrinter = new CoeLogPrinter(this.maxReadSize, callback);
+        this.coeConsolePrinter.startWatching(this.getLogFilePath());
     }
 
     public subscribeLog4J(callback: any) {
@@ -265,4 +267,22 @@ export class CoeProcess {
         this.coeLogPrinter = new CoeLogPrinter(this.maxReadSize, callback);
         this.coeLogPrinter.startWatching(this.getLog4JFilePath());
     }
+
+    public unloadPrintView(uiCrtlType : UICrtlType){
+        let logPrinterRef = uiCrtlType == UICrtlType.Console ? this.coeConsolePrinter : this.coeLogPrinter;
+        logPrinterRef.stopWatching();
+        logPrinterRef.stopPrintingRemaining();
+        logPrinterRef.unsubscribe();
+        if(this.cbPrepSimCBs.has(uiCrtlType))
+        {
+            this.cbPrepSimCBs.delete(uiCrtlType);
+        }
+        else
+        {
+            console.log(`INFO: CoeProcess: Did not find prepSimCB for ${uiCrtlType}`)
+        }
+    }
+
+
+
 }
