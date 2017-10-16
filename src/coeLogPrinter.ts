@@ -80,6 +80,11 @@ export class CoeLogPrinter {
         }
     }
 
+    public unsubscribe(){
+        //console.log(`CoeLogPrinter watching ${this.path} unsubscribed callback`)
+        this.callback = null;
+    }
+
     private readFunction(path: string, currentSize: number, maxReadSize: number, alteredFilePosition: boolean, callback: (data: string, skip:boolean) => void): number | undefined {
         let calcReadSize = (currentSize: number) => {
             let readSize = currentSize - this.filePosition;
@@ -112,7 +117,12 @@ export class CoeLogPrinter {
             let fd = fs.openSync(path, 'r');            
             fs.readSync(fd, buffer, 0, readSize, this.filePosition);
             fs.closeSync(fd);
-            callback(buffer.toString(),alteredFilePosition);
+            
+            if(callback)
+            {
+                //console.log(`CoeLogPrinter watching ${path} invoking callback: ${this.callback}`);
+                callback(buffer.toString(),alteredFilePosition);
+            }
             // console.log(`CoeLogPrinter watching ${path} is reading from filePosition: ${this.filePosition} with the size fileReadSize: ${readSize}. Remaning to read: ${currentSize-this.filePosition-readSize}`);
             this.filePosition = this.filePosition + readSize
 

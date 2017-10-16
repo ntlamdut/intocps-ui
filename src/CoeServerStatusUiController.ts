@@ -1,8 +1,12 @@
 import { IntoCpsApp } from "./IntoCpsApp";
 import { CoeProcess } from "./coe-server-status/CoeProcess"
+import {remote} from "electron";
+
+export enum UICrtlType {Console, Log};
 
 export class CoeServerStatusUiController {
 
+    protected type: UICrtlType = UICrtlType.Console;
     private outputDiv: HTMLDivElement = null; //coe-console-output
 
     activeDiv: HTMLDivElement;
@@ -17,9 +21,8 @@ export class CoeServerStatusUiController {
 
     constructor(outputDiv: HTMLDivElement) {
         this.outputDiv = outputDiv;
-
     }
-
+    
     public clearOutput() {
         let div = this.outputDiv;
         while (div != null && div.hasChildNodes()) {
@@ -80,6 +83,7 @@ export class CoeServerStatusUiController {
         }
 
         var os = <HTMLSpanElement>document.getElementById("online-status");
+        //console.log(`CoeServerStatusUiController - isRunnig: ${coe.isRunning()}`)
         os.style.color = coe.isRunning() ? "green" : "red";
 
         var btnLaunch = <HTMLButtonElement>document.getElementById("coe-btn-launch");
@@ -110,6 +114,10 @@ export class CoeServerStatusUiController {
         }
     }
 
+    protected prepareSimulationCallback() {
+        return () => this.clearOutput();
+    }
+
     public async bind() {
         if (this.isSubscribed)
             return;
@@ -117,7 +125,7 @@ export class CoeServerStatusUiController {
         var coe = IntoCpsApp.getInstance().getCoeProcess();
         this.errorPrefix = coe.getErrorLogLinePrefix();
         coe.subscribe((line: any, skip: boolean) => { this.processOutput(line, skip) })
-        coe.setPrepareSimulationCallback(() => {this.clearOutput();});
+        let index = coe.subscribePrepareSimulationCallback(this.type, this.prepareSimulationCallback());
         this.isSubscribed = true;
         this.setStatusIcons();
 
@@ -126,6 +134,13 @@ export class CoeServerStatusUiController {
             window.setInterval(() => { this.consoleAutoScroll() }, 800);
             this.coeStatusRunning = true;
         }
+        window.addEventListener("beforeunload",(ev) => {
+            remote.getCurrentWindow().removeAllListeners();
+            coe.unloadPrintView(this.type);
+        });
+        window.onbeforeunload = ((ev) => {
+            
+         });
     }
 
     public launchCoe() {
@@ -160,15 +175,22 @@ export class CoeServerStatusUiController {
 
 export class CoeLogUiController extends CoeServerStatusUiController {
 
+    protected type: UICrtlType = UICrtlType.Log;
+
     public async bind() {
         if (this.isSubscribed)
             return;
         var coe = IntoCpsApp.getInstance().getCoeProcess();
         coe.subscribeLog4J((line: any, skip: boolean) => { this.processOutput(line, skip) })
-        coe.setPrepareSimulationCallback(() => {this.clearOutput();});
+        let index = coe.subscribePrepareSimulationCallback(this.type, this.prepareSimulationCallback());
         window.setInterval(() => { this.truncateVisibleLog() }, 3000);
         this.isSubscribed = true;
         window.setInterval(() => { this.consoleAutoScroll() }, 800);
+        window.addEventListener("beforeunload",(ev) => {
+            remote.getCurrentWindow().removeAllListeners();
+            coe.unloadPrintView(this.type);
+
+        });
     }
 }
 
