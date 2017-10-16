@@ -20,6 +20,8 @@ export class IntoCpsAppMenuHandler {
     createMultiModel: (path: string, titleMsg? : string) => void;
     createCoSimConfiguration: (path: string) => void;
 
+    implodeConfig: (path: string) => void;
+
     createTDGProject: (path: string) => void;
     createMCProject: (path: string) => void;
     runRTTesterCommand: (commandSpec: any) => void;
