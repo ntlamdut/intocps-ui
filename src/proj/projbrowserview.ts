@@ -374,7 +374,7 @@ export class BrowserController {
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openCoeView((<any>item).coeConfig);
                 };
-                parent.menuEntries = [menuEntryDelete, menuRename, menuImplode];
+                parent.menuEntries = [menuEntryDelete, menuRename,menuReveal,menuImplode];
                 parent.refresh();
                 return null;
             }
@@ -391,7 +391,7 @@ export class BrowserController {
                         console.info("Create new cosim config for: " + item.path);
                         self.menuHandler.createCoSimConfiguration(item.path);
                     });
-                parent.menuEntries = [menuEntryDelete, menuEntryCreateCoSim, menuRename];
+                parent.menuEntries = [menuEntryDelete, menuEntryCreateCoSim, menuRename,menuReveal];
                 parent.refresh();
                 return null;
             }
