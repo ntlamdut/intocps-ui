@@ -419,7 +419,7 @@ export class BoundedDifferenceConstraint implements VariableStepConstraint {
         };
 
         if (this.abstol) obj.abstol = Number(this.abstol);
-        if (this.reltol) obj.order = Number(this.reltol);
+        if (this.reltol) obj.reltol = Number(this.reltol);
         if (this.safety) obj.safety = Number(this.safety);
 
         return obj;
