@@ -24,7 +24,7 @@ import * as ShowdownHelper  from "./showdownHelper";
 import {Overture} from "./overture";
 import {TraceMessager} from "./traceability/trace-messenger"
 import { StatusBarHandler, PreviewHandler } from "./bottom"
-import {FmuImploder} from "./fmuImploder"
+import {FmuImploder} from "./intocps-configurations/fmuImploder"
 interface MyWindow extends Window {
     ng2app: AppComponent;
 }
