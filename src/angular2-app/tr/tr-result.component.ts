@@ -28,9 +28,9 @@ export class TrResultComponent extends TrOverviewComponent{
         this.subObjectPropertyID2 = "entity.uri";
         this.subObjectPropertyID3 = "entity.hash";
 
-        this.findAllMainObjects = "match (n{type:'simulationResult'})-[:prov_wgb]->(m) return n.uri, m.time, m.type";
+        this.findAllMainObjects = "match (n{type:'simulationResult'})-[:TRACE{name:\"prov:wasGeneratedBy\"}]->(m) return n.uri, m.time, m.type";
         this.findAllSubObjectsPart1 = "match({uri:'";
-        this.findAllSubObjectsPart2 = "'})-[:prov_wgb]->(simulation)-[:prov_wgb|:prov_used]-(entity) return entity.uri, entity.path, entity.hash";
+        this.findAllSubObjectsPart2 = "'})-[:TRACE{name:\"prov:wasGeneratedBy\"}]->(simulation)-[:TRACE{name:\"prov:used\"}]-(entity) return entity.uri, entity.path, entity.hash";
         this.listSubObjectsName = "List simulation sources";
         this.updatemainObjects();
     }
