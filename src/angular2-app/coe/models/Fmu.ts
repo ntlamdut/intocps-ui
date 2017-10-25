@@ -1,17 +1,17 @@
 import * as fs from 'fs';
 import Path = require("path");
 let JSZip = require("jszip");
-import {Utilities} from "../../../utilities"
+import { Utilities } from "../../../utilities"
 
 // Holds information about a .fmu container
 export class Fmu {
     platforms: string[] = [];
     scalarVariables: ScalarVariable[] = [];
     pathNotFound = true;
-    logCategories: string[] =[];
-    system_platform : string = Utilities.getSystemPlatform() + Utilities.getSystemArchitecture();
+    logCategories: string[] = [];
+    system_platform: string = Utilities.getSystemPlatform() + Utilities.getSystemArchitecture();
 
-    
+
     constructor(public name: string = "{FMU}", public path: string = "") {
 
     }
@@ -28,7 +28,7 @@ export class Fmu {
     }
 
     public populate(): Promise<void> {
-      if (fs.lstatSync(this.path).isDirectory()) {
+        if (fs.lstatSync(this.path).isDirectory()) {
             return this.populateFromDir();
         } else {
             return this.populateFromZip();
@@ -37,14 +37,14 @@ export class Fmu {
 
     public populateFromDir(): Promise<void> {
         let self = this;
-        
+
         // Get supported platforms
-         fs.readdir(Path.join(self.path,"binaries"), function(err, items) {
-             //See https://typescript.codeplex.com/workitem/2242 for reason of any usage.
+        fs.readdir(Path.join(self.path, "binaries"), function (err, items) {
+            //See https://typescript.codeplex.com/workitem/2242 for reason of any usage.
             self.platforms = items.map(x => self.convertToPlatform(x));
         });
-       
-        let mdPath = Path.join(self.path,"modelDescription.xml")
+
+        let mdPath = Path.join(self.path, "modelDescription.xml")
         let checkFileExists = new Promise<Buffer>(function (resolve, reject) {
             try {
                 if (fs.accessSync(mdPath, fs.constants.R_OK)) {
@@ -73,8 +73,7 @@ export class Fmu {
             });;
         });
     }
-    private convertToPlatform(platform: string) : string
-    {
+    private convertToPlatform(platform: string): string {
         let pl = platform.toLowerCase();
         switch (pl) {
             case "win32": return "windows32";
@@ -103,7 +102,7 @@ export class Fmu {
                             // Get platform names
                             this.platforms = zip
                                 .file(/^binaries\/[a-zA-Z0-9]+\/.+/)
-                                .map((folder:any) => this.convertToPlatform(folder.name.split('/')[1]));
+                                .map((folder: any) => this.convertToPlatform(folder.name.split('/')[1]));
 
                             zip.file("modelDescription.xml").async("string")
                                 .then((content: string) => {
@@ -128,11 +127,14 @@ export class Fmu {
         var thisNode = iterator.iterateNext();
 
         while (thisNode) {
+
             let causalityNode = thisNode.attributes.getNamedItem("causality");
+            let variabilityNode = thisNode.attributes.getNamedItem("variability");
             let nameNode = thisNode.attributes.getNamedItem("name");
+            let initialNode = thisNode.attributes.getNamedItem("initial");
             var type: ScalarVariableType;
 
-            var tNode = document.evaluate('Real', thisNode, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+            var tNode: Node = document.evaluate('Real', thisNode, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 
             if (tNode != null) {
                 type = ScalarVariableType.Real;
@@ -152,8 +154,13 @@ export class Fmu {
                     }
                 }
             }
+            let start: string;
+            if(tNode.hasAttributes())
+            {
+                start = tNode.attributes.getNamedItem("start").textContent;
+            }
 
-            var causality: CausalityType;
+            let causality: CausalityType;
 
             if (causalityNode != undefined) {
                 let causalityText = causalityNode.textContent;
@@ -173,29 +180,68 @@ export class Fmu {
                 else if ("local" == causalityText) {
                     causality = CausalityType.Local;
                 }
+                else if ("independent" == causalityText) {
+                    causality = CausalityType.Independent;
+                }
+            }
+
+            let variability: VariabilityType;
+            if (variabilityNode != undefined) {
+                let variabilityText = variabilityNode.textContent;
+                if ("constant" == variabilityText) {
+                    variability = VariabilityType.Constant;
+                } else if ("continuous" == variabilityText) {
+                    variability = VariabilityType.Continuous
+                } else if ("discrete" == variabilityText) {
+                    variability = VariabilityType.Discrete
+                } else if ("fixed" == variabilityText) {
+                    variability = VariabilityType.Fixed
+                } else if ("tunable" == variabilityText)
+                {
+                    variability = VariabilityType.Tunable;
+                }
+            }
+
+            let initial: InitialType;
+            if(initialNode != undefined)
+            {
+                let initialText = initialNode.textContent;
+                if("exact" == initialText)
+                {
+                    initial = InitialType.Exact;
+                } else if ("approx" == initialText)
+                {
+                    initial = InitialType.Approx
+                } else if ("calculated" == initialText)
+                {
+                    initial = InitialType.Calculated
+                }
             }
 
             let sv = this.getScalarVariable(nameNode.textContent);
             sv.type = type;
             sv.causality = causality;
             sv.isConfirmed = true;
+            sv.variability = variability;
+            sv.start = start;
+            sv.initial = initial;
 
             thisNode = iterator.iterateNext();
         }
 
-        this.scalarVariables.sort((a,b)=>a.name.localeCompare(b.name));
+        this.scalarVariables.sort((a, b) => a.name.localeCompare(b.name));
 
 
-         iterator = document.evaluate('fmiModelDescription/LogCategories/*[@name]/@name', oDOM, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+        iterator = document.evaluate('fmiModelDescription/LogCategories/*[@name]/@name', oDOM, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
 
-         thisNode = iterator.iterateNext();
+        thisNode = iterator.iterateNext();
 
         while (thisNode) {
             this.logCategories.push(thisNode.nodeValue);
-             thisNode = iterator.iterateNext();
+            thisNode = iterator.iterateNext();
         }
 
-        this.logCategories.sort((a,b)=>a.localeCompare(b));
+        this.logCategories.sort((a, b) => a.localeCompare(b));
     }
 
     public getScalarVariable(name: string): ScalarVariable {
@@ -216,6 +262,9 @@ export class ScalarVariable {
         public name: string = "",
         public type: ScalarVariableType = ScalarVariableType.Unknown,
         public causality: CausalityType = CausalityType.Unknown,
+        public variability: VariabilityType = VariabilityType.Unknown,
+        public initial: InitialType = InitialType.Unknown,
+        public start: string = undefined,
         public isConfirmed: boolean = false // none FMI specific
     ) {
 
@@ -223,7 +272,64 @@ export class ScalarVariable {
 }
 
 export enum ScalarVariableType { Real, Bool, Int, String, Unknown }
-export enum CausalityType { Output, Input, Parameter, CalculatedParameter, Local, Unknown }
+export function typeToString(type: ScalarVariableType) {
+    switch (type) {
+        case ScalarVariableType.Real:
+            return "Real";
+        case ScalarVariableType.Bool:
+            return "Boolean";
+        case ScalarVariableType.Int:
+            return "Integer";
+        case ScalarVariableType.String:
+            return "String";
+        case ScalarVariableType.Unknown:
+            return "unknown";
+    }
+}
+
+export enum CausalityType { Output, Input, Parameter, CalculatedParameter, Local, Independent, Unknown }
+
+export function causalityToString(causality: CausalityType) {
+    switch (causality) {
+        case CausalityType.Output:
+            return "output";
+        case CausalityType.Input:
+            return "input";
+        case CausalityType.Parameter:
+            return "parameter";
+        case CausalityType.CalculatedParameter:
+            return "calculatedParameter";
+        case CausalityType.Local:
+            return "local";
+        case CausalityType.Independent:
+            return "independent";
+        case CausalityType.Unknown:
+            return "unknown";
+    }
+}
+
+export enum InitialType {Exact, Approx, Calculated, Unknown}
+export function initialToString(initial: InitialType) {
+    switch(initial){
+        case InitialType.Exact: return "exact";
+        case InitialType.Approx: return "approx";
+        case InitialType.Calculated: return "calculated";
+        case InitialType.Unknown: return "unknown";
+    }
+
+}
+
+export enum VariabilityType { Constant, Fixed, Tunable, Continuous, Discrete,  Unknown }
+export function variabilityToString(variability: VariabilityType) {
+    switch (variability) {
+        case VariabilityType.Constant: return "constant";
+        case VariabilityType.Fixed: return "fixed";
+        case VariabilityType.Tunable: return "tunable";
+        case VariabilityType.Continuous: return "continuous";
+        case VariabilityType.Discrete: return "discrete";
+        case VariabilityType.Unknown: return "unknown";
+    }
+}
 
 export function isTypeCompatiple(t1: ScalarVariableType, t2: ScalarVariableType): boolean {
     if (t1 == ScalarVariableType.Unknown || t2 == ScalarVariableType.Unknown) {
@@ -248,9 +354,9 @@ export function isCausalityCompatible(t1: CausalityType, t2: CausalityType): boo
     }
 }
 
-export function isInteger(x:any) { return !isNaN(x) && isFinite(x) && Math.floor(x) === x; }
-export function isFloat(x:any) { return !!(x % 1); }
-export function isString(value:any) {return typeof value === 'string';}
+export function isInteger(x: any) { return !isNaN(x) && isFinite(x) && Math.floor(x) === x; }
+export function isFloat(x: any) { return !!(x % 1); }
+export function isString(value: any) { return typeof value === 'string'; }
 
 
 export function convertToType(type: ScalarVariableType, value: any): any {
@@ -335,7 +441,7 @@ export class ScalarValuePair {
 
 // Represents an output-connections pair (ScalarVariable, any)
 export class OutputConnectionsPair {
-    constructor(public name:string, public connections:InstanceScalarPair[]) {
+    constructor(public name: string, public connections: InstanceScalarPair[]) {
 
     }
 }
