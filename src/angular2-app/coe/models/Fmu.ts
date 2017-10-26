@@ -10,11 +10,14 @@ export class Fmu {
     pathNotFound = true;
     logCategories: string[] = [];
     system_platform: string = Utilities.getSystemPlatform() + Utilities.getSystemArchitecture();
+    nested = false;
 
 
     constructor(public name: string = "{FMU}", public path: string = "") {
 
     }
+
+    public isNested() {return this.nested;}
 
     isSupported() {
         return !!this.platforms.find(x => x === this.system_platform);
@@ -120,6 +123,11 @@ export class Fmu {
     private populateFromModelDescription(content: string) {
         var oParser = new DOMParser();
         var oDOM = oParser.parseFromString(content, "text/xml");
+
+        // Check for nested coe
+        let test = document.evaluate('//Nested', oDOM, null, XPathResult.BOOLEAN_TYPE, null);
+        if(test.booleanValue === true)
+            this.nested = true;
 
         //output
         var iterator = document.evaluate('//ScalarVariable', oDOM, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);

@@ -11,7 +11,17 @@ export class CoeConfig {
     toJSON(implodeMM?: any): string {
         let fmus: any = {};
         this.coSimConfig.multiModel.fmus.forEach(fmu => {
-            fmus[fmu.name] = (this.remoteCoe ? Path.join("session:", Path.basename(fmu.path)) : "file:///" + fmu.path).replace(/\\/g, "/").replace(/ /g, "%20");
+            let fmuPath;
+            if(this.remoteCoe) fmuPath = Path.join("session:", Path.basename(fmu.path));
+            else if (fmu.isNested())
+            {
+                fmuPath = "coe:" + fmu.path;
+            }
+            else
+            {
+                fmuPath = "file:///" + fmu.path
+            }
+            fmus[fmu.name] = fmuPath.replace(/\\/g, "/").replace(/ /g, "%20");
         });
         // Add the implode fmu
         if (implodeMM) {
@@ -53,13 +63,14 @@ export class CoeConfig {
         //FMUS
         Object.assign(data, this.coSimConfig.multiModel.toObject(), this.coSimConfig.toObject());
         
-        // Add the implode connections and logVariables
         if (implodeMM) {
             for (let key in implodeMM.connections) {
                 data.connections[key] = implodeMM.connections[key];
             }
             if(implodeMM.logVariables)
              data["logVariables"] = implodeMM.logVariables;
+
+             data["hasExternalSignals"] = true;
         }
 
         delete data["endTime"];

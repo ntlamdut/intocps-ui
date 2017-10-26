@@ -381,7 +381,7 @@ menuHandler.createMultiModelPlain = (titleMsg: string = 'New Multi-Model') => {
 };
 
 menuHandler.implodeConfig = (path) => {
-    FmuImploder.implodeConfig(path);
+    FmuImploder.createImplodeFMU(path);
 }
 menuHandler.createCoSimConfiguration = (path) => {
 
