@@ -29,8 +29,8 @@ export class TrFUMsComponent extends TrOverviewComponent{
         this.subObjectPropertyID3 = "element.type";
 
         this.findAllMainObjects = "match(n{type:'fmu'}) return n.uri, n.path ";
-        this.findAllSubObjectsPart1 = "match(activity)<-[:TRACE{name:\"prov:wasGeneratedBy\"}]-({uri:'";
-        this.findAllSubObjectsPart2 = "'})-[:TRACE{name:\"oslc:satisfies\"}]->(element) return element.uri, element.hash, activity.time, element.type order by activity.time desc";
+        this.findAllSubObjectsPart1 = "match(activity)<-[:Trace{name:\"prov:wasGeneratedBy\"}]-({uri:'";
+        this.findAllSubObjectsPart2 = "'})-[:Trace{name:\"oslc:satisfies\"}]->(element) return element.uri, element.hash, activity.time, element.type order by activity.time desc";
         this.listSubObjectsName = "List requirements";
         this.updatemainObjects();
     }
