@@ -140,7 +140,11 @@ export class FmuImploder {
             var implodeConns = FmuImploder.createConnections(externalFmuName + "." + externalFmuInst, unconInputs);
             // Implosion configuration
             var implodeConfig = { fmus: { [externalFmuName]: `external://external` }, connections: implodeConns, logVariables: logVariablesObj };
-
+            let fmuFullPaths = new Array<String>();
+            config.multiModel.fmus.forEach((x: Fmu) => {
+                fmuFullPaths.push(x.path);
+                x.path = path.basename(x.path);
+            })
             // New coeconfig for the implosion FMU
             let coeConfig = new CoeConfig(config, false);
             console.log("COEConfig: \n " + coeConfig.toJSON(implodeConfig));
@@ -158,8 +162,8 @@ export class FmuImploder {
             fs.writeFileSync(path.join(folderName, "modelDescription.xml"), mdcoe);
             fs.writeFileSync(path.join(externalFolder, "modelDescription.xml"), mdexternal);
             fs.writeFileSync(path.join(resourcesFolder, "config.json"), newConfig);
-            config.multiModel.fmus.forEach((fmu: Fmu) => {
-                fs.createReadStream(fmu.path).pipe(fs.createWriteStream(path.join(resourcesFolder, path.basename(fmu.path))));
+            fmuFullPaths.forEach((fmu: string) => {
+                fs.createReadStream(fmu).pipe(fs.createWriteStream(path.join(resourcesFolder, path.basename(fmu))));
             });
         });
     }
@@ -168,7 +172,7 @@ export class FmuImploder {
         var valueRef = 1;
         let xmlMD = XMLMD.GetXMLMD();
         let nestedElem = xmlMD.xmlDoc.createElement("Nested")
-        xmlMD.tool.appendChild(nestedElem);
+        xmlMD.mappings.appendChild(nestedElem);
         if (unconInputs.length > 0) {
             unconInputs.forEach((instSvs) => {
                 instSvs.ScalarVariables.forEach((sv) => {

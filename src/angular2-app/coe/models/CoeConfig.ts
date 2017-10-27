@@ -15,7 +15,7 @@ export class CoeConfig {
             if(this.remoteCoe) fmuPath = Path.join("session:", Path.basename(fmu.path));
             else if (fmu.isNested())
             {
-                fmuPath = "coe:" + fmu.path;
+                fmuPath = "coe:/" + fmu.path;
             }
             else
             {
