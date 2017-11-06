@@ -47,7 +47,6 @@ class FMUAssignment {
 
 class FMUAssignments {
     controller: RunTestController;
-    assignments: FMUAssignment[] = [];
     hSUTList: HTMLDivElement;
     hAddFMUButton: HTMLButtonElement;
     fmus: FMUAssignment[] = [];
@@ -129,7 +128,7 @@ export class RunTestController extends ViewController {
             },
             onSuccess: () => { self.menuHandler.openHTMLInMainView(summaryPath, summaryTitle) }
         };
-        for (var fmuAssignment of this.fmuAssignments.assignments) {
+        for (var fmuAssignment of this.fmuAssignments.fmus) {
             cmd.arguments.push(fmuAssignment.hFMUPath.value);
         }
         RTesterModalCommandWindow.runCommand(cmd);
