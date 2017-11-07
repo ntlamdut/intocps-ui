@@ -1,7 +1,7 @@
 import { CoSimulationConfig } from "./CoSimulationConfig"
 import { MultiModelConfig } from "./MultiModelConfig"
 import {
-    ScalarVariable, Fmu, CausalityType, Instance, InstanceScalarPair, ScalarVariableType,
+    ScalarVariable, Fmu, CausalityType, Instance, InstanceScalarPair, ScalarVariableType, VariabilityType,
     causalityToString, typeToString, variabilityToString, initialToString, InitialType
 } from "../angular2-app/coe/models/Fmu"
 import { CoeConfig } from "../angular2-app/coe/models/CoeConfig"
@@ -229,6 +229,18 @@ export class FmuImploder {
                 xmlMD.modelStructure.appendChild(outputsElement);
             });
         }
+        else {
+            let xmlSV = xmlMD.xmlDoc.createElement("ScalarVariable");
+            xmlSV.setAttribute("name", "$internal");
+            xmlSV.setAttribute("valueReference", "0");
+            xmlSV.setAttribute("causality", "output");
+            xmlSV.setAttribute("variability", variabilityToString(VariabilityType.Continuous));
+            xmlSV.setAttribute("initial", initialToString(InitialType.Approx));
+            let typeChild = xmlMD.xmlDoc.createElement(typeToString(ScalarVariableType.String));
+            typeChild.setAttribute("start", "Internal");
+            xmlSV.appendChild(typeChild);
+            xmlMD.modelVariables.appendChild(xmlSV);
+        }
         let serializer = new XMLSerializer();
         let serialized = serializer.serializeToString(xmlMD.xmlDoc);
         return serialized;
@@ -248,9 +260,9 @@ export class FmuImploder {
             xmlSV.setAttribute("initial", initialToString(sv.initial));
 
         let typeChild = xml.createElement(typeToString(sv.type));
-        if (sv.start){
+        if (sv.start) {
             typeChild.setAttribute("start", sv.start);
-            if(isOutput && !sv.initial)
+            if (isOutput && !sv.initial)
                 xmlSV.setAttribute("initial", initialToString(InitialType.Approx));
         }
         xmlSV.appendChild(typeChild);
