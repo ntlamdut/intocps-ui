@@ -233,11 +233,10 @@ export class FmuImploder {
             let xmlSV = xmlMD.xmlDoc.createElement("ScalarVariable");
             xmlSV.setAttribute("name", "$internal");
             xmlSV.setAttribute("valueReference", "0");
-            xmlSV.setAttribute("causality", "output");
+            xmlSV.setAttribute("causality", "input");
             xmlSV.setAttribute("variability", variabilityToString(VariabilityType.Continuous));
-            xmlSV.setAttribute("initial", initialToString(InitialType.Approx));
-            let typeChild = xmlMD.xmlDoc.createElement(typeToString(ScalarVariableType.String));
-            typeChild.setAttribute("start", "Internal");
+            let typeChild = xmlMD.xmlDoc.createElement(typeToString(ScalarVariableType.Real));
+            typeChild.setAttribute("start", "0.0");
             xmlSV.appendChild(typeChild);
             xmlMD.modelVariables.appendChild(xmlSV);
         }
