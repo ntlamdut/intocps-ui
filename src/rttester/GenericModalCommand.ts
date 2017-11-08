@@ -21,7 +21,7 @@ export class GenericModalCommand {
     }
     appendLog(s: string) {
         let hOutputText: HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("modalOutputText");
-        hOutputText.textContent += s + "\n";
+        hOutputText.textContent += s;
         hOutputText.scrollTop = hOutputText.scrollHeight;
     }
     displayTermination(success: boolean) {
