@@ -202,6 +202,7 @@ export class CoeSimulationService {
         this.graph.closeSocket();
         this.externalGraphs.forEach((eg) => {
             if (eg.win)
+                //This also causes a redraw event for the external graphs.
                 eg.win.webContents.send("close");
         })
         this.simulationCompletedHandler();
