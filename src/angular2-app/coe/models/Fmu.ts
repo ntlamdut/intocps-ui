@@ -44,7 +44,13 @@ export class Fmu {
         // Get supported platforms
         fs.readdir(Path.join(self.path, "binaries"), function (err, items) {
             //See https://typescript.codeplex.com/workitem/2242 for reason of any usage.
-            self.platforms = items.map(x => self.convertToPlatform(x));
+            if( items != undefined)
+            {
+                self.platforms = items.map(x => self.convertToPlatform(x));
+            }else
+            {
+                self.platforms = ["N/A"];
+            }
         });
 
         let mdPath = Path.join(self.path, "modelDescription.xml")
