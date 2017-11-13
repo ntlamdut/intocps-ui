@@ -465,7 +465,7 @@ export class BrowserController {
             }
         } else if (stat.isDirectory()) {
             result.img = "icon-folder";
-            result.menuEntries = [];
+            result.menuEntries = [menuReveal];
             if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION ||
                 pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.menuEntries = [];
