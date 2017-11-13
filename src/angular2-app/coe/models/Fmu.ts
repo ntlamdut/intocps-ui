@@ -158,14 +158,16 @@ export class Fmu {
                         tNode = document.evaluate('String', thisNode, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
                         if (tNode != null) {
                             type = ScalarVariableType.String;
-                        }
+                    }
                     }
                 }
             }
             let start: string;
             if(tNode.hasAttributes())
             {
-                start = tNode.attributes.getNamedItem("start").textContent;
+                let startAttribute = tNode.attributes.getNamedItem("start");
+                if(startAttribute)
+                    start = startAttribute.textContent;
             }
 
             let causality: CausalityType;

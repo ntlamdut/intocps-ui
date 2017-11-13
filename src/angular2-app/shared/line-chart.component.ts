@@ -12,7 +12,7 @@ export class LineChartComponent implements OnInit {
     private redrawCooldown: boolean = false;
 
     private lastUpdateTime: number = 0;
-
+    private lastDatasets: Array<any>;
     private layout = {
         legend: {
             orientation: "v",
@@ -23,7 +23,7 @@ export class LineChartComponent implements OnInit {
             tracegroupgap: 20
         },
         margin: {
-            l: 25, r:25,b:25,t:25,pad:0
+            l: 25, r: 25, b: 25, t: 25, pad: 0
         },
         xaxis: {
             showgrid: false,
@@ -45,7 +45,15 @@ export class LineChartComponent implements OnInit {
 
     @Input()
     set datasets(datasets: BehaviorSubject<any>) {
-        datasets.subscribe(datasets => this.redraw(datasets));
+        datasets.subscribe(datasets => { this.lastDatasets = datasets; this.redraw(datasets) });
+    }
+
+    @Input()
+    set finished(isFinished: boolean){
+        
+        if(isFinished) {
+            this.draw(this.lastDatasets);
+        }
     }
 
     @Input()
@@ -108,19 +116,22 @@ export class LineChartComponent implements OnInit {
         window.addEventListener('resize', e => Plotly.Plots.resize(node));
     }
 
+    private draw(datasets: Array<any>)
+    {
+        this.element.nativeElement.data = datasets;
+        requestAnimationFrame(() => {
+            Plotly.redraw(this.element.nativeElement);
+            this.redrawCooldown = false;
+            this.lastUpdateTime = Date.now();
+        });
+    }
+
     private redraw(datasets: Array<any>) {
         if (this.loading) return;
 
         if (this.redrawCooldown === false && Date.now() - this.lastUpdateTime > 150) {
             this.redrawCooldown = true;
-
-            this.element.nativeElement.data = datasets;
-
-            requestAnimationFrame(() => {
-                Plotly.redraw(this.element.nativeElement);
-                this.redrawCooldown = false;
-                this.lastUpdateTime = Date.now();
-            });
+            this.draw(datasets);
         }
     }
 }
