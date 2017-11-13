@@ -184,7 +184,7 @@ export class CoeSimulationService {
             this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
                 .then(() => {
                     this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
-                        .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
+                        .subscribe(() => {this.downloadResults(); this.graph.setFinished()}, (err: Response) => this.errorHandler(err));
                 });
         });
 
