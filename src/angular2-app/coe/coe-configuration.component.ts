@@ -34,6 +34,8 @@ import { FileBrowserComponent } from "../mm/inputs/file-browser.component";
 export class CoeConfigurationComponent {
     private _path: string;
 
+    public Fmu_x = require("./models/Fmu");
+
 
     @Input()
     set path(path: string) {
@@ -190,6 +192,11 @@ export class CoeConfigurationComponent {
 
     getOutputs(scalarVariables: Array<ScalarVariable>) {
         return scalarVariables.filter(variable => (variable.causality === CausalityType.Output || variable.causality === CausalityType.Local));
+    }
+
+    getFilterTypes(scalarVariables: Array<InstanceScalarPair>, types:ScalarVariableType[]){
+      
+        return scalarVariables.filter(v => types.indexOf(v.scalarVariable.type) > -1);
     }
 
 
