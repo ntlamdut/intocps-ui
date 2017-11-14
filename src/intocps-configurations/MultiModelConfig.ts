@@ -1,5 +1,5 @@
-import {Parser, Serializer} from "./Parser";
-import {WarningMessage, ErrorMessage} from "./Messages";
+import { Parser, Serializer } from "./Parser";
+import { WarningMessage, ErrorMessage } from "./Messages";
 import {
     Fmu, Instance, ScalarVariableType, isTypeCompatipleWithValue,
     isTypeCompatiple, InstanceScalarPair, ScalarVariable
@@ -42,7 +42,7 @@ export class MultiModelConfig implements ISerializable {
         return this.fmus.find(v => v.name == fmuName) || null;
     }
 
-    getInstanceScalarPair(fmuName:string, instanceName:string, scalarName:string):InstanceScalarPair {
+    getInstanceScalarPair(fmuName: string, instanceName: string, scalarName: string): InstanceScalarPair {
         let pair = this.instanceScalarPairs.find(pair => {
             return pair.instance.fmu.name === fmuName && pair.instance.name === instanceName && pair.scalarVariable.name === scalarName;
         });
@@ -84,13 +84,13 @@ export class MultiModelConfig implements ISerializable {
 
     static parse(path: string, fmuRootPath: string): Promise<MultiModelConfig> {
         return new Promise<Buffer>((resolve, reject) => {
-                fs.readFile(path, (error, data) => {
-                    if (error)
-                        reject(error);
-                    else
-                        resolve(data);
-                });
-            }).then(content => this.create(path, fmuRootPath, JSON.parse(content.toString())));
+            fs.readFile(path, (error, data) => {
+                if (error)
+                    reject(error);
+                else
+                    resolve(data);
+            });
+        }).then(content => this.create(path, fmuRootPath, JSON.parse(content.toString())));
     }
 
     public addFmu() {
@@ -102,13 +102,13 @@ export class MultiModelConfig implements ISerializable {
 
     public removeFmu(fmu: Fmu) {
         this.fmus.splice(this.fmus.indexOf(fmu), 1);
-        
+
         this.fmuInstances
             .filter(element => element.fmu == fmu)
             .forEach(element => this.removeInstance(element));
     }
 
-    public addInstance(fmu:Fmu, name?:string) {
+    public addInstance(fmu: Fmu, name?: string) {
         let instance = new Instance(fmu, name || `${fmu.name.replace(/[{}]/g, "")}Instance`);
         this.fmuInstances.push(instance);
 
@@ -132,9 +132,9 @@ export class MultiModelConfig implements ISerializable {
     }
 
     toObject(): any {
-        let fmus:any = {};
-        let connections:any = {};
-        let parameters:any = {};
+        let fmus: any = {};
+        let connections: any = {};
+        let parameters: any = {};
 
         this.fmus.forEach((fmu: Fmu) => {
             let path = fmu.path;
@@ -152,9 +152,9 @@ export class MultiModelConfig implements ISerializable {
             instance.initialValues.forEach((value: any, sv: ScalarVariable) => {
                 let id: string = Serializer.getIdSv(instance, sv);
 
-                if(sv.type === ScalarVariableType.Bool)
+                if (sv.type === ScalarVariableType.Bool)
                     parameters[id] = Boolean(value);
-                else if(sv.type === ScalarVariableType.Int || sv.type === ScalarVariableType.Real)
+                else if (sv.type === ScalarVariableType.Int || sv.type === ScalarVariableType.Real)
                     parameters[id] = Number(value);
                 else
                     parameters[id] = value;
@@ -171,12 +171,25 @@ export class MultiModelConfig implements ISerializable {
     validate(): WarningMessage[] {
         let messages: WarningMessage[] = [];
 
+        var usedInputs: Map<String, String> = new Map();
+
         // perform check
         this.fmuInstances.forEach(instance => {
             //check connections
             instance.outputsTo.forEach((pairs, sv) => {
+
+                let outputKey = Serializer.getIdSv(instance, sv);
+
                 if (sv.isConfirmed) {
                     pairs.forEach(pair => {
+
+                        let inputKey = Serializer.getIdSv(pair.instance, pair.scalarVariable);
+                        if (usedInputs.has(inputKey)) {
+                            messages.push(new ErrorMessage(`Input '"${inputKey}"' is connected to two outputs: "${outputKey} and ${usedInputs.get(inputKey)}"`));
+                        }
+                        usedInputs.set(inputKey, outputKey);
+
+
                         if (pair.scalarVariable.isConfirmed) {
                             if (!isTypeCompatiple(sv.type, pair.scalarVariable.type)) {
                                 messages.push(new ErrorMessage(`Uncompatible types in connection. The output scalar variable "${instance.fmu.name}.${instance.name}.${sv.name}": ${sv.type} is connected to scalar variable "${pair.instance.fmu.name}.${pair.instance.name}.${pair.scalarVariable.name}": ${pair.scalarVariable.type}`));
@@ -193,9 +206,9 @@ export class MultiModelConfig implements ISerializable {
             //check parameters
             instance.initialValues.forEach((value, sv) => {
                 if (sv.isConfirmed) {
-                    
+
                     if (!isTypeCompatipleWithValue(sv.type, value)) {
-                        messages.push(new ErrorMessage(`Uncompatible types for parameter. "${instance.fmu.name}.${instance.name}.${sv.name}" ${ScalarVariableType[sv.type]}  Value: ${value} ${typeof(value)}`));
+                        messages.push(new ErrorMessage(`Uncompatible types for parameter. "${instance.fmu.name}.${instance.name}.${sv.name}" ${ScalarVariableType[sv.type]}  Value: ${value} ${typeof (value)}`));
                     }
                 } else {
                     messages.push(new WarningMessage(`Use of unconfirmed "${instance.fmu.name}.${instance.name}.${sv.name}" as parameter`));
