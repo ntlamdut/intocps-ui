@@ -24,7 +24,7 @@ import * as ShowdownHelper  from "./showdownHelper";
 import {Overture} from "./overture";
 import {TraceMessager} from "./traceability/trace-messenger"
 import { StatusBarHandler, PreviewHandler } from "./bottom"
-
+import {FmuImploder} from "./intocps-configurations/fmuImploder"
 interface MyWindow extends Window {
     ng2app: AppComponent;
 }
@@ -380,7 +380,9 @@ menuHandler.createMultiModelPlain = (titleMsg: string = 'New Multi-Model') => {
     }
 };
 
-
+menuHandler.implodeConfig = (path) => {
+    FmuImploder.createImplodeFMU(path);
+}
 menuHandler.createCoSimConfiguration = (path) => {
 
     let appInstance = IntoCpsApp.getInstance();
