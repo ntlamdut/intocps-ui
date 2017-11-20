@@ -1,7 +1,7 @@
 
 import { ViewController } from "../iViewController";
 import { IntoCpsApp } from "../IntoCpsApp";
-import { Abstractions, Interface, Output, Component, Abstraction } from "../rttester/CTAbstractions";
+import { Abstractions, Interface, Input, Component, Abstraction } from "../rttester/CTAbstractions";
 import { SignalMap, SignalMapEntry } from "./SignalMap";
 import Path = require("path");
 import { RTTester } from "../rttester/RTTester";
@@ -17,7 +17,7 @@ export class CTAbstractionsView extends ViewController {
     jsonFileName: string;
     signalMap: SignalMap;
     abstractions: Abstractions;
-    currentOutput: Output;
+    currentInput: Input;
 
     hSelectAbstractionDiv: HTMLDivElement;
     hAbstractionSettings: HTMLDivElement;
@@ -55,27 +55,27 @@ export class CTAbstractionsView extends ViewController {
             for (let i = 0; i < abstractionSelections.length; ++i) {
                 abstractionSelections[i].onclick = (ev: MouseEvent) => {
                     let selectionValue = abstractionSelections[i].value;
-                    this.currentOutput.abstraction.selected = selectionValue;
+                    this.currentInput.abstraction.selected = selectionValue;
                     self.displaySelectedAbstraction(selectionValue);
                 };
             }
             this.hLowerBound.onchange = (ev: Event) => {
-                self.currentOutput.abstraction.rangeBased.lowerBound = +this.hLowerBound.value;
+                self.currentInput.abstraction.rangeBased.lowerBound = +this.hLowerBound.value;
             };
             this.hUpperBound.onchange = (ev: Event) => {
-                self.currentOutput.abstraction.rangeBased.upperBound = +this.hUpperBound.value;
+                self.currentInput.abstraction.rangeBased.upperBound = +this.hUpperBound.value;
             };
             this.hGradient.onchange = (ev: Event) => {
-                self.currentOutput.abstraction.gradientBased.gradient = +this.hGradient.value;
+                self.currentInput.abstraction.gradientBased.gradient = +this.hGradient.value;
             };
             this.hGradientTimeFrame.onchange = (ev: Event) => {
-                self.currentOutput.abstraction.gradientBased.timeFrame = +this.hGradientTimeFrame.value;
+                self.currentInput.abstraction.gradientBased.timeFrame = +this.hGradientTimeFrame.value;
             };
             this.hSimulationFile.onchange = (ev: Event) => {
-                self.currentOutput.abstraction.simulationBased.fileName = this.hSimulationFile.value;
+                self.currentInput.abstraction.simulationBased.fileName = this.hSimulationFile.value;
             };
             this.hSimulationMaxValueRange.onchange = (ev: Event) => {
-                self.currentOutput.abstraction.simulationBased.maxValueRange = +this.hSimulationMaxValueRange.value;
+                self.currentInput.abstraction.simulationBased.maxValueRange = +this.hSimulationMaxValueRange.value;
             };
             document.getElementById("simulationFileBrowse").onclick = (ev: MouseEvent) => {
                 let remote = require("electron").remote;
@@ -84,7 +84,7 @@ export class CTAbstractionsView extends ViewController {
                     filters: [{ name: "Signal Log-Files (*.json)", extensions: ["json"] }]
                 });
                 if (dialogResult != undefined) {
-                    self.currentOutput.abstraction.simulationBased.fileName
+                    self.currentInput.abstraction.simulationBased.fileName
                         = this.hSimulationFile.value
                         = dialogResult[0];
                 }
@@ -107,8 +107,8 @@ export class CTAbstractionsView extends ViewController {
             name == "none" ? "none" : "block";
     }
 
-    selectOutput(o: Output) {
-        this.currentOutput = o;
+    selectInput(o: Input) {
+        this.currentInput = o;
         if (o == null) {
             this.hSelectAbstractionDiv.style.display = "none";
             this.hAbstractionSettings.style.display = "none";
@@ -139,8 +139,8 @@ export class CTAbstractionsView extends ViewController {
         Abstractions.writeToJSON(this.abstractions, this.jsonFileName);
         let abstractionSignalMap: SignalMap = jQuery.extend(true, {}, this.signalMap);
         for (let c of this.abstractions.components) {
-            for (let i of c.outputInterfaces) {
-                for (let v of i.outputs) {
+            for (let i of c.inputInterfaces) {
+                for (let v of i.inputs) {
                     if (v.abstraction && v.abstraction.selected == "range") {
                         abstractionSignalMap.entries[v.name].lowerBound = +v.abstraction.rangeBased.lowerBound;
                         abstractionSignalMap.entries[v.name].upperBound = +v.abstraction.rangeBased.upperBound;
@@ -163,24 +163,24 @@ export class CTAbstractionsView extends ViewController {
     displayAbstractions(): void {
         let self = this;
 
-        let createOutputNode = (o: Output) => {
+        let createInputNode = (o: Input) => {
             return {
                 id: makeAbstractionTreeID(),
                 text: o.name + ": " + o.type,
                 img: "icon-folder",
                 nodes: <any>[],
-                output: o,
-                onClick: (event: any) => { self.selectOutput(event.object.output); }
+                input: o,
+                onClick: (event: any) => { self.selectInput(event.object.input); }
             };
         };
 
-        let createOutputInterfaceNode = (i: Interface) => {
+        let createInputInterfaceNode = (i: Interface) => {
             return {
                 id: makeAbstractionTreeID(),
                 text: i.name,
                 img: "icon-page",
-                nodes: i.outputs.map((o: Output) => createOutputNode(o)),
-                onClick: (event: any) => { self.selectOutput(null); }
+                nodes: i.inputs.map((o: Input) => createInputNode(o)),
+                onClick: (event: any) => { self.selectInput(null); }
             };
         };
 
@@ -189,9 +189,9 @@ export class CTAbstractionsView extends ViewController {
                 id: makeAbstractionTreeID(),
                 text: c.name,
                 img: "icon-folder",
-                nodes: c.outputInterfaces.map((i: Interface) => createOutputInterfaceNode(i)),
+                nodes: c.inputInterfaces.map((i: Interface) => createInputInterfaceNode(i)),
                 expanded: true,
-                onClick: (event: any) => { self.selectOutput(null); }
+                onClick: (event: any) => { self.selectInput(null); }
             };
         };
 

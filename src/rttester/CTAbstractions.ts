@@ -41,7 +41,7 @@ export class Abstraction {
     }
 }
 
-export class Output {
+export class Input {
     name: string;
     type: string;
     abstraction: Abstraction;
@@ -52,12 +52,12 @@ export class Output {
 
 export interface Interface {
     name: string;
-    outputs: Output[];
+    inputs: Input[];
 }
 
 export interface Component {
     name: string;
-    outputInterfaces: Interface[];
+    inputInterfaces: Interface[];
 }
 
 export class Abstractions {
