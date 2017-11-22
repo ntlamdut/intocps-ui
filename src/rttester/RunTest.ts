@@ -58,7 +58,8 @@ class FMUAssignments {
             let remote = require("electron").remote;
             let dialog = remote.dialog;
             let dialogResult: string[] = dialog.showOpenDialog({
-                filters: [{ name: "FMU-Files", extensions: ["fmu"] }]
+                filters: [{ name: "FMU-Files", extensions: ["fmu"] }],
+                defaultPath: RTTester.getProjectOfFile(controller.testCase)
             });
             if (dialogResult != undefined) {
                 let fmu = new FMUAssignment(this, dialogResult[0]);
@@ -109,7 +110,7 @@ export class RunTestController extends ViewController {
         let self = this;
         let python = RTTester.pythonExecutable();
         let rttTestContext = RTTester.getProjectOfFile(this.testCase);
-        let runCOEScript = Path.join(RTTester.getUtilsPath(), "run-COE.py");
+        let runCOEScript = Path.join(RTTester.getUtilsPath(rttTestContext), "run-COE.py");
         let driverFMU = RTTester.getRelativePathInProject(this.testCase);
         let summaryPath = Path.join(this.testCase, "test-case-summary.html");
         let summaryTitle = RTTester.getRelativePathInProject(summaryPath);
