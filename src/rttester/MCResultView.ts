@@ -26,7 +26,7 @@ export class MCResultView extends ViewController {
 
     commit(): void {
         RTTester.queueEvent("Run-MC-Query", this.rtt_testcontext, this.ltl_name);
-        RTTester.queueEvent("*submit*", this.rtt_testcontext);
+        RTTester.reportEvents(this.rtt_testcontext);
     }
 
 }

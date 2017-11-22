@@ -92,4 +92,17 @@ export class RTTester {
         console.log(ret.stderr.toString());
     }
 
+    public static reportEvents(context: string): void {
+        context = RTTester.getProjectOfFile(context);
+        let exe = RTTester.pythonExecutable();
+        let utilsPath = RTTester.getUtilsPath(context);
+        let script = Path.normalize(Path.join(utilsPath, "rtt-fmi-report-queue.py"));
+        let args = [script];
+        let env: any = RTTester.genericCommandEnv(context);
+        const cp = require("child_process");
+        let ret = cp.spawnSync(exe, args, { env: env, cwd: utilsPath });
+        console.log(ret.stdout.toString());
+        console.log(ret.stderr.toString());
+    }
+
 }
