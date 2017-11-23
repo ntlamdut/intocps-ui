@@ -3,6 +3,7 @@ import { ViewController } from "../iViewController";
 import { IntoCpsApp } from "../IntoCpsApp";
 import Path = require("path");
 import { RTTester } from "../rttester/RTTester";
+import fs = require("fs");
 
 
 export class MCResultView extends ViewController {
@@ -22,6 +23,17 @@ export class MCResultView extends ViewController {
         f.style.width = "100%";
         f.style.height = "100%";
         this.hReport.appendChild(f);
+        {
+            // Only show commit button if requirements are linked.
+            let ltlQueryFileName = Path.join(Path.dirname(resultFilePath), "query.json");
+            let data = fs.readFileSync(ltlQueryFileName, "utf-8");
+            let json = JSON.parse(data);
+            console.log(json["RequirementsToLink"]);
+            if (json["RequirementsToLink"].length == 0) {
+                let hCommitPanel = <HTMLDivElement>document.getElementById("commitPanel");
+                hCommitPanel.style.display = "none";
+            }
+        }
     }
 
     commit(): void {
