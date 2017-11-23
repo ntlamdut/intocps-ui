@@ -28,7 +28,6 @@ export class MCResultView extends ViewController {
             let ltlQueryFileName = Path.join(Path.dirname(resultFilePath), "query.json");
             let data = fs.readFileSync(ltlQueryFileName, "utf-8");
             let json = JSON.parse(data);
-            console.log(json["RequirementsToLink"]);
             if (json["RequirementsToLink"].length == 0) {
                 let hCommitPanel = <HTMLDivElement>document.getElementById("commitPanel");
                 hCommitPanel.style.display = "none";
