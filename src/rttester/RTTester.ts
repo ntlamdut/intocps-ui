@@ -18,8 +18,8 @@ export class RTTester {
         return pathComp.splice(2).join(Path.sep);
     }
 
-    public static getUtilsPath() {
-        return Path.join(require('os').homedir(), "RTT-Prj", "utils");
+    public static getUtilsPath(fileInProject: string) {
+        return Path.join(RTTester.getProjectOfFile(fileInProject), "utils");
     }
 
     public static simulationFMU(testCase: string, component: string) {
@@ -32,7 +32,8 @@ export class RTTester {
         env["RTT_TESTCONTEXT"] = RTTester.getProjectOfFile(path);
         env["RTTDIR"] = RTTester.rttInstallDir();
         env["RTT_OP_KEY"] = "TMS:19999:FMI";
-        env["OSLC_PORT"] = "7474";
+        env["OSLC_ENABLED"] = IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.ENABLE_TRACEABILITY) ? 1 : 0;
+        env["OSLC_PORT"] = IntoCpsApp.getInstance().getSettings().getSetting(SettingKeys.TRACE_DAEMON_PORT);
         return env;
     }
 
@@ -80,13 +81,29 @@ export class RTTester {
     public static queueEvent(action: string, context: string, tp: string = null, extra: string = null): void {
         context = RTTester.getProjectOfFile(context);
         let exe = RTTester.pythonExecutable();
-        let script = Path.normalize(Path.join(RTTester.getUtilsPath(), "rtt-fmi-queue-event.py"));
+        let utilsPath = RTTester.getUtilsPath(context);
+        let script = Path.normalize(Path.join(utilsPath, "rtt-fmi-queue-event.py"));
         let args = [script, action, context];
         if (tp != null) args.push(tp);
         if (extra != null) args.push(extra);
         let env: any = RTTester.genericCommandEnv(context);
         const cp = require("child_process");
-        cp.spawnSync(exe, args, { env: env });
+        let ret = cp.spawnSync(exe, args, { env: env, cwd: utilsPath });
+        console.log(ret.stdout.toString());
+        console.log(ret.stderr.toString());
+    }
+
+    public static reportEvents(context: string): void {
+        context = RTTester.getProjectOfFile(context);
+        let exe = RTTester.pythonExecutable();
+        let utilsPath = RTTester.getUtilsPath(context);
+        let script = Path.normalize(Path.join(utilsPath, "rtt-fmi-report-queue.py"));
+        let args = [script];
+        let env: any = RTTester.genericCommandEnv(context);
+        const cp = require("child_process");
+        let ret = cp.spawnSync(exe, args, { env: env, cwd: utilsPath });
+        console.log(ret.stdout.toString());
+        console.log(ret.stderr.toString());
     }
 
 }

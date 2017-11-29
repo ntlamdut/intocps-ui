@@ -184,7 +184,7 @@ export class CoeSimulationService {
             this.fileSystem.writeFile(Path.join(this.resultDir, "config-simulation.json"), data)
                 .then(() => {
                     this.http.post(`http://${this.url}/simulate/${this.sessionId}`, data)
-                        .subscribe(() => this.downloadResults(), (err: Response) => this.errorHandler(err));
+                        .subscribe(() => {this.downloadResults(); this.graph.setFinished()}, (err: Response) => this.errorHandler(err));
                 });
         });
 
@@ -202,6 +202,7 @@ export class CoeSimulationService {
         this.graph.closeSocket();
         this.externalGraphs.forEach((eg) => {
             if (eg.win)
+                //This also causes a redraw event for the external graphs.
                 eg.win.webContents.send("close");
         })
         this.simulationCompletedHandler();

@@ -47,7 +47,7 @@ export class AppComponent implements OnInit {
             this.graph.initializeSingleDataset(lg);        
             this.graph.launchWebSocket(dataObj.webSocket)
         });
-        ipcRenderer.on('close', (event, data) => { this.graph.closeSocket(); });
+        ipcRenderer.on('close', (event, data) => { this.graph.closeSocket(); this.graph.setFinished();});
         window.onbeforeunload = ((ev) => {
            this.graph.closeSocket();       
         });

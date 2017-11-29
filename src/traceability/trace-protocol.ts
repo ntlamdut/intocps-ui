@@ -25,7 +25,7 @@ class MsgCreator {
         this.serializedObject["xmlns:rdf"] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
         this.serializedObject["xmlns:prov"] = "http://www.w3.org/ns/prov#";
         //this.serializedObject["xmlns:intocps"] = "http://www.w3.org/ns/intocps#";
-        this.serializedObject["messageFormatVersion"] = "1.3"
+        this.serializedObject["messageFormatVersion"] = "1.5"
         return this;
     }
 
@@ -227,7 +227,7 @@ export class Activity {
     }
 }
 
-type TypeOptions = "architectureConfiguration" |"architectureModelling"|"fmu"| "file"|"simulationResult"| "simulationConfiguration"| "simulationModelling" | "simulationConfigurationCreation"|"simulation";
+type TypeOptions = "architectureConfiguration" |"architectureModelling"|"fmu"| "file"|"simulationResult"| "simulationConfiguration"| "simulationModelling" | "simulationConfigurationCreation"|"simulation" | "multiModelConfiguration";
 type ActivityTypeOptions = "architectureConfigurationCreation"|
         "architectureModelling"|
         "codeGeneration"|

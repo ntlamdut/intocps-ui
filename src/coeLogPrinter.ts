@@ -100,13 +100,13 @@ export class CoeLogPrinter {
 
         // This happens if the log has been truncated. Therefore perform a reinitialization and calculate the read size again.
         if (readSize <= 0) {
-            console.log(`Info: CoeLogPrinter watching ${path} encountered a non-positive read size. Current size: ${currentSize} - Read size: ${readSize} - File position: ${this.filePosition}. 
-            This is probably due to a log file rollover. Reinitializing and trying again.`);
+           // console.log(`Info: CoeLogPrinter watching ${path} encountered a non-positive read size. Current size: ${currentSize} - Read size: ${readSize} - File position: ${this.filePosition}. 
+           // This is probably due to a log file rollover. Reinitializing and trying again.`);
             
             currentSize = this.getFileSize(path);
             this.filePosition = 0;
             readSize = calcReadSize(currentSize);
-            console.log(`Info: CoeLogPrinter watching ${path} reinitialized. Current size: ${currentSize} - Read size: ${readSize} - File position: ${this.filePosition}`);
+            //console.log(`Info: CoeLogPrinter watching ${path} reinitialized. Current size: ${currentSize} - Read size: ${readSize} - File position: ${this.filePosition}`);
         }
 
         if (readSize <= 0) {

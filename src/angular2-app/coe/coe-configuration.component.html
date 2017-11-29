@@ -133,10 +133,10 @@
 									<a *ngIf="editing" (click)="removeConstraint(constraint)" class="pull-right"><span class="glyphicon glyphicon-remove"></span></a>									{{getConstraintName(constraint)}}
 								</div>
 								<div class="panel-body">
-									<zero-crossing [editing]="editing" [ports]="outputPorts" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
+									<zero-crossing [editing]="editing" [ports]="getFilterTypes(outputPorts,[ Fmu_x.ScalarVariableType.Int,	Fmu_x.ScalarVariableType.Real])" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
 									 *ngIf="constraint.type === 'zerocrossing'"></zero-crossing>
 
-									<bounded-difference [editing]="editing" [ports]="outputPorts" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
+									<bounded-difference [editing]="editing" [ports]="getFilterTypes(outputPorts,[ Fmu_x.ScalarVariableType.Int,	Fmu_x.ScalarVariableType.Real])" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"
 									 *ngIf="constraint.type === 'boundeddifference'"></bounded-difference>
 
 									<sampling-rate [editing]="editing" [constraint]="constraint" [formGroup]="form.find('algorithm').find('constraints').at(i)"

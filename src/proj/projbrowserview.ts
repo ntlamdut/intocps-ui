@@ -293,6 +293,10 @@ export class BrowserController {
             console.info("Renaming path: " + item.path);
             self.menuHandler.rename(item.path);
         });
+        let menuImplode = menuEntry("Implode", "glyphicon glyphicon-pencil", function(item: ProjectBrowserItem){
+            console.info("Implode: " + item.path);
+            self.menuHandler.implodeConfig(item.path);
+        })
 
         let menuReveal = menuEntry("Show In Folder", "glyphicon glyphicon-pencil", function (item: ProjectBrowserItem) {
             console.info("Reveal path: " + item.path);
@@ -370,7 +374,7 @@ export class BrowserController {
                 parent.dblClickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openCoeView((<any>item).coeConfig);
                 };
-                parent.menuEntries = [menuEntryDelete, menuRename,menuReveal];
+                parent.menuEntries = [menuEntryDelete, menuRename, menuReveal, menuImplode];
                 parent.refresh();
                 return null;
             }
@@ -461,7 +465,7 @@ export class BrowserController {
             }
         } else if (stat.isDirectory()) {
             result.img = "icon-folder";
-            result.menuEntries = [];
+            result.menuEntries = [menuReveal];
             if (pathComponents[0] == Project.PATH_TEST_DATA_GENERATION ||
                 pathComponents[0] == Project.PATH_MODEL_CHECKING) {
                 result.menuEntries = [];

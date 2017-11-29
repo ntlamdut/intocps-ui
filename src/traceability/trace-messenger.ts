@@ -39,7 +39,7 @@ export class TraceMessager {
             rootMessage.entities.push(ef);
             rootMessage.agents.push(ea);
 
-            activity.type = "architectureConfigurationCreation"
+            activity.type = "configurationCreation"
             activity.used.push(et);
             activity.used.push(efDerived);
             activity.wasAssociatedWith = ea;
@@ -55,7 +55,7 @@ export class TraceMessager {
             ef.setPropertiesCalcAbout({
                 hash: GitConn.GitCommands.getHashOfFile(mmPath),
                 path: this.getUriRelativeToProjectRoot(mmPath),
-                type: "architectureConfiguration",
+                type: "multiModelConfiguration",
                 wasGeneratedBy: activity,
                 wasAttributedTo: ea,
                 wasDerivedFrom: [efDerived]
@@ -103,14 +103,14 @@ export class TraceMessager {
 
             oldMm.setPropertiesCalcAbout({
                 hash: prevMmHash,
-                type: "architectureConfiguration",
+                type: "multiModelConfiguration",
                 path: this.getUriRelativeToProjectRoot(mmConfig.sourcePath)
             });
 
             ef.setPropertiesCalcAbout({
                 hash: GitConn.GitCommands.getHashOfFile(mmConfig.sourcePath),
                 path: this.getUriRelativeToProjectRoot(mmConfig.sourcePath),
-                type: "architectureConfiguration",
+                type: "multiModelConfiguration",
                 wasGeneratedBy: activity,
                 wasAttributedTo: ea,
                 wasDerivedFrom: [oldMm]
@@ -139,7 +139,7 @@ export class TraceMessager {
             rootMessage.entities.push(ef);
             rootMessage.agents.push(ea);
 
-            activity.type = "simulationModelling"
+            activity.type = "simulationConfigurationCreation"
             activity.used.push(et);
             activity.used.push(efUsed);
             activity.wasAssociatedWith = ea;
@@ -147,7 +147,7 @@ export class TraceMessager {
 
             efUsed.setPropertiesCalcAbout({
                 hash: GitConn.GitCommands.getHashOfFile(mmPath),
-                type: "architectureConfiguration",
+                type: "multiModelConfiguration",
                 path: this.getUriRelativeToProjectRoot(mmPath)
             });
 
@@ -200,7 +200,7 @@ export class TraceMessager {
             usedMM.setPropertiesCalcAbout({
                 hash: GitConn.GitCommands.getHashOfFile(mmPath),
                 path: this.getUriRelativeToProjectRoot(mmPath),
-                type: "architectureConfiguration"
+                type: "multiModelConfiguration"
             });
 
             //rootMessage:entities

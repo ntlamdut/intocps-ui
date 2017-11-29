@@ -10,9 +10,9 @@ import { IProject } from "../../proj/IProject";
 import { FormGroup, REACTIVE_FORM_DIRECTIVES, FORM_DIRECTIVES, FormArray, FormControl, Validators } from "@angular/forms";
 import { uniqueControlValidator } from "../shared/validators";
 import { NavigationService } from "../shared/navigation.service";
-import { WarningMessage } from "../../intocps-configurations/Messages";
+import { WarningMessage, ErrorMessage } from "../../intocps-configurations/Messages";
 import * as GitConn from "./../../traceability/git-connection"
-import {TraceMessager} from "./../../traceability/trace-messenger"
+import { TraceMessager } from "./../../traceability/trace-messenger"
 
 import * as Path from 'path';
 
@@ -77,6 +77,7 @@ export class MmConfigurationComponent {
                         fmus: new FormArray(this.config.fmus.map(fmu => new FormControl(this.getFmuName(fmu), [Validators.required, Validators.pattern("[^{^}]*")])), uniqueControlValidator),
                         instances: new FormArray(this.config.fmus.map(fmu => new FormArray(this.getInstances(fmu).map(instance => new FormControl(instance.name, [Validators.required, Validators.pattern("[^\.]*")])), uniqueControlValidator)))
                     });
+                    this.warnings = this.config.validate();
                 });
             }, error => this.zone.run(() => this.parseError = error));
     }
@@ -102,10 +103,10 @@ export class MmConfigurationComponent {
 
         if (this.warnings.length > 0) return;
         //Get hash of previous file
-        let prevHash : string = GitConn.GitCommands.getHashOfFile(this.config.sourcePath);
+        let prevHash: string = GitConn.GitCommands.getHashOfFile(this.config.sourcePath);
         this.config.save()
             .then(() => {
-                let traceMessage = TraceMessager.submitEditMultiModelMessage(this.config,prevHash);
+                let traceMessage = TraceMessager.submitEditMultiModelMessage(this.config, prevHash);
                 //console.log(`Edit MM: [${JSON.stringify(traceMessage)}]`);
                 this.parseConfig();
                 this.selectOutputInstance(null);
@@ -246,7 +247,7 @@ export class MmConfigurationComponent {
         this.newParameter = this.getParameters()[0];
     }
 
-    isTypeBool(type: ScalarVariableType){
+    isTypeBool(type: ScalarVariableType) {
         return type === ScalarVariableType.Bool;
     }
 
@@ -319,5 +320,14 @@ export class MmConfigurationComponent {
         else {
             return path;
         }
+    }
+
+
+    getWarnings() {
+        return this.warnings.filter(w => !(w instanceof ErrorMessage));
+    }
+
+    getErrors() {
+        return this.warnings.filter(w => w instanceof ErrorMessage);
     }
 }

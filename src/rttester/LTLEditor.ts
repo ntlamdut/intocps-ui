@@ -55,7 +55,13 @@ export class LTLEditorController extends ViewController {
     }
 
     getRequirements() {
-        return this.hRequirements.value.split(',').map((r: string) => r.trim());
+        return this.hRequirements.value.split(',').reduce(
+            (a: string[], r: string) => {
+                let req = r.trim();
+                if (req != "")
+                    a.push(req);
+                return a;
+            }, []);
     }
 
     getTracabilityLink() {

@@ -11,7 +11,13 @@ export class Graph {
     private webSocket: WebSocket;
     private external = false;
     private progressCallback: (n: number) => void;
+    finished : boolean ;
 
+
+    public setFinished()
+    {
+        this.finished = true;
+    }
 
     public setProgressCallback(progressCallback?: (n: number) => void) {
         if (progressCallback)
@@ -29,6 +35,7 @@ export class Graph {
     }
 
     public reset() {
+        this.finished = false;
         this.graphMap.clear();
     }
 
@@ -62,6 +69,7 @@ export class Graph {
         ds.next(datasets);
     }
     public initializeDatasets() {
+        this.finished = false;
         this.graphMap.clear();
 
         this.config.liveGraphs.forEach(g => {
@@ -87,7 +95,7 @@ export class Graph {
         });
     }
     public launchWebSocket(webSocket: string) {
-        console.log("launching websocet: " + webSocket);
+        console.log("launching websocket: " + webSocket);
         this.counter = 0;
         this.webSocket = new WebSocket(webSocket);
 

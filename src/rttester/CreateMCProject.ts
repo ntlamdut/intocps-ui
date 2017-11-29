@@ -4,7 +4,7 @@ import { IntoCpsApp } from "../IntoCpsApp";
 import Path = require("path");
 import fs = require("fs");
 import { RTTester } from "../rttester/RTTester";
-import { Abstractions, Interface, Output } from "./CTAbstractions";
+import { Abstractions, Interface, Input } from "./CTAbstractions";
 import { Utilities } from "../utilities";
 import { IntoCpsAppMenuHandler } from "../IntoCpsAppMenuHandler";
 import * as ModalCommand from "./GenericModalCommand";
@@ -76,8 +76,8 @@ export class CreateMCProjectController extends ViewController {
                 });
             };
             let generateAbstractions = (interfaceJSON: any) => {
-                let createOutputs = (outputs: any[]): Output[] => {
-                    return outputs.reduce((oList: any[], o: any) => {
+                let createInputs = (inputs: any[]): Input[] => {
+                    return inputs.reduce((oList: any[], o: any) => {
                         let name = o[0];
                         let type = o[1];
                         oList.push({
@@ -87,15 +87,15 @@ export class CreateMCProjectController extends ViewController {
                         return oList;
                     }, []);
                 };
-                let createOutputInterfaces = (interfaces: any[]): Interface[] => {
+                let createInputInterfaces = (interfaces: any[]): Interface[] => {
                     return interfaces.reduce((iList: any[], i: any) => {
                         let name = i[0];
                         let type = i[1];
-                        if (type == "output") {
-                            let outputs = interfaceJSON["interfaces"][name][1];
+                        if (type == "input") {
+                            let inputs = interfaceJSON["interfaces"][name][1];
                             iList.push({
                                 name: name,
-                                outputs: createOutputs(outputs)
+                                inputs: createInputs(inputs)
                             });
                         }
                         return iList;
@@ -106,7 +106,7 @@ export class CreateMCProjectController extends ViewController {
                         components: Object.keys(interfaceJSON.components).map((compName: string) => {
                             return {
                                 name: compName,
-                                outputInterfaces: createOutputInterfaces(interfaceJSON.components[compName]),
+                                inputInterfaces: createInputInterfaces(interfaceJSON.components[compName]),
                             };
                         })
                     };

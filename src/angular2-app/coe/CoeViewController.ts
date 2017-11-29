@@ -16,7 +16,8 @@ export class CoeViewController extends ViewController {
 
     initialize() {
         $(this.view).css('height',0);
-        IntoCpsApp.setTopName(Path.basename(Path.join(this.path,"../")));
+        let coeFolder = Path.join(this.path,"../");
+        IntoCpsApp.setTopName(Path.basename(Path.join(coeFolder,"../"))+" > "+Path.basename(coeFolder));
         window.ng2app.openCOE(this.path);
     }
 

@@ -43,7 +43,7 @@
         <div style="page-break-inside:avoid !important;border-style: solid; margin: 2px;padding-left: 2px; border-width: 0.1em;">
             <h5>Graph {{i+1}}: {{g.title}}</h5>
 
-            <line-chart *ngIf="coeSimulation.graph.getDataset(g).getValue().length > 0" [datasets]="coeSimulation.graph.getDataset(g)" [livegraphvisiblerowcount]="config.liveGraphVisibleRowCount" [something]="config.liveGraphColumns" style="page-break-inside:avoid !important;"></line-chart>
+            <line-chart *ngIf="coeSimulation.graph.getDataset(g).getValue().length > 0" [datasets]="coeSimulation.graph.getDataset(g)" [livegraphvisiblerowcount]="config.liveGraphVisibleRowCount" [something]="config.liveGraphColumns" [finished]="coeSimulation.graph.finished"  style="page-break-inside:avoid !important;"></line-chart>
         </div>
     </div>
 </div>
