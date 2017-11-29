@@ -1,5 +1,7 @@
 import {Component} from "@angular/core"; // , Input
 import {TrResultComponent} from "./tr-result.component";
+import {TrUserComponent} from "./tr-user.component";
+import {TrFUMsComponent} from "./tr-fmus.component";
 import IntoCpsApp from "../../IntoCpsApp";
 import {PanelComponent} from "../shared/panel.component";
 
@@ -7,7 +9,10 @@ import {PanelComponent} from "../shared/panel.component";
     selector: "tr-page",
     directives: [
         PanelComponent,
-        TrResultComponent
+        TrResultComponent,
+        TrFUMsComponent,
+        TrUserComponent
+
 //        MmOverviewComponent
     ],
     templateUrl: "./angular2-app/tr/tr-page.component.html",

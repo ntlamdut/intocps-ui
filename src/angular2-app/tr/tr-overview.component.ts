@@ -4,23 +4,18 @@ import {OnInit, Component, Input, NgZone} from "@angular/core";
 import IntoCpsApp from "../../IntoCpsApp";
 
 export class TrOverviewComponent{
+    public headerString:string;
+
     public mainObjectPropertyName1:string;
     public mainObjectPropertyName2:string;
     public mainObjectPropertyID1:string;
     public mainObjectPropertyID2:string;
-    public mainObjectPropertyID3:string;
-
-    public subObjectPropertyName1:string;
-    public subObjectPropertyName2:string;
-    public subObjectPropertyName3:string;
-    public subObjectPropertyID1:string;
-    public subObjectPropertyID2:string;
-    public subObjectPropertyID3:string;
+    public lso:any;
 
     public findAllMainObjects:string;
-    public findAllSubObjectsPart1:string;
-    public findAllSubObjectsPart2:string;
-    public listSubObjectsName:string;
+
+    public subObjectClasses:subObjectClass[];
+    public _selectedSubObjectClass:subObjectClass;
 
 
     public mainObjecList:Array<subObject>;
@@ -32,10 +27,18 @@ export class TrOverviewComponent{
     public _findSourcesFor:subObject;
 
     constructor(zone:NgZone) {
+        this.subObjectClasses =  new Array<subObjectClass>();
         this.resultsAvailible = false;
         this.sourcesAvailible = false;
         this.zone = zone;
         this.intoApp = IntoCpsApp.getInstance();
+    }
+    @Input()
+    set selectedSubObjectClass(selectedSubObjectClass:subObjectClass) {
+        this._selectedSubObjectClass = selectedSubObjectClass;
+    }
+    get selectedSubObjectClass() {
+        return this._selectedSubObjectClass;
     }
     @Input()
     set findSourcesFor(findSourcesFor:subObject) {
@@ -68,7 +71,7 @@ export class TrOverviewComponent{
     }
 
     private getSourceQuery(startUri:string):string{
-        return this.findAllSubObjectsPart1 + startUri + this.findAllSubObjectsPart2;
+        return this.selectedSubObjectClass.findAllSubObjectsPart1 + startUri + this.selectedSubObjectClass.findAllSubObjectsPart2;
     }
 
     private updateSources(){
@@ -80,14 +83,14 @@ export class TrOverviewComponent{
 
     private parsemainObjects(results: any[]){
         for(var result in results){
-            this.mainObjecList.push(new subObject(results[result], this.mainObjectPropertyID1, this.mainObjectPropertyID2, this.mainObjectPropertyID3));
+            this.mainObjecList.push(new subObject(results[result], this.mainObjectPropertyID1, this.mainObjectPropertyID2, this.subObjectClasses[0]));
         }
         this.zone.run(() => this.resultsAvailible = true);
     }
 
     private parseSourceResults(results: any){
         for(var result in results){
-            this.subObjecList.push(new subObject(results[result], this.subObjectPropertyID1, this.subObjectPropertyID2, this.subObjectPropertyID3));
+            this.subObjecList.push(new subObject(results[result], this.selectedSubObjectClass.subObjectPropertyID1, this.selectedSubObjectClass.subObjectPropertyID2));
         }
         this.zone.run(() => this.sourcesAvailible = true);
     }
@@ -96,20 +99,29 @@ export class TrOverviewComponent{
 
 class subObject {
     public listSources:Boolean;
+    public selectedsubObjectClass:subObjectClass;
     public subObjectPropertyID1:string;
     public subObjectPropertyID2:string;
-    public subObjectPropertyID3:string;
     public subObjectProperty1:string;
     public subObjectProperty2:string;
-    public subObjectProperty3:string;
-    constructor(resultObject:any, subObjectPropertyID1:string, subObjectPropertyID2:string, subObjectPropertyID3:string){
+    constructor(resultObject:any, subObjectPropertyID1:string, subObjectPropertyID2:string, startValuesubObjectClass?:subObjectClass){
         this.subObjectPropertyID1 = subObjectPropertyID1;
         this.subObjectPropertyID2 = subObjectPropertyID2;
-        this.subObjectPropertyID3 = subObjectPropertyID3;
         this.subObjectProperty1 = resultObject[this.subObjectPropertyID1];
         this.subObjectProperty2 = resultObject[this.subObjectPropertyID2];
-        this.subObjectProperty3 = resultObject[this.subObjectPropertyID3];
         this.listSources = false;
+        this.selectedsubObjectClass = startValuesubObjectClass;
     }
     
+}
+
+export class  subObjectClass{
+    public name:string;
+    public subObjectPropertyName1:string;
+    public subObjectPropertyName2:string;
+    public subObjectPropertyID1:string;
+    public subObjectPropertyID2:string;
+    public findAllSubObjectsPart1:string;
+    public findAllSubObjectsPart2:string;
+
 }

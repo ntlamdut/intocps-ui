@@ -631,16 +631,12 @@ export class BrowserController {
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.showTraceView();
                     });
-                let menuOpenTr = menuEntry("Trace Results", "glyphicon glyphicon-asterisk",
+                let menuOpenTr = menuEntry("Trace Objects", "glyphicon glyphicon-asterisk",
                     function (item: ProjectBrowserItem) {
                         self.menuHandler.openTraceability();
                     });
-                let menuOpenTrFMU = menuEntry("Trace Requirements", "glyphicon glyphicon-asterisk",
-                    function (item: ProjectBrowserItem) {
-                        self.menuHandler.openFMUTraceability();
-                    });
-                result.menuEntries = [menuGraph, menuOpenTr, menuOpenTrFMU];
-                result.dblClickHandler = function (item: ProjectBrowserItem) {
+                result.menuEntries = [menuGraph, menuOpenTr];
+                result.clickHandler = function (item: ProjectBrowserItem) {
                     self.menuHandler.openTraceability();
 
                 };

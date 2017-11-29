@@ -1,10 +1,10 @@
 import {OnInit, Component, Input, NgZone} from "@angular/core";
 
 import {PanelComponent} from "../shared/panel.component";
-import {TrOverviewComponent} from "./tr-overview.component";
+import {TrOverviewComponent, subObjectClass} from "./tr-overview.component";
 
 @Component({
-    selector: "tr-overview",
+    selector: "tr-sim",
     directives: [
         PanelComponent,
         TrResultComponent],
@@ -19,19 +19,20 @@ export class TrResultComponent extends TrOverviewComponent{
         this.mainObjectPropertyName2 = "Result URI";
         this.mainObjectPropertyID1 = "m.time";
         this.mainObjectPropertyID2 = "n.uri";
-        this.mainObjectPropertyID3 = "m.type";
-
-        this.subObjectPropertyName1 = "Used File";
-        this.subObjectPropertyName2 = "URI";
-        this.subObjectPropertyName3 = "Hash";
-        this.subObjectPropertyID1 = "entity.path";
-        this.subObjectPropertyID2 = "entity.uri";
-        this.subObjectPropertyID3 = "entity.hash";
-
         this.findAllMainObjects = "match (n{type:\"simulationResult\"})-[:Trace{name:\"prov:wasGeneratedBy\"}]->(m) return n.uri, m.time, m.type";
-        this.findAllSubObjectsPart1 = "match({uri:'";
-        this.findAllSubObjectsPart2 = "'})-[:Trace{name:\"prov:wasGeneratedBy\"}]->(simulation)-[:Trace{name:\"prov:used\"}]-(entity) return entity.uri, entity.path, entity.hash";
-        this.listSubObjectsName = "List simulation sources";
+
+        this.subObjectClasses.push(this.buildSubObjectFile());
         this.updatemainObjects();
+    }
+    buildSubObjectFile():subObjectClass{
+        let subObj = new subObjectClass();
+        subObj.name = "Used Files";
+        subObj.subObjectPropertyName1 = "Used File";
+        subObj.subObjectPropertyName2 = "URI";
+        subObj.subObjectPropertyID1 = "entity.path";
+        subObj.subObjectPropertyID2 = "entity.uri";
+        subObj.findAllSubObjectsPart1 = "match({uri:'";
+        subObj.findAllSubObjectsPart2 = "'})-[:Trace{name:\"prov:wasGeneratedBy\"}]->(simulation)-[:Trace{name:\"prov:used\"}]-(entity) return entity.uri, entity.path, entity.hash";
+        return subObj;
     }
 }

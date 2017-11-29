@@ -19,9 +19,16 @@
                 <h5>{{result.subObjectProperty2}}</h5>
             </div>
             <div class="col-md-4">
-                <button class="btn btn-default" (click)="findSourcesFor = result">
-                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> {{listSubObjectsName}}
-                </button>    
+                <div class="input-group">
+                        <span class="input-group-btn">
+                            <button type="button" (click)="selectedSubObjectClass= result.selectedsubObjectClass;findSourcesFor = result" class="btn btn-default btn-sm">
+                                Trace
+                            </button>
+                        </span>
+                        <select class="form-control input-sm" [(ngModel)]="result.selectedsubObjectClass" [ngModelOptions]="{standalone: true}">
+                            <option *ngFor="let subObject of subObjectClasses; let i=index" [ngValue]="subObject">{{subObject.name}}</option>
+                        </select>
+                </div>
             </div>
         </div>
         <div *ngIf="sourcesAvailible">
@@ -32,13 +39,13 @@
                     <div class="col-md-11" style="background-color:LightGrey ">
                         <div class="row">
                             <div class="col-md-4">
-                                <label>{{subObjectPropertyName1}}</label>
+                                <label>{{result.selectedsubObjectClass.subObjectPropertyName1}}</label>
                             </div>
                             <div class="col-md-4">
-                                <label>{{subObjectPropertyName2}}</label>
+                                <label>{{result.selectedsubObjectClass.subObjectPropertyName2}}</label>
                             </div>
                             <div class="col-md-4">
-                                <label>{{subObjectPropertyName3}}</label>
+                                <label>{{result.selectedsubObjectClass.subObjectPropertyName3}}</label>
                             </div>
                         </div>
                         <div *ngFor="let source of subObjecList" class="row">
@@ -46,11 +53,8 @@
                             <div class="col-md-4">
                                 <h5>{{source.subObjectProperty1}}</h5>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-8">
                                 <h5>{{source.subObjectProperty2}}</h5>
-                            </div>
-                            <div class="col-md-4">
-                                <h5>{{source.subObjectProperty3}}</h5>
                             </div>
                         </div>
                     </div>
